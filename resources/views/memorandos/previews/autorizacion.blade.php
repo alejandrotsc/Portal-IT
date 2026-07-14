@@ -1,121 +1,88 @@
+{{-- PREVIEW AUTORIZACIÓN DE EQUIPO --}}
 
-    {{-- CUERPO DEL DOCUMENTO --}}
+<div class="documento-final">
 
 
-    <div class="memo-body-preview">
+    {{-- ENCABEZADO --}}
 
+    <div class="document-header">
 
+        <img 
+            src="{{ asset('img/tvc.png') }}"
+            class="logo-documento">
 
-        <p>
+        <h1>
+            MEMORÁNDUM
+        </h1>
 
-            Por este medio solicito la autorización correspondiente para
-            el ingreso de equipo tecnológico que será utilizado por:
+    </div>
 
 
-        </p>
 
+    {{-- INFORMACIÓN DEL MEMORANDO --}}
 
+    <div class="datos-documento">
 
 
-        <p>
+        <table class="tabla-datos">
 
 
-            <strong id="out_colaborador">
+            <tr>
+                <td class="label">
+                    PARA:
+                </td>
 
-                -
+                <td id="out_para">
+                    -
+                </td>
+            </tr>
 
-            </strong>
 
+            <tr>
+                <td class="label">
+                    CC:
+                </td>
 
+                <td id="out_cc">
+                    -
+                </td>
+            </tr>
 
-            quien estará desempeñando actividades dentro de la compañía.
 
+            <tr>
+                <td class="label">
+                    DE:
+                </td>
 
-        </p>
+                <td id="out_de">
+                    -
+                </td>
+            </tr>
 
 
+            <tr>
+                <td class="label">
+                    FECHA:
+                </td>
 
+                <td id="out_fecha_documento">
+                    -
+                </td>
+            </tr>
 
 
+            <tr>
+                <td class="label">
+                    ASUNTO:
+                </td>
 
-        <p>
+                <td id="out_asunto">
+                    -
+                </td>
+            </tr>
 
 
-            Área o cargo:
-
-            <strong id="out_cargo_area">
-
-                -
-
-            </strong>
-
-
-        </p>
-
-
-
-
-
-
-
-        <p>
-
-
-            La fecha prevista para el ingreso del equipo será:
-
-            <strong id="out_fecha_ingreso">
-
-                -
-
-            </strong>
-
-
-        </p>
-
-
-
-
-
-
-
-
-        <p>
-
-
-            Motivo de autorización:
-
-
-        </p>
-
-
-
-
-
-        <p
-
-            id="out_motivo_autorizacion"
-
-            class="campo-texto">
-
-
-            -
-
-        </p>
-
-
-
-
-
-
-        <p>
-
-            A continuación se detallan las características del equipo:
-
-        </p>
-
-
-
-
+        </table>
 
 
     </div>
@@ -123,7 +90,78 @@
 
 
 
+    {{-- CUERPO DOCUMENTO --}}
 
+
+    <div class="memo-body-preview">
+
+
+        <p>
+            Por este medio solicito la autorización correspondiente para
+            el ingreso de equipo tecnológico que será utilizado por:
+        </p>
+
+
+
+        <p>
+
+            <strong id="out_colaborador">
+                -
+            </strong>
+
+            quien estará desempeñando actividades dentro de la compañía.
+
+        </p>
+
+
+
+        <p>
+
+            Área o cargo:
+
+            <strong id="out_cargo_area">
+                -
+            </strong>
+
+        </p>
+
+
+
+        <p>
+
+            La fecha prevista para el ingreso del equipo será:
+
+            <strong id="out_fecha_ingreso">
+                -
+            </strong>
+
+        </p>
+
+
+
+        <p>
+            Motivo de autorización:
+        </p>
+
+
+
+        <p 
+            id="out_motivo_autorizacion"
+            class="campo-texto">
+
+            -
+
+        </p>
+
+
+
+        <p>
+            A continuación se detallan las características del equipo:
+        </p>
+
+
+
+    </div>
 
 
 
@@ -137,7 +175,6 @@
         <thead>
 
             <tr>
-
 
                 <th>
                     EQUIPO
@@ -171,28 +208,21 @@
 
 
 
-
         <tbody id="equipoSalida">
 
 
             <tr>
 
-
-                <td
-
+                <td 
                     colspan="5"
-
                     class="fila-vacia">
 
-
                     Sin equipos registrados
-
 
                 </td>
 
 
             </tr>
-
 
 
         </tbody>
@@ -201,16 +231,14 @@
 
     </table>
 
+
+
+
     <p class="agradecimiento">
 
         Gracias por su colaboración.
 
     </p>
-
-
-
-
-
 
 
 
@@ -224,25 +252,17 @@
         <div></div>
 
 
-
         <p>
-
             Vo.Bo. Jefe Inmediato
-
         </p>
 
 
-
         <small>
-
             Firma y sello
-
         </small>
 
 
-
     </div>
-
 
 
 

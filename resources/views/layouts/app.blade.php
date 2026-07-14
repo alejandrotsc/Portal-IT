@@ -29,7 +29,7 @@
 @include('partials.header')
 
 
-<main class="max-w-5xl mx-auto px-6 py-10 space-y-10">
+<main class="max-w-[1300px] mx-auto px-8 lg:px-12 py-10 space-y-10">
 
     @yield('content')
 

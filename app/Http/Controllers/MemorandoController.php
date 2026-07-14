@@ -13,6 +13,9 @@ use App\Models\FolioCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+
+use App\Mail\PaseTemporalMail;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -94,9 +97,113 @@ class MemorandoController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Enviar pase temporal por correo
+    |--------------------------------------------------------------------------
+    */
+
+    public function storePaseTemporal(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $request->validate([
+                'tipo_id'          => ['required', 'exists:memorando_tipos,id'],
+                'de_nombre'        => ['required', 'string'],
+                'asunto'           => ['required', 'string'],
+                'fecha_documento'  => ['required', 'date'],
+                'colaborador'      => ['required', 'string'],
+                'cargo_area'       => ['required', 'string'],
+                'motivo_autorizacion' => ['required', 'string'],
+            ]);
+
+            $usuario = auth()->user();
+            $tipo    = MemorandoTipo::findOrFail($request->tipo_id);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Guardar registro en BD (para histórico)
+            |--------------------------------------------------------------------------
+            */
+
+            $datosExtra = $request->except(['_token', 'tipo_id']);
+
+            $memorando = Memorando::create([
+                'tipo_id'        => $tipo->id,
+                'solicitante_id' => $usuario->id,
+                'estado'         => Memorando::ESTADO_ENVIADO_EMAIL,
+                'para_nombre'    => $request->para_nombre,
+                'cc_nombre'      => $request->cc_nombre,
+                'de_nombre'      => $request->de_nombre,
+                'asunto'         => $request->asunto,
+                'observaciones'  => $request->observaciones,
+                'fecha_documento'=> $request->fecha_documento,
+                'datos_extra'    => $datosExtra,
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Historial
+            |--------------------------------------------------------------------------
+            */
+
+            MemorandoHistorial::create([
+                'memorando_id'   => $memorando->id,
+                'usuario_id'     => $usuario->id,
+                'estado_anterior'=> null,
+                'estado_nuevo'   => Memorando::ESTADO_ENVIADO_EMAIL,
+                'comentario'     => 'Pase temporal enviado por correo a helpdesk@televicentro.hn',
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Enviar correo usando el correo del usuario autenticado (campo: correo)
+            |--------------------------------------------------------------------------
+            */
+
+            Mail::send(
+                new PaseTemporalMail(
+                    datos:          $datosExtra,
+                    remitenteName:  $usuario->nombre,
+                    remitenteEmail: $usuario->correo,
+                )
+            );
+
+
+            DB::commit();
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'El correo fue enviado correctamente a helpdesk@televicentro.hn.',
+                'id'      => $memorando->id,
+            ]);
+
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 500);
+
+        }
+    }
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Crear compra
     |--------------------------------------------------------------------------
     */
+
 
     public function createCompra()
     {
@@ -121,7 +228,18 @@ class MemorandoController extends Controller
         return view('memorandos.create_compra', compact('tipos'));
     }
 
-        /*
+    /*
+    |--------------------------------------------------------------------------
+    | Carga dinámica de vistas de preview
+    |--------------------------------------------------------------------------
+    */
+
+    public function previewDinamico($tipo)
+    {
+        return view("memorandos.previews.{$tipo}");
+    }
+
+    /*
     |--------------------------------------------------------------------------
     | Guardar memorando
     |--------------------------------------------------------------------------
@@ -134,23 +252,26 @@ class MemorandoController extends Controller
         try{
 
             $request->validate([
-                'tipo_id'=>[
-                    'required',
-                    'exists:memorando_tipos,id'
-                ],
-                'de'=>[
-                    'required',
-                    'string'
-                ],
-                'asunto'=>[
-                    'required',
-                    'string'
-                ],
-                'fecha'=>[
-                    'required',
-                    'date'
-                ]
-            ]);
+    'tipo_id'=>[
+        'required',
+        'exists:memorando_tipos,id'
+    ],
+
+    'de_nombre'=>[
+        'required',
+        'string'
+    ],
+
+    'asunto'=>[
+        'required',
+        'string'
+    ],
+
+    'fecha_documento'=>[
+        'required',
+        'date'
+    ]
+]);
 
             $usuario = auth()->user();
 
@@ -188,7 +309,7 @@ class MemorandoController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Generación de folio
+            | Generar Folio si aplica
             |--------------------------------------------------------------------------
             */
 
@@ -232,17 +353,17 @@ class MemorandoController extends Controller
 
                 'estado'=>Memorando::ESTADO_GENERADO,
 
-                'para_nombre'=>$request->para,
+                'para_nombre'=>$request->para_nombre,
 
-                'cc_nombre'=>$request->cc,
+                'cc_nombre'=>$request->cc_nombre,
 
-                'de_nombre'=>$request->de,
+                'de_nombre'=>$request->de_nombre,
 
                 'asunto'=>$request->asunto,
 
                 'observaciones'=>$request->observaciones,
 
-                'fecha_documento'=>$request->fecha,
+                'fecha_documento'=>$request->fecha_documento,
 
                 'datos_extra'=>$datosExtra
 
@@ -252,60 +373,92 @@ class MemorandoController extends Controller
 
 
             /*
-            |--------------------------------------------------------------------------
-            | Datos específicos
-            |--------------------------------------------------------------------------
-            */
+|--------------------------------------------------------------------------
+| Datos específicos
+|--------------------------------------------------------------------------
+*/
 
-            $this->guardarDatosFormulario(
-                $request,
-                $tipo,
-                $memorando
-            );
-
-
+$this->guardarDatosFormulario(
+    $request,
+    $tipo,
+    $memorando
+);
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Generar PDF
-            |--------------------------------------------------------------------------
-            */
 
-            $memorando->load([
-                'tipo',
-                'solicitante',
-                'solicitudCompra',
-                'articulos'
-            ]);
+/*
+|--------------------------------------------------------------------------
+| Recargar memorando con datos actualizados
+|--------------------------------------------------------------------------
+|
+| guardarDatosFormulario() actualiza datos_extra para formularios
+| dinámicos como autorización y pase temporal.
+| Se vuelve a consultar para que el PDF reciba la información real.
+|
+*/
 
-
-            $pdf = Pdf::loadView(
-                'memorandos.pdf',
-                [
-                    'memorando'=>$memorando
-                ]
-            );
-
-
-            $nombrePdf =
-                ($memorando->codigo ?? 'MEM-'.$memorando->id.'-'.now()->year)
-                .'.pdf';
+$memorando = Memorando::with([
+    'tipo',
+    'solicitante',
+    'solicitudCompra',
+    'articulos'
+])
+->findOrFail($memorando->id);
 
 
-            $rutaPdf =
-                'documentos-it/memorandos/pdf/'.$nombrePdf;
+
+/*
+|--------------------------------------------------------------------------
+| Generar PDF
+|--------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Generar PDF
+|--------------------------------------------------------------------------
+*/
+
+$memorando->refresh();
+
+$memorando->load([
+    'tipo',
+    'solicitante',
+    'articulos'
+]);
 
 
-            Storage::put(
-                $rutaPdf,
-                $pdf->output()
-            );
+$pdf = Pdf::loadView(
+    'memorandos.pdf',
+    [
+        'memorando' => $memorando
+    ]
+);
 
 
-            $memorando->update([
-                'archivo_pdf'=>$rutaPdf
-            ]);
+$nombrePdf = 
+    ($memorando->codigo 
+        ?? 'MEM-'.$memorando->id.'-'.now()->year
+    )
+    . '.pdf';
+
+
+
+$rutaPdf =
+    'documentos-it/memorandos/pdf/'.$nombrePdf;
+
+
+
+Storage::put(
+    $rutaPdf,
+    $pdf->output()
+);
+
+
+
+$memorando->update([
+    'archivo_pdf'=>$rutaPdf
+]);
 
 
 
@@ -463,34 +616,48 @@ class MemorandoController extends Controller
 
 
             /*
-            |--------------------------------------------------------------------------
-            | Equipos tecnológicos
-            |--------------------------------------------------------------------------
-            */
+|--------------------------------------------------------------------------
+| Equipos tecnológicos
+|--------------------------------------------------------------------------
+*/
 
-            case 'laptop':
-            case 'desktop':
-            case 'monitor':
+case 'laptop':
+case 'desktop':
+case 'monitor':
 
-                foreach($request->equipos ?? [] as $equipo){
 
-                    MemorandoArticulo::create([
+    $datosExtra = $memorando->datos_extra ?? [];
 
-                        'memorando_id'=>$memorando->id,
 
-                        'codigo'=>$equipo['codigo'] ?? null,
+    $datosExtra['equipos'] = $request->equipos ?? [];
 
-                        'descripcion'=>$equipo['descripcion'] ?? null,
 
-                        'unidad'=>$equipo['unidad'] ?? 'Unidad',
+    $memorando->update([
+        'datos_extra' => $datosExtra
+    ]);
 
-                        'cantidad'=>$equipo['cantidad'] ?? 1
 
-                    ]);
 
-                }
+    foreach($request->equipos ?? [] as $equipo){
 
-            break;
+        MemorandoArticulo::create([
+
+            'memorando_id'=>$memorando->id,
+
+            'codigo'=>$equipo['codigo'] ?? null,
+
+            'descripcion'=>$equipo['descripcion'] ?? null,
+
+            'unidad'=>$equipo['unidad'] ?? 'Unidad',
+
+            'cantidad'=>$equipo['cantidad'] ?? 1
+
+        ]);
+
+    }
+
+
+break;
 
 
 

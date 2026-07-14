@@ -1,254 +1,362 @@
 @extends('layouts.app')
 
+
 @section('content')
 
-<div class="portal-container">
 
+<div class="min-h-screen bg-background">
 
-    <!-- ================================================= -->
-    <!-- HEADER / RESUMEN TI -->
-    <!-- ================================================= -->
 
-    <section class="hero-section">
+<main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
-        <div class="hero-content">
 
-            <h1>
-                Panel de Gestión TI
-            </h1>
 
-            <p>
-                Administra solicitudes internas, documentos,
-                compras y gestiones operativas del departamento.
-            </p>
+{{-- ===========================
+ ESTADO DEL SOPORTE
+=========================== --}}
 
-        </div>
 
-    </section>
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
 
+<div class="lg:col-span-2 bg-card border border-border rounded-2xl p-6">
 
 
+<div class="flex justify-between">
 
-    <!-- ================================================= -->
-    <!-- INDICADORES -->
-    <!-- ================================================= -->
 
-    <section class="requests-section">
+<div>
 
-        <div class="section-header">
-            <div>
-                <h2>
-                    Resumen operativo
-                </h2>
+<p class="text-xs uppercase tracking-widest text-muted-foreground">
+Mi turno actual
+</p>
 
-                <p>
-                    Estado actual de las gestiones del área.
-                </p>
-            </div>
-        </div>
 
+<h2 class="text-xl font-semibold mt-2">
+En servicio
+</h2>
 
-        <div class="request-stats">
 
+</div>
 
-            <div class="stat-box">
 
-                <div class="stat-icon pending">
-                    <i data-lucide="clipboard-list"></i>
-                </div>
+<span class="flex items-center gap-2 text-xs text-emerald-600 font-medium">
 
-                <div>
-                    <strong>12</strong>
-                    <span>Solicitudes pendientes</span>
-                </div>
+<span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
 
-            </div>
+Disponible
 
+</span>
 
 
-            <div class="stat-box">
+</div>
 
-                <div class="stat-icon process">
-                    <i data-lucide="shopping-cart"></i>
-                </div>
 
-                <div>
-                    <strong>5</strong>
-                    <span>Compras en proceso</span>
-                </div>
 
-            </div>
 
+<div class="flex items-center gap-4 mt-6">
 
 
-            <div class="stat-box">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
 
-                <div class="stat-icon solved">
-                    <i data-lucide="file-check"></i>
-                </div>
+<span class="text-white font-semibold">
+RC
+</span>
 
-                <div>
-                    <strong>34</strong>
-                    <span>Memorandos generados</span>
-                </div>
+</div>
 
-            </div>
 
+<div>
 
+<h3 class="font-semibold">
+Roberto Castillo
+</h3>
 
-            <div class="stat-box">
+<p class="text-sm text-muted-foreground">
+Usuario TI · Soporte Nivel 1
+</p>
 
-                <div class="stat-icon history">
-                    <i data-lucide="archive"></i>
-                </div>
 
-                <div>
-                    <strong>245</strong>
-                    <span>Histórico</span>
-                </div>
+</div>
 
-            </div>
 
+</div>
 
-        </div>
 
-    </section>
 
 
+<div class="grid grid-cols-2 gap-4 mt-6">
 
 
+<div class="bg-muted rounded-xl p-4">
 
+<div class="flex gap-2 items-center">
 
+<i data-lucide="clock" class="w-4 h-4"></i>
 
-<!-- ================================================= -->
-<!-- GESTIONES TI -->
-<!-- ================================================= -->
+<span class="text-xs text-muted-foreground">
+Horario
+</span>
 
-<section class="services-section">
+</div>
 
-    <div class="section-header">
 
-        <div>
+<p class="text-sm font-medium mt-2">
+09:00 - 18:00
+</p>
 
-            <h2>
-                Gestiones internas
-            </h2>
+</div>
 
-            <p>
-                Administración de procesos propios del área TI.
-            </p>
 
-        </div>
 
-    </div>
 
-    <div class="services-grid">
+<div class="bg-muted rounded-xl p-4">
 
-        <div class="service-card featured clickable"
-             onclick="window.location='{{ route('memorandos.create.compra') }}'">
 
-            <div class="service-icon">
-                <i data-lucide="shopping-cart"></i>
-            </div>
+<div class="flex gap-2 items-center">
 
-            <h3>
-                Memorandos
-            </h3>
+<i data-lucide="calendar" class="w-4 h-4"></i>
 
-            <p>
-                Pases temporales, memorandos de autorización y solicitudes de orden de compra.
-            </p>
+<span class="text-xs text-muted-foreground">
+Días
+</span>
 
-        </div>
+</div>
 
-        <div class="service-card">
 
-            <div class="service-icon">
-                <i data-lucide="building-2"></i>
-            </div>
+<p class="text-sm font-medium mt-2">
+Lunes - Viernes
+</p>
 
-            <h3>
-                Proveedores
-            </h3>
 
-            <p>
-                Cotizaciones, ofertas comerciales
-                y documentación asociada.
-            </p>
+</div>
 
-        </div>
 
-        <div class="service-card">
 
-            <div class="service-icon">
-                <i data-lucide="refresh-cw"></i>
-            </div>
+</div>
 
-            <h3>
-                Renovación de servicios
-            </h3>
 
-            <p>
-                Seguimiento de contratos,
-                licencias y servicios activos.
-            </p>
 
-        </div>
+</div>
 
-        <div class="service-card">
 
-            <div class="service-icon">
-                <i data-lucide="wrench"></i>
-            </div>
 
-            <h3>
-                Repuestos
-            </h3>
 
-            <p>
-                Solicitudes de componentes
-                y mantenimiento.
-            </p>
 
-        </div>
+<div class="bg-card border border-border rounded-2xl p-6">
 
-        <div class="service-card clickable"
-             onclick="window.location='{{ route('memorandos.create') }}'">
 
-            <div class="service-icon">
-                <i data-lucide="file-text"></i>
-            </div>
+<div class="flex gap-2 items-center mb-5">
 
-            <h3>
-                Memorandos
-            </h3>
+<i data-lucide="activity"
+class="w-5 h-5 text-primary"></i>
 
-            <p>
-                Creación y gestión de documentos
-                administrativos.
-            </p>
+<h3 class="font-semibold">
+Actividad
+</h3>
 
-        </div>
 
-        <div class="service-card">
+</div>
 
-            <div class="service-icon">
-                <i data-lucide="server"></i>
-            </div>
 
-            <h3>
-                Inventario TI
-            </h3>
 
-            <p>
-                Control de equipos,
-                asignaciones y activos.
-            </p>
+<div class="space-y-4">
 
-        </div>
 
-    </div>
+<div class="flex justify-between">
+
+<span class="text-sm text-muted-foreground">
+Casos tomados
+</span>
+
+<strong>
+8
+</strong>
+
+</div>
+
+
+
+<div class="flex justify-between">
+
+<span class="text-sm text-muted-foreground">
+En atención
+</span>
+
+<strong>
+3
+</strong>
+
+</div>
+
+
+
+<div class="flex justify-between">
+
+<span class="text-sm text-muted-foreground">
+Resueltos hoy
+</span>
+
+<strong>
+14
+</strong>
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+{{-- ===========================
+ TURNOS
+=========================== --}}
+
+
+<section class="grid lg:grid-cols-3 gap-6">
+
+
+<div class="lg:col-span-2">
+
+
+<div class="flex justify-between mb-4">
+
+<h2 class="text-sm uppercase tracking-widest font-semibold">
+Próximos turnos
+</h2>
+
+
+<button class="text-xs text-primary">
+Ver calendario
+</button>
+
+
+</div>
+
+
+
+<div class="bg-card border border-border rounded-2xl overflow-hidden">
+
+
+
+@foreach([
+[
+'dia'=>'Miércoles 16 Julio',
+'hora'=>'09:00 - 18:00',
+'tipo'=>'Turno normal'
+],
+[
+'dia'=>'Viernes 18 Julio',
+'hora'=>'09:00 - 18:00',
+'tipo'=>'Turno normal'
+]
+
+] as $turno)
+
+
+<div class="px-6 py-5 border-b border-border flex justify-between">
+
+
+<div>
+
+<p class="text-sm font-medium">
+{{$turno['dia']}}
+</p>
+
+<p class="text-xs text-muted-foreground">
+{{$turno['hora']}}
+</p>
+
+</div>
+
+
+<span class="text-xs px-3 py-1 rounded-lg bg-blue-50 text-blue-700">
+
+{{$turno['tipo']}}
+
+</span>
+
+
+</div>
+
+
+@endforeach
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div>
+
+
+<h2 class="text-sm uppercase tracking-widest font-semibold mb-4">
+Guardias disponibles
+</h2>
+
+
+<div class="bg-card border border-border rounded-2xl p-5">
+
+
+<div class="flex gap-3">
+
+
+<div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+
+<i data-lucide="headphones"
+class="w-5 h-5 text-violet-600"></i>
+
+</div>
+
+
+<div>
+
+<p class="text-sm font-medium">
+Sábado 19 Julio
+</p>
+
+<p class="text-xs text-muted-foreground">
+09:00 - 18:00
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+<button
+class="w-full mt-5 py-2 rounded-xl bg-primary text-white text-xs">
+
+Tomar guardia
+
+</button>
+
+
+
+</div>
+
+
+
+</div>
+
 
 </section>
 
@@ -259,163 +367,325 @@
 
 
 
-    <!-- ================================================= -->
-    <!-- ACTIVIDAD RECIENTE -->
-    <!-- ================================================= -->
 
+{{-- ===========================
+ INCIDENCIAS DISPONIBLES
+=========================== --}}
 
-    <section class="activity-section">
 
+<section>
 
-        <div class="section-header">
 
-            <div>
+<div class="flex justify-between mb-4">
 
-                <h2>
-                    Actividad reciente
-                </h2>
 
-                <p>
-                    Últimos movimientos registrados.
-                </p>
+<h2 class="text-sm uppercase tracking-widest font-semibold">
+Bandeja de incidencias
+</h2>
 
-            </div>
 
-        </div>
+<button class="text-xs text-primary">
+Ver todas
+</button>
 
 
+</div>
 
 
-        <div class="activity-list">
 
 
-            <div class="activity-card">
+<div class="bg-card border border-border rounded-2xl overflow-hidden">
 
-                <div class="activity-number">
-                    SOL-2026-0015
-                </div>
 
-                <div class="activity-content">
+@foreach([
+[
+'codigo'=>'INC-00125',
+'titulo'=>'VPN no conecta',
+'usuario'=>'María Alvarado',
+'prioridad'=>'Alta'
+],
 
-                    <h4>
-                        Compra de laptop empresarial
-                    </h4>
+[
+'codigo'=>'INC-00126',
+'titulo'=>'Error Outlook',
+'usuario'=>'Carlos Mejía',
+'prioridad'=>'Media'
+]
 
-                    <p>
-                        Cotización recibida del proveedor.
-                    </p>
+] as $inc)
 
-                </div>
 
-                <span class="status process-status">
-                    En proceso
-                </span>
+<div class="px-6 py-5 border-b border-border flex justify-between">
 
-            </div>
 
+<div>
 
 
+<p class="text-sm font-semibold">
+{{$inc['codigo']}}
+</p>
 
 
-            <div class="activity-card">
+<p class="text-sm mt-1">
+{{$inc['titulo']}}
+</p>
 
-                <div class="activity-number">
-                    MEM-2026-0038
-                </div>
 
-                <div class="activity-content">
+<p class="text-xs text-muted-foreground">
+{{$inc['usuario']}}
+</p>
 
-                    <h4>
-                        Memorando de renovación
-                    </h4>
 
-                    <p>
-                        Documento generado y almacenado.
-                    </p>
+</div>
 
-                </div>
 
-                <span class="status completed-status">
-                    Finalizado
-                </span>
 
-            </div>
+<div class="text-right">
 
 
+<span class="text-xs px-3 py-1 rounded-lg bg-red-50 text-red-700">
+{{$inc['prioridad']}}
+</span>
 
 
 
-        </div>
+<button
+class="block text-xs text-primary mt-3">
 
+Tomar caso
 
-    </section>
-
-
-
-
-
-
-
-    <!-- ================================================= -->
-    <!-- ACCESOS RÁPIDOS -->
-    <!-- ================================================= -->
-
-
-    <section class="quick-section">
-
-        <div class="section-header">
-
-            <div>
-
-                <h2>
-                    Accesos rápidos
-                </h2>
-
-                <p>
-                    Herramientas frecuentes del área.
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <div class="quick-grid">
-
-
-            <div class="quick-card">
-                <i data-lucide="file-text"></i>
-                <span>Histórico de memorandos</span>
-            </div>
-
-
-            <div class="quick-card">
-                <i data-lucide="folder-open"></i>
-                <span>Documentos SharePoint</span>
-            </div>
-
-
-            <div class="quick-card">
-                <i data-lucide="truck"></i>
-                <span>Proveedores</span>
-            </div>
-
-
-            <div class="quick-card">
-                <i data-lucide="database"></i>
-                <span>Inventario</span>
-            </div>
-
-
-        </div>
-
-
-    </section>
+</button>
 
 
 
 </div>
+
+
+</div>
+
+
+@endforeach
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+{{-- ===========================
+ MIS CASOS
+=========================== --}}
+
+
+<section>
+
+
+<h2 class="text-sm uppercase tracking-widest font-semibold mb-4">
+Mis casos activos
+</h2>
+
+
+
+<div class="grid md:grid-cols-3 gap-5">
+
+
+
+@foreach([
+'INC-00120',
+'INC-00121',
+'INC-00122'
+
+] as $caso)
+
+
+<div class="bg-card border border-border rounded-2xl p-5">
+
+
+<div class="flex items-center gap-3">
+
+
+<i data-lucide="ticket"
+class="w-5 h-5 text-primary"></i>
+
+
+<div>
+
+<p class="text-sm font-semibold">
+{{$caso}}
+</p>
+
+
+<p class="text-xs text-muted-foreground">
+En proceso
+</p>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+@endforeach
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+{{-- ===========================
+ EQUIPO TI
+=========================== --}}
+
+
+<section>
+
+
+<h2 class="text-sm uppercase tracking-widest font-semibold mb-4">
+Equipo TI activo
+</h2>
+
+
+
+<div class="grid md:grid-cols-3 gap-5">
+
+
+@foreach([
+'Roberto Castillo',
+'Laura Pérez',
+'Carlos Mejía'
+
+] as $persona)
+
+
+<div class="bg-card border border-border rounded-2xl p-5">
+
+
+<div class="flex gap-3 items-center">
+
+
+<div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+
+<i data-lucide="user"
+class="w-5 h-5"></i>
+
+</div>
+
+
+<div>
+
+<p class="text-sm font-semibold">
+{{$persona}}
+</p>
+
+
+<p class="text-xs text-emerald-600">
+Disponible
+</p>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+@endforeach
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+{{-- ===========================
+ AVISOS
+=========================== --}}
+
+
+<section>
+
+
+<h2 class="text-sm uppercase tracking-widest font-semibold mb-4">
+Avisos TI
+</h2>
+
+
+<div class="bg-card border border-border rounded-2xl p-5">
+
+
+<div class="flex gap-3">
+
+
+<i data-lucide="triangle-alert"
+class="w-5 h-5 text-amber-500"></i>
+
+
+<div>
+
+
+<p class="text-sm font-semibold">
+Degradación VPN corporativa
+</p>
+
+
+<p class="text-xs text-muted-foreground">
+Infraestructura continúa trabajando.
+</p>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+</main>
+
+
+</div>
+
+
+
+<script>
+lucide.createIcons();
+</script>
 
 
 @endsection

@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\MemorandoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IncidenciaController;
 
 
 /*
@@ -35,6 +36,7 @@ Route::post('/registro', [AuthController::class, 'store'])
 
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Recuperación contraseña
@@ -42,12 +44,22 @@ Route::post('/registro', [AuthController::class, 'store'])
 */
 
 
-Route::get('/recuperar-contrasena', [AuthController::class, 'forgotPassword'])
-    ->name('password.request');
+Route::get(
+    '/recuperar-contrasena',
+    [AuthController::class, 'forgotPassword']
+)
+->name('password.request');
 
 
-Route::post('/recuperar-contrasena', [AuthController::class, 'sendResetLink'])
-    ->name('password.email');
+
+Route::post(
+    '/recuperar-contrasena',
+    [AuthController::class, 'sendResetLink']
+)
+->name('password.email');
+
+
+
 
 
 
@@ -71,8 +83,14 @@ Route::middleware('auth')->group(function () {
     */
 
 
-    Route::get('/', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    Route::get(
+        '/',
+        [DashboardController::class,'index']
+    )
+    ->name('dashboard');
+
+
+
 
 
 
@@ -85,8 +103,14 @@ Route::middleware('auth')->group(function () {
     */
 
 
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->name('logout');
+    Route::post(
+        '/logout',
+        [AuthController::class,'logout']
+    )
+    ->name('logout');
+
+
+
 
 
 
@@ -102,61 +126,73 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/memorandos',
-        [MemorandoController::class,'create']
+        [
+            MemorandoController::class,
+            'create'
+        ]
     )
     ->name('memorandos.create');
 
 
 
 
-
     Route::post(
         '/memorandos',
-        [MemorandoController::class,'store']
+        [
+            MemorandoController::class,
+            'store'
+        ]
     )
     ->name('memorandos.store');
 
 
-    /*
-|--------------------------------------------------------------------------
-| Accesos directos Usuario Cliente
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/memorandos/pase-temporal',
-    [MemorandoController::class,'createPaseTemporal']
-)
-->name('memorandos.pase_temporal');
-
-
-Route::get(
-    '/memorandos/autorizacion',
-    [MemorandoController::class,'createAutorizacion']
-)
-->name('memorandos.autorizacion');
-
-
 
 
 
     /*
     |--------------------------------------------------------------------------
-    | Solicitudes de compra
+    | Accesos directos Usuario Cliente
     |--------------------------------------------------------------------------
-    |
-    | Temporalmente separada.
-    | Luego será absorbida por create().
-    |
     */
 
 
-     Route::get(
-        '/memorandos/compra',
-        [MemorandoController::class,'createCompra']
+    Route::get(
+        '/memorandos/pase-temporal',
+        [
+            MemorandoController::class,
+            'createPaseTemporal'
+        ]
     )
-    ->name('memorandos.create.compra');
-   
+    ->name('memorandos.pase_temporal');
+
+
+
+
+    Route::post(
+        '/memorandos/pase-temporal',
+        [
+            MemorandoController::class,
+            'storePaseTemporal'
+        ]
+    )
+    ->name('memorandos.pase_temporal.store');
+
+
+
+
+
+    Route::get(
+        '/memorandos/autorizacion',
+        [
+            MemorandoController::class,
+            'createAutorizacion'
+        ]
+    )
+    ->name('memorandos.autorizacion');
+
+
+
+
 
 
 
@@ -164,22 +200,41 @@ Route::get(
 
     /*
     |--------------------------------------------------------------------------
-    | CARGA DINÁMICA DE FORMULARIOS
+    | Solicitud compra
     |--------------------------------------------------------------------------
-    |
-    | Ejemplo:
-    |
-    | /memorandos/formulario/laptop
-    |
-    | devuelve:
-    | resources/views/memorandos/formularios/laptop.blade.php
-    |
+    */
+
+
+    Route::get(
+        '/memorandos/compra',
+        [
+            MemorandoController::class,
+            'createCompra'
+        ]
+    )
+    ->name('memorandos.create.compra');
+
+
+
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Formularios dinámicos
+    |--------------------------------------------------------------------------
     */
 
 
     Route::get(
         '/memorandos/formulario/{tipo}',
-        [MemorandoController::class,'formularioDinamico']
+        [
+            MemorandoController::class,
+            'formularioDinamico'
+        ]
     )
     ->name('memorandos.formulario');
 
@@ -188,27 +243,21 @@ Route::get(
 
 
 
+
+
     /*
     |--------------------------------------------------------------------------
-    | CARGA DINÁMICA DE PREVIEWS
+    | Previews dinámicos
     |--------------------------------------------------------------------------
-    |
-    | Ejemplo:
-    |
-    | /memorandos/preview/laptop
-    |
-    | devuelve:
-    | resources/views/memorandos/previews/laptop.blade.php
-    |
     */
-
-    Route::get('/memorandos/formulario/{tipo}', [MemorandoController::class, 'formularioDinamico']);
-Route::get('/memorandos/preview/{tipo}', [MemorandoController::class, 'previewDinamico']);
 
 
     Route::get(
         '/memorandos/preview/{tipo}',
-        [MemorandoController::class,'previewDinamico']
+        [
+            MemorandoController::class,
+            'previewDinamico'
+        ]
     )
     ->name('memorandos.preview');
 
@@ -218,18 +267,25 @@ Route::get('/memorandos/preview/{tipo}', [MemorandoController::class, 'previewDi
 
 
 
+
+
     /*
     |--------------------------------------------------------------------------
-    | Histórico
+    | Histórico memorandos
     |--------------------------------------------------------------------------
     */
 
 
     Route::get(
         '/memorandos/historico',
-        [MemorandoController::class,'historico']
+        [
+            MemorandoController::class,
+            'historico'
+        ]
     )
     ->name('memorandos.historico');
+
+
 
 
 
@@ -244,14 +300,138 @@ Route::get('/memorandos/preview/{tipo}', [MemorandoController::class, 'previewDi
 
     Route::get(
         '/memorandos/{codigo}/download',
-        [MemorandoController::class,'download']
+        [
+            MemorandoController::class,
+            'download'
+        ]
     )
     ->name('memorandos.download');
 
 
 
 
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | INCIDENCIAS / TICKETS
+    |--------------------------------------------------------------------------
+    |
+    | Usuarios:
+    | - Crear tickets
+    | - Consultar seguimiento
+    |
+    | UsuarioTI:
+    | - Ver cola
+    | - Tomar casos
+    | - Resolver
+    |
+    | Administrador:
+    | - Asignación manual
+    |
+    |--------------------------------------------------------------------------
+    */
+
+
+
+    Route::resource(
+        'incidencias',
+        IncidenciaController::class
+    );
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Acciones de soporte
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::post(
+        '/incidencias/{incidencia}/tomar',
+        [
+            IncidenciaController::class,
+            'tomar'
+        ]
+    )
+    ->name('incidencias.tomar');
+
+
+
+
+
+    Route::post(
+        '/incidencias/{incidencia}/asignar',
+        [
+            IncidenciaController::class,
+            'asignar'
+        ]
+    )
+    ->name('incidencias.asignar');
+
+
+
+
+
+
+    Route::post(
+        '/incidencias/{incidencia}/diagnostico',
+        [
+            IncidenciaController::class,
+            'diagnostico'
+        ]
+    )
+    ->name('incidencias.diagnostico');
+
+
+
+
+
+
+
+    Route::post(
+        '/incidencias/{incidencia}/resolver',
+        [
+            IncidenciaController::class,
+            'resolver'
+        ]
+    )
+    ->name('incidencias.resolver');
+
+
+
+
+
+
+
+    Route::post(
+        '/incidencias/{incidencia}/cerrar',
+        [
+            IncidenciaController::class,
+            'cerrar'
+        ]
+    )
+    ->name('incidencias.cerrar');
+
+
+
+
+
+
+
+
+
 });
+
+
+
 
 
 
@@ -268,16 +448,56 @@ Route::get('/memorandos/preview/{tipo}', [MemorandoController::class, 'previewDi
 Route::middleware([
     'auth',
     'rol:Administrador'
-
 ])
 ->group(function () {
 
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Usuarios
+    |--------------------------------------------------------------------------
+    */
 
 
     Route::resource(
         'usuarios',
         UsuarioController::class
     );
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gestión administrativa incidencias
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::get(
+        '/administracion/incidencias',
+        [
+            IncidenciaController::class,
+            'administracion'
+        ]
+    )
+    ->name('admin.incidencias');
+
+
+
+
+
+    Route::post(
+        '/administracion/incidencias/{incidencia}/asignar',
+        [
+            IncidenciaController::class,
+            'asignar'
+        ]
+    )
+    ->name('admin.incidencias.asignar');
 
 
 

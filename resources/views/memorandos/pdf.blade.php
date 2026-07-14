@@ -8,23 +8,29 @@
 
 <style>
 
+
 @page {
-    margin: 45px 50px;
+    margin: 45px 55px;
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| GENERAL
+|--------------------------------------------------------------------------
+*/
+
 body {
 
-    font-family: Arial, Helvetica, sans-serif;
+    font-family:"Times New Roman", serif;
 
-    color:#0f172a;
+    color:#000;
 
-    font-size:12px;
+    font-size:14px;
 
     line-height:1.6;
 
 }
-
 
 
 .documento-final {
@@ -32,6 +38,7 @@ body {
     width:100%;
 
 }
+
 
 
 
@@ -46,11 +53,11 @@ body {
 
     text-align:center;
 
-    padding-bottom:22px;
+    border-bottom:2px solid #111;
 
-    margin-bottom:30px;
+    padding-bottom:18px;
 
-    border-bottom:2px solid #042b72;
+    margin-bottom:25px;
 
 }
 
@@ -58,13 +65,11 @@ body {
 
 .logo-documento {
 
-    width:150px;
-
-    height:auto;
+    width:110px;
 
     display:block;
 
-    margin:0 auto 18px auto;
+    margin:0 auto 12px;
 
 }
 
@@ -74,11 +79,9 @@ body {
 
     margin:0;
 
-    font-size:25px;
+    font-size:22px;
 
-    letter-spacing:4px;
-
-    color:#042b72;
+    letter-spacing:2px;
 
     font-weight:bold;
 
@@ -86,56 +89,50 @@ body {
 
 
 
+
 /*
 |--------------------------------------------------------------------------
-| DATOS DEL MEMORANDO
+| DATOS MEMORANDO
 |--------------------------------------------------------------------------
 */
 
 
 .datos-documento {
 
-    margin-bottom:30px;
-
-    border:1px solid #dbe3ef;
-
-    padding:18px;
-
-    background:#f8fafc;
+    margin-bottom:25px;
 
 }
 
 
 
-.dato-fila {
+.tabla-datos {
 
-    margin-bottom:10px;
+    width:100%;
 
-    font-size:13px;
-
-}
-
-
-
-.dato-fila:last-child {
-
-    margin-bottom:0;
+    border-collapse:collapse;
 
 }
 
 
 
-.dato-fila b {
+.tabla-datos td {
 
-    display:inline-block;
+    padding:5px 0;
 
-    width:90px;
+    vertical-align:top;
 
-    color:#042b72;
+}
+
+
+
+.tabla-datos .label {
+
+    width:85px;
 
     font-weight:bold;
 
 }
+
 
 
 
@@ -146,25 +143,38 @@ body {
 */
 
 
-.memo-body {
+.memo-body-preview {
 
-    margin-top:25px;
-
-    margin-bottom:25px;
+    margin:25px 0;
 
     text-align:justify;
 
-    font-size:13px;
+    font-size:14px;
+
+    line-height:1.7;
 
 }
 
 
 
-.memo-body p {
+.memo-body-preview p {
 
-    margin-bottom:15px;
+    margin-bottom:10px;
 
 }
+
+
+
+.campo-texto {
+
+    min-height:40px;
+
+    border-bottom:1px solid #000;
+
+    padding-bottom:5px;
+
+}
+
 
 
 
@@ -175,78 +185,58 @@ body {
 */
 
 
-.equipo-table {
+.equipo-output-table {
+
 
     width:100%;
 
     border-collapse:collapse;
 
-    margin-top:25px;
+    margin-top:15px;
+
 
 }
 
 
 
-.equipo-table th {
+.equipo-output-table th,
+.equipo-output-table td {
 
-    background:#042b72;
 
-    color:white;
+    border:1px solid #000;
 
-    padding:10px;
+    padding:5px 6px;
 
-    font-size:11px;
+    font-size:10px;
+
+    text-align:center;
+
+
+}
+
+
+
+.equipo-output-table th {
+
+
+    background:#f1f5f9;
+
+    font-size:10px;
 
     font-weight:bold;
 
-    border:1px solid #042b72;
 
 }
 
 
 
-.equipo-table td {
+.fila-vacia {
 
-    padding:9px;
-
-    font-size:11px;
-
-    border:1px solid #cbd5e1;
 
     text-align:center;
 
 }
 
-
-
-.equipo-table tr:nth-child(even) td {
-
-    background:#f8fafc;
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| OBSERVACIONES
-|--------------------------------------------------------------------------
-*/
-
-
-.observaciones {
-
-    margin-top:25px;
-
-    padding:15px;
-
-    border-left:4px solid #042b72;
-
-    background:#f1f5f9;
-
-    font-size:12px;
-
-}
 
 
 
@@ -259,11 +249,12 @@ body {
 
 .agradecimiento {
 
-    margin-top:35px;
+    margin-top:30px;
 
-    font-size:13px;
+    font-size:14px;
 
 }
+
 
 
 
@@ -276,9 +267,10 @@ body {
 
 .firma {
 
-    margin-top:90px;
 
-    width:260px;
+    margin-top:65px;
+
+    width:230px;
 
     margin-left:auto;
 
@@ -286,15 +278,18 @@ body {
 
     text-align:center;
 
+
 }
 
 
 
-.firma-linea {
+.firma div {
+
 
     border-top:1px solid #000;
 
-    margin-bottom:12px;
+    margin-bottom:8px;
+
 
 }
 
@@ -302,11 +297,13 @@ body {
 
 .firma p {
 
+
     margin:0;
+
+    font-weight:bold;
 
     font-size:13px;
 
-    font-weight:bold;
 
 }
 
@@ -314,12 +311,13 @@ body {
 
 .firma small {
 
-    color:#64748b;
 
-    font-size:11px;
+    font-size:10px;
+
+    color:#555;
+
 
 }
-
 
 
 </style>
@@ -336,279 +334,221 @@ body {
 
 
 
-    <div class="document-header">
+{{-- HEADER --}}
 
 
-        <img 
-            src="{{ public_path('img/tvc2.png') }}"
-            class="logo-documento"
-            alt="TVC">
+<div class="document-header">
 
 
-        <h1>
-            MEMORÁNDUM
-        </h1>
+    <img
+        src="{{ public_path('img/tvc2.png') }}"
+        class="logo-documento">
 
 
-    </div>
+    <h1>
+        MEMORÁNDUM
+    </h1>
 
 
+</div>
 
 
 
-    <div class="datos-documento">
 
 
-        <div class="dato-fila">
 
-            <b>PARA:</b>
+{{-- DATOS DEL MEMORANDO --}}
 
-            {{ $documento['datos']['para'] ?? '-' }}
 
-        </div>
+<div class="datos-documento">
 
 
+<table class="tabla-datos">
 
-        <div class="dato-fila">
 
-            <b>DE:</b>
+<tr>
 
-            {{ $documento['datos']['de'] ?? '-' }}
+<td class="label">
+PARA:
+</td>
 
-        </div>
+<td>
+{{ $memorando->para_nombre ?? '-' }}
+</td>
 
+</tr>
 
 
-        <div class="dato-fila">
 
-            <b>CC:</b>
+<tr>
 
-            {{ $documento['datos']['cc'] ?? '-' }}
+<td class="label">
+CC:
+</td>
 
-        </div>
+<td>
+{{ $memorando->cc_nombre ?? '-' }}
+</td>
 
+</tr>
 
 
-        <div class="dato-fila">
 
-            <b>ASUNTO:</b>
+<tr>
 
-            {{ $documento['datos']['asunto'] ?? '-' }}
+<td class="label">
+DE:
+</td>
 
-        </div>
+<td>
+{{ $memorando->de_nombre ?? '-' }}
+</td>
 
+</tr>
 
 
-        <div class="dato-fila">
 
-            <b>FECHA:</b>
+<tr>
 
-            {{ $documento['datos']['fecha'] ?? '-' }}
+<td class="label">
+FECHA:
+</td>
 
-        </div>
+<td>
 
+{{ optional($memorando->fecha_documento)->format('d/m/Y') ?? '-' }}
 
-    </div>
+</td>
 
+</tr>
 
 
 
+<tr>
 
+<td class="label">
+ASUNTO:
+</td>
 
+<td>
 
-    <div class="memo-body">
+{{ $memorando->asunto ?? '-' }}
 
+</td>
 
-        <p>
-            Hola estimados,
-        </p>
+</tr>
 
 
+</table>
 
-        <p>
 
-            Por este medio solicito la autorización para el ingreso de una
-            computadora personal que será utilizada por
+</div>
 
-            <strong>
-                {{ $documento['datos']['colaborador'] ?? '-' }}
-            </strong>
 
-            quien estará realizando sus funciones en
 
-            <strong>
-                {{ $documento['datos']['ubicacion'] ?? '-' }}
-            </strong>.
 
-            A continuación se detallan las especificaciones del equipo correspondiente.
 
-        </p>
 
 
-    </div>
+{{-- CUERPO --}}
 
 
+<div class="memo-body-preview">
 
 
 
+<p>
 
+Por este medio solicito la autorización correspondiente para
+el ingreso de equipo tecnológico que será utilizado por:
 
-    <table class="equipo-table">
 
+</p>
 
-        <thead>
 
-            <tr>
 
-                <th>
-                    EQUIPO
-                </th>
 
-                <th>
-                    MARCA
-                </th>
+<p>
 
-                <th>
-                    MODELO
-                </th>
 
-                <th>
-                    SERIE
-                </th>
+<strong>
 
-                <th>
-                    COLOR
-                </th>
+{{ data_get($memorando->datos_extra,'colaborador','-') }}
 
-            </tr>
+</strong>
 
 
-        </thead>
+quien estará desempeñando actividades dentro de la compañía.
 
 
+</p>
 
-        <tbody>
 
 
-        @forelse($documento['datos']['equipos'] ?? [] as $equipo)
 
+<p>
 
-            <tr>
 
-                <td>
-                    {{ $equipo['equipo'] }}
-                </td>
+Área o cargo:
 
 
-                <td>
-                    {{ $equipo['marca'] }}
-                </td>
+<strong>
 
+{{ data_get($memorando->datos_extra,'cargo_area','-') }}
 
-                <td>
-                    {{ $equipo['modelo'] }}
-                </td>
+</strong>
 
 
-                <td>
-                    {{ $equipo['serie'] }}
-                </td>
+</p>
 
 
-                <td>
-                    {{ $equipo['color'] }}
-                </td>
 
 
-            </tr>
 
+<p>
 
-        @empty
 
+La fecha prevista para el ingreso del equipo será:
 
-            <tr>
 
-                <td colspan="5">
-                    Sin equipos registrados
-                </td>
+<strong>
 
-            </tr>
+{{ optional($memorando->fecha_documento)->format('d/m/Y') ?? '-' }}
 
+</strong>
 
-        @endforelse
 
+</p>
 
-        </tbody>
 
 
-    </table>
 
 
+<p>
 
+Motivo de autorización:
 
+</p>
 
 
 
-    @if(!empty($documento['datos']['observaciones']))
 
+<p class="campo-texto">
 
-    <div class="observaciones">
 
+{{ data_get($memorando->datos_extra,'motivo_autorizacion','-') }}
 
-        <strong>
-            Observaciones:
-        </strong>
 
+</p>
 
-        <br>
 
 
-        {{ $documento['datos']['observaciones'] }}
 
+<p>
 
-    </div>
+A continuación se detallan las características del equipo:
 
-
-    @endif
-
-
-
-
-
-
-
-    <p class="agradecimiento">
-
-        Gracias por su colaboración.
-
-    </p>
-
-
-
-
-
-
-
-
-    <div class="firma">
-
-
-        <div class="firma-linea"></div>
-
-
-        <p>
-            Vo.Bo. Jefe Inmediato
-        </p>
-
-
-        <small>
-            Firma y sello
-        </small>
-
-
-    </div>
-
-
+</p>
 
 
 
@@ -616,6 +556,179 @@ body {
 
 
 
+
+
+
+
+
+{{-- TABLA EQUIPOS --}}
+
+
+
+<table class="equipo-output-table">
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+EQUIPO
+</th>
+
+
+<th>
+MARCA
+</th>
+
+
+<th>
+MODELO
+</th>
+
+
+<th>
+SERIE
+</th>
+
+
+<th>
+COLOR
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody>
+
+
+
+@forelse(data_get($memorando->datos_extra,'equipos',[]) as $equipo)
+
+
+<tr>
+
+
+<td>
+
+{{ $equipo['descripcion'] ?? '-' }}
+
+</td>
+
+
+
+<td>
+
+{{ $equipo['marca'] ?? '-' }}
+
+</td>
+
+
+
+<td>
+
+{{ $equipo['modelo'] ?? '-' }}
+
+</td>
+
+
+
+<td>
+
+{{ $equipo['codigo'] ?? '-' }}
+
+</td>
+
+
+
+<td>
+
+{{ $equipo['color'] ?? '-' }}
+
+</td>
+
+
+
+</tr>
+
+
+
+@empty
+
+
+<tr>
+
+<td colspan="5" class="fila-vacia">
+
+Sin equipos registrados
+
+</td>
+
+</tr>
+
+
+@endforelse
+
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+
+
+
+
+
+
+<p class="agradecimiento">
+
+Gracias por su colaboración.
+
+</p>
+
+
+
+
+
+
+
+<div class="firma">
+
+
+<div></div>
+
+
+<p>
+Vo.Bo. Jefe Inmediato
+</p>
+
+
+<small>
+Firma y sello
+</small>
+
+
+</div>
+
+
+
+
+</div>
+
+
 </body>
+
 
 </html>

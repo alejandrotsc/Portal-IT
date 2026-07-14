@@ -11,7 +11,7 @@
 <header class="bg-card border-b border-border sticky top-0 z-40">
 
 
-    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="max-w-[1300px] mx-auto px-6 h-16 flex items-center justify-between">
 
 
 
@@ -328,3 +328,102 @@
 
 
 </header>
+
+{{-- Cinta de avisos TI --}}
+<div class="bg-primary/5 border-b border-primary/10 overflow-hidden">
+
+    <div class="flex items-center">
+
+        {{-- Etiqueta fija --}}
+        <div class="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-primary">
+
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+
+            <span class="text-white text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
+                Avisos TI
+            </span>
+
+        </div>
+
+        {{-- Banda --}}
+        <div class="flex-1 overflow-hidden">
+
+            <div
+                class="ticker flex items-center w-max"
+                onmouseenter="this.style.animationPlayState='paused'"
+                onmouseleave="this.style.animationPlayState='running'"
+            >
+
+                @for($i = 0; $i < 2; $i++)
+
+                    <div class="flex items-center shrink-0">
+
+                        {{-- Aviso --}}
+                        <div class="flex items-center gap-2 px-8 text-[12px]">
+
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+
+                            <strong>Degradación VPN:</strong>
+
+                            <span class="text-muted-foreground">
+                                Latencia elevada en accesos externos — en investigación.
+                            </span>
+
+                        </div>
+
+                        <div class="w-px h-4 bg-border"></div>
+
+                        {{-- Aviso --}}
+                        <div class="flex items-center gap-2 px-8 text-[12px]">
+
+                            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+
+                            <strong>Mantenimiento:</strong>
+
+                            <span class="text-muted-foreground">
+                                Servidor de correo — sábado 19 jul, 00:00–04:00 hrs.
+                            </span>
+
+                        </div>
+
+                        <div class="w-px h-4 bg-border"></div>
+
+                        {{-- Aviso --}}
+                        <div class="flex items-center gap-2 px-8 text-[12px]">
+
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+
+                            <strong>Restaurado:</strong>
+
+                            <span class="text-muted-foreground">
+                                Sistema MFA funcionando con normalidad.
+                            </span>
+
+                        </div>
+
+                        <div class="w-px h-4 bg-border"></div>
+
+                        {{-- Aviso --}}
+                        <div class="flex items-center gap-2 px-8 text-[12px]">
+
+                            <span class="w-2 h-2 rounded-full bg-primary"></span>
+
+                            <strong>Recordatorio:</strong>
+
+                            <span class="text-muted-foreground">
+                                Actualizar contraseña corporativa antes del 31 de julio.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                @endfor
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

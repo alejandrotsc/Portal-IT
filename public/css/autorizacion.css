@@ -24,3 +24,308 @@
     background: hsl(var(--primary) / 0.05);
     transform: translateY(-2px);
 }
+
+.memo-info{
+    margin:25px 0 20px;
+    font-size:14px;
+}
+
+.memo-row{
+    display:flex;
+    align-items:flex-start;
+    margin-bottom:8px;
+    line-height:1.5;
+}
+
+.memo-label{
+    width:95px;
+    font-weight:700;
+    color:#000;
+    flex-shrink:0;
+}
+
+.memo-divider{
+    border:none;
+    border-top:1px solid #000;
+    margin:20px 0 28px;
+}
+
+/* =========================================================
+   PREVIEW MEMORANDO OFICIAL
+========================================================= */
+
+
+.documento-final {
+
+    width: 210mm;
+    min-height: 297mm;
+
+    background: white;
+
+    padding: 25mm;
+
+    border-radius: 8px;
+
+    border: 1px solid #dbe3ef;
+
+    box-shadow: 
+        0 20px 45px rgba(15,23,42,.08);
+
+    color:#000;
+
+    font-family:"Times New Roman", serif;
+
+    font-size:15px;
+
+    line-height:1.7;
+
+    flex-shrink:0;
+
+}
+
+
+/* =========================================================
+   HEADER DEL DOCUMENTO
+========================================================= */
+
+
+.document-header {
+
+    text-align:center;
+
+    border-bottom:2px solid #111;
+
+    padding-bottom:20px;
+
+    margin-bottom:25px;
+
+}
+
+
+.logo-documento {
+
+    width:120px;
+
+    margin:0 auto 15px;
+
+    display:block;
+
+}
+
+
+.document-header h1 {
+
+    font-size:24px;
+
+    letter-spacing:2px;
+
+    font-weight:bold;
+
+}
+
+
+/* =========================================================
+   INFORMACIÓN DEL MEMORANDO
+========================================================= */
+
+
+.datos-documento {
+
+    margin-bottom:30px;
+
+}
+
+
+.tabla-datos {
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+.tabla-datos td {
+
+    padding:6px 0;
+
+    vertical-align:top;
+
+}
+
+
+.tabla-datos .label {
+
+    width:90px;
+
+    font-weight:bold;
+
+}
+
+
+
+/* =========================================================
+   CUERPO DEL MEMORANDO
+========================================================= */
+
+
+.memo-body-preview {
+
+    margin:30px 0;
+
+    line-height:1.8;
+
+    font-size:15px;
+
+}
+
+
+.memo-body-preview p {
+
+    margin-bottom:12px;
+
+}
+
+
+.campo-texto {
+
+    min-height:45px;
+
+    border-bottom:1px solid black;
+
+}
+
+
+
+/* =========================================================
+   TABLA DE EQUIPOS
+========================================================= */
+
+
+.equipo-output-table {
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    margin-top:20px;
+
+}
+
+
+.equipo-output-table th,
+.equipo-output-table td {
+
+    border:1px solid #000;
+
+    padding:10px;
+
+    font-size:13px;
+
+}
+
+
+.equipo-output-table th {
+
+    background:#f1f5f9;
+
+    font-weight:bold;
+
+    text-align:center;
+
+}
+
+
+.fila-vacia {
+
+    text-align:center;
+
+    color:#64748b;
+
+}
+
+
+
+/* =========================================================
+   AGRADECIMIENTO
+========================================================= */
+
+
+.agradecimiento {
+
+    margin-top:35px;
+
+}
+
+
+
+/* =========================================================
+   FIRMA
+========================================================= */
+
+
+.firma {
+
+    margin-top:70px;
+
+    width:250px;
+
+    margin-left:auto;
+
+    text-align:center;
+
+}
+
+
+.firma div {
+
+    border-top:1px solid black;
+
+    margin-bottom:10px;
+
+}
+
+
+
+/* =========================================================
+   MODAL PREVIEW
+========================================================= */
+
+
+#contenidoPreview {
+
+    background:#f1f5f9;
+
+    padding:30px;
+
+}
+
+
+#contenidoPreview .documento-final {
+
+    margin:20px auto;
+
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+
+@media(max-width:900px){
+
+
+    .documento-final {
+
+        width:100%;
+
+        min-height:auto;
+
+        padding:25px;
+
+    }
+
+
+}

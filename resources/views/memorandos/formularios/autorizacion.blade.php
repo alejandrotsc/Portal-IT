@@ -133,20 +133,32 @@
 
                                 @if($columna === 'Serie')
 
-                                <div class="flex items-center gap-1">
+                                    {{-- El ícono ahora es de "ayuda" (circle-help), no de "play",
+                                         para dejar claro que es información consultable y no un
+                                         reproductor embebido. Abre el modal #modalSerie de abajo. --}}
+                                    <div class="flex items-center gap-1">
 
-                                    Serie
+                                        Serie
 
-                                    <i 
-                                        data-lucide="circle-help"
-                                        class="w-3.5 h-3.5 text-muted-foreground cursor-help">
-                                    </i>
+                                        <button
+                                            type="button"
+                                            id="btnAyudaSerie"
+                                            onclick="abrirAyudaSerie()"
+                                            title="¿Dónde encontrar el número de serie?"
+                                            class="text-muted-foreground hover:text-primary transition-colors">
 
-                                </div>
+                                            <i
+                                                data-lucide="circle-help"
+                                                class="w-4 h-4">
+                                            </i>
+
+                                        </button>
+
+                                    </div>
 
                                 @else
 
-                                {{ $columna }}
+                                    {{ $columna }}
 
                                 @endif
 
@@ -166,7 +178,7 @@
 
 
 
-                    <tbody 
+                    <tbody
                         id="equipoFilas"
                         class="divide-y divide-border">
 
@@ -255,16 +267,16 @@
             <button
     type="button"
     id="agregarFila"
-    class="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl 
-           border border-dashed border-border 
+    class="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl
+           border border-dashed border-border
            text-sm text-muted-foreground
-           hover:border-primary 
-           hover:text-primary 
+           hover:border-primary
+           hover:text-primary
            hover:bg-primary/5
            transition-all duration-200">
 
-    <i 
-        data-lucide="plus" 
+    <i
+        data-lucide="plus"
         class="w-4 h-4">
     </i>
 
@@ -359,3 +371,142 @@
 </tr>
 
 </template>
+
+
+
+
+{{-- MODAL AYUDA SERIE --}}
+{{-- Nota: se agrega la clase "modal-overlay" solo como gancho opcional
+     para cerrar el modal al hacer click fuera del contenido (ver JS).
+     Tamaño aumentado de max-w-lg a max-w-3xl (y max-h-[90vh] con scroll)
+     para que el video se aprecie bien sin tener que ir a fullscreen. --}}
+<div
+    id="modalSerie"
+    class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
+
+
+    <div
+        class="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl border border-border">
+
+
+        {{-- HEADER --}}
+
+        <div
+            class="px-6 py-4 border-b border-border flex items-center justify-between sticky top-0 bg-white z-10">
+
+
+            <div class="flex items-center gap-3">
+
+
+                <div
+                    class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+
+
+                    <i
+                        data-lucide="circle-help"
+                        class="w-5 h-5 text-primary">
+                    </i>
+
+
+                </div>
+
+
+                <h3 class="text-sm font-semibold text-foreground">
+
+                    ¿Dónde encontrar el número de serie?
+
+                </h3>
+
+
+            </div>
+
+
+
+            <button
+                type="button"
+                onclick="cerrarAyudaSerie()"
+                class="text-muted-foreground hover:text-red-500 transition-colors">
+
+
+                <i
+                    data-lucide="x"
+                    class="w-5 h-5">
+                </i>
+
+
+            </button>
+
+
+        </div>
+
+
+
+
+
+        {{-- BODY --}}
+
+        <div class="p-6">
+
+
+            <video
+                controls
+                poster="{{ asset('img/snhelp.avif') }}"
+                class="mx-auto max-h-[70vh] w-auto max-w-full rounded-xl border border-border">
+
+
+                <source
+                    src="{{ asset('videos/snhelp_fixed.mp4') }}"
+                    type="video/mp4">
+
+
+                {{-- FALLBACK --}}
+
+                <img
+                    src="{{ asset('img/snhelp.avif') }}"
+                    alt="Ubicación número de serie"
+                    class="w-full rounded-xl">
+
+
+            </video>
+
+
+
+
+            <div class="mt-4 space-y-3">
+
+
+                <p class="text-xs text-muted-foreground leading-relaxed">
+
+                    Esta guía muestra un ejemplo para equipos
+                    <strong>Dell</strong>.
+
+                    La ubicación del número de serie puede cambiar
+                    dependiendo de la <strong>marca</strong> y el
+                    <strong>modelo</strong> de la laptop.
+
+                </p>
+
+
+
+                <p class="text-xs text-muted-foreground leading-relaxed">
+
+                    Busca etiquetas identificadas como:
+
+                    <strong>Serial Number</strong>,
+                    <strong>Service Tag</strong>
+                    o
+                    <strong>S/N</strong>.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>

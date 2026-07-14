@@ -98,6 +98,149 @@ CREATE TABLE usuarios (
 );
 
 
+CREATE TABLE soporte_turnos (
+
+    id BIGSERIAL PRIMARY KEY,
+
+    usuario_id BIGINT NULL,
+
+    fecha DATE NOT NULL,
+
+    hora_inicio TIME NOT NULL,
+
+    hora_fin TIME NOT NULL,
+
+    tipo VARCHAR(30) NOT NULL,
+    -- normal / guardia
+
+    estado VARCHAR(30) DEFAULT 'disponible',
+    -- disponible / asignado / cerrado
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY(usuario_id)
+        REFERENCES usuarios(id)
+
+);
+
+CREATE TABLE soporte_configuracion (
+    id BIGSERIAL PRIMARY KEY,
+
+    usuario_id BIGINT NOT NULL,
+
+    participa_soporte BOOLEAN DEFAULT TRUE,
+
+    fecha_inicio DATE DEFAULT CURRENT_DATE,
+
+    fecha_fin DATE,
+
+    activo BOOLEAN DEFAULT TRUE,
+
+    FOREIGN KEY(usuario_id)
+        REFERENCES usuarios(id)
+);
+
+CREATE TABLE soporte_ausencias (
+
+    id BIGSERIAL PRIMARY KEY,
+
+    usuario_id BIGINT NOT NULL,
+
+    fecha_inicio DATE NOT NULL,
+
+    fecha_fin DATE NOT NULL,
+
+    motivo VARCHAR(255),
+
+    reemplazo_id BIGINT,
+
+    FOREIGN KEY(usuario_id)
+        REFERENCES usuarios(id),
+
+    FOREIGN KEY(reemplazo_id)
+        REFERENCES usuarios(id)
+);
+
+
+CREATE TABLE incidencias (
+    id BIGSERIAL PRIMARY KEY,
+
+    codigo VARCHAR(255) NOT NULL UNIQUE,
+
+    usuario_id BIGINT NOT NULL,
+    categoria_id BIGINT NULL,
+    servicio_id BIGINT NULL,
+
+    titulo VARCHAR(255) NOT NULL,
+    descripcion TEXT NOT NULL,
+
+    prioridad VARCHAR(20) NOT NULL DEFAULT 'Media'
+        CHECK (prioridad IN ('Baja', 'Media', 'Alta', 'Critica')),
+
+    estado VARCHAR(30) NOT NULL DEFAULT 'Abierta'
+        CHECK (estado IN (
+            'Abierta',
+            'Asignada',
+            'En_proceso',
+            'Esperando_usuario',
+            'Resuelta',
+            'Cerrada'
+        )),
+
+    asignado_a BIGINT NULL,
+
+    solucion TEXT NULL,
+
+    fecha_resolucion TIMESTAMP NULL,
+
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+
+    CONSTRAINT fk_incidencias_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id),
+
+    CONSTRAINT fk_incidencias_categoria
+        FOREIGN KEY (categoria_id)
+        REFERENCES categorias_incidencias(id),
+
+    CONSTRAINT fk_incidencias_servicio
+        FOREIGN KEY (servicio_id)
+        REFERENCES servicios_ti(id),
+
+    CONSTRAINT fk_incidencias_asignado
+        FOREIGN KEY (asignado_a)
+        REFERENCES usuarios(id)
+);
+
+CREATE TABLE incidencia_archivos (
+    id BIGSERIAL PRIMARY KEY,
+
+    incidencia_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+
+    nombre_original VARCHAR(255) NOT NULL,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    ruta VARCHAR(255) NOT NULL,
+
+    extension VARCHAR(50),
+
+    tamano BIGINT,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT fk_incidencia_archivos_incidencia
+        FOREIGN KEY (incidencia_id)
+        REFERENCES incidencias(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_incidencia_archivos_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+);
 
 
 

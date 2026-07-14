@@ -1,9 +1,5 @@
 @import 'tailwindcss';
-@import './navbar.css';
-@import './portal.css';
-@import './footer.css';
-@import './memorandos.css';
-@import './historico.css';
+@import './portal.css';;
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
