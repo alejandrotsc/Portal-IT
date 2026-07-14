@@ -1,0 +1,1144 @@
+/* =========================================================
+   MEMORANDOS IT - PORTAL GESTIONES IT
+   Formulario + Preview Documentos
+========================================================= */
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+
+
+body{
+
+    font-family:'Inter',sans-serif;
+
+    background:#f8fafc;
+
+    color:#0f172a;
+
+}
+
+
+
+
+/* =========================================================
+   CONTENEDOR
+========================================================= */
+
+
+.memorando-container{
+
+    width:100%;
+
+    padding:30px;
+
+}
+
+
+
+
+
+/* =========================================================
+   HEADER PRINCIPAL
+========================================================= */
+
+
+.page-header{
+
+    background:white;
+
+    border-radius:22px;
+
+    padding:30px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:25px;
+
+    margin-bottom:30px;
+
+
+    box-shadow:
+    0 15px 35px rgba(15,23,42,.06);
+
+}
+
+
+
+.page-header img{
+
+    width:170px;
+
+}
+
+
+
+.page-header h1{
+
+    font-size:32px;
+
+    font-weight:800;
+
+}
+
+
+
+.page-header p{
+
+    color:#64748b;
+
+    margin-top:8px;
+
+}
+
+
+
+
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+
+
+.memo-layout{
+
+    display:grid;
+
+    grid-template-columns:
+
+    minmax(450px,850px)
+
+    minmax(600px,900px);
+
+
+    gap:30px;
+
+    align-items:start;
+
+}
+
+
+
+
+
+/* =========================================================
+   FORMULARIO
+========================================================= */
+
+
+.formulario-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+}
+
+
+
+.form-section{
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:18px;
+
+
+    box-shadow:
+
+    0 10px 25px rgba(15,23,42,.05);
+
+}
+
+
+
+.form-section h3{
+
+    font-size:20px;
+
+    margin-bottom:20px;
+
+    font-weight:800;
+
+}
+
+
+
+
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+
+
+.full{
+
+    grid-column:1/-1;
+
+}
+
+
+
+
+
+.form-group{
+
+    margin-bottom:15px;
+
+}
+
+
+
+.form-group label,
+.highlight-box label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:700;
+
+    color:#334155;
+
+}
+
+
+
+
+
+input,
+select,
+textarea{
+
+
+    width:100%;
+
+    padding:13px 15px;
+
+    border-radius:12px;
+
+    border:
+
+    1px solid #cbd5e1;
+
+    font-size:14px;
+
+    background:white;
+
+    outline:none;
+
+}
+
+
+
+input:focus,
+select:focus,
+textarea:focus{
+
+
+    border-color:#2563eb;
+
+
+    box-shadow:
+
+    0 0 0 4px rgba(37,99,235,.12);
+
+}
+
+
+
+
+
+textarea{
+
+    resize:vertical;
+
+}
+
+
+
+
+
+.highlight-box{
+
+    background:#eff6ff;
+
+    border-left:
+
+    5px solid #2563eb;
+
+}
+
+
+
+.highlight-box label{
+
+    color:#2563eb;
+
+    font-size:17px;
+
+}
+
+
+
+
+
+/* =========================================================
+   TABLA ARTICULOS FORMULARIO
+========================================================= */
+
+
+.tabla-input-articulos{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    margin-top:15px;
+
+}
+
+
+
+.tabla-input-articulos th,
+.tabla-input-articulos td{
+
+    border:1px solid #cbd5e1;
+
+    padding:8px;
+
+}
+
+
+
+.tabla-input-articulos th{
+
+    background:#f1f5f9;
+
+    font-weight:800;
+
+}
+
+
+
+.tabla-input-articulos input,
+.tabla-input-articulos select{
+
+    padding:8px;
+
+}
+
+
+
+
+
+.btnEliminarArticulo{
+
+    background:#fee2e2;
+
+    color:#dc2626;
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:8px 12px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+#btnAgregarArticulo{
+
+    margin-top:15px;
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+
+
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+
+.btn{
+
+    padding:13px 25px;
+
+    border-radius:12px;
+
+    border:none;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+}
+
+
+
+.btn-primary{
+
+    background:
+
+    linear-gradient(
+        90deg,
+        #2563eb,
+        #3b82f6
+    );
+
+    color:white;
+
+}
+
+
+
+.btn-secondary{
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
+    border:1px dashed #93c5fd;
+
+}
+
+
+
+
+
+.form-actions{
+
+    margin-top:30px;
+
+    text-align:right;
+
+}
+
+
+
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+
+.preview-panel{
+
+    position:sticky;
+
+    top:25px;
+
+}
+
+
+
+.document-viewer{
+
+    width:100%;
+
+}
+
+
+
+
+
+.document-tabs{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-bottom:15px;
+
+}
+
+
+
+.document-tab{
+
+    padding:12px 22px;
+
+    border:none;
+
+    border-radius:12px 12px 0 0;
+
+    background:#e2e8f0;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+}
+
+
+
+.document-tab.active{
+
+    background:#2563eb;
+
+    color:white;
+
+}
+
+
+
+
+
+/* =========================================================
+   DOCUMENTO A4
+========================================================= */
+
+
+.document-container{
+
+    width:210mm;
+
+}
+
+
+
+.document-page{
+
+
+    display:none;
+
+
+    width:210mm;
+
+
+    min-height:297mm;
+
+
+    background:white;
+
+
+    padding:20mm;
+
+
+
+    border:
+
+    1px solid #dbe3ef;
+
+
+
+    box-shadow:
+
+    0 20px 45px rgba(15,23,42,.12);
+
+
+
+    font-family:
+
+    "Times New Roman",
+    serif;
+
+
+
+    color:#000;
+
+
+    font-size:14px;
+
+
+    line-height:1.6;
+
+
+}
+
+
+
+.document-page.active{
+
+    display:block;
+
+}
+
+
+
+
+
+/* =========================================================
+   MEMORANDUM
+========================================================= */
+
+
+.document-header{
+
+    text-align:center;
+
+    border-bottom:
+
+    2px solid black;
+
+    padding-bottom:20px;
+
+    margin-bottom:25px;
+
+}
+
+
+
+.logo-documento{
+
+    width:120px;
+
+    margin:auto;
+
+    display:block;
+
+}
+
+
+
+.titulo-documento{
+
+    text-align:center;
+
+    font-weight:bold;
+
+}
+
+
+
+.titulo-documento h2{
+
+    font-size:22px;
+
+    letter-spacing:2px;
+
+}
+
+
+
+
+
+.codigo-documento{
+
+    margin-top:10px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+.tabla-datos{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+
+.tabla-datos td{
+
+    padding:6px;
+
+    vertical-align:top;
+
+}
+
+
+
+.tabla-datos .label{
+
+    width:90px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+.cuerpo-documento{
+
+    margin-top:25px;
+
+    text-align:justify;
+
+}
+
+
+
+
+
+/* =========================================================
+   CHECKBOX DINAMICO
+========================================================= */
+
+
+.checkbox{
+
+    width:18px;
+
+    height:18px;
+
+    border:
+
+    1px solid black;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+
+
+.checkbox.checked::after{
+
+    content:"X";
+
+    font-size:16px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+/* =========================================================
+   SOLICITUD COMPRA
+========================================================= */
+
+
+.encabezado-compra{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.empresas-col{
+
+    width:48%;
+
+}
+
+
+
+.empresa-item{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:8px;
+
+}
+
+
+
+
+
+.tabla-fecha{
+
+    border-collapse:collapse;
+
+    width:220px;
+
+}
+
+
+
+.tabla-fecha th,
+.tabla-fecha td{
+
+
+    border:1px solid black;
+
+    padding:5px;
+
+    text-align:center;
+
+}
+
+
+
+
+
+.tabla-articulos{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    margin-top:15px;
+
+}
+
+
+
+.tabla-articulos th,
+.tabla-articulos td{
+
+    border:1px solid black;
+
+    padding:6px;
+
+}
+
+
+
+.tabla-articulos th{
+
+    text-align:center;
+
+}
+
+
+
+
+
+/* =========================================================
+   MOTIVOS
+========================================================= */
+
+
+.motivos-compra{
+
+    margin-top:25px;
+
+}
+
+
+
+.motivos-compra p{
+
+    margin-bottom:10px;
+
+}
+
+
+
+.linea-texto{
+
+    height:25px;
+
+    border-bottom:1px solid black;
+
+}
+
+
+
+.campo-texto{
+
+    min-height:45px;
+
+    border-bottom:1px solid black;
+
+}
+
+
+
+
+
+/* =========================================================
+   PROVEEDOR
+========================================================= */
+
+
+.proveedor-compra{
+
+    margin-top:25px;
+
+}
+
+
+
+
+
+/* =========================================================
+   FIRMA
+========================================================= */
+
+
+.firma-compra{
+
+    margin-top:70px;
+
+    text-align:center;
+
+}
+
+
+
+.firma-linea{
+
+    width:280px;
+
+    border-bottom:1px solid black;
+
+    margin:auto;
+
+    margin-bottom:10px;
+
+}
+
+
+
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+
+@media print{
+
+
+    body{
+
+        background:white;
+
+    }
+
+
+
+    .no-print{
+
+        display:none!important;
+
+    }
+
+
+
+    .memorando-container{
+
+        padding:0;
+
+    }
+
+
+
+    .memo-layout{
+
+        display:block;
+
+    }
+
+
+
+    .preview-panel{
+
+        position:static;
+
+    }
+
+
+
+    .document-page{
+
+        display:block!important;
+
+        box-shadow:none;
+
+        border:none;
+
+        padding:0;
+
+        page-break-after:always;
+
+    }
+
+
+}
+
+/* ==========================================
+   TABLA DETALLE MEMORANDO
+========================================== */
+
+
+.tabla-detalle-memo{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    margin:25px 0;
+
+    font-size:14px;
+
+}
+
+
+
+.tabla-detalle-memo th{
+
+    background:#f1f5f9;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    padding:8px;
+
+    border:1px solid #000;
+
+}
+
+
+
+.tabla-detalle-memo td{
+
+    padding:8px;
+
+    border:1px solid #000;
+
+    vertical-align:top;
+
+}
+
+
+
+.tabla-detalle-memo td:nth-child(1){
+
+    width:20%;
+
+    text-align:center;
+
+}
+
+
+
+.tabla-detalle-memo td:nth-child(3){
+
+    width:15%;
+
+    text-align:center;
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+
+@media(max-width:1200px){
+
+
+    .memo-layout{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .preview-panel{
+
+        position:relative;
+
+    }
+
+
+}
+
+
+
+@media(max-width:700px){
+
+
+    .memorando-container{
+
+        padding:15px;
+
+    }
+
+
+
+    .page-header{
+
+        flex-direction:column;
+
+        text-align:center;
+
+    }
+
+
+
+    .form-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+
+    .document-container,
+    .document-page{
+
+        width:100%;
+
+    }
+
+
+}

@@ -1,0 +1,229 @@
+.historico-container {
+
+    width: 95%;
+    margin: 35px auto;
+
+}
+
+
+/* Encabezado */
+
+.historico-header {
+
+    margin-bottom: 25px;
+
+}
+
+
+.historico-header h1 {
+
+    font-size: 30px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+
+}
+
+
+.historico-header p {
+
+    color: #6b7280;
+    font-size: 15px;
+
+}
+
+
+
+/* Mensaje vacío */
+
+.alert-info {
+
+    background: #e8f1ff;
+    color: #174ea6;
+    padding: 18px;
+    border-radius: 12px;
+    border-left: 5px solid #042b72;
+
+}
+
+
+
+/* Contenedor tabla */
+
+.table-card {
+
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,.08);
+
+}
+
+
+
+/* Tabla */
+
+.historico-table {
+
+    width: 100%;
+    border-collapse: collapse;
+
+}
+
+
+
+.historico-table thead {
+
+    background: #042b72;
+    color:white;
+
+}
+
+
+
+.historico-table th {
+
+    padding: 16px;
+    text-align:left;
+    font-size:14px;
+    font-weight:600;
+
+}
+
+
+
+.historico-table td {
+
+    padding:15px 16px;
+    border-bottom:1px solid #e5e7eb;
+    color:#374151;
+    font-size:14px;
+
+}
+
+
+
+.historico-table tbody tr {
+
+    transition:.2s ease;
+
+}
+
+
+
+.historico-table tbody tr:hover {
+
+    background:#f8fafc;
+
+}
+
+
+
+.codigo {
+
+    font-weight:700;
+    color:#042b72;
+
+}
+
+
+
+/* Estados */
+
+.badge {
+
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+    display:inline-block;
+
+}
+
+
+
+.badge-success {
+
+    background:#dcfce7;
+    color:#166534;
+
+}
+
+
+
+.badge-warning {
+
+    background:#fef3c7;
+    color:#92400e;
+
+}
+
+
+
+.badge-default {
+
+    background:#e5e7eb;
+    color:#374151;
+
+}
+
+
+
+/* Botón descarga */
+
+.btn-download {
+
+    background:#042b72;
+    color:white;
+    text-decoration:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    display:inline-block;
+    transition:.2s ease;
+
+}
+
+
+
+.btn-download:hover {
+
+    background:#021d4d;
+    transform:translateY(-1px);
+
+}
+
+
+
+/* Sin archivo */
+
+.no-file {
+
+    color:#9ca3af;
+    font-size:13px;
+
+}
+
+
+
+/* Responsive */
+
+@media(max-width:900px){
+
+
+    .table-card {
+
+        overflow-x:auto;
+
+    }
+
+
+    .historico-table {
+
+        min-width:900px;
+
+    }
+
+
+}

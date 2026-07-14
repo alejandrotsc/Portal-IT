@@ -1,0 +1,981 @@
+/* =========================================================
+   MEMORANDOS IT - PORTAL GESTIONES IT
+   Formulario + Preview
+========================================================= */
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+/* =========================================================
+   CONTENEDOR GENERAL
+========================================================= */
+
+.memorando-container {
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* =========================================================
+   HEADER SUPERIOR
+========================================================= */
+
+.page-header {
+    background: white;
+    border-radius: 22px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 15px 35px rgba(15,23,42,.06);
+}
+
+.page-header img {
+    width: 170px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.page-header p {
+    color: #64748b;
+    margin-top: 8px;
+}
+
+/* =========================================================
+   LAYOUT PRINCIPAL
+========================================================= */
+
+.memo-layout {
+    display: grid;
+    grid-template-columns: minmax(450px,650px) minmax(650px,900px);
+    justify-content: center;
+    align-items: start;
+    gap: 40px;
+    width: 100%;
+}
+
+/* =========================================================
+   PANEL FORMULARIO
+========================================================= */
+
+.formulario-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-section {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(15,23,42,.05);
+}
+
+.form-section h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   FORM GRID
+========================================================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 20px;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label,
+.highlight-box label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #334155;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 13px 15px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: 14px;
+    background: white;
+    outline: none;
+    transition: .2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* =========================================================
+   TIPO GESTION
+========================================================= */
+
+.highlight-box {
+    background: #eff6ff;
+    border-left: 5px solid #2563eb;
+}
+
+.highlight-box label {
+    color: #2563eb;
+    font-size: 17px;
+}
+
+/* =========================================================
+   TABLA INPUT EQUIPOS
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.equipo-input-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 650px;
+}
+
+.equipo-input-table th {
+    background: #f1f5f9;
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    border: 1px solid #e2e8f0;
+}
+
+.equipo-input-table td {
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.equipo-input-table input {
+    border: none;
+    padding: 10px;
+}
+
+.btn-remove-fila {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 8px;
+    background: #fee2e2;
+    color: #b91c1c;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* =========================================================
+   TABLA ARTICULOS SOLICITUD COMPRA
+========================================================= */
+
+.tabla-input-articulos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.tabla-input-articulos th,
+.tabla-input-articulos td {
+    border: 1px solid #cbd5e1;
+    padding: 8px;
+}
+
+.tabla-input-articulos th {
+    background: #f1f5f9;
+    font-weight: 800;
+}
+
+.tabla-input-articulos input,
+.tabla-input-articulos select {
+    padding: 8px;
+}
+
+.btnEliminarArticulo {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#btnAgregarArticulo {
+    margin-top: 15px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+.btn {
+    padding: 13px 25px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.btn-secondary {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px dashed #93c5fd;
+    margin-top: 15px;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    color: white;
+}
+
+.form-actions {
+    margin-top: 30px;
+    text-align: right;
+}
+
+/* =========================================================
+   PREVIEW PANEL
+========================================================= */
+
+.preview-panel {
+    position: sticky;
+    top: 25px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: visible;
+}
+
+/* =========================================================
+   DOCUMENTO FINAL - PREVIEW GENERICO
+========================================================= */
+
+.documento-final {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+    padding: 25mm;
+    border-radius: 8px;
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 20px 45px rgba(15,23,42,.08);
+    color: #111;
+    font-family: "Times New Roman", serif;
+    line-height: 1.7;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   PREVIEW SOLICITUD COMPRA
+========================================================= */
+
+.documento-final-compra {
+    width: 210mm;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.document-viewer {
+    width: 210mm;
+    max-width: 210mm;
+    flex-shrink: 0;
+}
+
+.document-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.document-tab {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 12px 12px 0 0;
+    background: #e2e8f0;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.document-tab.active {
+    background: #2563eb;
+    color: white;
+}
+
+.document-container {
+    width: 210mm;
+    max-width: 210mm;
+}
+
+.document-page {
+    display: none;
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    padding: 20mm;
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 20px 45px rgba(15,23,42,.12);
+    font-family: "Times New Roman", serif;
+    color: #000;
+    font-size: 14px;
+    line-height: 1.6;
+    flex-shrink: 0;
+}
+
+.document-page.active {
+    display: block;
+}
+
+/* =========================================================
+   HEADER DOCUMENTO
+========================================================= */
+
+.document-header {
+    text-align: center;
+    border-bottom: 2px solid #111827;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.logo-documento {
+    width: 120px;
+    margin: 0 auto 15px;
+    display: block;
+}
+
+.document-header h1 {
+    margin-top: 20px;
+    font-size: 28px;
+    letter-spacing: 3px;
+}
+
+.titulo-documento {
+    text-align: center;
+    font-weight: bold;
+}
+
+.titulo-documento h2 {
+    font-size: 22px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.codigo-documento {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* =========================================================
+   DATOS MEMO
+========================================================= */
+
+.datos-documento {
+    margin-bottom: 30px;
+}
+
+.dato-fila {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.dato-fila b {
+    width: 90px;
+}
+
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.tabla-datos td {
+    padding: 6px 0;
+    vertical-align: top;
+}
+
+.tabla-datos .label {
+    width: 90px;
+    font-weight: bold;
+}
+
+/* =========================================================
+   CUERPO DOCUMENTO
+========================================================= */
+
+.memo-body-preview {
+    line-height: 1.8;
+    margin: 30px 0;
+    font-size: 15px;
+}
+
+.memo-body-preview p {
+    margin-bottom: 12px;
+}
+
+.cuerpo-documento {
+    margin-top: 25px;
+    text-align: justify;
+    font-size: 15px;
+}
+
+.cuerpo-documento ol {
+    margin-top: 10px;
+    padding-left: 25px;
+}
+
+/* =========================================================
+   TABLA EQUIPOS PREVIEW
+========================================================= */
+
+.equipo-output-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.equipo-output-table th,
+.equipo-output-table td {
+    border: 1px solid #0f172a;
+    padding: 10px;
+    font-size: 13px;
+}
+
+.equipo-output-table th {
+    background: #f1f5f9;
+    font-weight: 800;
+}
+
+.agradecimiento {
+    margin-top: 35px;
+}
+
+/* =========================================================
+   FIRMA
+========================================================= */
+
+.firma {
+    margin-top: 70px;
+    width: 250px;
+    margin-left: auto;
+    text-align: center;
+}
+
+.firma div {
+    border-top: 1px solid black;
+    margin-bottom: 10px;
+}
+
+/* =========================================================
+   CHECKBOX DINÁMICO
+========================================================= */
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    border: 1px solid black;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox.checked::after {
+    content: "X";
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.checkbox-cierre {
+    display:flex;
+    align-items:center;
+    margin-top:15px;
+}
+
+.checkbox-cierre label {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0;
+    cursor:pointer;
+    font-weight:700;
+    color:#334155;
+    flex-direction:row-reverse;
+}
+
+.checkbox-cierre input[type="checkbox"] {
+    width:18px;
+    height:18px;
+    cursor:pointer;
+}
+
+/* =========================================================
+   SOLICITUD DE COMPRA
+========================================================= */
+
+.encabezado-compra {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.empresas-col {
+    width: 48%;
+}
+
+.empresa-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.tabla-fecha {
+    border-collapse: collapse;
+    width: 220px;
+}
+
+.tabla-fecha th,
+.tabla-fecha td {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+}
+
+/* =========================================================
+   TABLA ARTICULOS PREVIEW
+========================================================= */
+
+.tabla-articulos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.tabla-articulos th,
+.tabla-articulos td {
+    border: 1px solid black;
+    padding: 6px;
+}
+
+.tabla-articulos th {
+    text-align: center;
+}
+
+/* =========================================================
+   MOTIVOS COMPRA
+========================================================= */
+
+.motivos-compra {
+    margin-top: 25px;
+}
+
+.motivos-compra p {
+    margin-bottom: 10px;
+}
+
+.linea-texto {
+    height: 25px;
+    border-bottom: 1px solid black;
+}
+
+.campo-texto {
+    min-height: 45px;
+    border-bottom: 1px solid black;
+}
+
+/* =========================================================
+   PROVEEDOR
+========================================================= */
+
+.proveedor-compra {
+    margin-top: 25px;
+}
+
+/* =========================================================
+   FIRMA COMPRA
+========================================================= */
+
+.firma-compra {
+    margin-top: 70px;
+    text-align: center;
+}
+
+.firma-linea {
+    width: 280px;
+    border-bottom: 1px solid black;
+    margin: auto;
+    margin-bottom: 10px;
+}
+
+/* =========================================================
+   TABLA DETALLE MEMORANDO
+========================================================= */
+
+.tabla-detalle-memo {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 14px;
+}
+
+.tabla-detalle-memo th {
+    background: #f1f5f9;
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #000;
+}
+
+.tabla-detalle-memo td {
+    padding: 8px;
+    border: 1px solid #000;
+    vertical-align: top;
+}
+
+.tabla-detalle-memo td:nth-child(1) {
+    width: 20%;
+    text-align: center;
+}
+
+.tabla-detalle-memo td:nth-child(3) {
+    width: 15%;
+    text-align: center;
+}
+
+/* =========================================================
+   PREVIEW INICIAL
+========================================================= */
+
+.preview-placeholder-documento {
+    margin-top: 45px;
+    text-align: center;
+    color: #666;
+}
+
+.preview-placeholder-documento h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.preview-placeholder-documento hr {
+    width: 220px;
+    margin: 18px auto 28px;
+    border: none;
+    border-top: 2px solid #dcdcdc;
+}
+
+.preview-placeholder-documento p {
+    margin: 12px 0;
+    line-height: 1.8;
+    font-size: 15px;
+}
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+    body {
+        background: white;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .memorando-container {
+        padding: 0;
+    }
+
+    .memo-layout {
+        display: block;
+    }
+
+    .preview-panel {
+        position: static;
+        overflow: visible;
+    }
+
+    .documento-final {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+    }
+
+    .document-page {
+        display: block !important;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        page-break-after: always;
+    }
+}
+
+/* =========================================================
+   MEMORÁNDUM SOLICITUD COMPRA
+   ESTILO DOCUMENTO OFICIAL
+========================================================= */
+
+.documento-memo-compra {
+    width: 100%;
+    min-height: auto;
+    background: white;
+    padding: 0;
+    box-shadow: none;
+    font-family: "Times New Roman", serif;
+    color: #000;
+}
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.memo-logo-compra {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.memo-logo-compra img {
+    width: 140px;
+    height: auto;
+    display: inline-block;
+}
+
+/* =========================================================
+   TITULO
+========================================================= */
+
+.memo-titulo-compra {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.memo-titulo-compra h1 {
+    font-size: 22px;
+    letter-spacing: 1px;
+}
+
+.memo-titulo-compra p {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+/* =========================================================
+   TABLA INFORMACION
+========================================================= */
+
+.memo-info-compra {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.memo-info-compra td {
+    padding: 8px 5px;
+    vertical-align: top;
+}
+
+.memo-info-compra .label {
+    width: 150px;
+    font-weight: bold;
+}
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.memo-contenido-compra {
+    margin-top: 20px;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+.memo-contenido-compra p {
+    margin-bottom: 18px;
+}
+
+.lista-documentos {
+    margin-left: 40px;
+}
+
+/* =========================================================
+   TABLA ARTICULOS
+========================================================= */
+
+.memo-contenido-compra .tabla-detalle-memo {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+}
+
+.memo-contenido-compra .tabla-detalle-memo th {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+}
+
+.memo-contenido-compra .tabla-detalle-memo td {
+    border: 1px solid black;
+    padding: 8px;
+}
+
+.formulario-dinamico .form-section {
+    margin-bottom: 25px;
+}
+
+/* =========================================================
+   SOPORTE PREVIEW PASE TEMPORAL
+========================================================= */
+
+.pase-temporal-preview{
+    width:100%;
+    color:#000;
+    font-family:"Times New Roman",serif;
+}
+
+.preview-dinamico{
+    width:100%;
+}
+
+.preview-dinamico[style*="display:none"]{
+    display:none!important;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .documento-memo-compra {
+        width: 100%;
+        padding: 30px;
+    }
+
+    .memo-info-compra {
+        font-size: 16px;
+    }
+
+    .memo-contenido-compra {
+        font-size: 16px;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1400px) {
+    .memo-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-panel {
+        position: relative;
+        top: auto;
+        margin-top: 30px;
+    }
+}
+
+@media (max-width: 700px) {
+    .memorando-container {
+        padding: 15px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .documento-final,
+    .document-page {
+        width: 100%;
+        min-height: auto;
+        padding: 25px;
+    }
+
+    .document-page .pase-temporal-preview{
+    width:100%;
+}
+
+    .document-container,
+    .document-viewer,
+    .documento-final-compra {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .dato-fila {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .encabezado-compra {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .empresas-col {
+        width: 100%;
+    }
+}

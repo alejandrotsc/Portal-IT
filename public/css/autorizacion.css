@@ -1,0 +1,26 @@
+.input-equipo {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    background: white;
+    transition: all .2s;
+}
+
+.input-equipo:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 1px hsl(var(--primary));
+}
+
+#agregarFila {
+    transition: all .2s ease;
+}
+
+#agregarFila:hover {
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.05);
+    transform: translateY(-2px);
+}

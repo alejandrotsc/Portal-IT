@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+:root {
+    --background:#f8fafc;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --foreground:#111827;
+    --muted:#f3f4f6;
+    --muted-foreground:#6b7280;
+    --primary:#2563eb;
+}
+
+.bg-background {
+    background-color:var(--background);
+}
+
+.bg-card {
+    background-color:var(--card);
+}
+
+.border-border {
+    border-color:var(--border);
+}
+
+.text-foreground {
+    color:var(--foreground);
+}
+
+.bg-muted {
+    background-color:var(--muted);
+}
+
+.text-muted-foreground {
+    color:var(--muted-foreground);
+}
+
+.bg-primary {
+    background-color:var(--primary);
+}
+
+.text-primary {
+    color:var(--primary);
+}
+
+.border-primary {
+    border-color:var(--primary);
+}
+
+/* Transparencia compatible con clases bg-primary/10 */
+.bg-primary\/10 {
+    background-color:rgba(37,99,235,.1);
+}
+
+/* Hover azul */
+.hover\:bg-blue-700:hover {
+    background-color:#1d4ed8;
+}
+
+/* Ocultar elementos Alpine antes de cargar */
+[x-cloak] {
+    display:none !important;
+}

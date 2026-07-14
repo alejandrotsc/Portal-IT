@@ -1,0 +1,354 @@
+/* ===================================
+   PREVIEW PASE TEMPORAL
+=================================== */
+
+.pase-temporal-preview {
+    width: 100%;
+    margin: 0;
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+/* ===================================
+   HEADER
+=================================== */
+
+.pase-temporal-preview .encabezado {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.pase-temporal-preview .logo {
+    width: 120px;
+}
+
+.pase-temporal-preview .logo-tvc {
+    width: 90px;
+    height: auto;
+}
+
+.pase-temporal-preview .titulo {
+    flex: 1;
+    text-align: center;
+}
+
+.pase-temporal-preview .titulo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.pase-temporal-preview .titulo h2 {
+    font-size: 14px;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.pase-temporal-preview .titulo h3 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pase-temporal-preview .numero {
+    width: 130px;
+    text-align: right;
+    font-size: 18px;
+    padding-top: 12px;
+}
+
+/* ===================================
+   BLOQUE PRINCIPAL
+=================================== */
+
+.pase-temporal-preview .bloque {
+    border: 2px solid #6b6b6b;
+    border-radius: 20px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.pase-temporal-preview .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.pase-temporal-preview .row:last-child {
+    margin-bottom: 0;
+}
+
+.pase-temporal-preview .label {
+    width: 210px;
+    flex-shrink: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.pase-temporal-preview .linea {
+    flex: 1;
+    min-height: 20px;
+    border-bottom: 1px solid #6f6f6f;
+}
+
+/* ===================================
+   TECNICO IT
+=================================== */
+
+.pase-temporal-preview .depto {
+    flex: 2;
+}
+
+.pase-temporal-preview .tecnico-label {
+    width: auto;
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+.pase-temporal-preview .tecnico {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* ===================================
+   CHECKBOXES
+=================================== */
+
+.pase-temporal-preview .check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 18px;
+    white-space: nowrap;
+}
+
+.pase-temporal-preview .checkbox {
+    width:24px;
+    height:20px;
+    border:2px solid #666;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
+    vertical-align:middle;
+}
+
+.pase-temporal-preview .checkbox::after {
+    line-height:1;
+    transform:translateY(-1px);
+}
+
+/* ===================================
+   TABLA
+=================================== */
+
+.pase-temporal-preview .tabla-equipos-preview {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 16px;
+}
+
+.pase-temporal-preview .tabla-equipos-preview th,
+.pase-temporal-preview .tabla-equipos-preview td {
+    border: 1px solid #666;
+}
+
+.pase-temporal-preview .tabla-equipos-preview .titulo-equipo {
+    font-size: 15px;
+    font-weight: 700;
+    height: 32px;
+}
+
+.pase-temporal-preview .tabla-equipos-preview thead tr:nth-child(2) th {
+    height: 30px;
+    font-size: 13px;
+}
+
+.pase-temporal-preview .tabla-equipos-preview tbody td {
+    height: 24px;
+    padding: 3px;
+}
+
+/* ===================================
+   OBSERVACIONES
+=================================== */
+
+.pase-temporal-preview .observaciones {
+    border: 2px solid #6b6b6b;
+    border-radius: 20px;
+    min-height: 110px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.pase-temporal-preview .observaciones strong {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.pase-temporal-preview .texto-observaciones {
+    min-height: 60px;
+    white-space: pre-wrap;
+}
+
+/* ===================================
+   FOOTER
+=================================== */
+
+.pase-temporal-preview .footer {
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #6b6b6b;
+    border-radius: 20px;
+    min-height: 260px;
+}
+
+.pase-temporal-preview .footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 2px solid #6b6b6b;
+    transform: translateX(-0.5px);
+}
+
+/* ===================================
+   FIRMA
+=================================== */
+
+.pase-temporal-preview .firma {
+    width: 50%;
+    position: relative;
+}
+
+.pase-temporal-preview .line-firma {
+    position: absolute;
+    left: 25px;
+    right: 25px;
+    bottom: 75px;
+    border-top: 1px solid #444;
+}
+
+.pase-temporal-preview .text-firma {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* ===================================
+   SEGURIDAD
+=================================== */
+
+.pase-temporal-preview .seguridad {
+    width: 50%;
+    padding: 20px;
+    position: relative;
+}
+
+.pase-temporal-preview .seguridad h3 {
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+.pase-temporal-preview .seg-row {
+    margin-bottom: 18px;
+    line-height: 2;
+}
+
+.pase-temporal-preview .seg-line {
+    display: inline-block;
+    width: 110px;
+    border-bottom: 1px solid #666;
+    margin-left: 4px;
+}
+
+.pase-temporal-preview .cerrar {
+    position: absolute;
+    right: 20px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pase-temporal-preview .cierre-box {
+    width:22px;
+    height:22px;
+    border:2px solid #666;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    font-weight:bold;
+    line-height:1;
+    vertical-align:middle;
+}
+
+.tabla-equipos {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+.tabla-equipos th,
+.tabla-equipos td {
+    border:1px solid #cbd5e1;
+    padding:8px;
+}
+
+.tabla-equipos th {
+    background:#f1f5f9;
+    font-weight:800;
+}
+
+.tabla-equipos input {
+    padding:8px;
+}
+
+.btn-eliminar-equipo {
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:8px;
+    background:#fee2e2;
+    color:#b91c1c;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+#btnAgregarEquipo {
+    margin-top:15px;
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+
+
+/* ===================================
+   IMPRESION
+=================================== */
+
+@media print {
+    .pase-temporal-preview {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+}
