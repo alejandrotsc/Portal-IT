@@ -5,229 +5,243 @@
 
 <meta charset="UTF-8">
 
-<title>Nueva incidencia</title>
+<title>Nueva incidencia registrada</title>
+
+
+<style>
+
+{!! file_get_contents(public_path('css/incidencias.css')) !!}
+
+</style>
+
 
 </head>
 
 
-<body style="font-family: Arial, sans-serif; background:#f5f5f5; padding:30px;">
 
+<body>
 
-<table width="100%" cellpadding="0" cellspacing="0">
 
-<tr>
+<div class="email-container">
 
-<td align="center">
 
 
-<table 
-width="600"
-style="
-background:white;
-border-radius:12px;
-padding:30px;
-border:1px solid #e5e5e5;
-">
+    {{-- HEADER --}}
 
+    <div class="email-header">
 
-<tr>
 
-<td>
+        <img 
+        src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
+        class="email-logo"
+        alt="TVC">
 
 
-<h2 style="
-margin:0;
-color:#11406A;
-font-size:22px;
-">
-Nueva incidencia registrada
-</h2>
 
+        <h1>
+            Nueva incidencia registrada
+        </h1>
 
-<p style="
-color:#666;
-margin-top:8px;
-">
-El Portal TI recibió una nueva solicitud de soporte.
-</p>
 
+        <p>
+            El Portal TI recibió una nueva solicitud de soporte.
+        </p>
 
 
-<hr style="border:none;border-top:1px solid #eee;">
 
+    </div>
 
 
 
 
-<h3 style="color:#333;">
-Información general
-</h3>
 
 
-<table width="100%" cellpadding="6">
 
+    {{-- IDENTIFICADOR --}}
 
-<tr>
+    <div class="ticket-card">
 
-<td>
-<strong>Código:</strong>
-</td>
 
-<td>
-{{ $incidencia->codigo }}
-</td>
+        <span>
+            Código de incidencia
+        </span>
 
-</tr>
 
+        <strong>
+            {{ $incidencia->codigo }}
+        </strong>
 
 
-<tr>
+    </div>
 
-<td>
-<strong>Usuario:</strong>
-</td>
 
-<td>
-{{ $incidencia->usuario->nombre ?? 'N/A' }}
-</td>
 
-</tr>
 
 
 
-<tr>
 
-<td>
-<strong>Título:</strong>
-</td>
 
-<td>
-{{ $incidencia->titulo }}
-</td>
+    {{-- INFORMACIÓN GENERAL --}}
 
-</tr>
+    <div class="email-section">
 
 
+        <h2>
+            Información general
+        </h2>
 
-<tr>
 
-<td>
-<strong>Prioridad:</strong>
-</td>
 
-<td>
-{{ $incidencia->prioridad }}
-</td>
+        <table>
 
-</tr>
 
+            <tr>
 
+                <td>
+                    Usuario
+                </td>
 
-<tr>
+                <td>
+                    {{ $incidencia->usuario->nombre ?? 'N/A' }}
+                </td>
 
-<td>
-<strong>Estado:</strong>
-</td>
+            </tr>
 
-<td>
-{{ $incidencia->estado }}
-</td>
 
-</tr>
 
 
+            <tr>
 
-</table>
+                <td>
+                    Título
+                </td>
 
+                <td>
+                    {{ $incidencia->titulo }}
+                </td>
 
+            </tr>
 
 
 
+        </table>
 
-<h3 style="color:#333;margin-top:25px;">
-Descripción del problema
-</h3>
 
+    </div>
 
-<div style="
-background:#f8f9fa;
-padding:15px;
-border-radius:8px;
-">
 
-{{ $incidencia->descripcion }}
 
-</div>
 
 
 
 
 
 
+    {{-- DESCRIPCIÓN --}}
 
-<h3 style="color:#333;margin-top:25px;">
-Información adicional
-</h3>
+    <div class="email-section">
 
 
-<table width="100%" cellpadding="6">
+        <h2>
+            Descripción del problema
+        </h2>
 
 
-<tr>
 
-<td>
-<strong>Equipo:</strong>
-</td>
+        <div class="description-box">
 
-<td>
-{{ $incidencia->equipo ?? 'No especificado' }}
-</td>
+            {{ $incidencia->descripcion }}
 
-</tr>
+        </div>
 
 
-<tr>
+    </div>
 
-<td>
-<strong>Ubicación:</strong>
-</td>
 
-<td>
-{{ $incidencia->ubicacion ?? 'No especificado' }}
-</td>
 
-</tr>
 
 
 
-<tr>
 
-<td>
-<strong>Tiempo del problema:</strong>
-</td>
 
-<td>
-{{ $incidencia->tiempo_problema ?? 'No especificado' }}
-</td>
 
-</tr>
+    {{-- INFORMACIÓN ADICIONAL --}}
 
+    <div class="email-section">
 
 
-<tr>
+        <h2>
+            Información adicional
+        </h2>
 
-<td>
-<strong>Afectación:</strong>
-</td>
 
-<td>
-{{ $incidencia->afectacion ?? 'No especificado' }}
-</td>
 
-</tr>
+        <table>
 
 
-</table>
+            <tr>
+
+                <td>
+                    Equipo
+                </td>
+
+                <td>
+                    {{ $incidencia->equipo ?? 'No especificado' }}
+                </td>
+
+            </tr>
+
+
+
+            <tr>
+
+                <td>
+                    Ubicación
+                </td>
+
+                <td>
+                    {{ $incidencia->ubicacion ?? 'No especificada' }}
+                </td>
+
+            </tr>
+
+
+
+
+            <tr>
+
+                <td>
+                    Tiempo del problema
+                </td>
+
+                <td>
+                    {{ $incidencia->tiempo_problema ?? 'No indicado' }}
+                </td>
+
+            </tr>
+
+
+
+
+            <tr>
+
+                <td>
+                    Afectación
+                </td>
+
+                <td>
+                    {{ $incidencia->afectacion ?? 'No indicada' }}
+                </td>
+
+            </tr>
+
+
+
+        </table>
+
+
+    </div>
+
 
 
 
@@ -239,24 +253,22 @@ Información adicional
 @if($incidencia->archivos->count())
 
 
-<h3 style="color:#333;margin-top:25px;">
-Evidencias analizadas
-</h3>
+<div class="email-section">
+
+
+<h2>
+Evidencias adjuntas
+</h2>
 
 
 
 @foreach($incidencia->archivos as $archivo)
 
 
-<div style="
-background:#f8f9fa;
-padding:15px;
-border-radius:8px;
-margin-bottom:15px;
-">
+<div class="attachment-box">
 
 
-<p style="margin:0 0 8px 0;">
+<p>
 
 <strong>
 Archivo:
@@ -268,51 +280,23 @@ Archivo:
 
 
 
-
-
 @if($archivo->texto_ocr)
 
 
-<p style="
-margin-top:10px;
-color:#555;
-">
+<div class="ocr-box">
+
 
 <strong>
-Texto detectado por OCR:
+Texto identificado automáticamente:
 </strong>
 
-</p>
 
-
-
-<div style="
-background:white;
-border:1px solid #ddd;
-padding:12px;
-border-radius:6px;
-white-space:pre-line;
-">
-
-
+<p>
 {{ $archivo->texto_ocr }}
+</p>
 
 
 </div>
-
-
-
-@else
-
-
-<p style="
-color:#999;
-font-size:13px;
-">
-
-No se detectó texto en esta imagen.
-
-</p>
 
 
 
@@ -328,6 +312,9 @@ No se detectó texto en esta imagen.
 
 
 
+</div>
+
+
 @endif
 
 
@@ -336,35 +323,23 @@ No se detectó texto en esta imagen.
 
 
 
-
-<p style="
-margin-top:30px;
-font-size:13px;
-color:#777;
-">
+<div class="email-footer">
 
 
-Este correo fue generado automáticamente por el Portal TI.
+<p>
 
+Portal TI · Mesa de ayuda tecnológica
 
 </p>
 
 
-
-</td>
-
-</tr>
+</div>
 
 
-</table>
 
 
-</td>
 
-</tr>
-
-
-</table>
+</div>
 
 
 </body>

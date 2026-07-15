@@ -6,6 +6,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\MemorandoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\SolicitudController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,13 @@ Route::middleware('auth')->group(function () {
     */
     Route::resource('incidencias', IncidenciaController::class);
 
+// Mis incidencias del usuario autenticado
+Route::get(
+    '/mis-incidencias',
+    [IncidenciaController::class, 'misIncidencias']
+)
+->name('mis-incidencias');
+
     // Acciones de soporte
     Route::post('/incidencias/{incidencia}/tomar', [IncidenciaController::class, 'tomar'])->name('incidencias.tomar');
     Route::post('/incidencias/{incidencia}/asignar', [IncidenciaController::class, 'asignar'])->name('incidencias.asignar');
@@ -85,6 +93,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/incidencias/{incidencia}/resolver', [IncidenciaController::class, 'resolver'])->name('incidencias.resolver');
     Route::post('/incidencias/{incidencia}/cerrar', [IncidenciaController::class, 'cerrar'])->name('incidencias.cerrar');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Solicitudes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
+Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
 
 /*
 |--------------------------------------------------------------------------

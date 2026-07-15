@@ -136,13 +136,13 @@ class IncidenciaController extends Controller
         */
 
 
-        $ultima = Incidencia::latest()
-            ->first();
+        $ultima = Incidencia::orderBy('id','desc')
+    ->first();
 
 
-        $numero = $ultima
-            ? $ultima->id + 1
-            : 1;
+$numero = $ultima
+    ? intval(substr($ultima->codigo,4)) + 1
+    : 1;
 
 
 
@@ -367,6 +367,25 @@ class IncidenciaController extends Controller
             );
 
     }
+
+    public function misIncidencias()
+{
+
+    $incidencias = Incidencia::where(
+        'usuario_id',
+        Auth::id()
+    )
+    ->with('archivos')
+    ->latest()
+    ->get();
+
+
+    return view(
+        'incidencias.mis-incidencias',
+        compact('incidencias')
+    );
+
+}
 
 
 

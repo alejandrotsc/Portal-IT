@@ -156,7 +156,68 @@
         </a>
 
 
+        {{-- Solicitudes --}}
+<a href="{{ route('solicitudes.create') }}" class="group h-full">
 
+    <div class="relative overflow-hidden bg-card rounded-2xl border border-border p-5 h-full
+                transition-all duration-300
+                hover:-translate-y-1
+                hover:shadow-lg
+                hover:border-emerald-200">
+
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100
+                    transition-opacity duration-300
+                    bg-gradient-to-br from-emerald-50 via-transparent to-teal-50">
+        </div>
+
+
+        <div class="relative h-full flex flex-col">
+
+            <div class="flex items-start justify-between mb-5">
+
+                <div class="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center">
+
+                    <i data-lucide="clipboard-list"
+                       class="w-5 h-5 text-emerald-600"></i>
+
+                </div>
+
+
+                <i data-lucide="arrow-right"
+                   class="w-4 h-4 text-emerald-500 opacity-0 transition-all duration-300
+                          group-hover:opacity-100 group-hover:translate-x-1"></i>
+
+            </div>
+
+
+            <h3 class="text-sm font-semibold text-foreground mb-2">
+                Solicitudes
+            </h3>
+
+
+            <p class="text-xs text-muted-foreground leading-relaxed">
+                Gestiona requerimientos, accesos, y servicios tecnológicos.
+            </p>
+
+
+            <div class="mt-auto pt-5">
+
+                <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1
+                             text-[11px] font-medium text-emerald-700">
+
+                    Gestión
+
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+</a>
 
 
         {{-- Reporte de incidencia --}}
