@@ -1,14 +1,16 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
 
 use App\Models\Incidencia;
 use App\Models\IncidenciaArchivo;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
+use App\Mail\IncidenciaMail;
+use App\Services\OcrService;
 
 
 class IncidenciaController extends Controller
@@ -20,7 +22,7 @@ class IncidenciaController extends Controller
 
         $incidencias = Incidencia::with([
             'usuario',
-            'tecnico'
+            'archivos'
         ])
         ->latest()
         ->get();
@@ -32,7 +34,6 @@ class IncidenciaController extends Controller
         );
 
     }
-
 
 
 
@@ -53,30 +54,90 @@ class IncidenciaController extends Controller
 
 
 
-    public function store(Request $request)
+    public function store(
+        Request $request,
+        OcrService $ocr
+    )
     {
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validación
+        |--------------------------------------------------------------------------
+        */
 
 
         $request->validate([
 
 
-            'titulo'=>'required',
-            'categoria'=>'required',
-            'descripcion'=>'required',
+            'titulo'=>[
+                'required',
+                'string',
+                'max:255'
+            ],
 
 
-            'archivos.*'=>
-            'nullable|image|max:4096'
+            'descripcion'=>[
+                'required',
+                'string'
+            ],
 
+
+            'tiempo_problema'=>[
+                'nullable',
+                'string'
+            ],
+
+
+            'afectacion'=>[
+                'nullable',
+                'string'
+            ],
+
+
+            'equipo'=>[
+                'nullable',
+                'string'
+            ],
+
+
+            'ubicacion'=>[
+                'nullable',
+                'string'
+            ],
+
+
+            'archivos'=>[
+                'nullable',
+                'array'
+            ],
+
+
+            'archivos.*'=>[
+                'image',
+                'max:10240'
+            ]
 
         ]);
 
 
 
 
-        $ultima = Incidencia::latest()->first();
 
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generar código
+        |--------------------------------------------------------------------------
+        */
+
+
+        $ultima = Incidencia::latest()
+            ->first();
 
 
         $numero = $ultima
@@ -85,23 +146,29 @@ class IncidenciaController extends Controller
 
 
 
-
-        $codigo =
-            'INC-'.
-            str_pad(
-                $numero,
-                5,
-                '0',
-                STR_PAD_LEFT
-            );
+        $codigo = 'INC-'.str_pad(
+            $numero,
+            5,
+            '0',
+            STR_PAD_LEFT
+        );
 
 
 
 
 
 
-        $incidencia =
-        Incidencia::create([
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Crear incidencia
+        |--------------------------------------------------------------------------
+        */
+
+
+        $incidencia = Incidencia::create([
 
 
             'codigo'=>$codigo,
@@ -113,17 +180,28 @@ class IncidenciaController extends Controller
             'titulo'=>$request->titulo,
 
 
-            'categoria'=>$request->categoria,
-
-
             'descripcion'=>$request->descripcion,
 
 
-            'prioridad'=>$request->prioridad
-                ?? 'media',
+            'tiempo_problema'=>$request->tiempo_problema,
 
 
-            'estado'=>'abierta'
+            'afectacion'=>$request->afectacion,
+
+
+            'equipo'=>$request->equipo,
+
+
+            'ubicacion'=>$request->ubicacion,
+
+
+            'estado'=>'Abierta',
+
+
+            'prioridad'=>'Media',
+
+
+            'correo_enviado'=>false
 
 
         ]);
@@ -135,21 +213,63 @@ class IncidenciaController extends Controller
 
 
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Guardar archivos + OCR
+        |--------------------------------------------------------------------------
+        */
+
+
+        $textoOCR = [];
+
+
+
         if($request->hasFile('archivos')){
 
 
-            foreach(
-                $request->file('archivos')
-                as $archivo
-            ){
+            foreach($request->file('archivos') as $archivo){
 
 
-                $path =
-                $archivo->store(
+
+                /*
+                Guardar imagen
+                */
+
+
+                $ruta = $archivo->store(
                     'incidencias',
                     'public'
                 );
 
+
+
+
+                /*
+                Ejecutar OCR
+                */
+
+
+                $texto = $ocr->leerImagen(
+
+                    storage_path(
+                        'app/public/'.$ruta
+                    )
+
+                );
+
+
+
+                $textoOCR[] = $texto;
+
+
+
+
+
+
+                /*
+                Guardar archivo
+                */
 
 
                 IncidenciaArchivo::create([
@@ -158,22 +278,32 @@ class IncidenciaController extends Controller
                     'incidencia_id'=>$incidencia->id,
 
 
-                    'archivo'=>$path,
+                    'usuario_id'=>Auth::id(),
 
 
-                    'nombre_original'=>
-                    $archivo->getClientOriginalName(),
+                    'nombre_original'=>$archivo->getClientOriginalName(),
 
 
-                    'tipo'=>
-                    $archivo->getMimeType()
+                    'nombre_archivo'=>basename($ruta),
+
+
+                    'ruta'=>$ruta,
+
+
+                    'extension'=>$archivo->getClientOriginalExtension(),
+
+
+                    'tamano'=>$archivo->getSize(),
+
+
+                    'texto_ocr'=>$texto ?: null
 
 
                 ]);
 
 
-            }
 
+            }
 
         }
 
@@ -182,18 +312,61 @@ class IncidenciaController extends Controller
 
 
 
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enviar correo
+        |--------------------------------------------------------------------------
+        */
+
+
+        Mail::to(
+            'alejandrotsc01@gmail.com'
+        )
+        ->send(
+            new IncidenciaMail(
+                $incidencia,
+                $textoOCR
+            )
+        );
+
+
+
+
+        $incidencia->update([
+
+
+            'correo_enviado'=>true,
+
+
+            'fecha_envio_correo'=>now()
+
+
+        ]);
+
+
+
+
+
+
+
+
+
         return redirect()
 
-            ->route('incidencias.show',$incidencia)
+            ->route(
+                'incidencias.show',
+                $incidencia
+            )
 
             ->with(
                 'success',
-                'Incidencia creada correctamente'
+                'Incidencia enviada correctamente.'
             );
 
-
     }
-
 
 
 
@@ -210,9 +383,11 @@ class IncidenciaController extends Controller
 
 
         $incidencia->load([
+
             'usuario',
-            'tecnico',
+
             'archivos'
+
         ]);
 
 
@@ -232,141 +407,6 @@ class IncidenciaController extends Controller
 
 
 
-
-    public function asignar(
-        Request $request,
-        Incidencia $incidencia
-    )
-    {
-
-
-        $request->validate([
-
-            'tecnico_id'=>'required'
-
-        ]);
-
-
-
-        $incidencia->update([
-
-
-            'tecnico_id'=>
-            $request->tecnico_id,
-
-
-            'estado'=>'asignada'
-
-
-        ]);
-
-
-
-        return back();
-
-
-    }
-
-
-
-
-
-
-
-
-
-    public function diagnostico(
-        Request $request,
-        Incidencia $incidencia
-    )
-    {
-
-
-        $request->validate([
-
-            'diagnostico'=>'required'
-
-        ]);
-
-
-
-
-        $incidencia->update([
-
-
-            'diagnostico'=>
-            $request->diagnostico,
-
-
-            'estado'=>
-            'diagnostico'
-
-
-        ]);
-
-
-
-        return back();
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-    public function resolver(
-        Request $request,
-        Incidencia $incidencia
-    )
-    {
-
-
-
-        $request->validate([
-
-            'solucion'=>'required'
-
-        ]);
-
-
-
-        $incidencia->update([
-
-
-            'solucion'=>
-            $request->solucion,
-
-
-            'estado'=>'resuelta',
-
-
-            'fecha_resuelto'=>
-            now()
-
-
-        ]);
-
-
-
-        return back();
-
-
-    }
-
-
-
-
-
-
-
-
-
     public function cerrar(
         Incidencia $incidencia
     )
@@ -375,18 +415,14 @@ class IncidenciaController extends Controller
 
         $incidencia->update([
 
-            'estado'=>'cerrada'
+            'estado'=>'Cerrada'
 
         ]);
 
 
-
         return back();
 
-
     }
-
-
 
 
 }

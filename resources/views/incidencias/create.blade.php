@@ -15,12 +15,7 @@
 
 <section>
 
-
-<div class="flex items-center justify-between">
-
-
 <div>
-
 
 <h1 class="text-xl font-semibold text-foreground">
 Reporte de incidencia
@@ -28,15 +23,11 @@ Reporte de incidencia
 
 
 <p class="text-sm text-muted-foreground mt-1">
-Describe el problema que estás presentando y el equipo TI te ayudará a solucionarlo.
+Describe el problema que estás presentando y adjunta evidencia para que TI pueda ayudarte.
 </p>
 
 
 </div>
-
-
-</div>
-
 
 </section>
 
@@ -44,8 +35,8 @@ Describe el problema que estás presentando y el equipo TI te ayudará a solucio
 
 
 
-
 <form
+id="incidenciaForm"
 action="{{ route('incidencias.store') }}"
 method="POST"
 enctype="multipart/form-data"
@@ -68,7 +59,6 @@ class="space-y-6">
 
 <div class="px-6 py-4 border-b border-border flex items-center gap-3">
 
-
 <span class="w-6 h-6 rounded-full bg-primary text-white text-xs font-semibold flex items-center justify-center">
 1
 </span>
@@ -89,8 +79,6 @@ Información del problema
 
 
 
-
-
 <div>
 
 
@@ -105,11 +93,11 @@ Información del problema
 
 <input
 
-required
-
 type="text"
 
 name="titulo"
+
+required
 
 value="{{ old('titulo') }}"
 
@@ -117,7 +105,9 @@ placeholder="Ej: No puedo ingresar al correo corporativo"
 
 class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
 
+
 </div>
+
 
 
 
@@ -140,13 +130,13 @@ Describe lo ocurrido
 
 <textarea
 
-required
-
 name="descripcion"
+
+required
 
 rows="5"
 
-placeholder="Indica qué ocurrió, qué estabas intentando hacer y si aparece algún mensaje de error..."
+placeholder="Indica qué ocurrió, qué estabas intentando hacer y si aparece algún mensaje..."
 
 class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm resize-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">{{ old('descripcion') }}</textarea>
 
@@ -163,13 +153,13 @@ class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm res
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
 
-
 <div>
 
 
 <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
 
-¿Cuándo empezó el problema?
+¿Cuándo empezó?
+
 
 </label>
 
@@ -178,7 +168,7 @@ class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm res
 
 name="tiempo_problema"
 
-class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-primary">
+class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm">
 
 
 <option value="">
@@ -210,13 +200,13 @@ Hace varios días
 
 
 
-
 <div>
 
 
 <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
 
 ¿A quién afecta?
+
 
 </label>
 
@@ -225,7 +215,7 @@ Hace varios días
 
 name="afectacion"
 
-class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-primary">
+class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm">
 
 
 <option value="solo">
@@ -266,12 +256,11 @@ A toda el área
 
 
 
-
 {{-- EVIDENCIA --}}
 
 
-<div class="bg-card rounded-2xl border border-border overflow-hidden">
 
+<div class="bg-card rounded-2xl border border-border overflow-hidden">
 
 
 <div class="px-6 py-4 border-b border-border flex items-center gap-3">
@@ -283,9 +272,7 @@ A toda el área
 
 
 <h2 class="text-sm font-semibold text-foreground">
-
-Evidencia
-
+Evidencia del problema
 </h2>
 
 
@@ -300,36 +287,37 @@ Evidencia
 
 
 
-<label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-
-Adjuntar capturas o archivos
-
-</label>
 
 
 
+<div
 
-<label
+id="dropzone"
 
-for="archivos"
-
-class="flex flex-col items-center justify-center h-40 rounded-xl border border-dashed border-border hover:border-primary hover:bg-primary/5 cursor-pointer transition-all">
+class="flex flex-col items-center justify-center h-48 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 cursor-pointer transition-all">
 
 
-<i data-lucide="upload-cloud"
-class="w-7 h-7 text-muted-foreground mb-3"></i>
+<i data-lucide="image"
+class="w-8 h-8 text-muted-foreground mb-3"></i>
 
 
 <p class="text-sm text-muted-foreground">
 
-Selecciona imágenes o documentos
+Arrastra tus capturas aquí
 
 </p>
 
 
 <p class="text-xs text-muted-foreground mt-1">
 
-PNG, JPG o PDF hasta 10MB
+o haz clic para seleccionar imágenes
+
+</p>
+
+
+<p class="text-xs text-muted-foreground mt-2">
+
+PNG, JPG, JPEG, WEBP - máximo 10MB por imagen
 
 </p>
 
@@ -345,10 +333,30 @@ name="archivos[]"
 
 multiple
 
+accept="image/png,image/jpeg,image/jpg,image/webp"
+
 class="hidden">
 
 
-</label>
+</div>
+
+
+
+
+
+
+
+{{-- PREVIEW --}}
+
+
+<div
+
+id="preview"
+
+class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+</div>
+
 
 
 
@@ -362,9 +370,9 @@ class="hidden">
 class="w-5 h-5 text-primary"></i>
 
 
-<p class="text-xs text-muted-foreground leading-relaxed">
+<p class="text-xs text-muted-foreground">
 
-Las capturas de pantalla o mensajes de error ayudan al equipo TI a encontrar una solución más rápido.
+Las imágenes serán analizadas automáticamente para extraer mensajes de error y ayudar al equipo TI.
 
 </p>
 
@@ -386,11 +394,10 @@ Las capturas de pantalla o mensajes de error ayudan al equipo TI a encontrar una
 
 
 
-{{-- INFORMACIÓN DEL EQUIPO --}}
+{{-- INFORMACIÓN ADICIONAL --}}
 
 
 <div class="bg-card rounded-2xl border border-border overflow-hidden">
-
 
 
 <div class="px-6 py-4 border-b border-border flex items-center gap-3">
@@ -401,13 +408,11 @@ Las capturas de pantalla o mensajes de error ayudan al equipo TI a encontrar una
 </span>
 
 
-
 <h2 class="text-sm font-semibold text-foreground">
 
 Información adicional
 
 </h2>
-
 
 
 </div>
@@ -417,14 +422,7 @@ Información adicional
 
 
 
-<div class="px-6 py-5 space-y-5">
-
-
-
-
-
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-
+<div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
 
 
 <div>
@@ -443,13 +441,12 @@ type="text"
 
 name="equipo"
 
-placeholder="Ej: Laptop Dell, teléfono, impresora..."
+placeholder="Ej: Laptop Dell, impresora..."
 
-class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-primary">
+class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm">
 
 
 </div>
-
 
 
 
@@ -471,18 +468,12 @@ type="text"
 
 name="ubicacion"
 
-placeholder="Ej: Oficina, sala, área..."
+placeholder="Ej: Oficina, Producción..."
 
-class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-primary">
-
-
-</div>
+class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm">
 
 
 </div>
-
-
-
 
 
 </div>
@@ -497,8 +488,6 @@ class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm foc
 
 
 
-
-{{-- BOTONES --}}
 
 
 <div class="flex justify-end gap-3">
@@ -541,10 +530,7 @@ Enviar reporte
 
 
 
-
-
 </form>
-
 
 
 </main>
@@ -557,9 +543,192 @@ Enviar reporte
 
 
 
+
 <script>
 
 lucide.createIcons();
+
+
+
+const dropzone = document.getElementById('dropzone');
+const input = document.getElementById('archivos');
+const preview = document.getElementById('preview');
+
+
+let archivosSeleccionados = [];
+
+
+
+dropzone.addEventListener('click',()=>{
+
+    input.click();
+
+});
+
+
+
+
+input.addEventListener('change',(e)=>{
+
+    agregarArchivos(e.target.files);
+
+});
+
+
+
+
+
+dropzone.addEventListener('dragover',(e)=>{
+
+    e.preventDefault();
+
+    dropzone.classList.add('border-primary');
+
+});
+
+
+
+
+dropzone.addEventListener('dragleave',()=>{
+
+    dropzone.classList.remove('border-primary');
+
+});
+
+
+
+
+dropzone.addEventListener('drop',(e)=>{
+
+
+    e.preventDefault();
+
+
+    dropzone.classList.remove('border-primary');
+
+
+    agregarArchivos(e.dataTransfer.files);
+
+
+});
+
+
+
+
+
+function agregarArchivos(files){
+
+
+    [...files].forEach(file=>{
+
+
+        if(!file.type.startsWith('image/'))
+            return;
+
+
+
+        if(file.size > 10485760)
+            return;
+
+
+
+        archivosSeleccionados.push(file);
+
+
+
+    });
+
+
+
+    actualizarPreview();
+
+
+}
+
+
+
+
+
+function actualizarPreview(){
+
+
+    preview.innerHTML="";
+
+
+    const dataTransfer = new DataTransfer();
+
+
+
+    archivosSeleccionados.forEach((file,index)=>{
+
+
+        dataTransfer.items.add(file);
+
+
+
+        const reader = new FileReader();
+
+
+        reader.onload=(e)=>{
+
+
+            preview.innerHTML += `
+
+            <div class="relative rounded-xl overflow-hidden border border-border">
+
+                <img 
+                src="${e.target.result}"
+                class="w-full h-28 object-cover">
+
+
+                <button
+
+                type="button"
+
+                onclick="eliminarArchivo(${index})"
+
+                class="absolute top-1 right-1 bg-black/50 text-white rounded-full w-6 h-6 text-xs">
+
+                ×
+
+                </button>
+
+            </div>
+
+            `;
+
+
+        }
+
+
+        reader.readAsDataURL(file);
+
+
+
+    });
+
+
+
+    input.files=dataTransfer.files;
+
+
+
+}
+
+
+
+
+
+function eliminarArchivo(index){
+
+
+    archivosSeleccionados.splice(index,1);
+
+    actualizarPreview();
+
+
+}
+
 
 </script>
 

@@ -4,28 +4,57 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-
 class Incidencia extends Model
 {
+
+    protected $table = 'incidencias';
+
 
     protected $fillable = [
 
         'codigo',
+
         'usuario_id',
-        'tecnico_id',
+
         'titulo',
+
         'descripcion',
-        'categoria',
-        'prioridad',
+
+        'tiempo_problema',
+
+        'afectacion',
+
+        'equipo',
+
+        'ubicacion',
+
         'estado',
-        'diagnostico',
-        'solucion',
-        'fecha_resuelto'
+
+        'prioridad',
+
+        'correo_enviado',
+
+        'fecha_envio_correo'
 
     ];
 
 
 
+    protected $casts = [
+
+        'correo_enviado' => 'boolean',
+
+        'fecha_envio_correo' => 'datetime',
+
+    ];
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Usuario creador
+    |--------------------------------------------------------------------------
+    */
 
     public function usuario()
     {
@@ -38,11 +67,18 @@ class Incidencia extends Model
 
 
 
-    public function tecnico()
+
+    /*
+    |--------------------------------------------------------------------------
+    | Archivos adjuntos
+    |--------------------------------------------------------------------------
+    */
+
+    public function archivos()
     {
-        return $this->belongsTo(
-            Usuario::class,
-            'tecnico_id'
+        return $this->hasMany(
+            IncidenciaArchivo::class,
+            'incidencia_id'
         );
     }
 

@@ -165,81 +165,115 @@ CREATE TABLE soporte_ausencias (
 
 
 CREATE TABLE incidencias (
+
     id BIGSERIAL PRIMARY KEY,
+
 
     codigo VARCHAR(255) NOT NULL UNIQUE,
 
+
     usuario_id BIGINT NOT NULL,
-    categoria_id BIGINT NULL,
-    servicio_id BIGINT NULL,
+
 
     titulo VARCHAR(255) NOT NULL,
+
+
     descripcion TEXT NOT NULL,
 
-    prioridad VARCHAR(20) NOT NULL DEFAULT 'Media'
-        CHECK (prioridad IN ('Baja', 'Media', 'Alta', 'Critica')),
+
+    tiempo_problema VARCHAR(50) NULL,
+
+
+    afectacion VARCHAR(50) NULL,
+
+
+    equipo VARCHAR(255) NULL,
+
+
+    ubicacion VARCHAR(255) NULL,
+
 
     estado VARCHAR(30) NOT NULL DEFAULT 'Abierta'
         CHECK (estado IN (
             'Abierta',
-            'Asignada',
             'En_proceso',
-            'Esperando_usuario',
             'Resuelta',
             'Cerrada'
         )),
 
-    asignado_a BIGINT NULL,
 
-    solucion TEXT NULL,
+    prioridad VARCHAR(20) NOT NULL DEFAULT 'Media'
+        CHECK (prioridad IN (
+            'Baja',
+            'Media',
+            'Alta',
+            'Critica'
+        )),
 
-    fecha_resolucion TIMESTAMP NULL,
+
+    correo_enviado BOOLEAN DEFAULT FALSE,
+
+
+    fecha_envio_correo TIMESTAMP NULL,
+
 
     created_at TIMESTAMP NULL,
+
+
     updated_at TIMESTAMP NULL,
+
 
     CONSTRAINT fk_incidencias_usuario
         FOREIGN KEY (usuario_id)
-        REFERENCES usuarios(id),
-
-    CONSTRAINT fk_incidencias_categoria
-        FOREIGN KEY (categoria_id)
-        REFERENCES categorias_incidencias(id),
-
-    CONSTRAINT fk_incidencias_servicio
-        FOREIGN KEY (servicio_id)
-        REFERENCES servicios_ti(id),
-
-    CONSTRAINT fk_incidencias_asignado
-        FOREIGN KEY (asignado_a)
         REFERENCES usuarios(id)
+
 );
 
 CREATE TABLE incidencia_archivos (
+
     id BIGSERIAL PRIMARY KEY,
 
+
     incidencia_id BIGINT NOT NULL,
+
+
     usuario_id BIGINT NOT NULL,
 
+
     nombre_original VARCHAR(255) NOT NULL,
+
+
     nombre_archivo VARCHAR(255) NOT NULL,
+
+
     ruta VARCHAR(255) NOT NULL,
 
-    extension VARCHAR(50),
 
-    tamano BIGINT,
+    extension VARCHAR(50) NULL,
 
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
+
+    tamano BIGINT NULL,
+
+
+    texto_ocr TEXT NULL,
+
+
+    created_at TIMESTAMP NULL,
+
+
+    updated_at TIMESTAMP NULL,
+
 
     CONSTRAINT fk_incidencia_archivos_incidencia
         FOREIGN KEY (incidencia_id)
         REFERENCES incidencias(id)
         ON DELETE CASCADE,
 
+
     CONSTRAINT fk_incidencia_archivos_usuario
         FOREIGN KEY (usuario_id)
         REFERENCES usuarios(id)
+
 );
 
 
