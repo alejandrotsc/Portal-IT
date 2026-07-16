@@ -68,6 +68,16 @@ Route::middleware('auth')->group(function () {
     // Descarga PDF
     Route::get('/memorandos/{codigo}/download', [MemorandoController::class, 'download'])->name('memorandos.download');
 
+
+/*
+|--------------------------------------------------------------------------
+| Solicitudes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
+Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
+
     /*
     |--------------------------------------------------------------------------
     | INCIDENCIAS / TICKETS
@@ -92,16 +102,10 @@ Route::get(
     Route::post('/incidencias/{incidencia}/diagnostico', [IncidenciaController::class, 'diagnostico'])->name('incidencias.diagnostico');
     Route::post('/incidencias/{incidencia}/resolver', [IncidenciaController::class, 'resolver'])->name('incidencias.resolver');
     Route::post('/incidencias/{incidencia}/cerrar', [IncidenciaController::class, 'cerrar'])->name('incidencias.cerrar');
+
+
+    
 });
-
-/*
-|--------------------------------------------------------------------------
-| Solicitudes
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
-Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
 
 /*
 |--------------------------------------------------------------------------

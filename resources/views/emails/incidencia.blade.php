@@ -107,7 +107,17 @@
 
             </tr>
 
+            <tr>
 
+                <td>
+                    Correo
+                </td>
+
+                <td>
+                    {{ $incidencia->usuario->correo ?? 'N/A' }}
+                </td>
+
+            </tr>
 
 
             <tr>
@@ -208,32 +218,39 @@
 
 
 
-            <tr>
+            @php
+    $tiemposProblema = [
+        'hoy' => 'Hoy',
+        'ayer' => 'Ayer',
+        'varios_dias' => 'Hace varios días',
+    ];
 
-                <td>
-                    Tiempo del problema
-                </td>
+    $afectaciones = [
+        'solo' => 'Solo a mí',
+        'varios' => 'A varias personas',
+        'todos' => 'A toda el área',
+    ];
+@endphp
 
-                <td>
-                    {{ $incidencia->tiempo_problema ?? 'No indicado' }}
-                </td>
+<tr>
+    <td>
+        Tiempo del problema
+    </td>
 
-            </tr>
+    <td>
+        {{ $tiemposProblema[$incidencia->tiempo_problema] ?? 'No indicado' }}
+    </td>
+</tr>
 
+<tr>
+    <td>
+        Afectación
+    </td>
 
-
-
-            <tr>
-
-                <td>
-                    Afectación
-                </td>
-
-                <td>
-                    {{ $incidencia->afectacion ?? 'No indicada' }}
-                </td>
-
-            </tr>
+    <td>
+        {{ $afectaciones[$incidencia->afectacion] ?? 'No indicada' }}
+    </td>
+</tr>
 
 
 

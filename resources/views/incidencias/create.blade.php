@@ -124,70 +124,48 @@
 </main>
 </div>
 
-<script>
-lucide.createIcons();
+{{-- MODAL RESPUESTA --}}
+<div id="modalIncidencia" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50">
 
-const dropzone = document.getElementById('dropzone');
-const input = document.getElementById('archivos');
-const preview = document.getElementById('preview');
-let archivosSeleccionados = [];
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-5 p-6 text-center">
 
-dropzone.onclick = () => input.click();
-input.onchange = e => agregarArchivos(e.target.files);
-dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add('border-primary'); };
-dropzone.ondragleave = () => dropzone.classList.remove('border-primary');
-dropzone.ondrop = e => {
-    e.preventDefault();
-    dropzone.classList.remove('border-primary');
-    agregarArchivos(e.dataTransfer.files);
-};
+        <div id="modalIcono"
+             class="w-14 h-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-4">
 
-function agregarArchivos(files) {
-    [...files].forEach(file => {
-        if (file.type.startsWith('image/') && file.size <= 10485760) {
-            archivosSeleccionados.push(file);
-        }
-    });
-    actualizarPreview();
-}
+            <i data-lucide="check-circle" class="w-8 h-8"></i>
 
-function actualizarPreview() {
-    preview.innerHTML = "";
-    const dt = new DataTransfer();
+        </div>
 
-    archivosSeleccionados.forEach((file, index) => {
-        dt.items.add(file);
-        const reader = new FileReader();
-        reader.onload = e => {
-            preview.innerHTML += `
-                <div class="relative rounded-xl overflow-hidden border border-border">
-                    <img src="${e.target.result}" class="w-full h-28 object-cover">
-                    <button type="button" onclick="eliminarArchivo(${index})" class="absolute top-1 right-1 bg-black/50 text-white rounded-full w-6 h-6 text-xs">×</button>
-                </div>`;
-        };
-        reader.readAsDataURL(file);
-    });
 
-    input.files = dt.files;
-}
+        <h3 id="modalTitulo"
+            class="text-lg font-semibold text-gray-900">
+            Incidencia enviada
+        </h3>
 
-function eliminarArchivo(index) {
-    archivosSeleccionados.splice(index, 1);
-    actualizarPreview();
-}
 
-// Animación de carga al enviar el formulario
-const form = document.getElementById('incidenciaForm');
-const btnEnviar = document.getElementById('btnEnviar');
-const btnEnviarIcono = document.getElementById('btnEnviarIcono');
-const btnEnviarTexto = document.getElementById('btnEnviarTexto');
+        <p id="modalMensaje"
+           class="text-sm text-gray-500 mt-2">
+            Se notificó al equipo de soporte TI mediante correo.
+        </p>
 
-form.addEventListener('submit', () => {
-    btnEnviar.disabled = true;
-    btnEnviarTexto.textContent = 'Enviando...';
-    btnEnviarIcono.outerHTML = '<span id="btnEnviarIcono" class="spinner-envio"></span>';
-});
-</script>
+
+        <div id="codigoIncidencia"
+             class="mt-4 bg-gray-100 rounded-xl py-3 text-sm font-semibold text-gray-700">
+        </div>
+
+
+        <button onclick="cerrarModal()"
+            class="mt-6 w-full px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-medium">
+
+            Entendido
+
+        </button>
+
+    </div>
+
+</div>
+
+<script src="{{ asset('js/incidencias.js') }}"></script>
 
 <style>
 .spinner-envio {

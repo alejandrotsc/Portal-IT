@@ -276,6 +276,66 @@ CREATE TABLE incidencia_archivos (
 
 );
 
+CREATE TABLE solicitudes (
+
+    id BIGSERIAL PRIMARY KEY,
+
+
+    usuario_id BIGINT NOT NULL,
+
+
+    folio VARCHAR(20) UNIQUE,
+
+
+    categoria VARCHAR(50) NOT NULL,
+
+
+    asunto VARCHAR(255) NOT NULL,
+
+
+    descripcion TEXT NOT NULL,
+
+
+    datos_extra JSONB NULL,
+
+
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+
+
+    correo_enviado BOOLEAN NOT NULL DEFAULT FALSE,
+
+
+    correo_enviado_at TIMESTAMP NULL,
+
+
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+
+
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+
+
+
+    CONSTRAINT solicitudes_usuario_fk
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE
+
+);
+
+
+
+CREATE INDEX solicitudes_usuario_id_index
+ON solicitudes(usuario_id);
+
+
+
+CREATE INDEX solicitudes_estado_index
+ON solicitudes(estado);
+
+
+
+CREATE INDEX solicitudes_created_at_index
+ON solicitudes(created_at);
 
 
 -- ============================================================

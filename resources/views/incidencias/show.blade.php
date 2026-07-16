@@ -104,20 +104,20 @@ Nueva incidencia
 
 <div>
 
-<p class="text-muted-foreground flex items-center gap-2">
-
-<i data-lucide="user" class="w-4 h-4"></i>
-
-Reportado por
-
-</p>
+    <p class="text-muted-foreground flex items-center gap-2">
+        <i data-lucide="user" class="w-4 h-4"></i>
+        Reportado por
+    </p>
 
 
-<p class="font-medium">
+    <p class="font-medium">
+        {{ $incidencia->usuario->nombre ?? 'N/A' }}
+    </p>
 
-{{ $incidencia->usuario->nombre ?? 'N/A' }}
 
-</p>
+    <p class="text-xs text-muted-foreground mt-1">
+        {{ $incidencia->usuario->correo ?? 'N/A' }}
+    </p>
 
 </div>
 
@@ -255,43 +255,39 @@ Detalles del reporte
 <div class="p-6 grid md:grid-cols-2 gap-6 text-sm">
 
 
-<div>
+@php
+        $tiemposProblema = [
+            'hoy' => 'Hoy',
+            'ayer' => 'Ayer',
+            'varios_dias' => 'Hace varios días',
+        ];
 
-<p class="text-muted-foreground">
+        $afectaciones = [
+            'solo' => 'Solo a mí',
+            'varios' => 'A varias personas',
+            'todos' => 'A toda el área',
+        ];
+    @endphp
 
-¿Cuándo comenzó?
+    <div>
+        <p class="text-muted-foreground">
+            ¿Cuándo comenzó?
+        </p>
 
-</p>
+        <p class="font-medium">
+            {{ $tiemposProblema[$incidencia->tiempo_problema] ?? 'No indicado' }}
+        </p>
+    </div>
 
+    <div>
+        <p class="text-muted-foreground">
+            ¿A quién afecta?
+        </p>
 
-<p class="font-medium">
-
-{{ $incidencia->tiempo_problema ?? 'No indicado' }}
-
-</p>
-
-</div>
-
-
-
-
-<div>
-
-<p class="text-muted-foreground">
-
-¿A quién afecta?
-
-</p>
-
-
-<p class="font-medium">
-
-{{ $incidencia->afectacion ?? 'No indicada' }}
-
-</p>
-
-</div>
-
+        <p class="font-medium">
+            {{ $afectaciones[$incidencia->afectacion] ?? 'No indicada' }}
+        </p>
+    </div>
 
 </div>
 

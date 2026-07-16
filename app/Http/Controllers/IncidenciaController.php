@@ -307,54 +307,73 @@ $numero = $ultima
 
         }
 
+       /*
+/*
+|--------------------------------------------------------------------------
+| Enviar correo
+|--------------------------------------------------------------------------
+*/
 
+try {
 
+    Mail::to(
+        'alejandrotsc01@gmail.com'
 
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Enviar correo
-        |--------------------------------------------------------------------------
-        */
-
-
-        Mail::to(
-            'alejandrotsc01@gmail.com'
+    )->send(
+        new IncidenciaMail(
+            $incidencia,
+            $textoOCR
         )
-        ->send(
-            new IncidenciaMail(
-                $incidencia,
-                $textoOCR
-            )
-        );
+    );
+
+    $incidencia->update([
+
+        'correo_enviado' => true,
+
+        'fecha_envio_correo' => now()
+
+    ]);
 
 
+    return response()->json([
+
+        'success' => true,
+
+        'codigo' => $incidencia->codigo,
+
+        'message' => 'El reporte de incidencia fue enviado correctamente y el equipo TI fue notificado.'
+
+    ]);
+
+} catch (\Exception $e) {
+
+    \Log::error(
+        'Error enviando incidencia '.$incidencia->codigo,
+        [
+            'error' => $e->getMessage()
+        ]
+    );
+
+    $incidencia->update([
+
+        'correo_enviado' => false
+
+    ]);
 
 
-        $incidencia->update([
+    return response()->json([
 
+        'success' => false,
 
-            'correo_enviado'=>true,
+        'codigo' => $incidencia->codigo,
 
+        'message' => 'El reporte de incidencia fue registrado, pero no fue posible enviar la notificación al equipo TI.'
 
-            'fecha_envio_correo'=>now()
+    ], 500);
 
+}
 
-        ]);
-
-
-
-
-
-
-
-
-
-        return redirect()
+        /*return redirect()
 
             ->route(
                 'incidencias.show',
@@ -364,7 +383,7 @@ $numero = $ultima
             ->with(
                 'success',
                 'Incidencia enviada correctamente.'
-            );
+            );*/
 
     }
 
