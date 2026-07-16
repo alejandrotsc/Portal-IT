@@ -240,7 +240,7 @@ Información adicional
 <div class="email-footer">
 
 <p>
-Portal TI · Mesa de ayuda tecnológica
+Portal de Gestiones de Tecnología e Infomación
 </p>
 
 </div>

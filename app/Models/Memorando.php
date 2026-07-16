@@ -47,7 +47,6 @@ class Memorando extends Model
 
     const ESTADO_ARCHIVADO = 'ARCHIVADO';
 
-    const ESTADO_ENVIADO_EMAIL = 'ENVIADO_EMAIL';
 
 
 

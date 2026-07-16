@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 use App\Mail\PaseTemporalMail;
 
@@ -95,105 +96,289 @@ class MemorandoController extends Controller
 
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Enviar pase temporal por correo
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Enviar pase temporal por correo
+|--------------------------------------------------------------------------
+*/
 
-    public function storePaseTemporal(Request $request)
-    {
-        DB::beginTransaction();
+public function storePaseTemporal(Request $request)
+{
+    DB::beginTransaction();
 
-        try {
-
-            $request->validate([
-                'tipo_id'          => ['required', 'exists:memorando_tipos,id'],
-                'de_nombre'        => ['required', 'string'],
-                'asunto'           => ['required', 'string'],
-                'fecha_documento'  => ['required', 'date'],
-                'colaborador'      => ['required', 'string'],
-                'cargo_area'       => ['required', 'string'],
-                'motivo_autorizacion' => ['required', 'string'],
-            ]);
-
-            $usuario = auth()->user();
-            $tipo    = MemorandoTipo::findOrFail($request->tipo_id);
+    try {
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Guardar registro en BD (para histórico)
-            |--------------------------------------------------------------------------
-            */
+        $request->validate([
 
-            $datosExtra = $request->except(['_token', 'tipo_id']);
+            'tipo_id' => [
+                'required',
+                'exists:memorando_tipos,id'
+            ],
 
-            $memorando = Memorando::create([
-                'tipo_id'        => $tipo->id,
-                'solicitante_id' => $usuario->id,
-                'estado'         => Memorando::ESTADO_ENVIADO_EMAIL,
-                'para_nombre'    => $request->para_nombre,
-                'cc_nombre'      => $request->cc_nombre,
-                'de_nombre'      => $request->de_nombre,
-                'asunto'         => $request->asunto,
-                'observaciones'  => $request->observaciones,
-                'fecha_documento'=> $request->fecha_documento,
-                'datos_extra'    => $datosExtra,
-            ]);
+            'de_nombre' => [
+                'required',
+                'string'
+            ],
 
+            'asunto' => [
+                'required',
+                'string'
+            ],
 
-            /*
-            |--------------------------------------------------------------------------
-            | Historial
-            |--------------------------------------------------------------------------
-            */
+            'fecha_documento' => [
+                'required',
+                'date'
+            ],
 
-            MemorandoHistorial::create([
-                'memorando_id'   => $memorando->id,
-                'usuario_id'     => $usuario->id,
-                'estado_anterior'=> null,
-                'estado_nuevo'   => Memorando::ESTADO_ENVIADO_EMAIL,
-                'comentario'     => 'Pase temporal enviado por correo a helpdesk@televicentro.hn',
-            ]);
+            'colaborador' => [
+                'required',
+                'string'
+            ],
 
+            'cargo_area' => [
+                'required',
+                'string'
+            ],
 
-            /*
-            |--------------------------------------------------------------------------
-            | Enviar correo usando el correo del usuario autenticado (campo: correo)
-            |--------------------------------------------------------------------------
-            */
+            'motivo_autorizacion' => [
+                'required',
+                'string'
+            ],
 
-            Mail::send(
-                new PaseTemporalMail(
-                    datos:          $datosExtra,
-                    remitenteName:  $usuario->nombre,
-                    remitenteEmail: $usuario->correo,
-                )
-            );
+        ]);
 
 
-            DB::commit();
+
+        $usuario = auth()->user();
 
 
-            return response()->json([
-                'success' => true,
-                'message' => 'El correo fue enviado correctamente a helpdesk@televicentro.hn.',
-                'id'      => $memorando->id,
-            ]);
+        $tipo = MemorandoTipo::findOrFail(
+            $request->tipo_id
+        );
 
 
-        } catch (\Exception $e) {
 
-            DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'error'   => $e->getMessage(),
-            ], 500);
 
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | Guardar datos dinámicos
+        |--------------------------------------------------------------------------
+        */
+
+        $datosExtra = $request->except([
+
+            '_token',
+
+            'tipo_id'
+
+        ]);
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Crear memorando
+        |--------------------------------------------------------------------------
+        */
+
+        $memorando = Memorando::create([
+
+
+            'tipo_id' => $tipo->id,
+
+
+            'solicitante_id' => $usuario->id,
+
+
+            'estado' => Memorando::ESTADO_GENERADO,
+
+
+
+            'para_nombre' => 
+                $request->para_nombre,
+
+
+
+            'cc_nombre' => 
+                $request->cc_nombre,
+
+
+
+            'de_nombre' => 
+                $request->de_nombre,
+
+
+
+            'asunto' => 
+                $request->asunto,
+
+
+
+            'observaciones' => 
+                $request->observaciones,
+
+
+
+            'fecha_documento' =>
+                $request->fecha_documento,
+
+
+
+            'datos_extra' =>
+                $datosExtra,
+
+
+        ]);
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Histórico
+        |--------------------------------------------------------------------------
+        */
+
+        MemorandoHistorial::create([
+
+
+            'memorando_id' =>
+                $memorando->id,
+
+
+            'usuario_id' =>
+                $usuario->id,
+
+
+            'estado_anterior' =>
+                null,
+
+
+            'estado_nuevo' =>
+                Memorando::ESTADO_GENERADO,
+
+
+            'comentario' =>
+                'Pase temporal enviado a Helpdesk',
+
+        ]);
+
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cargar relaciones para correo
+        |--------------------------------------------------------------------------
+        */
+
+        $memorando->load([
+
+            'tipo',
+
+            'solicitante'
+
+        ]);
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enviar correo
+        |--------------------------------------------------------------------------
+        */
+
+
+        Mail::to(
+
+            'alejandrotsc01@gmail.com'
+
+        )
+        ->send(
+
+            new PaseTemporalMail(
+
+                $memorando
+
+            )
+
+        );
+
+        DB::commit();
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>
+                'La solicitud del pase menor a 24 horas fue enviada correctamente.',
+
+
+            'id'=>
+                $memorando->id
+
+
+        ]);
+
+
+
+
+
+
+
+    } catch(\Exception $e) {
+
+
+        DB::rollBack();
+
+
+
+        Log::error(
+            'Error enviando pase temporal',
+            [
+                'error'=>$e->getMessage()
+            ]
+        );
+
+
+
+        return response()->json([
+
+
+            'success'=>false,
+
+
+            'error'=>$e->getMessage()
+
+
+        ],500);
+
+
+
     }
+}
 
 
 

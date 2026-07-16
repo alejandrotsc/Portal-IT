@@ -1,87 +1,526 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+
     const form = document.getElementById('documentForm');
+
 
     if (!form) return;
 
+
+
     /*
     |--------------------------------------------------------------------------
-    | SUBMIT → Abrir Outlook web con el correo pre-armado
+    | ENVÍO DE PASE TEMPORAL
+    |--------------------------------------------------------------------------
+    |
+    | Este formulario NO genera PDF.
+    | Envía los datos a Laravel para:
+    | - Guardar memorando
+    | - Registrar historial
+    | - Enviar correo a Helpdesk
+    |
     |--------------------------------------------------------------------------
     */
 
-    form.addEventListener('submit', (e) => {
+
+    form.addEventListener('submit', async (e) => {
+
 
         e.preventDefault();
 
-        // Datos de cabecera
-        const de        = form.querySelector('[name="de_nombre"]')?.value       || '[Solicitante]';
-        const cc        = form.querySelector('[name="cc_nombre"]')?.value       || '';
-        const asunto    = form.querySelector('[name="asunto"]')?.value          || 'Autorización de ingreso de equipo';
-        const fecha     = form.querySelector('[name="fecha_documento"]')?.value || '';
-
-        // Datos del colaborador
-        const colaborador = form.querySelector('[name="colaborador"]')?.value         || '[Colaborador]';
-        const cargoArea   = form.querySelector('[name="cargo_area"]')?.value          || '[Cargo/Área]';
-        const motivo      = form.querySelector('[name="motivo_autorizacion"]')?.value || '[Motivo]';
-        const obs         = form.querySelector('[name="observaciones"]')?.value       || '';
-
-        // Construir listado de equipos
-        const tabla = document.getElementById('equipoFilas');
-        const filas = tabla ? tabla.querySelectorAll('.fila-equipo') : [];
-
-        let equiposTexto = '';
-
-        filas.forEach((fila, i) => {
-            const inputs = fila.querySelectorAll('input[type="text"]');
-            
-            const desc  = inputs[0]?.value || '-';
-            const marca = inputs[1]?.value || '-';
-            const modelo= inputs[2]?.value || '-';
-            const serie = inputs[3]?.value || '-';
-            const color = inputs[4]?.value || '-';
-
-            equiposTexto += `\n  Equipo ${i + 1}:`;
-            equiposTexto += `\n    Descripción : ${desc}`;
-            equiposTexto += `\n    Marca       : ${marca}`;
-            equiposTexto += `\n    Modelo      : ${modelo}`;
-            equiposTexto += `\n    N° Serie    : ${serie}`;
-            equiposTexto += `\n    Color       : ${color}`;
-        });
-
-        // Cuerpo del correo
-        const cuerpo =
-`Estimado equipo de Helpdesk,
-
-Por este medio solicito la autorización correspondiente para el ingreso de equipo tecnológico que será utilizado por:
-
-  Colaborador : ${colaborador}
-  Cargo / Área: ${cargoArea}
-  Fecha       : ${fecha}
-
-Motivo de autorización:
-  ${motivo}
-
-Detalle del(os) equipo(s):
-${equiposTexto}
-${obs ? '\nObservaciones:\n  ' + obs : ''}
-
-Gracias por su colaboración.
-
-Atentamente,
-${de}`;
 
 
-        // Armar URL de Outlook web
-        const to      = encodeURIComponent('helpdesk@televicentro.hn');
-        const subject = encodeURIComponent(`Solicitud de Autorización de Ingreso de Equipo — ${colaborador}`);
-        const body    = encodeURIComponent(cuerpo);
-        const ccParam = cc ? `&cc=${encodeURIComponent(cc)}` : '';
+        const boton =
+            form.querySelector(
+                'button[type="submit"]'
+            );
 
-        const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${to}${ccParam}&subject=${subject}&body=${body}`;
 
-        window.open(outlookUrl, '_blank');
+
+        const textoBoton =
+            boton?.innerHTML;
+
+
+
+        if (boton) {
+
+
+            boton.disabled = true;
+
+
+            boton.innerHTML = `
+
+                <i 
+                    data-lucide="loader-circle"
+                    class="w-4 h-4 animate-spin">
+                </i>
+
+                Enviando...
+
+            `;
+
+
+
+            if(window.lucide)
+                lucide.createIcons();
+
+
+        }
+
+
+
+
+        try {
+
+
+
+            const formData =
+                new FormData(form);
+
+
+
+
+
+            const response =
+                await fetch(
+                    form.action,
+                    {
+
+                        method:'POST',
+
+
+                        headers:{
+
+
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+
+
+                            'Accept':
+                                'application/json'
+
+
+                        },
+
+
+                        body:
+                            formData
+
+                    }
+                );
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Leer respuesta Laravel
+            |--------------------------------------------------------------------------
+            */
+
+
+            let data;
+
+
+
+            const tipoRespuesta =
+                response.headers.get(
+                    'content-type'
+                );
+
+
+
+            if(
+                tipoRespuesta &&
+                tipoRespuesta.includes(
+                    'application/json'
+                )
+            ){
+
+
+                data =
+                    await response.json();
+
+
+            }
+            else {
+
+
+
+                const html =
+                    await response.text();
+
+
+
+                console.error(
+                    'Respuesta no JSON:',
+                    html
+                );
+
+
+
+                throw new Error(
+                    'Laravel devolvió una respuesta inválida.'
+                );
+
+
+            }
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | RESPUESTA CORRECTA
+            |--------------------------------------------------------------------------
+            */
+
+
+            if(
+                response.ok &&
+                data.success
+            ){
+
+
+
+                mostrarResultado(
+                    true,
+                    'Solicitud enviada',
+                    data.message ??
+                    'El correo fue enviado correctamente a Helpdesk.'
+                );
+
+
+
+                form.reset();
+
+
+
+
+            }
+            else {
+
+
+
+                console.error(
+                    'Error backend:',
+                    data
+                );
+
+
+
+                mostrarResultado(
+                    false,
+                    'Error al enviar',
+                    data.error ??
+                    'No se pudo procesar la solicitud.'
+                );
+
+
+            }
+
+
+
+
+
+
+        }
+        catch(error){
+
+
+
+            console.error(
+                'Error JS:',
+                error
+            );
+
+
+
+            mostrarResultado(
+                false,
+                'Error de conexión',
+                error.message ??
+                'No fue posible comunicarse con el servidor.'
+            );
+
+
+
+        }
+        finally {
+
+
+
+            if(boton){
+
+
+
+                boton.disabled = false;
+
+
+
+                boton.innerHTML =
+                    textoBoton;
+
+
+
+                if(window.lucide)
+                    lucide.createIcons();
+
+
+            }
+
+
+
+        }
+
+
 
     });
 
+
+
+
 });
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| MODAL RESULTADO
+|--------------------------------------------------------------------------
+*/
+
+
+function mostrarResultado(
+    correcto,
+    titulo,
+    mensaje
+){
+
+
+    const modal =
+        document.getElementById(
+            'modalResultado'
+        );
+
+
+
+    if(!modal)
+        return;
+
+
+
+
+
+    const tituloModal =
+        document.getElementById(
+            'modalTitulo'
+        );
+
+
+
+    const mensajeModal =
+        document.getElementById(
+            'modalMensaje'
+        );
+
+
+
+    const icono =
+        document.getElementById(
+            'modalIcono'
+        );
+
+
+
+
+
+    if(tituloModal)
+        tituloModal.textContent =
+            titulo;
+
+
+
+    if(mensajeModal)
+        mensajeModal.textContent =
+            mensaje;
+
+
+
+
+
+    if(icono){
+
+
+        if(correcto){
+
+
+            icono.innerHTML = `
+
+                <i 
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-600">
+                </i>
+
+            `;
+
+
+            icono.className =
+                'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+
+
+        }
+        else {
+
+
+
+            icono.innerHTML = `
+
+                <i 
+                    data-lucide="x-circle"
+                    class="w-5 h-5 text-red-600">
+                </i>
+
+            `;
+
+
+            icono.className =
+                'w-10 h-10 rounded-full bg-red-100 flex items-center justify-center';
+
+
+
+        }
+
+
+    }
+
+
+
+
+    modal.classList.remove(
+        'hidden'
+    );
+
+
+    modal.classList.add(
+        'flex'
+    );
+
+
+
+    if(window.lucide)
+        lucide.createIcons();
+
+
+
+}
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| CERRAR MODAL
+|--------------------------------------------------------------------------
+*/
+
+
+document.addEventListener(
+    'click',
+    (e)=>{
+
+
+        const boton =
+            e.target.closest(
+                '#cerrarModal'
+            );
+
+
+
+        if(!boton)
+            return;
+
+
+
+        const modal =
+            document.getElementById(
+                'modalResultado'
+            );
+
+
+
+        if(modal){
+
+
+            modal.classList.add(
+                'hidden'
+            );
+
+
+            modal.classList.remove(
+                'flex'
+            );
+
+
+        }
+
+
+    }
+);
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Cerrar con ESC
+|--------------------------------------------------------------------------
+*/
+
+
+document.addEventListener(
+    'keydown',
+    (e)=>{
+
+
+        if(e.key !== 'Escape')
+            return;
+
+
+
+        const modal =
+            document.getElementById(
+                'modalResultado'
+            );
+
+
+
+        if(modal){
+
+
+            modal.classList.add(
+                'hidden'
+            );
+
+
+            modal.classList.remove(
+                'flex'
+            );
+
+
+        }
+
+
+
+    }
+);
