@@ -7,6 +7,7 @@ use App\Http\Controllers\MemorandoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\ChatbotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,7 +52,6 @@ Route::middleware('auth')->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
-
 
 
     /*
@@ -134,7 +134,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/solicitudes', [SolicitudController::class, 'store'])
         ->name('solicitudes.store');
 
+    /*
+|--------------------------------------------------------------------------
+| Chatbot Asistente TI
+|--------------------------------------------------------------------------
+*/
 
+Route::post('/chatbot/message', [ChatbotController::class, 'message'])
+    ->name('chatbot.message');
+
+
+Route::get('/chatbot/history', [ChatbotController::class, 'history'])
+    ->name('chatbot.history');
 
 
     /*

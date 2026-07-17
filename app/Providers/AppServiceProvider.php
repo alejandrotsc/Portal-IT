@@ -3,20 +3,19 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services\Chatbot\IntentRecognizerInterface;
+use App\Services\Chatbot\KeywordIntentRecognizer;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            IntentRecognizerInterface::class,
+            KeywordIntentRecognizer::class
+        );
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //

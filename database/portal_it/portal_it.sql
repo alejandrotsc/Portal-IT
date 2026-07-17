@@ -339,6 +339,88 @@ ON solicitudes(created_at);
 
 
 -- ============================================================
+-- CHATBOT CONVERSATIONS
+-- ASISTENTE VIRTUAL TI
+-- ============================================================
+
+
+CREATE TABLE chatbot_conversations (
+
+    id BIGSERIAL PRIMARY KEY,
+
+
+    usuario_id BIGINT NOT NULL,
+
+
+    -- Mensaje enviado por el usuario
+    mensaje TEXT NOT NULL,
+
+
+    -- Intención detectada
+    -- incidencia
+    -- solicitud
+    -- pase_menor
+    -- pase_mayor
+    -- consulta_estado
+    -- desconocido
+    intencion_detectada VARCHAR(100) NOT NULL,
+
+
+    -- Nivel de confianza del reconocimiento
+    puntuacion SMALLINT DEFAULT 0
+        CHECK(
+            puntuacion BETWEEN 0 AND 100
+        ),
+
+
+    -- Respuesta generada por el asistente
+    respuesta TEXT NOT NULL,
+
+
+    -- Feedback futuro del usuario
+    -- true = ayudó
+    -- false = no ayudó
+    es_util BOOLEAN NULL,
+
+
+    -- Tipo de acción sugerida
+    -- incidencia_create
+    -- solicitud_create
+    -- pase_menor_create
+    -- memorando_create
+    -- consulta_gestiones
+    accion VARCHAR(100) NULL,
+
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+
+    CONSTRAINT fk_chatbot_usuario
+
+        FOREIGN KEY(usuario_id)
+
+        REFERENCES usuarios(id)
+
+        ON DELETE CASCADE
+
+);
+
+
+
+CREATE INDEX idx_chatbot_usuario_fecha
+
+ON chatbot_conversations(usuario_id, created_at);
+
+
+
+CREATE INDEX idx_chatbot_intencion
+
+ON chatbot_conversations(intencion_detectada);
+
+-- ============================================================
 -- TIPOS DE MEMORANDO
 -- ============================================================
 
