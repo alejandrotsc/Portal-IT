@@ -2,96 +2,753 @@
 
 namespace App\Services\Chatbot;
 
+use App\Services\Chatbot\AI\AIResponse;
 use Illuminate\Support\Facades\Route;
+use App\Services\Chatbot\Diagnostics\DiagnosticEngine;
+
 
 /**
- * Traduce una IntentResult en una respuesta lista para el frontend:
- * texto del bot, botones de acción rápida y, si aplica, un botón de
- * redirección directa al módulo correspondiente del portal.
+ * Construye las respuestas finales del asistente virtual TI.
+ *
+ * Convierte:
+ *
+ * IntentResult
+ * DiagnosticEngine
+ * AIResponse
+ *
+ * en una respuesta lista para frontend.
  */
 class ChatbotResponseBuilder
 {
-    public function build(IntentResult $intent, string $userName): array
-    {
-        return match ($intent->intent) {
-            'incidencia' => $this->forModule(
-                key: 'incidencia',
-                message: "Entiendo, {$userName}. Parece que necesitas reportar una incidencia técnica. "
-                    ."Puedo abrirte el formulario de incidencias para que la registres con el detalle "
-                    ."(equipo, descripción del problema y evidencia si tienes)."
-            ),
 
-            'solicitud' => $this->forModule(
-                key: 'solicitud',
-                message: "Perfecto, {$userName}. Esto suena a una solicitud de servicio (equipo, software, "
-                    ."cuentas u otro recurso). Te llevo al formulario para crearla."
-            ),
 
-            'pase_menor_24h' => $this->forModule(
-                key: 'pase_menor_24h',
-                message: "Para accesos puntuales de menos de 24 horas se gestiona un pase. "
-                    ."Te muestro el formulario para solicitarlo; solo necesitarás indicar el lugar, "
-                    ."la fecha y el motivo del acceso."
-            ),
+    public function __construct(
 
-            'autorizacion_memorando' => $this->forModule(
-                key: 'autorizacion_memorando',
-                message: "Para accesos de más de 24 horas se requiere una autorización formal por memorando. "
-                    ."Te dirijo al formulario correspondiente; ten a la mano el sustento y el tiempo requerido "
-                    ."de acceso."
-            ),
+        private readonly DiagnosticEngine $diagnosticEngine
 
-            'saludo' => [
-                'message' => "¡Hola de nuevo, {$userName}! ¿Qué necesitas hacer hoy?",
-                'quick_actions' => $this->defaultQuickActions(),
-                'redirect' => null,
-                'items' => null,
-            ],
+    ) {}
 
-            default => [
-                'message' => "No estoy seguro de haber entendido bien tu solicitud, {$userName}. "
-                    ."¿Podrías elegir una opción o darme un poco más de detalle? Por ejemplo: "
-                    ."'mi computador no enciende', 'necesito una licencia de Office', "
-                    ."'necesito entrar hoy al centro de datos' o 'quiero saber el estado de mi solicitud'.",
-                'quick_actions' => $this->defaultQuickActions(),
-                'redirect' => null,
-                'items' => null,
-            ],
-        };
-    }
 
-    private function forModule(string $key, string $message): array
-    {
-        $module = config("chatbot.modules.{$key}");
 
-        $redirect = null;
-        if ($module && Route::has($module['create'])) {
-            $redirect = [
-                'label' => 'Ir a: '.$module['label'],
-                'url' => route($module['create']),
-            ];
+
+
+
+
+
+
+    public function build(
+
+        IntentResult $intent,
+
+        string $userName,
+
+        string $message = '',
+
+        ?AIResponse $aiResponse = null
+
+    ): array {
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Diagnóstico técnico
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+            $intent->is('incidencia')
+        ){
+
+
+            $diagnostic =
+
+                $this->diagnosticEngine->diagnose(
+
+                    $message
+
+                );
+
+
+
+
+
+            if($diagnostic){
+
+
+                return $this->appendIntent(
+
+                    $this->buildDiagnosticResponse(
+
+                        $diagnostic,
+
+                        $userName
+
+                    ),
+
+                    $intent
+
+                );
+
+
+            }
+
+
         }
 
-        return [
-            'message' => $message,
-            'quick_actions' => [
-                ['label' => 'Sí, llévame al formulario', 'action' => 'redirect'],
-                ['label' => 'Consultar estado de mis gestiones', 'action' => 'send', 'value' => 'consultar estado de mis gestiones'],
-                ['label' => 'No era esto, mostrar menú', 'action' => 'send', 'value' => 'menú'],
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Respuestas controladas
+        |--------------------------------------------------------------------------
+        */
+
+
+        $response = match($intent->intent){
+
+
+
+
+
+            'incidencia' =>
+
+                $this->forModule(
+
+                    'incidencia',
+
+                    "Entiendo {$userName}. "
+                    ."Puedes registrar la incidencia para que soporte pueda revisar el problema."
+
+                ),
+
+
+
+
+
+
+            'solicitud' =>
+
+                $this->forModule(
+
+                    'solicitud',
+
+                    "Perfecto {$userName}. "
+                    ."Puedes crear una solicitud de servicio para equipos, accesos o software."
+
+                ),
+
+
+
+
+
+
+            'pase_menor_24h' =>
+
+                $this->forModule(
+
+                    'pase_menor_24h',
+
+                    "Para accesos menores a 24 horas debes gestionar un pase temporal."
+
+                ),
+
+
+
+
+
+
+            'autorizacion_memorando' =>
+
+                $this->forModule(
+
+                    'autorizacion_memorando',
+
+                    "Para accesos mayores a 24 horas se requiere una autorización mediante memorando."
+
+                ),
+
+
+
+
+
+
+            'saludo' => [
+
+                'message'=>
+                    "Hola {$userName}. ¿En qué puedo ayudarte?",
+
+
+                'quick_actions'=>
+                    $this->defaultQuickActions(),
+
+
+                'redirect'=>null,
+
+
+                'items'=>null,
+
+
             ],
-            'redirect' => $redirect,
-            'items' => null,
-        ];
+
+
+
+
+
+
+            'cierre'=>[
+
+
+                'message'=>
+                    "Excelente {$userName}. Me alegra saber que quedó resuelto.",
+
+
+                'quick_actions'=>
+                    $this->defaultQuickActions(),
+
+
+                'redirect'=>null,
+
+
+                'items'=>null,
+
+
+            ],
+
+
+
+
+
+
+
+            'menu'=>[
+
+
+                'message'=>
+                    "Estas son las opciones disponibles:",
+
+
+                'quick_actions'=>
+                    $this->defaultQuickActions(),
+
+
+                'redirect'=>null,
+
+
+                'items'=>null,
+
+
+            ],
+
+
+
+
+
+
+
+            'ai'=>[
+
+
+                'message'=>
+
+                    $aiResponse?->message
+                    ??
+                    'No pude obtener una respuesta.',
+
+
+
+                'quick_actions'=>
+
+                    !empty($aiResponse?->quickActions)
+
+                    ?
+
+                    $aiResponse->quickActions
+
+                    :
+
+                    $this->defaultQuickActions(),
+
+
+
+                'redirect'=>null,
+
+
+                'items'=>null,
+
+
+
+                'ai'=>[
+
+
+                    'category'=>
+                        $aiResponse?->category,
+
+
+                    'confidence'=>
+                        $aiResponse?->confidence,
+
+
+                    'metadata'=>
+                        $aiResponse?->metadata,
+
+
+                ],
+
+
+            ],
+
+
+
+
+
+
+
+            default=>[
+
+
+                'message'=>
+
+                    "No estoy seguro de haber entendido tu solicitud {$userName}. Selecciona una opción:",
+
+
+
+                'quick_actions'=>
+                    $this->defaultQuickActions(),
+
+
+
+                'redirect'=>null,
+
+
+                'items'=>null,
+
+
+            ],
+
+
+        };
+
+
+
+
+
+
+
+        return $this->appendIntent(
+
+            $response,
+
+            $intent
+
+        );
+
+
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    private function buildDiagnosticResponse(
+
+        array $diagnostic,
+
+        string $userName
+
+    ): array {
+
+
+        $steps='';
+
+
+
+
+        foreach(
+
+            $diagnostic['steps'] ?? []
+
+            as $step
+
+        ){
+
+
+            $steps .= "\n• ".$step;
+
+
+        }
+
+
+
+
+
+
+
+        return [
+
+
+            'message'=>
+
+                "{$userName}, {$diagnostic['message']}"
+
+                .
+
+                (
+
+                    $steps
+
+                    ?
+
+                    "\n\nPuedes probar:"
+                    .$steps
+
+                    :
+
+                    ''
+
+                ),
+
+
+
+
+            'quick_actions'=>[
+
+
+                [
+
+                    'label'=>'Crear incidencia',
+
+                    'action'=>'redirect',
+
+                ],
+
+
+
+                [
+
+                    'label'=>'Consultar mis gestiones',
+
+                    'action'=>'send',
+
+                    'value'=>'consultar estado'
+
+                ],
+
+
+
+                [
+
+                    'label'=>'Mostrar menú',
+
+                    'action'=>'send',
+
+                    'value'=>'menu'
+
+                ],
+
+
+            ],
+
+
+
+
+            'redirect'=>
+
+                $this->getRedirect(
+
+                    'incidencia'
+
+                ),
+
+
+
+
+            'items'=>null,
+
+
+
+            'diagnostic'=>[
+
+                'key'=>
+                    $diagnostic['key'],
+
+                'score'=>
+                    $diagnostic['score'],
+
+                'matched'=>
+                    $diagnostic['matched'],
+
+            ],
+
+
+        ];
+
+    }
+
+
+
+
+
+
+
+
+
+    private function forModule(
+
+        string $key,
+
+        string $message
+
+    ): array {
+
+
+        return [
+
+
+            'message'=>$message,
+
+
+            'quick_actions'=>[
+
+
+                [
+
+                    'label'=>'Ir al formulario',
+
+                    'action'=>'redirect'
+
+                ],
+
+
+
+                [
+
+                    'label'=>'Consultar estado',
+
+                    'action'=>'send',
+
+                    'value'=>'consultar estado'
+
+                ],
+
+
+
+                [
+
+                    'label'=>'Mostrar menú',
+
+                    'action'=>'send',
+
+                    'value'=>'menu'
+
+                ],
+
+
+            ],
+
+
+
+            'redirect'=>
+
+                $this->getRedirect($key),
+
+
+
+            'items'=>null,
+
+
+        ];
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private function getRedirect(
+
+        string $key
+
+    ): ?array {
+
+
+        $module =
+
+            config(
+
+                "chatbot.modules.$key"
+
+            );
+
+
+
+
+        if(
+
+            !$module
+
+            ||
+
+            !Route::has(
+
+                $module['create']
+
+            )
+
+        ){
+
+            return null;
+
+        }
+
+
+
+
+        return [
+
+
+            'label'=>
+
+                'Ir a: '.$module['label'],
+
+
+
+            'url'=>
+
+                route(
+
+                    $module['create']
+
+                ),
+
+
+        ];
+
+    }
+
+
+
+
+
+
+
+
+
+    private function appendIntent(
+
+        array $response,
+
+        IntentResult $intent
+
+    ): array {
+
+
+        $response['intent']=[
+
+
+            'name'=>
+
+                $intent->intent,
+
+
+            'score'=>
+
+                $intent->score,
+
+
+            'confidence'=>
+
+                $intent->confidence,
+
+
+            'matched'=>
+
+                $intent->matchedKeywords,
+
+
+        ];
+
+
+
+        return $response;
+
+
+    }
+
+
+
+
+
+
+
+
 
     private function defaultQuickActions(): array
     {
+
+
         return [
-            ['label' => 'Reportar incidencia', 'action' => 'send', 'value' => 'quiero reportar una incidencia'],
-            ['label' => 'Crear solicitud', 'action' => 'send', 'value' => 'necesito crear una solicitud de servicio'],
-            ['label' => 'Solicitar pase (< 24h)', 'action' => 'send', 'value' => 'necesito un pase de acceso por menos de 24 horas'],
-            ['label' => 'Autorización por memorando (> 24h)', 'action' => 'send', 'value' => 'necesito una autorización por memorando'],
-            ['label' => 'Consultar mis gestiones', 'action' => 'send', 'value' => 'consultar estado de mis gestiones'],
+
+
+            [
+
+                'label'=>'Reportar incidencia',
+
+                'action'=>'send',
+
+                'value'=>'quiero reportar una incidencia'
+
+            ],
+
+
+
+            [
+
+                'label'=>'Crear solicitud',
+
+                'action'=>'send',
+
+                'value'=>'quiero crear una solicitud'
+
+            ],
+
+
+
+            [
+
+                'label'=>'Consultar estado',
+
+                'action'=>'send',
+
+                'value'=>'consultar estado'
+
+            ],
+
+
         ];
+
+
     }
+
+
+
 }

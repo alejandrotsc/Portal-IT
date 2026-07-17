@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatbotConversation;
-use App\Services\Chatbot\ChatbotResponseBuilder;
+use App\Services\Chatbot\ChatbotService;
 use App\Services\Chatbot\GestionStatusService;
-use App\Services\Chatbot\IntentRecognizerInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
 
 class ChatbotController extends Controller
 {
 
+
     public function __construct(
 
-        private readonly IntentRecognizerInterface $recognizer,
+        private readonly ChatbotService $chatbotService,
 
-        private readonly ChatbotResponseBuilder $responseBuilder,
 
-        private readonly GestionStatusService $gestionStatus,
+        private readonly GestionStatusService $gestionStatus
 
     ) {}
 
@@ -26,43 +26,41 @@ class ChatbotController extends Controller
 
 
 
+
+
+
+
     /**
-     * Procesar mensaje enviado por el usuario
+     * Procesar mensaje enviado al asistente
      */
-    public function message(Request $request): JsonResponse
-    {
-
-        $validated = $request->validate([
-
-            'message' => [
-                'required',
-                'string',
-                'max:500'
-            ]
-
-        ]);
+    public function message(
+        Request $request
+    ): JsonResponse {
 
 
+        $validated =
+            $request->validate([
 
-        $usuario = $request->user();
+                'message'=>[
 
+                    'required',
 
+                    'string',
 
-        $nombreUsuario = $usuario?->nombre
-            ??
-            config('chatbot.fallback_name');
+                    'max:500'
+
+                ]
+
+            ]);
 
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Detectar intención
-        |--------------------------------------------------------------------------
-        */
 
-        $intent = $this->recognizer->recognize(
-            $validated['message']
-        );
+
+
+        $user =
+            $request->user();
+
 
 
 
@@ -70,46 +68,30 @@ class ChatbotController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Construcción de respuesta
+        | Procesamiento principal
         |--------------------------------------------------------------------------
+        |
+        | Toda la lógica vive en ChatbotService:
+        |
+        | - intención
+        | - diagnósticos
+        | - módulos
+        | - IA
+        |
         */
 
-        if ($intent->is('consultar_estado')) {
 
+        $response =
+            $this->chatbotService->handle(
 
-            $payload = $this->buildEstadoResponse(
+                $validated['message'],
 
-                $usuario?->id,
-
-                $nombreUsuario
-
-            );
-
-
-            $accion = 'consulta_gestiones';
-
-
-
-        } else {
-
-
-            $payload = $this->responseBuilder->build(
-
-                $intent,
-
-                $nombreUsuario
+                $user
 
             );
 
 
-            $accion = $this->resolveAction(
 
-                $intent->intent
-
-            );
-
-
-        }
 
 
 
@@ -121,115 +103,29 @@ class ChatbotController extends Controller
         |--------------------------------------------------------------------------
         */
 
+
         $this->saveConversation(
 
-            $usuario?->id,
+            $user?->id,
 
             $validated['message'],
 
-            $intent,
-
-            $payload['message'],
-
-            $accion
+            $response
 
         );
 
 
 
 
-
-        return response()->json($payload);
-
-    }
-
-
-
-
-
-
-
-
-
-    /**
-     * Consulta directa de gestiones
-     */
-    public function estado(Request $request): JsonResponse
-    {
-
-        $usuario = $request->user();
 
 
 
         return response()->json(
 
-            $this->buildEstadoResponse(
-
-                $usuario?->id,
-
-                $usuario?->nombre
-                    ??
-                    config('chatbot.fallback_name')
-
-            )
+            $response
 
         );
 
-    }
-
-
-
-
-
-
-
-
-
-    /**
-     * Guardar feedback 👍 👎
-     */
-    public function feedback(Request $request): JsonResponse
-    {
-
-        $validated = $request->validate([
-
-            'conversation_id'=>[
-                'required',
-                'integer',
-                'exists:chatbot_conversations,id'
-            ],
-
-
-            'was_helpful'=>[
-                'required',
-                'boolean'
-            ]
-
-        ]);
-
-
-
-
-        ChatbotConversation::where(
-
-            'id',
-
-            $validated['conversation_id']
-
-        )->update([
-
-            'es_util'=>$validated['was_helpful']
-
-        ]);
-
-
-
-
-        return response()->json([
-
-            'ok'=>true
-
-        ]);
 
     }
 
@@ -241,25 +137,35 @@ class ChatbotController extends Controller
 
 
 
+
+
+
     /**
-     * Respuesta con gestiones del usuario
+     * Consulta manual de gestiones
      */
-    private function buildEstadoResponse(
-
-        ?int $usuarioId,
-
-        string $nombreUsuario
-
-    ): array {
+    public function estado(
+        Request $request
+    ): JsonResponse {
 
 
-        if(!$usuarioId){
+        $user =
+            $request->user();
 
 
-            return [
+
+
+
+
+        if(!$user){
+
+
+            return response()->json([
+
 
                 'message'=>
+
                     'Necesitas iniciar sesión para consultar tus gestiones.',
+
 
 
                 'quick_actions'=>[],
@@ -270,75 +176,8 @@ class ChatbotController extends Controller
 
                 'items'=>null
 
-            ];
 
-        }
-
-
-
-
-
-        $items = $this->gestionStatus->getRecentFor(
-
-            $usuarioId
-
-        );
-
-
-
-
-
-
-        if(empty($items)){
-
-
-            return [
-
-                'message'=>
-
-                    "No encontré gestiones registradas a tu nombre, {$nombreUsuario}. "
-                    ."Puedes crear una incidencia, solicitud, pase o autorización.",
-
-
-
-                'quick_actions'=>[
-
-
-                    [
-
-                        'label'=>'Reportar incidencia',
-
-                        'action'=>'send',
-
-                        'value'=>'quiero reportar una incidencia'
-
-                    ],
-
-
-
-                    [
-
-                        'label'=>'Crear solicitud',
-
-                        'action'=>'send',
-
-                        'value'=>'quiero crear una solicitud'
-
-                    ]
-
-
-
-                ],
-
-
-
-                'redirect'=>null,
-
-
-                'items'=>null
-
-
-            ];
+            ]);
 
         }
 
@@ -347,15 +186,43 @@ class ChatbotController extends Controller
 
 
 
-        return [
+
+        $items =
+            $this->gestionStatus->getRecentFor(
+
+                $user->id
+
+            );
+
+
+
+
+
+
+
+
+        return response()->json([
+
+
 
             'message'=>
 
-                "Estas son tus gestiones recientes, {$nombreUsuario}:",
+                empty($items)
+
+                ?
+
+                "No encontré gestiones registradas a tu nombre."
+
+                :
+
+                "Estas son tus gestiones recientes:",
+
+
 
 
 
             'quick_actions'=>[
+
 
 
                 [
@@ -368,7 +235,10 @@ class ChatbotController extends Controller
 
                 ]
 
+
             ],
+
+
 
 
 
@@ -376,10 +246,15 @@ class ChatbotController extends Controller
 
 
 
-            'items'=>$items
+            'items'=>
+
+                $items ?: null
 
 
-        ];
+
+        ]);
+
+
 
     }
 
@@ -391,40 +266,89 @@ class ChatbotController extends Controller
 
 
 
+
+
+
     /**
-     * Determina acción sugerida
+     * Guardar valoración del usuario
      */
-    private function resolveAction(string $intent): ?string
-    {
-
-        return match($intent){
-
-
-            'incidencia'=>
-                'incidencia_create',
+    public function feedback(
+        Request $request
+    ): JsonResponse {
 
 
-
-            'solicitud'=>
-                'solicitud_create',
+        $validated =
+            $request->validate([
 
 
 
-            'pase_menor_24h'=>
-                'pase_menor_create',
+                'conversation_id'=>[
+
+                    'required',
+
+                    'integer',
+
+                    'exists:chatbot_conversations,id'
+
+                ],
 
 
 
-            'autorizacion_memorando'=>
-                'memorando_create',
+
+
+                'was_helpful'=>[
+
+                    'required',
+
+                    'boolean'
+
+                ]
 
 
 
-            default=>
-                null
+            ]);
 
 
-        };
+
+
+
+
+
+
+
+        ChatbotConversation::where(
+
+            'id',
+
+            $validated['conversation_id']
+
+        )
+        ->update([
+
+
+            'es_util'=>
+
+                $validated['was_helpful']
+
+
+        ]);
+
+
+
+
+
+
+
+
+        return response()->json([
+
+
+            'ok'=>true
+
+
+        ]);
+
+
 
     }
 
@@ -436,26 +360,32 @@ class ChatbotController extends Controller
 
 
 
+
+
+
     /**
-     * Registrar historial del chatbot
+     * Registrar conversación del usuario
      */
     private function saveConversation(
 
-        ?int $usuarioId,
+        ?int $userId,
 
-        string $mensaje,
+        string $message,
 
-        $intent,
-
-        string $respuesta,
-
-        ?string $accion
+        array $response
 
     ): void {
 
 
 
-        if(!$usuarioId){
+        /*
+        |--------------------------------------------------------------------------
+        | Usuarios invitados no generan historial
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(!$userId){
 
             return;
 
@@ -464,41 +394,113 @@ class ChatbotController extends Controller
 
 
 
+
+
+
+
         try {
+
+
+
+            $intent =
+                $response['intent']
+                ??
+                [];
+
+
+
+
+
+            $accion = null;
+
+
+
+
+
+            if(
+                isset($response['redirect'])
+                &&
+                is_array($response['redirect'])
+            ){
+
+                $accion =
+                    $response['redirect']['url']
+                    ??
+                    null;
+
+            }
+
+
+
+
+
+
 
 
             ChatbotConversation::create([
 
 
-                'usuario_id'=>$usuarioId,
+
+                'usuario_id'=>$userId,
 
 
-                'mensaje'=>$mensaje,
+
+                'mensaje'=>$message,
 
 
-                'intencion_detectada'=>$intent->intent,
+
+                'respuesta'=>
+
+                    $response['message']
+                    ??
+                    null,
 
 
-                'puntuacion'=>$intent->score,
 
 
-                'respuesta'=>$respuesta,
+
+                'intencion_detectada'=>
+
+                    $intent['name']
+                    ??
+                    null,
 
 
-                'accion'=>$accion,
+
+
+
+                'puntuacion'=>
+
+                    $intent['score']
+                    ??
+                    null,
+
+
+
+
+
+                'accion'=>
+
+                    $accion,
+
 
 
             ]);
 
 
 
+
+
         }catch(\Throwable $e){
+
 
 
             report($e);
 
 
+
         }
+
 
 
     }
