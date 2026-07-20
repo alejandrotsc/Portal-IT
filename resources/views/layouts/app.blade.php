@@ -2,7 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    {{-- Necesario para solicitudes POST de Laravel --}}
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    {{-- Endpoint del chatbot con streaming --}}
+    <meta
+        name="chatbot-stream-endpoint"
+        content="{{ route('chatbot.stream') }}"
+    >
+
+    <meta
+    name="chatbot-warmup-endpoint"
+    content="{{ route('chatbot.warm-up') }}"
+    >
 
     <title>
         @yield('title', 'Portal TI')
@@ -10,12 +31,17 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+        defer
+        src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-
+    <link
+        rel="stylesheet"
+        href="{{ asset('css/app.css') }}"
+    >
 </head>
 
 

@@ -31,6 +31,10 @@ class ChatbotServiceProvider extends ServiceProvider
             AIServiceInterface::class,
             OllamaAIService::class
         );
+
+        $this->app->singleton(
+        PortalKnowledge::class
+        );
     }
 
     public function boot(): void

@@ -10,47 +10,41 @@ class ChatbotConversation extends Model
 {
     use HasFactory;
 
-
     protected $table = 'chatbot_conversations';
 
-
     protected $fillable = [
-
         'usuario_id',
-
         'mensaje',
-
         'intencion_detectada',
-
         'puntuacion',
-
         'respuesta',
-
         'es_util',
-
         'accion',
-
     ];
-
 
     protected $casts = [
-
-        'es_util' => 'boolean',
-
-        'puntuacion' => 'integer',
-
+        'puntuacion'=>'integer',
+        'es_util'=>'boolean',
     ];
-
-
 
     public function usuario(): BelongsTo
     {
-
         return $this->belongsTo(
             Usuario::class,
             'usuario_id'
         );
-
     }
 
+    public function scopeRecentFor(
+        $query,
+        int $userId
+    )
+    {
+        return $query
+            ->where(
+                'usuario_id',
+                $userId
+            )
+            ->latest('id');
+    }
 }

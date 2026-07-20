@@ -140,12 +140,47 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::post('/chatbot/message', [ChatbotController::class, 'message'])
-    ->name('chatbot.message');
+Route::prefix('chatbot')
+    ->name('chatbot.')
+    ->group(function () {
 
 
-Route::get('/chatbot/history', [ChatbotController::class, 'history'])
-    ->name('chatbot.history');
+        Route::post(
+    '/warm-up',
+    [ChatbotController::class, 'warmUp']
+)->name('warm-up');
+        /*
+         * Endpoint tradicional con respuesta JSON completa.
+         */
+        Route::post(
+            '/message',
+            [ChatbotController::class, 'message']
+        )->name('message');
+
+        /*
+         * Endpoint optimizado con respuesta progresiva.
+         */
+        Route::post(
+            '/stream',
+            [ChatbotController::class, 'stream']
+        )->name('stream');
+
+        /*
+         * Consultar estado de gestiones.
+         */
+        Route::get(
+            '/estado',
+            [ChatbotController::class, 'estado']
+        )->name('estado');
+
+        /*
+         * Registrar si la respuesta fue útil.
+         */
+        Route::post(
+            '/feedback',
+            [ChatbotController::class, 'feedback']
+        )->name('feedback');
+    });
 
 
     /*

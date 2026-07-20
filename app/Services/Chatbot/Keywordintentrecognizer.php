@@ -5,13 +5,18 @@ namespace App\Services\Chatbot;
 class KeywordIntentRecognizer implements IntentRecognizerInterface
 {
     private array $priorityIntents = [
-        'incidencia',
-        'solicitud',
+        'consultar_estado',
         'pase_menor_24h',
         'autorizacion_memorando',
-        'consultar_estado',
+        'incidencia',
+        'solicitud',
         'cierre',
         'saludo',
+    ];
+
+    private array $secondaryIntents = [
+        'saludo',
+        'cierre',
     ];
 
     public function recognize(string $message): IntentResult
@@ -19,7 +24,13 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         $normalized = $this->normalize($message);
         $keywords = config('chatbot.keywords', []);
 
-        if(!is_array($keywords) || empty($keywords)){
+        if(
+            $normalized === ''
+            ||
+            !is_array($keywords)
+            ||
+            empty($keywords)
+        ){
             return IntentResult::unknown();
         }
 
@@ -33,24 +44,50 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             $score = 0;
             $matched = [];
 
-            foreach($words as $keyword){
-                if(!is_string($keyword) || trim($keyword) === ''){
+            foreach($words as $key=>$value){
+                [$keyword, $customWeight] =
+                    $this->resolveKeyword(
+                        $key,
+                        $value
+                    );
+
+                if($keyword === ''){
                     continue;
                 }
 
-                $keywordNormalized = $this->normalize($keyword);
+                $keywordNormalized =
+                    $this->normalize(
+                        $keyword
+                    );
 
-                if($this->matches($normalized, $keywordNormalized)){
-                    $score += $this->calculateKeywordWeight($keywordNormalized);
-                    $matched[] = $keyword;
+                if(
+                    $keywordNormalized === ''
+                    ||
+                    !$this->matches(
+                        $normalized,
+                        $keywordNormalized
+                    )
+                ){
+                    continue;
                 }
+
+                $score +=
+                    $customWeight
+                    ??
+                    $this->calculateKeywordWeight(
+                        $keywordNormalized
+                    );
+
+                $matched[] = $keyword;
             }
 
             if($score > 0){
                 $results[] = [
-                    'intent'=>$intent,
+                    'intent'=>(string) $intent,
                     'score'=>$score,
-                    'matched'=>$matched,
+                    'matched'=>array_values(
+                        array_unique($matched)
+                    ),
                 ];
             }
         }
@@ -59,18 +96,43 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             return IntentResult::unknown();
         }
 
-        usort($results, function(array $a,array $b): int{
-            if($a['score'] === $b['score']){
-                return $this->priority($a['intent'])
-                    <=>
-                    $this->priority($b['intent']);
-            }
+        $results =
+            $this->removeSecondaryIntents(
+                $results
+            );
 
-            return $b['score'] <=> $a['score'];
-        });
+        usort(
+            $results,
+            function(
+                array $a,
+                array $b
+            ): int {
+                if($a['score'] === $b['score']){
+                    return $this->priority(
+                        $a['intent']
+                    )
+                    <=>
+                    $this->priority(
+                        $b['intent']
+                    );
+                }
+
+                return $b['score']
+                    <=>
+                    $a['score'];
+            }
+        );
 
         $best = $results[0];
-        $minimumScore = (int) config('chatbot.min_score',1);
+
+        $minimumScore =
+            max(
+                1,
+                (int) config(
+                    'chatbot.min_score',
+                    1
+                )
+            );
 
         if($best['score'] < $minimumScore){
             return IntentResult::unknown();
@@ -78,7 +140,14 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
 
         $alternatives = [];
 
-        foreach(array_slice($results,1,3) as $item){
+        foreach(
+            array_slice(
+                $results,
+                1,
+                3
+            )
+            as $item
+        ){
             $alternatives[] = [
                 'intent'=>$item['intent'],
                 'score'=>$item['score'],
@@ -89,59 +158,159 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             intent:$best['intent'],
             score:$best['score'],
             matchedKeywords:$best['matched'],
-            confidence:$this->calculateConfidence($best['score']),
+            confidence:$this->calculateConfidence(
+                $best['score']
+            ),
             alternatives:$alternatives
         );
     }
 
-    private function matches(string $message,string $keyword): bool
-    {
-        if(str_contains($keyword,' ')){
-            return str_contains($message,$keyword);
+    private function resolveKeyword(
+        int|string $key,
+        mixed $value
+    ): array {
+        if(
+            is_string($key)
+            &&
+            is_numeric($value)
+        ){
+            return [
+                trim($key),
+                max(
+                    1,
+                    (int) $value
+                ),
+            ];
+        }
+
+        if(is_string($value)){
+            return [
+                trim($value),
+                null,
+            ];
+        }
+
+        return [
+            '',
+            null,
+        ];
+    }
+
+    private function removeSecondaryIntents(
+        array $results
+    ): array {
+        $hasPrimaryIntent =
+            collect($results)->contains(
+                fn(array $result): bool =>
+                    !in_array(
+                        $result['intent'],
+                        $this->secondaryIntents,
+                        true
+                    )
+            );
+
+        if(!$hasPrimaryIntent){
+            return $results;
+        }
+
+        return array_values(
+            array_filter(
+                $results,
+                fn(array $result): bool =>
+                    !in_array(
+                        $result['intent'],
+                        $this->secondaryIntents,
+                        true
+                    )
+            )
+        );
+    }
+
+    private function matches(
+        string $message,
+        string $keyword
+    ): bool {
+        if(str_contains($keyword, ' ')){
+            return preg_match(
+                '/(?:^|\s)'
+                .preg_quote($keyword, '/')
+                .'(?:$|\s)/u',
+                $message
+            ) === 1;
         }
 
         return preg_match(
-            '/(?:^|\s)'.preg_quote($keyword,'/').'(?:$|\s)/u',
+            '/(?:^|\s)'
+            .preg_quote($keyword, '/')
+            .'(?:$|\s)/u',
             $message
         ) === 1;
     }
 
-    private function normalize(string $text): string
-    {
-        $text = mb_strtolower(trim($text));
+    private function normalize(
+        string $text
+    ): string {
+        $text =
+            mb_strtolower(
+                trim($text)
+            );
 
-        $text = strtr($text,[
-            'á'=>'a',
-            'é'=>'e',
-            'í'=>'i',
-            'ó'=>'o',
-            'ú'=>'u',
-            'ü'=>'u',
-            'ñ'=>'n',
-        ]);
+        $text = strtr(
+            $text,
+            [
+                'á'=>'a',
+                'é'=>'e',
+                'í'=>'i',
+                'ó'=>'o',
+                'ú'=>'u',
+                'ü'=>'u',
+                'ñ'=>'n',
+            ]
+        );
 
-        $text = preg_replace('/[^a-z0-9\s]/u',' ',$text) ?? $text;
-        $text = preg_replace('/\s+/u',' ',$text) ?? $text;
+        $text =
+            preg_replace(
+                '/[^a-z0-9\s]/u',
+                ' ',
+                $text
+            )
+            ??
+            $text;
+
+        $text =
+            preg_replace(
+                '/\s+/u',
+                ' ',
+                $text
+            )
+            ??
+            $text;
 
         return trim($text);
     }
 
-    private function calculateKeywordWeight(string $keyword): int
-    {
-        $words = count(
-            preg_split('/\s+/u',trim($keyword)) ?: []
-        );
+    private function calculateKeywordWeight(
+        string $keyword
+    ): int {
+        $words =
+            preg_split(
+                '/\s+/u',
+                trim($keyword)
+            )
+            ?:
+            [];
 
         return match(true){
-            $words >= 4=>5,
-            $words === 3=>3,
-            $words === 2=>2,
+            count($words) >= 4=>5,
+            count($words) === 3=>3,
+            count($words) === 2=>2,
             default=>1,
         };
     }
 
-    private function calculateConfidence(int $score): float
-    {
+    private function calculateConfidence(
+        int $score
+    ): float {
         return match(true){
             $score >= 8=>0.95,
             $score >= 5=>0.90,
@@ -151,14 +320,18 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         };
     }
 
-    private function priority(string $intent): int
-    {
-        $index = array_search(
-            $intent,
-            $this->priorityIntents,
-            true
-        );
+    private function priority(
+        string $intent
+    ): int {
+        $index =
+            array_search(
+                $intent,
+                $this->priorityIntents,
+                true
+            );
 
-        return $index === false ? 999 : $index;
+        return $index === false
+            ? 999
+            : $index;
     }
 }
