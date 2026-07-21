@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 
 <title>
-Solicitud de autorización de ingreso de equipo
+Solicitud de pase menor a 24 horas
 </title>
 
 <style>
@@ -35,7 +35,7 @@ alt="TVC"
 
 
 <h1>
-Solicitud de autorización de ingreso de equipo
+Solicitud de pase menor a 24 horas
 </h1>
 
 
@@ -193,7 +193,7 @@ Fecha documento
 
 
 <h2>
-Información del colaborador
+Información del responsable del equipo
 </h2>
 
 
@@ -203,7 +203,7 @@ Información del colaborador
 <tr>
 
 <td>
-Colaborador
+Responsable del equipo
 </td>
 
 <td>

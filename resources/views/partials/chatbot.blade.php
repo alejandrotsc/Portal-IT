@@ -111,10 +111,7 @@
                 >
 
                     <p class="text-sm text-foreground leading-relaxed">
-                        Hola{{ auth()->check() ? ', '.explode(' ', auth()->user()->nombre)[0] : '' }} 👋
-                    </p>
-
-                    <p class="text-sm text-foreground leading-relaxed mt-2">
+                        Hola{{ auth()->check() ? ', '.explode(' ', auth()->user()->nombre)[0] : '' }}.
                         ¿En qué puedo ayudarte? Selecciona una opción
                         para comenzar.
                     </p>

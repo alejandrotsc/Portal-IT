@@ -9,14 +9,15 @@ use App\Models\MemorandoArticulo;
 use App\Models\MemorandoArchivo;
 use App\Models\MemorandoHistorial;
 use App\Models\FolioCounter;
+use App\Services\Mail\TrackedMailService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 use App\Mail\PaseTemporalMail;
+use App\Mail\AutorizacionMail;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -102,7 +103,10 @@ class MemorandoController extends Controller
 |--------------------------------------------------------------------------
 */
 
-public function storePaseTemporal(Request $request)
+public function storePaseTemporal(
+    Request $request,
+    TrackedMailService $trackedMail
+)
 {
     DB::beginTransaction();
 
@@ -304,25 +308,50 @@ public function storePaseTemporal(Request $request)
 
         /*
         |--------------------------------------------------------------------------
-        | Enviar correo
+        | Enviar correo con seguimiento
         |--------------------------------------------------------------------------
+        |
+        | TrackedMailService captura cualquier falla SMTP. Por lo tanto, el
+        | memorando se confirma aunque la notificación no pueda enviarse.
+        |
         */
 
+        $delivery = $trackedMail->send(
+            emailable: $memorando,
 
-        Mail::to(
-
-            'alejandrotsc01@gmail.com'
-
-        )
-        ->send(
-
-            new PaseTemporalMail(
-
+            mailable: new PaseTemporalMail(
                 $memorando
+            ),
 
-            )
+            recipientEmail:
+                'alejandrotsc01@gmail.com',
 
+            mailType:
+                'pase_temporal_creado',
+
+            recipientName:
+                'Equipo de soporte TI',
+
+            subject:
+                'Nuevo pase menor a 24 horas',
+
+            metadata: [
+                'memorando_id' =>
+                    $memorando->id,
+
+                'tipo_id' =>
+                    $memorando->tipo_id,
+
+                'solicitante_id' =>
+                    $memorando->solicitante_id,
+
+                'tipo_documento' =>
+                    'pase_temporal',
+            ]
         );
+
+        $emailSent =
+            $delivery->fueEnviado();
 
         DB::commit();
 
@@ -333,11 +362,24 @@ public function storePaseTemporal(Request $request)
 
 
             'message'=>
-                'La solicitud del pase menor a 24 horas fue enviada correctamente.',
+                $emailSent
+                    ? 'La solicitud del pase menor a 24 horas fue registrada correctamente y el equipo TI fue notificado.'
+                    : 'La solicitud del pase menor a 24 horas fue registrada correctamente, pero no fue posible enviar la notificación por correo.',
 
 
             'id'=>
-                $memorando->id
+                $memorando->id,
+
+            'email'=>[
+                'sent'=>
+                    $emailSent,
+
+                'status'=>
+                    $delivery->status,
+
+                'delivery_id'=>
+                    $delivery->id,
+            ]
 
 
         ]);
@@ -430,7 +472,9 @@ public function storePaseTemporal(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    public function store(Request $request)
+    public function store(
+    Request $request,
+    TrackedMailService $trackedMail)
     {
         DB::beginTransaction();
 
@@ -479,14 +523,14 @@ public function storePaseTemporal(Request $request)
                     $tipo->creado_por_rol === 'Todos' ||
                     $tipo->creado_por_rol === $rol;
 
-                if(!$permitido){
+                if (! $permitido) {
+    DB::rollBack();
 
-                    return response()->json([
-                        'success'=>false,
-                        'error'=>'No tiene permisos para generar este documento.'
-                    ],403);
-
-                }
+    return response()->json([
+        'success' => false,
+        'error' => 'No tiene permisos para generar este documento.',
+    ], 403);
+}
 
             }
 
@@ -693,23 +737,142 @@ $memorando->update([
 
 
 
-            DB::commit();
+            /*
+|--------------------------------------------------------------------------
+| Enviar autorización por correo
+|--------------------------------------------------------------------------
+|
+| Solamente se envía cuando el formulario corresponde a una
+| autorización o pase mayor a 24 horas.
+|
+*/
 
+$delivery = null;
+$emailSent = null;
 
-            return response()->json([
+if ($tipo->formulario === 'autorizacion') {
+    /*
+     * Actualizar el modelo para que AutorizacionMail pueda encontrar
+     * el PDF recién generado y adjuntarlo.
+     */
+    $memorando->refresh();
 
-                'success'=>true,
+    $memorando->load([
+        'tipo',
+        'solicitante',
+    ]);
 
-                'codigo'=>$memorando->codigo,
+    $delivery = $trackedMail->send(
+        emailable:
+            $memorando,
 
-                'id'=>$memorando->id,
+        mailable:
+            new AutorizacionMail(
+                $memorando
+            ),
 
-                'download'=>route(
-                    'memorandos.download',
-                    $memorando->id
-                )
+        recipientEmail:
+            'alejandrotsc01@gmail.com',
 
-            ]);
+        mailType:
+            'pase_mayor_creado',
+
+        recipientName:
+            'Equipo de soporte TI',
+
+        subject:
+            'Pase mayor a 24 horas pendiente de firma',
+
+        metadata: [
+            'memorando_id' =>
+                $memorando->id,
+
+            'codigo' =>
+                $memorando->codigo,
+
+            'tipo_id' =>
+                $memorando->tipo_id,
+
+            'solicitante_id' =>
+                $memorando->solicitante_id,
+
+            'tipo_documento' =>
+                'autorizacion',
+
+            'archivo_pdf' =>
+                $memorando->archivo_pdf,
+        ]
+    );
+
+    $emailSent =
+        $delivery->fueEnviado();
+}
+
+/*
+|--------------------------------------------------------------------------
+| Confirmar información
+|--------------------------------------------------------------------------
+|
+| TrackedMailService captura las fallas SMTP. Por eso una falla de correo
+| no provoca que se elimine el memorando.
+|
+*/
+
+DB::commit();
+
+/*
+|--------------------------------------------------------------------------
+| Construir respuesta
+|--------------------------------------------------------------------------
+*/
+
+$response = [
+    'success' =>
+        true,
+
+    'codigo' =>
+        $memorando->codigo,
+
+    'id' =>
+        $memorando->id,
+
+    'download' =>
+        route(
+            'memorandos.download',
+            $memorando->id
+        ),
+
+    'message' =>
+        'El documento fue generado correctamente.',
+];
+
+/*
+|--------------------------------------------------------------------------
+| Agregar resultado SMTP solamente para autorizaciones
+|--------------------------------------------------------------------------
+*/
+
+if ($delivery !== null) {
+    $response['email'] = [
+        'sent' =>
+            $emailSent,
+
+        'status' =>
+            $delivery->status,
+
+        'delivery_id' =>
+            $delivery->id,
+    ];
+
+    $response['message'] =
+        $emailSent
+            ? 'El documento fue generado correctamente y enviado al equipo responsable para su proceso de firma.'
+            : 'El documento fue generado correctamente, pero no fue posible enviar la notificación por correo.';
+}
+
+return response()->json(
+    $response
+);
 
         }
         catch(\Exception $e){

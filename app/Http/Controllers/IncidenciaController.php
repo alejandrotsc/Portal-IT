@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Mail\IncidenciaMail;
 use App\Models\Incidencia;
 use App\Models\IncidenciaArchivo;
+use App\Services\Mail\TrackedMailService;
 use App\Services\OcrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class IncidenciaController extends Controller
 {
@@ -57,7 +56,8 @@ class IncidenciaController extends Controller
 
     public function store(
         Request $request,
-        OcrService $ocr
+        OcrService $ocr,
+        TrackedMailService $trackedMail
     ) {
         /*
         |--------------------------------------------------------------------------
@@ -257,61 +257,102 @@ class IncidenciaController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        try {
-            Mail::to(
-                'alejandrotsc01@gmail.com'
-            )->send(
-                new IncidenciaMail(
-                    $incidencia,
-                    $textoOCR
-                )
-            );
+        /*
+|--------------------------------------------------------------------------
+| Enviar correo con seguimiento
+|--------------------------------------------------------------------------
+*/
 
-            $incidencia->update([
-                'correo_enviado' =>
-                    true,
+$delivery = $trackedMail->send(
+    emailable: $incidencia,
 
-                'fecha_envio_correo' =>
-                    now(),
-            ]);
+    mailable: new IncidenciaMail(
+        $incidencia,
+        $textoOCR
+    ),
 
-            return response()->json([
-                'success' =>
-                    true,
+    recipientEmail:
+        'alejandrotsc01@gmail.com',
 
-                'codigo' =>
-                    $incidencia->codigo,
+    mailType:
+        'incidencia_creada',
 
-                'message' =>
-                    'El reporte de incidencia fue enviado correctamente y el equipo TI fue notificado.',
-            ]);
+    recipientName:
+        'Equipo de soporte TI',
 
-        } catch (\Throwable $e) {
-            Log::error(
-                'Error enviando incidencia '
-                .$incidencia->codigo,
-                [
-                    'error' =>
-                        $e->getMessage(),
-                ]
-            );
+    subject:
+        'Nueva incidencia '.$incidencia->codigo,
 
-            $incidencia->update([
-                'correo_enviado' =>
-                    false,
-            ]);
+    metadata: [
+        'codigo' =>
+            $incidencia->codigo,
 
-            return response()->json([
-                'success' =>
-                    false,
+        'usuario_id' =>
+            Auth::id(),
 
-                'codigo' =>
-                    $incidencia->codigo,
+        'cantidad_archivos' =>
+            $incidencia->archivos()->count(),
 
-                'message' =>
-                    'El reporte de incidencia fue registrado, pero no fue posible enviar la notificación al equipo TI.',
-            ], 500);
-        }
+        'cantidad_textos_ocr' =>
+            count($textoOCR),
+    ]
+);
+
+$emailSent =
+    $delivery->fueEnviado();
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar compatibilidad con la tabla incidencias
+|--------------------------------------------------------------------------
+*/
+
+$incidencia->update([
+    'correo_enviado' =>
+        $emailSent,
+
+    'fecha_envio_correo' =>
+        $emailSent
+            ? $delivery->sent_at
+            : null,
+]);
+
+/*
+|--------------------------------------------------------------------------
+| Respuesta
+|--------------------------------------------------------------------------
+|
+| success siempre será true porque el reporte sí quedó registrado.
+| email.sent indica si la notificación SMTP se envió.
+|
+*/
+
+return response()->json([
+    'success' =>
+        true,
+
+    'registered' =>
+        true,
+
+    'codigo' =>
+        $incidencia->codigo,
+
+    'email' => [
+        'sent' =>
+            $emailSent,
+
+        'status' =>
+            $delivery->status,
+
+        'delivery_id' =>
+            $delivery->id,
+    ],
+
+    'message' =>
+        $emailSent
+            ? 'El reporte de incidencia fue registrado correctamente y el equipo TI fue notificado.'
+            : 'El reporte de incidencia fue registrado correctamente, pero no fue posible enviar la notificación por correo. El error quedó registrado para su revisión.',
+]);
     }
 
     /*

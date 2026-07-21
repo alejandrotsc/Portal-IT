@@ -83,6 +83,7 @@ otra:[]
 
 let selectedCategory=null;
 let attachedFiles=[];
+let enviandoSolicitud=false;
 
 const cards=document.querySelectorAll('.categoria-card');
 
@@ -175,6 +176,55 @@ formularioSolicitud.scrollIntoView({behavior:'smooth',block:'start'});
 
 });
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| RESTAURAR CATEGORÍA DESPUÉS DE UNA VALIDACIÓN
+|--------------------------------------------------------------------------
+*/
+
+const categoriaAnterior =
+    categoriaInput?.value;
+
+if (
+    categoriaAnterior
+    && PLACEHOLDERS[categoriaAnterior]
+) {
+    const tarjetaAnterior =
+        Array.from(cards).find(
+            card =>
+                card.dataset.id === categoriaAnterior
+        );
+
+    if (tarjetaAnterior) {
+        selectedCategory =
+            categoriaAnterior;
+
+        actualizarTarjetas();
+        mostrarFormulario(
+            categoriaAnterior
+        );
+        mostrarBadge(
+            tarjetaAnterior
+        );
+        actualizarPlaceholders(
+            categoriaAnterior
+        );
+
+        formularioSolicitud?.classList.remove(
+            'hidden'
+        );
+
+        accionesSolicitud?.classList.remove(
+            'hidden'
+        );
+
+        cambiarCategoria?.classList.remove(
+            'hidden'
+        );
+    }
+}
 
 
 function actualizarPlaceholders(category){
@@ -503,6 +553,14 @@ if (solicitudForm) {
 
     solicitudForm.addEventListener('submit', (e) => {
 
+        if (enviandoSolicitud) {
+
+            e.preventDefault();
+
+            return;
+
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Validar formulario
@@ -515,6 +573,8 @@ if (solicitudForm) {
 
             return;
         }
+
+        enviandoSolicitud = true;
 
 
         /*
@@ -657,25 +717,66 @@ fileInput.value='';
 const cerrarModalSolicitud =
 document.getElementById('cerrarModalSolicitud');
 
+const modalSolicitud =
+document.getElementById('modalSolicitud');
+
+
+function cerrarModalRespuesta(){
+
+    if(modalSolicitud){
+
+        modalSolicitud.remove();
+
+    }
+
+}
+
 
 if(cerrarModalSolicitud){
 
     cerrarModalSolicitud.addEventListener(
         'click',
-        ()=>{
+        cerrarModalRespuesta
+    );
 
-            const modal =
-            document.getElementById('modalSolicitud');
+}
 
 
-            if(modal){
+if(modalSolicitud){
 
-                modal.remove();
+    modalSolicitud.addEventListener(
+        'click',
+        (event)=>{
+
+            if(event.target===modalSolicitud){
+
+                cerrarModalRespuesta();
 
             }
 
         }
     );
+
+}
+
+
+document.addEventListener(
+    'keydown',
+    (event)=>{
+
+        if(event.key==='Escape'){
+
+            cerrarModalRespuesta();
+
+        }
+
+    }
+);
+
+
+if(window.lucide){
+
+    lucide.createIcons();
 
 }
 

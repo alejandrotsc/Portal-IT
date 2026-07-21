@@ -28,7 +28,7 @@
                 <div>
 
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
-                        Colaborador que utilizará el equipo
+                        Responsable del equipo
                         <span class="text-primary">*</span>
                     </label>
 

@@ -4,6 +4,55 @@
 
 @section('content')
 
+@php
+    $emailComprobado = session()->has('email_sent');
+    $emailEnviado = session('email_sent') === true;
+
+    $outlookUrl = null;
+
+    if ($emailComprobado && ! $emailEnviado) {
+        $destinatario = 'helpdesk@televicentro.hn';
+
+        $asuntoOutlook = '[Portal TI] Falla SMTP - Solicitud '.(
+            session('folio') ?? 'sin folio'
+        );
+
+        $cuerpoOutlook = implode("\r\n", [
+            'Hola, equipo de Helpdesk:',
+            '',
+            'El Portal TI registró una solicitud de servicio, pero no pudo enviar la notificación mediante SMTP.',
+            '',
+            'Usuario: '.(auth()->user()->nombre ?? 'N/A'),
+            'Correo del usuario: '.(auth()->user()->correo ?? 'N/A'),
+            'Gestión: Solicitud de servicio',
+            'Folio: '.(session('folio') ?? 'N/A'),
+            'Categoría: '.(session('solicitud_categoria') ?? 'N/A'),
+            'Asunto: '.(session('solicitud_asunto') ?? 'N/A'),
+            'Referencia del envío: '.(session('email_delivery_id') ?? 'N/A'),
+            'Estado registrado: '.(session('email_status') ?? 'fallido'),
+            'Fecha del reporte: '.now()->format('d/m/Y H:i:s'),
+            'Página del Portal TI: '.url()->current(),
+            '',
+            'La solicitud sí quedó registrada en el Portal TI.',
+            '',
+            'Por favor, revisen la configuración o disponibilidad del servicio SMTP.',
+        ]);
+
+        $outlookUrl =
+            'https://outlook.office.com/mail/deeplink/compose?'
+            .http_build_query(
+                [
+                    'to' => $destinatario,
+                    'subject' => $asuntoOutlook,
+                    'body' => $cuerpoOutlook,
+                ],
+                '',
+                '&',
+                PHP_QUERY_RFC3986
+            );
+    }
+@endphp
+
 <form
     id="solicitudForm"
     method="POST"
@@ -374,6 +423,38 @@
                 </section>
 
 
+                {{-- ÚLTIMO ESTADO SMTP: permanece visible aunque se cierre el modal --}}
+
+                @if($emailComprobado)
+
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border p-4 {{ $emailEnviado ? 'border-green-200 bg-green-50/60' : 'border-amber-200 bg-amber-50/60' }}">
+
+                        <div class="inline-flex items-center gap-2 text-xs font-medium {{ $emailEnviado ? 'text-green-700' : 'text-amber-700' }}">
+                            <span class="w-2.5 h-2.5 rounded-full {{ $emailEnviado ? 'bg-green-500' : 'bg-amber-500' }}"></span>
+
+                            {{ $emailEnviado ? 'Último envío de correo SMTP correcto' : 'Último envío de correo SMTP fallido' }}
+                        </div>
+
+                        @if(! $emailEnviado && $outlookUrl)
+
+                            <a
+                                href="{{ $outlookUrl }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition"
+                            >
+                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+
+                                Reportar por Outlook 365
+                            </a>
+
+                        @endif
+
+                    </div>
+
+                @endif
+
+
                 {{-- BOTONES --}}
 <div
     id="accionesSolicitud"
@@ -425,55 +506,132 @@
     <div
         id="modalSolicitud"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm
-               flex items-center justify-center z-50"
+               flex items-center justify-center z-50 p-4"
     >
 
-        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-5 p-6 text-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
 
-            <div
-                class="w-14 h-14 rounded-full bg-green-100 text-green-600
-                       flex items-center justify-center mx-auto mb-4"
-            >
-                <i data-lucide="check-circle" class="w-8 h-8"></i>
-            </div>
+            {{-- Cabecera --}}
 
-
-            <h3 class="text-lg font-semibold text-gray-900">
-                Solicitud enviada
-            </h3>
-
-
-            <p class="text-sm text-gray-500 mt-2">
-
-                {{ session('success') }}
-
-                <br>
-
-                Se notificó al equipo de soporte TI mediante correo.
-
-            </p>
-
-
-            @if(session('folio'))
+            <div class="px-7 pt-8 pb-6 text-center">
 
                 <div
-                    class="mt-4 bg-gray-100 rounded-xl py-3
-                           text-sm font-semibold text-gray-700"
+                    class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto
+                           {{ $emailEnviado ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200' }}"
                 >
-                    {{ session('folio') }}
+                    <i
+                        data-lucide="{{ $emailEnviado ? 'check-circle' : 'mail-warning' }}"
+                        class="w-8 h-8 {{ $emailEnviado ? 'text-green-600' : 'text-amber-600' }}"
+                    ></i>
                 </div>
 
-            @endif
+                <h3 class="text-lg font-semibold text-foreground mt-5">
+                    {{ $emailEnviado ? 'Solicitud enviada' : 'Solicitud registrada con advertencia' }}
+                </h3>
 
+                <p class="text-sm text-muted-foreground leading-relaxed mt-2 max-w-sm mx-auto">
+                    {{ session('success') }}
+                </p>
 
-            <button
-                type="button"
-                id="cerrarModalSolicitud"
-                class="mt-6 w-full px-4 py-2.5 rounded-xl
-                       bg-primary text-white text-sm font-medium"
-            >
-                Entendido
-            </button>
+                @if(session('folio'))
+
+                    <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground mt-4">
+                        {{ session('folio') }}
+                    </span>
+
+                @endif
+
+            </div>
+
+            {{-- Estado SMTP --}}
+
+            <div class="px-7 pb-7">
+
+                <div
+                    class="rounded-2xl border p-5 text-left
+                           {{ $emailEnviado ? 'border-green-200 bg-green-50/70' : 'border-amber-200 bg-amber-50/70' }}"
+                >
+                    <div class="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-4">
+
+                        <div
+                            class="w-10 h-10 rounded-xl bg-white border flex items-center justify-center
+                                   {{ $emailEnviado ? 'border-green-200' : 'border-amber-200' }}"
+                        >
+                            <i
+                                data-lucide="{{ $emailEnviado ? 'mail-check' : 'mail-warning' }}"
+                                class="w-5 h-5 {{ $emailEnviado ? 'text-green-600' : 'text-amber-600' }}"
+                            ></i>
+                        </div>
+
+                        <div class="min-w-0">
+
+                            <p class="text-sm font-semibold {{ $emailEnviado ? 'text-green-800' : 'text-amber-800' }}">
+                                {{ $emailEnviado ? 'Correo enviado correctamente' : 'No se pudo enviar el correo' }}
+                            </p>
+
+                            <p class="text-xs leading-relaxed mt-1.5 {{ $emailEnviado ? 'text-green-700' : 'text-amber-700' }}">
+                                {{ $emailEnviado
+                                    ? 'El servidor SMTP aceptó la notificación para el equipo de soporte TI.'
+                                    : 'La solicitud quedó registrada. Puedes informar la falla mediante Outlook 365.' }}
+                            </p>
+
+                            @if(! $emailEnviado && $outlookUrl)
+
+                                <a
+                                    href="{{ $outlookUrl }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="w-full mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition"
+                                >
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+
+                                    Reportar mediante Outlook 365
+                                </a>
+
+                            @endif
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="flex items-start gap-3 mt-5 px-1">
+                    <i data-lucide="info" class="w-4 h-4 text-muted-foreground shrink-0 mt-0.5"></i>
+
+                    <p class="text-xs text-muted-foreground leading-relaxed">
+                        La solicitud permanecerá disponible en el historial, incluso si la notificación no pudo enviarse.
+                    </p>
+                </div>
+
+            </div>
+
+            {{-- Acciones --}}
+
+            <div class="border-t border-border bg-muted/20 px-7 py-5">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                    <button
+                        type="button"
+                        id="cerrarModalSolicitud"
+                        class="w-full inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-border bg-white text-sm font-medium text-foreground hover:bg-muted transition"
+                    >
+                        Crear otra
+                    </button>
+
+                    <a
+                        href="{{ route('mis-solicitudes') }}"
+                        class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition"
+                    >
+                        <i data-lucide="history" class="w-4 h-4"></i>
+
+                        Mis solicitudes
+                    </a>
+
+                </div>
+
+            </div>
 
         </div>
 

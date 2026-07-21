@@ -129,12 +129,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkDescarga            = document.getElementById('linkDescarga');
     const btnCerrarDescarga       = document.getElementById('btnCerrarDescarga');
 
+    const smtpEstadoPrevio        = document.getElementById('smtpEstadoPrevio');
+    const modalResultadoIcono     = document.getElementById('modalResultadoIcono');
+    const modalResultadoTitulo    = document.getElementById('modalResultadoTitulo');
+    const modalResultadoMensaje   = document.getElementById('modalResultadoMensaje');
+    const estadoCorreo            = document.getElementById('estadoCorreoAutorizacion');
+    const estadoCorreoTitulo      = document.getElementById('estadoCorreoTitulo');
+    const estadoCorreoMensaje     = document.getElementById('estadoCorreoMensaje');
+    const btnReportarSmtp         = document.getElementById('btnReportarSmtp');
+    const btnReportarPersistente  = document.getElementById('btnReportarSmtpPersistente');
+
     const modalError              = document.getElementById('modalErrorAutorizacion');
     const textoError              = document.getElementById('textoErrorAutorizacion');
     const btnCerrarError          = document.getElementById('btnCerrarErrorAutorizacion');
 
 
     if (!form) return;
+
+    let enviando = false;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ABRIR REPORTE EN OUTLOOK 365
+    |--------------------------------------------------------------------------
+    |
+    | Funciona tanto si btnReportarSmtp es un <button> como si es un <a>.
+    | La URL se construye solamente cuando el SMTP reporta un fallo.
+    |
+    */
+
+    function abrirReporteOutlook(button, event) {
+
+        event?.preventDefault();
+
+        const outlookUrl =
+            button?.dataset.outlookUrl;
+
+        if (!outlookUrl) {
+            console.warn(
+                'No se encontró la URL para abrir Outlook 365.'
+            );
+            return;
+        }
+
+        const outlookWindow = window.open(
+            outlookUrl,
+            '_blank'
+        );
+
+        if (outlookWindow) {
+            outlookWindow.opener = null;
+        } else {
+            window.location.href = outlookUrl;
+        }
+
+    }
+
+    btnReportarSmtp?.addEventListener(
+        'click',
+        (event) => abrirReporteOutlook(btnReportarSmtp, event)
+    );
+
+    btnReportarPersistente?.addEventListener(
+        'click',
+        (event) => abrirReporteOutlook(btnReportarPersistente, event)
+    );
 
 
     /*
@@ -317,7 +377,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function generarDocumento() {
 
-        // Estado de carga
+        if (enviando) return;
+
+        if (!form.reportValidity()) return;
+
+        enviando = true;
+
         if (btnGenerar) {
             btnGenerar.disabled = true;
             btnGenerar.innerHTML = `
@@ -325,8 +390,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
-                Generando...
+                Generando y enviando...
             `;
+        }
+
+        if (btnGenerarDesdePreview) {
+            btnGenerarDesdePreview.disabled = true;
         }
 
         try {
@@ -343,41 +412,368 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
 
-            const data = await response.json();
+            const responseText = await response.text();
+            let data;
 
+            try {
+                data = JSON.parse(responseText);
+            } catch (error) {
+                throw new Error('El servidor devolvió una respuesta inválida.');
+            }
 
-            if (data.success && data.download) {
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error
+                    ?? data.message
+                    ?? 'No fue posible generar el documento.'
+                );
+            }
 
-                // Asignar URL de descarga al link del modal
+            if (data.download) {
+
                 linkDescarga.href = data.download;
+
+                configurarResultadoCorreo(data);
 
                 abrirModal(modalDescarga);
 
             } else {
-
-                textoError.textContent = data.error ?? 'Error desconocido al generar el documento.';
-                abrirModal(modalError);
-
+                throw new Error('El documento se registró, pero no se recibió la ruta de descarga.');
             }
 
         } catch (err) {
 
-            textoError.textContent = 'Error de red. Por favor intente nuevamente.';
+            textoError.textContent =
+                err.message
+                ?? 'Error de red. Por favor intenta nuevamente.';
+
+            configurarEstadoErrorTotal(err);
+
             abrirModal(modalError);
 
         } finally {
 
+            enviando = false;
+
             if (btnGenerar) {
                 btnGenerar.disabled = false;
                 btnGenerar.innerHTML = `
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    Generar documento
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span id="btnGenerarTexto">Generar y enviar</span>
                 `;
-                if (window.lucide) lucide.createIcons();
             }
+
+            if (btnGenerarDesdePreview) {
+                btnGenerarDesdePreview.disabled = false;
+            }
+
+            if (window.lucide) lucide.createIcons();
 
         }
 
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MOSTRAR RESULTADO DEL SMTP
+    |--------------------------------------------------------------------------
+    */
+
+    function configurarResultadoCorreo(data) {
+
+        const email = data.email ?? null;
+        const correoEnviado = email?.sent === true;
+
+        if (modalResultadoMensaje) {
+            modalResultadoMensaje.textContent =
+                data.message
+                ?? 'El documento fue generado correctamente.';
+        }
+
+        if (!email) {
+            configurarEstadoSinComprobacion();
+            return;
+        }
+
+        if (correoEnviado) {
+            configurarEstadoCorreoExitoso();
+        } else {
+            configurarEstadoCorreoFallido(data);
+        }
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+
+    function configurarEstadoCorreoExitoso() {
+
+        if (btnReportarSmtp) {
+            btnReportarSmtp.classList.add('hidden');
+            btnReportarSmtp.classList.remove('inline-flex');
+            delete btnReportarSmtp.dataset.outlookUrl;
+        }
+
+        if (btnReportarPersistente) {
+            btnReportarPersistente.classList.add('hidden');
+            btnReportarPersistente.classList.remove('inline-flex');
+            delete btnReportarPersistente.dataset.outlookUrl;
+        }
+
+        if (modalResultadoIcono) {
+            modalResultadoIcono.className =
+                'w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center mx-auto mb-5';
+
+            modalResultadoIcono.innerHTML =
+                '<i data-lucide="check-circle" class="w-8 h-8 text-green-600"></i>';
+        }
+
+        if (modalResultadoTitulo) {
+            modalResultadoTitulo.textContent =
+                'Documento generado y enviado';
+        }
+
+        if (estadoCorreo) {
+            estadoCorreo.className =
+                'mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-left';
+        }
+
+        if (estadoCorreoTitulo) {
+            estadoCorreoTitulo.className =
+                'text-sm font-medium text-green-800';
+            estadoCorreoTitulo.textContent =
+                'Correo enviado correctamente';
+        }
+
+        if (estadoCorreoMensaje) {
+            estadoCorreoMensaje.className =
+                'text-xs text-green-700 mt-1';
+            estadoCorreoMensaje.textContent =
+                'El servidor SMTP aceptó la notificación.';
+        }
+
+        if (estadoCorreo) {
+            const icono = estadoCorreo.querySelector('svg, i');
+            icono?.remove();
+            estadoCorreo.querySelector('.flex')?.insertAdjacentHTML(
+                'afterbegin',
+                '<i data-lucide="mail-check" class="w-5 h-5 text-green-600 shrink-0 mt-0.5"></i>'
+            );
+        }
+
+        actualizarIndicadorSmtp(true);
+    }
+
+
+    function configurarEstadoCorreoFallido(data) {
+
+        if (btnReportarSmtp) {
+            const recipient =
+                btnReportarSmtp.dataset.recipient
+                || 'helpdesk@televicentro.hn';
+
+            const userName =
+                btnReportarSmtp.dataset.userName
+                ?? 'N/A';
+
+            const userEmail =
+                btnReportarSmtp.dataset.userEmail
+                ?? 'N/A';
+
+            const solicitanteDocumento =
+                form.querySelector('[name="de_nombre"]')?.value
+                ?? 'N/A';
+
+            const asuntoDocumento =
+                form.querySelector('[name="asunto"]')?.value
+                ?? 'N/A';
+
+            const subject =
+                `[Portal TI] Falla SMTP - Pase mayor a 24 horas - ${data.codigo ?? data.id ?? 'N/A'}`;
+
+            const body = [
+                'Hola, equipo de soporte TI:',
+                '',
+                'Deseo reportar que el Portal TI no pudo enviar la notificación por correo de la siguiente gestión:',
+                '',
+                `Usuario: ${userName}`,
+                `Correo del usuario: ${userEmail}`,
+                `Solicitante del documento: ${solicitanteDocumento}`,
+                'Gestión: Pase mayor a 24 horas',
+                `Asunto de la gestión: ${asuntoDocumento}`,
+                `Código o identificador: ${data.codigo ?? data.id ?? 'N/A'}`,
+                `Referencia del envío: ${data.email?.delivery_id ?? 'N/A'}`,
+                `Estado registrado: ${data.email?.status ?? 'fallido'}`,
+                `Fecha del reporte: ${new Date().toLocaleString('es-HN')}`,
+                `Página del Portal TI: ${window.location.href}`,
+                '',
+                'El documento sí fue generado y permanece disponible en el Portal TI.',
+                '',
+                'Por favor, revisen la configuración o disponibilidad del servicio SMTP.',
+            ].join('\r\n');
+
+            /*
+             * No usar URLSearchParams aquí: convierte los espacios en "+"
+             * y Outlook 365 puede mostrarlos literalmente en el mensaje.
+             */
+            const outlookComposeUrl =
+                'https://outlook.office.com/mail/deeplink/compose'
+                + `?to=${encodeURIComponent(recipient)}`
+                + `&subject=${encodeURIComponent(subject)}`
+                + `&body=${encodeURIComponent(body)}`;
+
+            btnReportarSmtp.dataset.outlookUrl =
+                outlookComposeUrl;
+
+            btnReportarSmtp.classList.remove('hidden');
+            btnReportarSmtp.classList.add('inline-flex');
+
+            if (btnReportarPersistente) {
+                btnReportarPersistente.dataset.outlookUrl =
+                    outlookComposeUrl;
+
+                btnReportarPersistente.className =
+                    'inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition';
+            }
+        }
+
+        if (modalResultadoIcono) {
+            modalResultadoIcono.className =
+                'w-16 h-16 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-5';
+
+            modalResultadoIcono.innerHTML =
+                '<i data-lucide="mail-warning" class="w-8 h-8 text-amber-600"></i>';
+        }
+
+        if (modalResultadoTitulo) {
+            modalResultadoTitulo.textContent =
+                'Documento generado con advertencia';
+        }
+
+        if (estadoCorreo) {
+            estadoCorreo.className =
+                'mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left';
+        }
+
+        if (estadoCorreoTitulo) {
+            estadoCorreoTitulo.className =
+                'text-sm font-medium text-amber-800';
+            estadoCorreoTitulo.textContent =
+                'No se pudo enviar el correo';
+        }
+
+        if (estadoCorreoMensaje) {
+            estadoCorreoMensaje.className =
+                'text-xs text-amber-700 mt-1';
+            estadoCorreoMensaje.textContent =
+                'El documento quedó registrado y puede descargarse. El fallo SMTP fue guardado para revisión.';
+        }
+
+        if (estadoCorreo) {
+            const icono = estadoCorreo.querySelector('svg, i');
+            icono?.remove();
+            estadoCorreo.querySelector('.flex')?.insertAdjacentHTML(
+                'afterbegin',
+                '<i data-lucide="mail-warning" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>'
+            );
+        }
+
+        actualizarIndicadorSmtp(false);
+    }
+
+
+    function configurarEstadoSinComprobacion() {
+
+        if (modalResultadoTitulo) {
+            modalResultadoTitulo.textContent =
+                'Documento generado';
+        }
+
+        if (estadoCorreo) {
+            estadoCorreo.classList.add('hidden');
+        }
+    }
+
+
+    function actualizarIndicadorSmtp(exitoso) {
+
+        if (!smtpEstadoPrevio) return;
+
+        smtpEstadoPrevio.className = exitoso
+            ? 'inline-flex items-center gap-2 text-xs text-green-700'
+            : 'inline-flex items-center gap-2 text-xs text-amber-700';
+
+        smtpEstadoPrevio.innerHTML = exitoso
+            ? '<span class="h-2.5 w-2.5 rounded-full bg-green-500"></span> Último envío SMTP correcto'
+            : '<span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span> Último envío SMTP fallido';
+    }
+
+
+    function configurarEstadoErrorTotal(error) {
+
+        if (smtpEstadoPrevio) {
+            smtpEstadoPrevio.className =
+                'inline-flex items-center gap-2 text-xs text-red-700';
+
+            smtpEstadoPrevio.innerHTML =
+                '<span class="h-2.5 w-2.5 rounded-full bg-red-500"></span> No se pudo generar ni notificar la gestión';
+        }
+
+        if (!btnReportarPersistente) return;
+
+        const recipient =
+            btnReportarPersistente.dataset.recipient
+            || 'helpdesk@televicentro.hn';
+
+        const userName =
+            btnReportarPersistente.dataset.userName
+            || 'N/A';
+
+        const userEmail =
+            btnReportarPersistente.dataset.userEmail
+            || 'N/A';
+
+        const solicitante =
+            form.querySelector('[name="de_nombre"]')?.value
+            || 'N/A';
+
+        const asuntoGestion =
+            form.querySelector('[name="asunto"]')?.value
+            || 'N/A';
+
+        const subject =
+            '[Portal TI] Error al generar pase mayor a 24 horas';
+
+        const body = [
+            'Hola, equipo de soporte TI:',
+            '',
+            'Deseo reportar que el Portal TI no pudo completar una gestión.',
+            '',
+            `Usuario: ${userName}`,
+            `Correo del usuario: ${userEmail}`,
+            `Solicitante del documento: ${solicitante}`,
+            'Gestión: Pase mayor a 24 horas',
+            `Asunto de la gestión: ${asuntoGestion}`,
+            `Mensaje mostrado: ${error?.message ?? 'Error no especificado'}`,
+            `Fecha del reporte: ${new Date().toLocaleString('es-HN')}`,
+            `Página del Portal TI: ${window.location.href}`,
+            '',
+            'Por favor, revisen la disponibilidad del Portal TI y del servicio de notificación.',
+        ].join('\r\n');
+
+        const outlookUrl =
+            'https://outlook.office.com/mail/deeplink/compose'
+            + `?to=${encodeURIComponent(recipient)}`
+            + `&subject=${encodeURIComponent(subject)}`
+            + `&body=${encodeURIComponent(body)}`;
+
+        btnReportarPersistente.dataset.outlookUrl =
+            outlookUrl;
+
+        btnReportarPersistente.className =
+            'inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-800 hover:bg-red-100 transition';
+
+        if (window.lucide) lucide.createIcons();
     }
 
 

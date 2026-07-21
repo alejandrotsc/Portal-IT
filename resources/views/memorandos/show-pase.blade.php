@@ -127,19 +127,28 @@
 
 
                 <a
-                    href="{{
-                        $esTemporal
-                            ? route('memorandos.pase_temporal')
-                            : route('memorandos.autorizacion')
-                    }}"
+                    href="{{ route('memorandos.pase_temporal') }}"
+                    class="inline-flex items-center justify-center gap-2
+                           px-4 py-2.5 rounded-xl border border-border
+                           bg-white text-sm font-medium text-foreground
+                           hover:bg-muted transition-colors"
+                >
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+
+                    Pase menor
+                </a>
+
+
+                <a
+                    href="{{ route('memorandos.autorizacion') }}"
                     class="inline-flex items-center justify-center gap-2
                            px-4 py-2.5 rounded-xl bg-primary text-white
                            text-sm font-medium hover:opacity-90
                            transition-opacity"
                 >
-                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <i data-lucide="file-plus-2" class="w-4 h-4"></i>
 
-                    Nuevo pase
+                    Pase mayor
                 </a>
 
             </div>

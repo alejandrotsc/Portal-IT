@@ -420,6 +420,228 @@ CREATE INDEX idx_chatbot_intencion
 
 ON chatbot_conversations(intencion_detectada);
 
+CREATE TABLE email_deliveries (
+
+    id BIGSERIAL PRIMARY KEY,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relación polimórfica
+    |--------------------------------------------------------------------------
+    |
+    | Ejemplos de emailable_type:
+    |
+    | App\Models\Incidencia
+    | App\Models\Solicitud
+    | App\Models\Memorando
+    |
+    */
+
+    emailable_type VARCHAR(255) NOT NULL,
+
+    emailable_id BIGINT NOT NULL,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Destinatario
+    |--------------------------------------------------------------------------
+    */
+
+    recipient_email VARCHAR(320) NOT NULL,
+
+    recipient_name VARCHAR(255) NULL,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Información del correo
+    |--------------------------------------------------------------------------
+    */
+
+    mail_type VARCHAR(100) NOT NULL,
+
+    subject VARCHAR(255) NULL,
+
+    mailable_class VARCHAR(255) NULL,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Estado del envío
+    |--------------------------------------------------------------------------
+    |
+    | Estados permitidos:
+    |
+    | pending
+    | sending
+    | sent
+    | failed
+    |
+    */
+
+    status VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+
+    attempts SMALLINT NOT NULL DEFAULT 0,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Información del último error
+    |--------------------------------------------------------------------------
+    */
+
+    last_error TEXT NULL,
+
+    error_code VARCHAR(100) NULL,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Identificador devuelto por el servidor SMTP
+    |--------------------------------------------------------------------------
+    */
+
+    provider_message_id VARCHAR(255) NULL,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fechas del proceso
+    |--------------------------------------------------------------------------
+    */
+
+    queued_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+
+    last_attempt_at TIMESTAMP NULL,
+
+    sent_at TIMESTAMP NULL,
+
+    failed_at TIMESTAMP NULL,
+
+    next_retry_at TIMESTAMP NULL,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Información adicional
+    |--------------------------------------------------------------------------
+    */
+
+    metadata JSONB NULL DEFAULT '{}'::jsonb,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Timestamps de Laravel
+    |--------------------------------------------------------------------------
+    */
+
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restricciones
+    |--------------------------------------------------------------------------
+    */
+
+    CONSTRAINT email_deliveries_status_check
+        CHECK (
+            status IN (
+                'pendiente',
+                'enviando',
+                'enviado',
+                'fallido'
+            )
+        ),
+
+
+    CONSTRAINT email_deliveries_attempts_check
+        CHECK (
+            attempts >= 0
+        )
+
+);
+
+/*
+|--------------------------------------------------------------------------
+| Buscar correos asociados a una gestión
+|--------------------------------------------------------------------------
+*/
+
+CREATE INDEX email_deliveries_emailable_index
+ON email_deliveries (
+    emailable_type,
+    emailable_id
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Buscar por estado
+|--------------------------------------------------------------------------
+*/
+
+CREATE INDEX email_deliveries_status_index
+ON email_deliveries (
+    status
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Buscar correos recientes
+|--------------------------------------------------------------------------
+*/
+
+CREATE INDEX email_deliveries_created_at_index
+ON email_deliveries (
+    created_at DESC
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Buscar pendientes para procesarlos
+|--------------------------------------------------------------------------
+*/
+
+CREATE INDEX email_deliveries_pending_index
+ON email_deliveries (
+    next_retry_at,
+    created_at
+)
+WHERE status = 'pendiente';
+
+
+/*
+|--------------------------------------------------------------------------
+| Buscar fallos recientes
+|--------------------------------------------------------------------------
+*/
+
+CREATE INDEX email_deliveries_failed_index
+ON email_deliveries (
+    failed_at DESC
+)
+WHERE status = 'fallido';
+
+
+/*
+|--------------------------------------------------------------------------
+| Buscar por destinatario
+|--------------------------------------------------------------------------
+*/
+
+CREATE INDEX email_deliveries_recipient_index
+ON email_deliveries (
+    recipient_email
+);
+
 -- ============================================================
 -- TIPOS DE MEMORANDO
 -- ============================================================
