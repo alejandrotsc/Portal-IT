@@ -113,13 +113,41 @@
         </div>
 
         {{-- BOTONES --}}
-        <div class="flex justify-end gap-3">
-            <a href="{{ route('dashboard') }}" class="px-5 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted">Cancelar</a>
-            <button id="btnEnviar" type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-medium flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
-                <i id="btnEnviarIcono" data-lucide="mail" class="w-4 h-4"></i>
-                <span id="btnEnviarTexto">Enviar reporte</span>
-            </button>
-        </div>
+<div class="flex justify-end gap-3">
+
+    <button
+        id="btnCancelar"
+        type="button"
+        class="inline-flex items-center gap-2
+               px-5 py-2.5 rounded-xl
+               border border-border
+               text-sm text-muted-foreground
+               hover:bg-muted transition-colors"
+    >
+        Cancelar
+    </button>
+
+    <button
+        id="btnEnviar"
+        type="submit"
+        class="px-5 py-2.5 rounded-xl
+               bg-primary text-white
+               text-sm font-medium
+               flex items-center gap-2
+               disabled:opacity-70
+               disabled:cursor-not-allowed">
+        <i
+            id="btnEnviarIcono"
+            data-lucide="mail"
+            class="w-4 h-4"
+        ></i>
+
+        <span id="btnEnviarTexto">
+            Enviar reporte
+        </span>
+    </button>
+
+    </div>
     </form>
 </main>
 </div>

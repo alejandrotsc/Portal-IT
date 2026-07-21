@@ -308,15 +308,16 @@ class GestionStatusService
     */
 
     private function getRecentMemorandos(
-        int $userId,
-        int $limit
-    ): Collection {
-        return Memorando::query()
-            ->where('solicitante_id', $userId)
-            ->latest('created_at')
-            ->limit($limit)
-            ->get()
-            ->map(
+    int $userId,
+    int $limit
+): Collection {
+    return Memorando::query()
+        ->where('solicitante_id', $userId)
+        ->with('tipo')
+        ->latest('created_at')
+        ->limit($limit)
+        ->get()
+        ->map(
                 function (Memorando $memorando): array {
                     $title = trim(
                         (string) (
@@ -467,7 +468,8 @@ class GestionStatusService
          */
         try {
             $typeName =
-                $memorando->tipo?->nombre
+                $memorando->tipo?->nombre_visual
+                ?? $memorando->tipo?->nombre
                 ?? $memorando->tipo?->label
                 ?? null;
 
@@ -564,23 +566,68 @@ class GestionStatusService
     */
 
     private function memorandoUrl(
-        Memorando $memorando
-    ): string {
-        if (Route::has('memorandos.show')) {
-            return route(
-                'memorandos.show',
-                $memorando
-            );
-        }
+    Memorando $memorando
+): string {
+    /*
+     * Determinar el tipo real del memorando.
+     */
+    $typeSlug = null;
 
-        if (Route::has('memorandos.historico')) {
-            return route(
-                'memorandos.historico'
-            );
-        }
-
-        return '#';
+    try {
+        $typeSlug = $memorando->tipo?->slug;
+    } catch (Throwable) {
+        $typeSlug = null;
     }
+
+
+    /*
+     * Los pases menores y mayores tienen una vista
+     * de detalle centralizada.
+     */
+    if (
+        in_array(
+            $typeSlug,
+            [
+                'pase_temporal',
+                'autorizacion',
+            ],
+            true
+        )
+        &&
+        Route::has('memorandos.show-pase')
+    ) {
+        return route(
+            'memorandos.show-pase',
+            $memorando
+        );
+    }
+
+
+    /*
+     * Compatibilidad futura con un detalle general
+     * para otros tipos de memorando.
+     */
+    if (Route::has('memorandos.show')) {
+        return route(
+            'memorandos.show',
+            $memorando
+        );
+    }
+
+
+    /*
+     * Respaldo para documentos que todavía no tienen
+     * una vista individual.
+     */
+    if (Route::has('memorandos.historico')) {
+        return route(
+            'memorandos.historico'
+        );
+    }
+
+
+    return '#';
+}
 
 
     /*

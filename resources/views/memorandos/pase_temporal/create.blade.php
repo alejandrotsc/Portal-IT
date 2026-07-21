@@ -57,15 +57,17 @@
 
 
 
-        <span 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100"
-        >
+        <a
+    href="{{ route('memorandos.mis-pases') }}"
+    class="inline-flex items-center gap-2 px-4 py-2.5
+           rounded-xl border border-border bg-white
+           text-sm font-medium text-foreground
+           hover:bg-muted transition-colors"
+>
+    <i data-lucide="history" class="w-4 h-4"></i>
 
-            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-
-            Correo
-
-        </span>
+    Mis pases
+</a>
 
 
     </div>
@@ -127,7 +129,7 @@ class="w-4 h-4 text-primary"
 
 <p class="text-sm font-semibold text-primary">
 
-{{ $tipoAutorizacion->nombre_visual ?? 'Pase menor a 24 horas' }}
+{{ $tipoPase->nombre_visual ?? 'Pase menor a 24 horas' }}
 
 </p>
 
@@ -210,7 +212,7 @@ class="w-4 h-4 rounded-full border-2 border-primary bg-primary flex items-center
 >
 
 
-<i data-lucide="send" class="w-4 h-4"></i>
+<i data-lucide="mail" class="w-4 h-4"></i>
 
 
 <span>

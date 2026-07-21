@@ -222,13 +222,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const form =
-        document.getElementById(
-            'incidenciaForm'
+    document.getElementById(
+        'incidenciaForm'
+    );
+
+
+const btnCancelar =
+    document.getElementById(
+        'btnCancelar'
+    );
+
+
+
+if(form){
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cancelar y limpiar formulario
+    |--------------------------------------------------------------------------
+    */
+
+    if(btnCancelar){
+
+        btnCancelar.addEventListener(
+            'click',
+            ()=>{
+
+                /*
+                 * Limpiar los campos del formulario.
+                 */
+                form.reset();
+
+
+                /*
+                 * Limpiar archivos guardados en JavaScript.
+                 */
+                archivosSeleccionados = [];
+
+
+                /*
+                 * Limpiar el input de archivos.
+                 */
+                if(input){
+
+                    input.value = '';
+
+                }
+
+
+                /*
+                 * Actualizar la vista previa.
+                 */
+                renderPreview();
+
+            }
         );
 
-
-
-    if(form){
+    }
 
 
         form.addEventListener(

@@ -54,85 +54,169 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 
 
+   /*
+|--------------------------------------------------------------------------
+| MEMORANDOS
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos',
+    [MemorandoController::class, 'create']
+)->name('memorandos.create');
+
+
+Route::post(
+    '/memorandos',
+    [MemorandoController::class, 'store']
+)->name('memorandos.store');
+
+
+/*
+|--------------------------------------------------------------------------
+| Pase menor a 24 horas
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/pase-temporal',
+    [MemorandoController::class, 'createPaseTemporal']
+)->name('memorandos.pase_temporal');
+
+
+Route::post(
+    '/memorandos/pase-temporal',
+    [MemorandoController::class, 'storePaseTemporal']
+)->name('memorandos.pase_temporal.store');
+
+
+/*
+|--------------------------------------------------------------------------
+| Pase mayor a 24 horas
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/autorizacion',
+    [MemorandoController::class, 'createAutorizacion']
+)->name('memorandos.autorizacion');
+
+
+/*
+|--------------------------------------------------------------------------
+| Historial centralizado de pases
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/mis-pases',
+    [MemorandoController::class, 'misPases']
+)->name('memorandos.mis-pases');
+
+
+Route::get(
+    '/mis-pases/{memorando}',
+    [MemorandoController::class, 'showPase']
+)->name('memorandos.show-pase');
+
+
+/*
+|--------------------------------------------------------------------------
+| Solicitud de compra
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/compra',
+    [MemorandoController::class, 'createCompra']
+)->name('memorandos.create.compra');
+
+
+/*
+|--------------------------------------------------------------------------
+| Preview dinámico
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/preview/{tipo}',
+    [MemorandoController::class, 'previewDinamico']
+)->name('memorandos.preview');
+
+
+/*
+|--------------------------------------------------------------------------
+| Histórico general
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/historico',
+    [MemorandoController::class, 'historico']
+)->name('memorandos.historico');
+
+
+/*
+|--------------------------------------------------------------------------
+| Descargar PDF
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/{id}/download',
+    [MemorandoController::class, 'download']
+)->name('memorandos.download');
+
+
+/*
+|--------------------------------------------------------------------------
+| Visualizar PDF
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/memorandos/{id}/pdf',
+    [MemorandoController::class, 'pdf']
+)->name('memorandos.pdf');
+
+
+
+
     /*
-    |--------------------------------------------------------------------------
-    | MEMORANDOS
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| SOLICITUDES
+|--------------------------------------------------------------------------
+*/
 
-    Route::get('/memorandos', [MemorandoController::class, 'create'])
-        ->name('memorandos.create');
-
-    Route::post('/memorandos', [MemorandoController::class, 'store'])
-        ->name('memorandos.store');
-
-
-    // Accesos directos Usuario Cliente
-
-    Route::get('/memorandos/pase-temporal', [MemorandoController::class, 'createPaseTemporal'])
-        ->name('memorandos.pase_temporal');
-
-    Route::post('/memorandos/pase-temporal', [MemorandoController::class, 'storePaseTemporal'])
-        ->name('memorandos.pase_temporal.store');
+Route::get(
+    '/mis-solicitudes',
+    [SolicitudController::class, 'misSolicitudes']
+)->name('mis-solicitudes');
 
 
-    Route::get('/memorandos/autorizacion', [MemorandoController::class, 'createAutorizacion'])
-        ->name('memorandos.autorizacion');
+Route::get(
+    '/solicitudes/create',
+    [SolicitudController::class, 'create']
+)->name('solicitudes.create');
 
 
-    // Enviar autorización ingreso de equipo
-
-    Route::post('/memorandos/enviar-autorizacion', [MemorandoController::class, 'enviarAutorizacion'])
-        ->name('memorandos.enviar.autorizacion');
-
-
-    // Solicitud compra
-
-    Route::get('/memorandos/compra', [MemorandoController::class, 'createCompra'])
-        ->name('memorandos.create.compra');
+Route::post(
+    '/solicitudes',
+    [SolicitudController::class, 'store']
+)->name('solicitudes.store');
 
 
+/*
+|--------------------------------------------------------------------------
+| Debe permanecer después de /solicitudes/create
+|--------------------------------------------------------------------------
+*/
 
-    // Formularios dinámicos
+Route::get(
+    '/solicitudes/{solicitud}',
+    [SolicitudController::class, 'show']
+)->name('solicitudes.show');
 
-    Route::get('/memorandos/formulario/{tipo}', [MemorandoController::class, 'formularioDinamico'])
-        ->name('memorandos.formulario');
-
-
-
-    // Previews dinámicos
-
-    Route::get('/memorandos/preview/{tipo}', [MemorandoController::class, 'previewDinamico'])
-        ->name('memorandos.preview');
-
-
-
-    // Histórico memorandos
-
-    Route::get('/memorandos/historico', [MemorandoController::class, 'historico'])
-        ->name('memorandos.historico');
-
-
-
-    // Descarga PDF
-
-    Route::get('/memorandos/{codigo}/download', [MemorandoController::class, 'download'])
-        ->name('memorandos.download');
-
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Solicitudes
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/solicitudes/create', [SolicitudController::class, 'create'])
-        ->name('solicitudes.create');
-
-    Route::post('/solicitudes', [SolicitudController::class, 'store'])
-        ->name('solicitudes.store');
 
     /*
 |--------------------------------------------------------------------------
@@ -196,7 +280,15 @@ Route::prefix('chatbot')
     */
 
 
-    Route::resource('incidencias', IncidenciaController::class);
+    Route::resource(
+    'incidencias',
+    IncidenciaController::class
+)->only([
+    'index',
+    'create',
+    'store',
+    'show',
+]);
 
 
 

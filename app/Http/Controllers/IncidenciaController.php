@@ -2,132 +2,111 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\IncidenciaMail;
 use App\Models\Incidencia;
 use App\Models\IncidenciaArchivo;
-
+use App\Services\OcrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-
-use App\Mail\IncidenciaMail;
-use App\Services\OcrService;
-
 
 class IncidenciaController extends Controller
 {
-
+    /*
+    |--------------------------------------------------------------------------
+    | Listado general
+    |--------------------------------------------------------------------------
+    */
 
     public function index()
     {
-
-        $incidencias = Incidencia::with([
-            'usuario',
-            'archivos'
-        ])
-        ->latest()
-        ->get();
-
+        $incidencias =
+            Incidencia::query()
+                ->with([
+                    'usuario',
+                    'archivos',
+                ])
+                ->latest()
+                ->get();
 
         return view(
             'incidencias.index',
             compact('incidencias')
         );
-
     }
 
-
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | Formulario de incidencia
+    |--------------------------------------------------------------------------
+    */
 
     public function create()
     {
-
         return view(
             'incidencias.create'
         );
-
     }
 
-
-
-
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | Guardar incidencia
+    |--------------------------------------------------------------------------
+    */
 
     public function store(
         Request $request,
         OcrService $ocr
-    )
-    {
-
-
+    ) {
         /*
         |--------------------------------------------------------------------------
         | Validación
         |--------------------------------------------------------------------------
         */
 
-
-        $request->validate([
-
-
-            'titulo'=>[
+        $validated = $request->validate([
+            'titulo' => [
                 'required',
                 'string',
-                'max:255'
+                'max:255',
             ],
 
-
-            'descripcion'=>[
+            'descripcion' => [
                 'required',
-                'string'
+                'string',
             ],
 
-
-            'tiempo_problema'=>[
+            'tiempo_problema' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
-
-            'afectacion'=>[
+            'afectacion' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
-
-            'equipo'=>[
+            'equipo' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
-
-            'ubicacion'=>[
+            'ubicacion' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
-
-            'archivos'=>[
+            'archivos' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
-
-            'archivos.*'=>[
+            'archivos.*' => [
                 'image',
-                'max:10240'
-            ]
-
+                'max:10240',
+            ],
         ]);
-
-
-
-
-
-
-
-
 
         /*
         |--------------------------------------------------------------------------
@@ -135,31 +114,28 @@ class IncidenciaController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $ultima =
+            Incidencia::query()
+                ->orderByDesc('id')
+                ->first();
 
-        $ultima = Incidencia::orderBy('id','desc')
-    ->first();
+        $numero = $ultima
+            ? intval(
+                substr(
+                    $ultima->codigo,
+                    4
+                )
+            ) + 1
+            : 1;
 
-
-$numero = $ultima
-    ? intval(substr($ultima->codigo,4)) + 1
-    : 1;
-
-
-
-        $codigo = 'INC-'.str_pad(
-            $numero,
-            5,
-            '0',
-            STR_PAD_LEFT
-        );
-
-
-
-
-
-
-
-
+        $codigo =
+            'INC-'
+            .str_pad(
+                $numero,
+                5,
+                '0',
+                STR_PAD_LEFT
+            );
 
         /*
         |--------------------------------------------------------------------------
@@ -167,300 +143,331 @@ $numero = $ultima
         |--------------------------------------------------------------------------
         */
 
+        $incidencia =
+            Incidencia::create([
+                'codigo' =>
+                    $codigo,
 
-        $incidencia = Incidencia::create([
+                'usuario_id' =>
+                    Auth::id(),
 
+                'titulo' =>
+                    $validated['titulo'],
 
-            'codigo'=>$codigo,
+                'descripcion' =>
+                    $validated['descripcion'],
 
+                'tiempo_problema' =>
+                    $validated['tiempo_problema']
+                    ?? null,
 
-            'usuario_id'=>Auth::id(),
+                'afectacion' =>
+                    $validated['afectacion']
+                    ?? null,
 
+                'equipo' =>
+                    $validated['equipo']
+                    ?? null,
 
-            'titulo'=>$request->titulo,
+                'ubicacion' =>
+                    $validated['ubicacion']
+                    ?? null,
 
+                'estado' =>
+                    'Abierta',
 
-            'descripcion'=>$request->descripcion,
+                'prioridad' =>
+                    'Media',
 
-
-            'tiempo_problema'=>$request->tiempo_problema,
-
-
-            'afectacion'=>$request->afectacion,
-
-
-            'equipo'=>$request->equipo,
-
-
-            'ubicacion'=>$request->ubicacion,
-
-
-            'estado'=>'Abierta',
-
-
-            'prioridad'=>'Media',
-
-
-            'correo_enviado'=>false
-
-
-        ]);
-
-
-
-
-
-
-
-
+                'correo_enviado' =>
+                    false,
+            ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Guardar archivos + OCR
+        | Guardar archivos y ejecutar OCR
         |--------------------------------------------------------------------------
         */
 
-
         $textoOCR = [];
 
-
-
-        if($request->hasFile('archivos')){
-
-
-            foreach($request->file('archivos') as $archivo){
-
-
-
+        if ($request->hasFile('archivos')) {
+            foreach (
+                $request->file('archivos')
+                as $archivo
+            ) {
                 /*
-                Guardar imagen
-                */
-
-
+                 * Guardar imagen.
+                 */
                 $ruta = $archivo->store(
                     'incidencias',
                     'public'
                 );
 
-
-
-
                 /*
-                Ejecutar OCR
-                */
-
-
+                 * Ejecutar OCR.
+                 */
                 $texto = $ocr->leerImagen(
-
                     storage_path(
                         'app/public/'.$ruta
                     )
-
                 );
 
-
-
-                $textoOCR[] = $texto;
-
-
-
-
-
+                if (
+                    is_string($texto)
+                    && trim($texto) !== ''
+                ) {
+                    $textoOCR[] = $texto;
+                }
 
                 /*
-                Guardar archivo
-                */
-
-
+                 * Guardar registro del archivo.
+                 */
                 IncidenciaArchivo::create([
+                    'incidencia_id' =>
+                        $incidencia->id,
 
+                    'usuario_id' =>
+                        Auth::id(),
 
-                    'incidencia_id'=>$incidencia->id,
+                    'nombre_original' =>
+                        $archivo->getClientOriginalName(),
 
+                    'nombre_archivo' =>
+                        basename($ruta),
 
-                    'usuario_id'=>Auth::id(),
+                    'ruta' =>
+                        $ruta,
 
+                    'extension' =>
+                        $archivo->getClientOriginalExtension(),
 
-                    'nombre_original'=>$archivo->getClientOriginalName(),
+                    'tamano' =>
+                        $archivo->getSize(),
 
-
-                    'nombre_archivo'=>basename($ruta),
-
-
-                    'ruta'=>$ruta,
-
-
-                    'extension'=>$archivo->getClientOriginalExtension(),
-
-
-                    'tamano'=>$archivo->getSize(),
-
-
-                    'texto_ocr'=>$texto ?: null
-
-
+                    'texto_ocr' =>
+                        $texto ?: null,
                 ]);
-
-
-
             }
-
         }
 
-       /*
-/*
-|--------------------------------------------------------------------------
-| Enviar correo
-|--------------------------------------------------------------------------
-*/
+        /*
+        |--------------------------------------------------------------------------
+        | Enviar correo
+        |--------------------------------------------------------------------------
+        */
 
-try {
+        try {
+            Mail::to(
+                'alejandrotsc01@gmail.com'
+            )->send(
+                new IncidenciaMail(
+                    $incidencia,
+                    $textoOCR
+                )
+            );
 
-    Mail::to(
-        'alejandrotsc01@gmail.com'
+            $incidencia->update([
+                'correo_enviado' =>
+                    true,
 
-    )->send(
-        new IncidenciaMail(
-            $incidencia,
-            $textoOCR
-        )
-    );
+                'fecha_envio_correo' =>
+                    now(),
+            ]);
 
-    $incidencia->update([
+            return response()->json([
+                'success' =>
+                    true,
 
-        'correo_enviado' => true,
+                'codigo' =>
+                    $incidencia->codigo,
 
-        'fecha_envio_correo' => now()
+                'message' =>
+                    'El reporte de incidencia fue enviado correctamente y el equipo TI fue notificado.',
+            ]);
 
-    ]);
+        } catch (\Throwable $e) {
+            Log::error(
+                'Error enviando incidencia '
+                .$incidencia->codigo,
+                [
+                    'error' =>
+                        $e->getMessage(),
+                ]
+            );
 
+            $incidencia->update([
+                'correo_enviado' =>
+                    false,
+            ]);
 
-    return response()->json([
+            return response()->json([
+                'success' =>
+                    false,
 
-        'success' => true,
+                'codigo' =>
+                    $incidencia->codigo,
 
-        'codigo' => $incidencia->codigo,
-
-        'message' => 'El reporte de incidencia fue enviado correctamente y el equipo TI fue notificado.'
-
-    ]);
-
-} catch (\Exception $e) {
-
-    \Log::error(
-        'Error enviando incidencia '.$incidencia->codigo,
-        [
-            'error' => $e->getMessage()
-        ]
-    );
-
-    $incidencia->update([
-
-        'correo_enviado' => false
-
-    ]);
-
-
-    return response()->json([
-
-        'success' => false,
-
-        'codigo' => $incidencia->codigo,
-
-        'message' => 'El reporte de incidencia fue registrado, pero no fue posible enviar la notificación al equipo TI.'
-
-    ], 500);
-
-}
-
-        /*return redirect()
-
-            ->route(
-                'incidencias.show',
-                $incidencia
-            )
-
-            ->with(
-                'success',
-                'Incidencia enviada correctamente.'
-            );*/
-
+                'message' =>
+                    'El reporte de incidencia fue registrado, pero no fue posible enviar la notificación al equipo TI.',
+            ], 500);
+        }
     }
 
-    public function misIncidencias()
-{
+    /*
+    |--------------------------------------------------------------------------
+    | Incidencias del usuario con filtro mensual
+    |--------------------------------------------------------------------------
+    */
 
-    $incidencias = Incidencia::where(
-        'usuario_id',
-        Auth::id()
-    )
-    ->with('archivos')
-    ->latest()
-    ->get();
+    public function misIncidencias(
+        Request $request
+    ) {
+        $validated = $request->validate([
+            'mes' => [
+                'nullable',
+                'integer',
+                'between:1,12',
+            ],
 
+            'anio' => [
+                'nullable',
+                'integer',
+                'min:2020',
+                'max:'.now()->year,
+            ],
+        ]);
 
-    return view(
-        'incidencias.mis-incidencias',
-        compact('incidencias')
-    );
+        /*
+         * Mostrar el mes actual cuando no se recibe ningún filtro.
+         */
+        $mes = (int) (
+            $validated['mes']
+            ?? now()->month
+        );
 
-}
+        $anio = (int) (
+            $validated['anio']
+            ?? now()->year
+        );
 
+        $usuarioId =
+            (int) Auth::id();
 
+        /*
+         * Meses disponibles para el filtro.
+         */
+        $meses = [
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre',
+        ];
 
+        /*
+         * Obtener los años en los que el usuario tiene incidencias.
+         *
+         * EXTRACT se utiliza porque la base de datos es PostgreSQL.
+         */
+        $aniosDisponibles =
+            Incidencia::query()
+                ->where(
+                    'usuario_id',
+                    $usuarioId
+                )
+                ->selectRaw(
+                    'DISTINCT EXTRACT(YEAR FROM created_at)::integer AS anio'
+                )
+                ->orderByDesc('anio')
+                ->pluck('anio')
+                ->map(
+                    static fn ($valor): int =>
+                        (int) $valor
+                )
+                ->push(
+                    now()->year
+                )
+                ->unique()
+                ->sortDesc()
+                ->values();
 
+        /*
+         * Aplicar filtro de mes y año.
+         */
+        $incidencias =
+            Incidencia::query()
+                ->where(
+                    'usuario_id',
+                    $usuarioId
+                )
+                ->with([
+                    'archivos',
+                ])
+                ->whereYear(
+                    'created_at',
+                    $anio
+                )
+                ->whereMonth(
+                    'created_at',
+                    $mes
+                )
+                ->latest()
+                ->get();
 
+        return view(
+            'incidencias.mis-incidencias',
+            compact(
+                'incidencias',
+                'mes',
+                'anio',
+                'meses',
+                'aniosDisponibles'
+            )
+        );
+    }
 
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | Detalle de incidencia
+    |--------------------------------------------------------------------------
+    */
 
     public function show(
         Incidencia $incidencia
-    )
-    {
-
-
+    ) {
         $incidencia->load([
-
             'usuario',
-
-            'archivos'
-
+            'archivos',
         ]);
-
-
 
         return view(
             'incidencias.show',
             compact('incidencia')
         );
-
-
     }
 
-
-
-
-
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | Cerrar incidencia
+    |--------------------------------------------------------------------------
+    */
 
     public function cerrar(
         Incidencia $incidencia
-    )
-    {
-
-
+    ) {
         $incidencia->update([
-
-            'estado'=>'Cerrada'
-
+            'estado' =>
+                'Cerrada',
         ]);
 
-
         return back();
-
     }
-
-
 }

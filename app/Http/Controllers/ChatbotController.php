@@ -27,149 +27,82 @@ class ChatbotController extends Controller
 
     public function warmUp(): JsonResponse
     {
-        return response()->json([
-            'ok' => $this->aiService->warmUp(),
-        ]);
+        try {
+            return response()->json([
+                'ok' => $this->aiService->warmUp(),
+            ]);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+            ]);
+        }
     }
 
     /*
     |--------------------------------------------------------------------------
     | Respuesta JSON tradicional
     |--------------------------------------------------------------------------
-    |
-    | Se conserva para compatibilidad con solicitudes que no necesiten
-    | streaming.
-    |
     */
 
-    public function message(
-        Request $request
-    ): JsonResponse {
-        $validated =
-            $this->validateChatRequest(
-                $request
-            );
-
+    public function message(Request $request): JsonResponse
+    {
+        $validated = $this->validateChatRequest($request);
         $user = $request->user();
 
-        $message = trim(
-            (string) (
-                $validated['message']
-                ?? ''
-            )
-        );
+        $message = trim((string) ($validated['message'] ?? ''));
 
-        $action = isset(
-            $validated['action']
-        )
-            ? trim(
-                (string) $validated['action']
-            )
+        $action = isset($validated['action'])
+            ? trim((string) $validated['action'])
             : null;
 
-        $forceAI = (bool) (
-            $validated['force_ai']
-            ?? false
+        $forceAI = (bool) ($validated['force_ai'] ?? false);
+
+        $response = $this->chatbotService->handle(
+            message: $message,
+            user: $user,
+            action: $action,
+            forceAI: $forceAI
         );
 
-        $response =
-            $this->chatbotService->handle(
-                message: $message,
-                user: $user,
-                action: $action,
-                forceAI: $forceAI
-            );
-
-        $conversationId =
-            $this->saveConversation(
-                userId:
-                    $user?->getAuthIdentifier(),
-
-                message:
-                    $this->buildStoredMessage(
-                        $message,
-                        $action
-                    ),
-
-                response:
-                    $response,
-
-                requestedAction:
-                    $action
-            );
-
-        $response['conversation_id'] =
-            $conversationId;
-
-        return response()->json(
-            $response
+        $response['conversation_id'] = $this->saveConversation(
+            userId: $user?->getAuthIdentifier(),
+            message: $this->buildStoredMessage($message, $action),
+            response: $response,
+            requestedAction: $action
         );
+
+        return response()->json($response);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Respuesta progresiva
+    | Respuesta progresiva NDJSON
     |--------------------------------------------------------------------------
-    |
-    | Acepta:
-    |
-    | Texto normal:
-    | {
-    |     "message": "¿Qué es Active Directory?"
-    | }
-    |
-    | Acción interactiva:
-    | {
-    |     "action": "problema.internet"
-    | }
-    |
-    | Texto enviado directamente a Ollama:
-    | {
-    |     "message": "La red aparece conectada pero no navega",
-    |     "force_ai": true
-    | }
-    |
     */
 
-    public function stream(
-        Request $request
-    ): StreamedResponse {
-        $validated =
-            $this->validateChatRequest(
-                $request
-            );
-
+    public function stream(Request $request): StreamedResponse
+    {
+        $validated = $this->validateChatRequest($request);
         $user = $request->user();
 
         $userId = $user
             ? (int) $user->getAuthIdentifier()
             : null;
 
-        $message = trim(
-            (string) (
-                $validated['message']
-                ?? ''
-            )
-        );
+        $message = trim((string) ($validated['message'] ?? ''));
 
-        $action = isset(
-            $validated['action']
-        )
-            ? trim(
-                (string) $validated['action']
-            )
+        $action = isset($validated['action'])
+            ? trim((string) $validated['action'])
             : null;
 
-        $forceAI = (bool) (
-            $validated['force_ai']
-            ?? false
-        );
+        $forceAI = (bool) ($validated['force_ai'] ?? false);
 
-        $storedMessage =
-            $this->buildStoredMessage(
-                $message,
-                $action
-            );
+        $storedMessage = $this->buildStoredMessage(
+            $message,
+            $action
+        );
 
         return response()->stream(
             function () use (
@@ -180,98 +113,58 @@ class ChatbotController extends Controller
                 $user,
                 $userId
             ): void {
-                /*
-                 * Evitar compresión y buffering de PHP.
-                 */
-                if (
-                    function_exists('ini_set')
-                ) {
-                    @ini_set(
-                        'zlib.output_compression',
-                        '0'
-                    );
-
-                    @ini_set(
-                        'output_buffering',
-                        '0'
-                    );
-                }
+                $this->prepareStreamingEnvironment();
 
                 /*
-                 * Cerrar cualquier buffer existente.
-                 */
-                while (ob_get_level() > 0) {
-                    @ob_end_flush();
-                }
-
-                /*
-                 * Confirmar inmediatamente que Laravel recibió
-                 * la solicitud.
+                 * Confirmar inmediatamente que Laravel recibió la solicitud.
                  */
                 $this->emitStreamEvent(
                     'start',
                     [
-                        'mode' =>
-                            $forceAI
-                                ? 'ai'
-                                : 'flow',
+                        'mode' => $forceAI ? 'ai' : 'flow',
                     ]
                 );
 
                 /*
-                 * Forzar la salida en servidores FastCGI que
-                 * esperan varios KB antes de transmitir.
+                 * Forzar la salida en FastCGI, proxies y navegadores que
+                 * acumulan varios KB antes de mostrar el stream.
                  */
-                echo str_repeat(
-                    ' ',
-                    8192
-                )."\n";
-
-                flush();
+                echo str_repeat(' ', 8192)."\n";
+                $this->flushOutput();
 
                 try {
-                    $response =
-                        $this->chatbotService
-                            ->handleStream(
-                                message: $message,
-                                user: $user,
+                    $response = $this->chatbotService->handleStream(
+                        message: $message,
+                        user: $user,
+                        onChunk: function (string $chunk): void {
+                            if ($chunk === '') {
+                                return;
+                            }
 
-                                onChunk: function (
-                                    string $chunk
-                                ): void {
-                                    $this->emitStreamEvent(
-                                        'chunk',
-                                        $chunk
-                                    );
-                                },
-
-                                action: $action,
-                                forceAI: $forceAI
+                            $this->emitStreamEvent(
+                                'chunk',
+                                $chunk
                             );
+                        },
+                        action: $action,
+                        forceAI: $forceAI
+                    );
 
-                    $conversationId =
-                        $this->saveConversation(
-                            userId:
-                                $userId,
+                    $response['conversation_id'] = $this->saveConversation(
+                        userId: $userId,
+                        message: $storedMessage,
+                        response: $response,
+                        requestedAction: $action
+                    );
 
-                            message:
-                                $storedMessage,
-
-                            response:
-                                $response,
-
-                            requestedAction:
-                                $action
-                        );
-
-                    $response['conversation_id'] =
-                        $conversationId;
-
+                    /*
+                     * El frontend exige este evento para considerar que la
+                     * respuesta terminó correctamente.
+                     */
                     $this->emitStreamEvent(
                         'complete',
                         $response
                     );
-
                 } catch (Throwable $e) {
                     report($e);
 
@@ -280,9 +173,7 @@ class ChatbotController extends Controller
                         [
                             'message' =>
                                 'No pude procesar tu solicitud en este momento.',
-
-                            'retryable' =>
-                                true,
+                            'retryable' => true,
                         ]
                     );
                 }
@@ -291,15 +182,11 @@ class ChatbotController extends Controller
             [
                 'Content-Type' =>
                     'application/x-ndjson; charset=UTF-8',
-
                 'Cache-Control' =>
-                    'no-cache, no-store, must-revalidate',
-
-                'Pragma' =>
-                    'no-cache',
-
-                'X-Accel-Buffering' =>
-                    'no',
+                    'no-cache, no-store, must-revalidate, no-transform',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+                'X-Accel-Buffering' => 'no',
             ]
         );
     }
@@ -308,35 +195,23 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Estado de gestiones
     |--------------------------------------------------------------------------
-    |
-    | Se mantiene por compatibilidad. El flujo interactivo utiliza
-    | la acción gestion.estado sobre /chatbot/stream.
-    |
     */
 
-    public function estado(
-        Request $request
-    ): JsonResponse {
+    public function estado(Request $request): JsonResponse
+    {
         $user = $request->user();
 
         if (!$user) {
             return response()->json([
                 'message' =>
                     'Necesitas iniciar sesión para consultar tus gestiones.',
-
                 'quick_actions' => [
                     [
-                        'label' =>
-                            'Volver al menú',
-
-                        'action' =>
-                            'flow',
-
-                        'value' =>
-                            'menu.principal',
+                        'label' => 'Volver al menú',
+                        'action' => 'flow',
+                        'value' => 'menu.principal',
                     ],
                 ],
-
                 'redirect' => null,
                 'items' => [],
                 'mode' => 'flow',
@@ -344,68 +219,47 @@ class ChatbotController extends Controller
             ]);
         }
 
-        $items =
-            $this->gestionStatus->getRecentFor(
-                (int) $user->getAuthIdentifier()
-            );
+        $items = $this->gestionStatus->getRecentFor(
+            (int) $user->getAuthIdentifier()
+        );
 
         return response()->json([
-            'message' =>
-                empty($items)
-                    ? 'No encontré gestiones registradas a tu nombre.'
-                    : 'Estas son tus gestiones recientes:',
-
+            'message' => empty($items)
+                ? 'No encontré gestiones registradas a tu nombre.'
+                : 'Estas son tus gestiones recientes:',
             'quick_actions' => [
                 [
-                    'label' =>
-                        'Consultar nuevamente',
-
-                    'action' =>
-                        'status',
-
-                    'value' =>
-                        'gestion.estado',
+                    'label' => 'Consultar nuevamente',
+                    'action' => 'status',
+                    'value' => 'gestion.estado',
                 ],
-
                 [
-                    'label' =>
-                        'Volver al menú',
-
-                    'action' =>
-                        'flow',
-
-                    'value' =>
-                        'menu.principal',
+                    'label' => 'Volver al menú',
+                    'action' => 'flow',
+                    'value' => 'menu.principal',
                 ],
             ],
-
             'redirect' => null,
-
-            'items' =>
-                $items ?: [],
-
+            'items' => $items ?: [],
             'mode' => 'flow',
-
             'conversation_id' => null,
         ]);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Registrar retroalimentación
+    | Retroalimentación
     |--------------------------------------------------------------------------
     */
 
-    public function feedback(
-        Request $request
-    ): JsonResponse {
+    public function feedback(Request $request): JsonResponse
+    {
         $validated = $request->validate([
             'conversation_id' => [
                 'required',
                 'integer',
                 'exists:chatbot_conversations,id',
             ],
-
             'was_helpful' => [
                 'required',
                 'boolean',
@@ -417,36 +271,24 @@ class ChatbotController extends Controller
         if (!$user) {
             return response()->json([
                 'ok' => false,
-
-                'message' =>
-                    'Necesitas iniciar sesión.',
+                'message' => 'Necesitas iniciar sesión.',
             ], 401);
         }
 
-        $conversation =
-            ChatbotConversation::query()
-                ->where(
-                    'id',
-                    $validated['conversation_id']
-                )
-                ->where(
-                    'usuario_id',
-                    $user->getAuthIdentifier()
-                )
-                ->first();
+        $conversation = ChatbotConversation::query()
+            ->where('id', $validated['conversation_id'])
+            ->where('usuario_id', $user->getAuthIdentifier())
+            ->first();
 
         if (!$conversation) {
             return response()->json([
                 'ok' => false,
-
-                'message' =>
-                    'No se encontró la conversación.',
+                'message' => 'No se encontró la conversación.',
             ], 404);
         }
 
         $conversation->update([
-            'es_util' =>
-                $validated['was_helpful'],
+            'es_util' => $validated['was_helpful'],
         ]);
 
         return response()->json([
@@ -456,27 +298,47 @@ class ChatbotController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Preparar PHP para streaming
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareStreamingEnvironment(): void
+    {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        if (function_exists('ini_set')) {
+            @ini_set('max_execution_time', '0');
+            @ini_set('zlib.output_compression', '0');
+            @ini_set('output_buffering', '0');
+            @ini_set('implicit_flush', '1');
+        }
+
+        if (function_exists('ob_implicit_flush')) {
+            @ob_implicit_flush(true);
+        }
+
+        while (ob_get_level() > 0) {
+            @ob_end_flush();
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Validar mensaje o acción
     |--------------------------------------------------------------------------
     */
 
-    private function validateChatRequest(
-        Request $request
-    ): array {
+    private function validateChatRequest(Request $request): array
+    {
         return $request->validate([
-            /*
-             * Se requiere message cuando no existe action.
-             */
             'message' => [
                 'nullable',
                 'string',
                 'max:500',
                 'required_without:action',
             ],
-
-            /*
-             * Se requiere action cuando no existe message.
-             */
             'action' => [
                 'nullable',
                 'string',
@@ -484,10 +346,6 @@ class ChatbotController extends Controller
                 'regex:/^[a-z0-9_.-]+$/',
                 'required_without:message',
             ],
-
-            /*
-             * Envía el texto directamente a Ollama.
-             */
             'force_ai' => [
                 'nullable',
                 'boolean',
@@ -499,10 +357,6 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Texto almacenado en conversación
     |--------------------------------------------------------------------------
-    |
-    | Cuando el usuario selecciona un botón no existe un mensaje escrito.
-    | Guardamos el identificador de la acción para mantener trazabilidad.
-    |
     */
 
     private function buildStoredMessage(
@@ -513,10 +367,7 @@ class ChatbotController extends Controller
             return $message;
         }
 
-        if (
-            is_string($action)
-            && $action !== ''
-        ) {
+        if (is_string($action) && $action !== '') {
             return "[Acción] {$action}";
         }
 
@@ -548,12 +399,24 @@ class ChatbotController extends Controller
         }
 
         echo $payload."\n";
+        $this->flushOutput();
+    }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Vaciar salida
+    |--------------------------------------------------------------------------
+    */
+
+    private function flushOutput(): void
+    {
         if (ob_get_level() > 0) {
             @ob_flush();
         }
 
-        flush();
+        if (function_exists('flush')) {
+            @flush();
+        }
     }
 
     /*
@@ -573,55 +436,28 @@ class ChatbotController extends Controller
         }
 
         try {
-            $intent =
-                $response['intent']
-                ?? [];
+            $intent = $response['intent'] ?? [];
+            $redirect = $response['redirect'] ?? null;
 
-            $redirect =
-                $response['redirect']
-                ?? null;
-
-            $savedAction = is_array(
-                $redirect
-            )
-                ? (
-                    $redirect['url']
-                    ?? $requestedAction
-                )
+            $savedAction = is_array($redirect)
+                ? ($redirect['url'] ?? $requestedAction)
                 : $requestedAction;
 
-            $conversation =
-                ChatbotConversation::create([
-                    'usuario_id' =>
-                        (int) $userId,
-
-                    'mensaje' =>
-                        $message,
-
-                    'respuesta' =>
-                        $response['message']
-                        ?? null,
-
-                    'intencion_detectada' =>
-                        $intent['name']
-                        ?? null,
-
-                    'puntuacion' =>
-                        $intent['score']
-                        ?? null,
-
-                    'accion' =>
-                        $savedAction,
-                ]);
+            $conversation = ChatbotConversation::create([
+                'usuario_id' => (int) $userId,
+                'mensaje' => $message,
+                'respuesta' => $response['message'] ?? null,
+                'intencion_detectada' => $intent['name'] ?? null,
+                'puntuacion' => $intent['score'] ?? null,
+                'accion' => $savedAction,
+            ]);
 
             return (int) $conversation->id;
-
         } catch (Throwable $e) {
             report($e);
 
             /*
-             * El chatbot debe responder aunque falle
-             * el registro del historial.
+             * El chatbot debe responder aunque falle el historial.
              */
             return null;
         }

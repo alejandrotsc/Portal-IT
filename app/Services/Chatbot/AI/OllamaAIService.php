@@ -87,7 +87,7 @@ class OllamaAIService implements AIServiceInterface
                 ->timeout(
                     (int) config(
                         'chatbot.ai.timeout',
-                        60
+                        180
                     )
                 )
                 ->acceptJson()
@@ -118,12 +118,12 @@ class OllamaAIService implements AIServiceInterface
 
                             'num_ctx' => (int) config(
                                 'chatbot.ai.num_ctx',
-                                1024
+                                1536
                             ),
 
                             'num_predict' => (int) config(
                                 'chatbot.ai.num_predict',
-                                120
+                                280
                             ),
 
                             'repeat_penalty' => (float) config(
@@ -187,7 +187,6 @@ try {
     fclose($resource);
 }
 
-$answer = trim($answer);
 
             $answer = trim($answer);
 
@@ -452,8 +451,8 @@ $answer = trim($answer);
 | Precargar modelo
 |--------------------------------------------------------------------------
 |
-| Carga llama3.2 en la GPU antes de que el usuario envíe
-| su primer mensaje.
+| No solo carga el modelo en la GPU. También procesa el prompt principal
+| para reducir el trabajo necesario durante el primer mensaje real.
 |
 */
 
@@ -469,52 +468,105 @@ public function warmUp(): bool
 
     $model = (string) config(
         'chatbot.ai.model',
-        'llama3.2'
+        'llama3.2:3b'
     );
 
     try {
+        /*
+         * Construir el mismo prompt utilizado en las consultas.
+         * Se utiliza contexto genérico porque la precarga no necesita
+         * generar una respuesta personalizada.
+         */
+        $systemPrompt = $this->promptBuilder->systemPrompt([
+            'usuario' => 'usuario',
+            'rol' => 'Usuario',
+        ]);
+
+
         $response = Http::connectTimeout(
             (int) config(
                 'chatbot.ai.connect_timeout',
                 3
             )
         )
-            ->timeout(45)
-            ->acceptJson()
-            ->post(
-                $url,
-                [
-                    'model' => $model,
+        ->timeout(
+            (int) config(
+                'chatbot.ai.timeout',
+                180
+            )
+        )
+        ->acceptJson()
+        ->post(
+            $url,
+            [
+                'model' => $model,
 
-                    /*
-                     * Una solicitud vacía carga el modelo
-                     * sin generar contenido.
-                     */
-                    'messages' => [],
+                /*
+                 * Procesar el prompt para preparar también
+                 * la caché de contexto.
+                 */
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $systemPrompt,
+                    ],
 
-                    'stream' => false,
+                    [
+                        'role' => 'user',
+                        'content' => 'Listo.',
+                    ],
+                ],
 
-                    'keep_alive' => config(
-                        'chatbot.ai.keep_alive',
-                        '30m'
+                'stream' => false,
+
+                'keep_alive' => config(
+                    'chatbot.ai.keep_alive',
+                    '30m'
+                ),
+
+                /*
+                 * Solo genera un token. Lo importante es procesar
+                 * el prompt, no obtener una respuesta.
+                 */
+                'options' => [
+                    'temperature' => 0,
+
+                    'num_ctx' => (int) config(
+                        'chatbot.ai.num_ctx',
+                        1536
                     ),
-                ]
-            );
+
+                    'num_predict' => 1,
+                ],
+            ]
+        );
+
 
         if (!$response->successful()) {
             Log::warning(
                 'No fue posible precargar Ollama',
                 [
-                    'status' =>
-                        $response->status(),
-
-                    'model' =>
-                        $model,
+                    'status' => $response->status(),
+                    'model' => $model,
+                    'response' => mb_substr(
+                        $response->body(),
+                        0,
+                        500
+                    ),
                 ]
             );
 
             return false;
         }
+
+
+        Log::info(
+            'Modelo y prompt de Ollama precargados',
+            [
+                'model' => $model,
+            ]
+        );
+
 
         return true;
 
@@ -522,11 +574,8 @@ public function warmUp(): bool
         Log::warning(
             'Error precargando Ollama',
             [
-                'error' =>
-                    $e->getMessage(),
-
-                'model' =>
-                    $model,
+                'error' => $e->getMessage(),
+                'model' => $model,
             ]
         );
 

@@ -124,8 +124,29 @@ const categoriaInput=document.getElementById('categoria');
 
 const asunto=document.querySelector('[name="asunto"]');
 const descripcion=document.querySelector('[name="descripcion"]');
-const btnEnviar=document.getElementById('btnEnviar');
-const btnCancelar=document.getElementById('btnCancelar');
+const btnEnviar = document.getElementById('btnEnviar');
+const btnCancelar = document.getElementById('btnCancelar');
+
+const solicitudForm =
+    document.getElementById('solicitudForm')
+    || btnEnviar?.closest('form');
+
+const btnEnviarTexto =
+    document.getElementById('btnEnviarTexto');
+
+const btnEnviarIcono =
+    document.getElementById('btnEnviarIcono');
+
+
+// Elementos opcionales para archivos
+const archivosSolicitud =
+    document.getElementById('archivosSolicitud');
+
+const filesContainer =
+    document.getElementById('filesContainer');
+
+const fileInput =
+    document.getElementById('fileInput');
 
 
 cards.forEach(card=>{
@@ -478,14 +499,87 @@ return true;
 
 
 
-if(btnEnviar){
+if (solicitudForm) {
 
-btnEnviar.addEventListener('click',e=>{
+    solicitudForm.addEventListener('submit', (e) => {
 
-if(!validarFormulario())
-e.preventDefault();
+        /*
+        |--------------------------------------------------------------------------
+        | Validar formulario
+        |--------------------------------------------------------------------------
+        */
 
-});
+        if (!validarFormulario()) {
+
+            e.preventDefault();
+
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bloquear botón
+        |--------------------------------------------------------------------------
+        */
+
+        if (!btnEnviar) {
+            return;
+        }
+
+        btnEnviar.disabled = true;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ocultar icono
+        |--------------------------------------------------------------------------
+        */
+
+        if (btnEnviarIcono) {
+
+            btnEnviarIcono.classList.add('hidden');
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mostrar spinner
+        |--------------------------------------------------------------------------
+        */
+
+        if (!document.getElementById('spinnerSolicitud')) {
+
+            const spinner =
+                document.createElement('span');
+
+            spinner.id = 'spinnerSolicitud';
+
+            spinner.className = 'spinner-envio';
+
+            btnEnviar.insertBefore(
+                spinner,
+                btnEnviarTexto || null
+            );
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cambiar texto
+        |--------------------------------------------------------------------------
+        */
+
+        if (btnEnviarTexto) {
+
+            btnEnviarTexto.textContent =
+                'Enviando...';
+
+        }
+
+    });
 
 }
 
@@ -509,9 +603,23 @@ attachedFiles=[];
 actualizarTarjetas();
 
 
-formularioSolicitud.classList.add('hidden');
-archivosSolicitud.classList.add('hidden');
-accionesSolicitud.classList.add('hidden');
+if (formularioSolicitud) {
+
+    formularioSolicitud.classList.add('hidden');
+
+}
+
+if (archivosSolicitud) {
+
+    archivosSolicitud.classList.add('hidden');
+
+}
+
+if (accionesSolicitud) {
+
+    accionesSolicitud.classList.add('hidden');
+
+}
 
 if(cambiarCategoria)
 cambiarCategoria.classList.add('hidden');

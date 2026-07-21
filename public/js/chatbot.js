@@ -82,10 +82,10 @@ window.chatbotWidget = function () {
                 'portal-it-chatbot-warmed-at';
 
             const warmedAt = Number(
-                window.sessionStorage.getItem(
+                window.localStorage.getItem(
                     storageKey
                 )
-                ?? 0
+                    ?? 0
             );
 
             const twentyMinutes =
@@ -121,10 +121,10 @@ window.chatbotWidget = function () {
                 );
 
                 if (response.ok) {
-                    window.sessionStorage.setItem(
-                        storageKey,
-                        String(Date.now())
-                    );
+                    window.localStorage.setItem(
+                    storageKey,
+                    String(Date.now())
+                );
                 }
 
             } catch (error) {

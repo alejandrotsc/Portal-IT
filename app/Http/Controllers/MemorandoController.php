@@ -906,6 +906,238 @@ break;
 
 
 
+    /*
+|--------------------------------------------------------------------------
+| Mis pases
+|--------------------------------------------------------------------------
+*/
+
+public function misPases(Request $request)
+{
+    $request->validate([
+
+        'mes' => [
+            'nullable',
+            'integer',
+            'between:1,12',
+        ],
+
+        'anio' => [
+            'nullable',
+            'integer',
+            'between:2020,'.now()->year,
+        ],
+
+        'tipo' => [
+            'nullable',
+            'string',
+            'in:todos,pase_temporal,autorizacion',
+        ],
+
+    ]);
+
+
+    $mes = (int) $request->input(
+        'mes',
+        now()->month
+    );
+
+
+    $anio = (int) $request->input(
+        'anio',
+        now()->year
+    );
+
+
+    $tipoSeleccionado = $request->input(
+        'tipo',
+        'todos'
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Consulta base
+    |--------------------------------------------------------------------------
+    */
+
+    $consultaBase = Memorando::query()
+
+        ->where(
+            'solicitante_id',
+            auth()->id()
+        )
+
+        ->whereHas('tipo', function ($query) {
+
+            $query->whereIn('slug', [
+                'pase_temporal',
+                'autorizacion',
+            ]);
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Años disponibles
+    |--------------------------------------------------------------------------
+    */
+
+    $aniosDisponibles = (clone $consultaBase)
+
+        ->whereNotNull('created_at')
+
+        ->selectRaw(
+            'EXTRACT(YEAR FROM created_at)::int AS anio'
+        )
+
+        ->distinct()
+
+        ->orderByDesc('anio')
+
+        ->pluck('anio');
+
+
+    if(!$aniosDisponibles->contains(now()->year)){
+
+        $aniosDisponibles->push(
+            now()->year
+        );
+
+
+        $aniosDisponibles = $aniosDisponibles
+            ->sortDesc()
+            ->values();
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aplicar filtros
+    |--------------------------------------------------------------------------
+    */
+
+    $memorandos = $consultaBase
+
+        ->with([
+            'tipo',
+            'solicitante',
+        ])
+
+        ->whereMonth(
+            'created_at',
+            $mes
+        )
+
+        ->whereYear(
+            'created_at',
+            $anio
+        )
+
+        ->when(
+            $tipoSeleccionado !== 'todos',
+            function ($query) use ($tipoSeleccionado) {
+
+                $query->whereHas(
+                    'tipo',
+                    function ($tipoQuery) use ($tipoSeleccionado) {
+
+                        $tipoQuery->where(
+                            'slug',
+                            $tipoSeleccionado
+                        );
+
+                    }
+                );
+
+            }
+        )
+
+        ->latest()
+
+        ->get();
+
+
+    return view(
+        'memorandos.mis-pases',
+        compact(
+            'memorandos',
+            'mes',
+            'anio',
+            'tipoSeleccionado',
+            'aniosDisponibles'
+        )
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Detalle centralizado de un pase
+|--------------------------------------------------------------------------
+*/
+
+public function showPase(
+    Memorando $memorando
+)
+{
+    $memorando->load([
+        'tipo',
+        'solicitante',
+        'archivos',
+        'historial',
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar que sea un pase
+    |--------------------------------------------------------------------------
+    */
+
+    abort_unless(
+        in_array(
+            $memorando->tipo?->slug,
+            [
+                'pase_temporal',
+                'autorizacion',
+            ],
+            true
+        ),
+        404
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar propietario
+    |--------------------------------------------------------------------------
+    */
+
+    $esAdministrador =
+        auth()->user()?->rol?->nombre
+        ===
+        'Administrador';
+
+
+    abort_unless(
+        (int) $memorando->solicitante_id
+            ===
+        (int) auth()->id()
+        ||
+        $esAdministrador,
+        403,
+        'No tienes permiso para consultar este pase.'
+    );
+
+
+    return view(
+        'memorandos.show-pase',
+        compact('memorando')
+    );
+}
 
 
     /*
@@ -914,21 +1146,21 @@ break;
     |--------------------------------------------------------------------------
     */
 
-    public function historico()
-    {
-        $memorandos = Memorando::with([
-            'tipo',
-            'solicitante'
-        ])
-        ->latest()
-        ->get();
+    /*
+|--------------------------------------------------------------------------
+| Histórico anterior
+|--------------------------------------------------------------------------
+|
+| Se conserva para que los enlaces antiguos continúen funcionando.
+| El historial de pases ahora está centralizado en misPases().
+|
+*/
 
-
-        return view(
-            'memorandos.historico',
-            compact('memorandos')
-        );
-    }
+public function historico()
+{
+    return redirect()
+        ->route('memorandos.mis-pases');
+}
 
 
 

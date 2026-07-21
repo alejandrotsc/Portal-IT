@@ -56,15 +56,17 @@
 
 
 
-                <span
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-xs font-medium border border-violet-100">
+                <a
+    href="{{ route('memorandos.mis-pases') }}"
+    class="inline-flex items-center gap-2 px-4 py-2.5
+           rounded-xl border border-border bg-white
+           text-sm font-medium text-foreground
+           hover:bg-muted transition-colors"
+>
+    <i data-lucide="history" class="w-4 h-4"></i>
 
-                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-
-                    Borrador
-
-                </span>
-
+    Mis pases
+</a>
 
             </div>
 

@@ -21,31 +21,31 @@ return [
 
     'modules' => [
 
-        'incidencia' => [
-            'label' => 'Reporte de incidencia',
-            'create' => 'incidencias.create',
-            'index' => 'incidencias.index',
-        ],
-
-        'solicitud' => [
-            'label' => 'Solicitudes',
-            'create' => 'solicitudes.create',
-            'index' => 'solicitudes.create',
-        ],
-
-        'pase_menor_24h' => [
-            'label' => 'Pase menor a 24 horas',
-            'create' => 'memorandos.pase_temporal',
-            'index' => 'memorandos.historico',
-        ],
-
-        'autorizacion_memorando' => [
-            'label' => 'Pase mayor a 24 horas',
-            'create' => 'memorandos.autorizacion',
-            'index' => 'memorandos.historico',
-        ],
-
+    'incidencia' => [
+        'label' => 'Reporte de incidencia',
+        'create' => 'incidencias.create',
+        'index' => 'mis-incidencias',
     ],
+
+    'solicitud' => [
+        'label' => 'Solicitudes de servicio',
+        'create' => 'solicitudes.create',
+        'index' => 'mis-solicitudes',
+    ],
+
+    'pase_menor_24h' => [
+        'label' => 'Pase menor a 24 horas',
+        'create' => 'memorandos.pase_temporal',
+        'index' => 'memorandos.mis-pases',
+    ],
+
+    'autorizacion_memorando' => [
+        'label' => 'Pase mayor a 24 horas',
+        'create' => 'memorandos.autorizacion',
+        'index' => 'memorandos.mis-pases',
+    ],
+
+],
 
 
     /*
@@ -515,7 +515,7 @@ return [
 
         'timeout' => (int) env(
             'CHATBOT_AI_TIMEOUT',
-            60
+            180
         ),
 
 

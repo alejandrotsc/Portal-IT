@@ -271,6 +271,53 @@ class ChatbotResponseBuilder
             );
         }
 
+        /*
+|--------------------------------------------------------------------------
+| Eliminar “Mostrar menú” de respuestas generadas por IA
+|--------------------------------------------------------------------------
+|
+| Se conserva “Volver al menú”, que pertenece al flujo general
+| del chatbot.
+|
+*/
+
+$quickActions = array_values(
+    array_filter(
+        $quickActions,
+        static function (array $action): bool {
+
+            $label = mb_strtolower(
+                trim(
+                    (string) (
+                        $action['label']
+                        ?? ''
+                    )
+                )
+            );
+
+            $value = mb_strtolower(
+                trim(
+                    (string) (
+                        $action['value']
+                        ?? ''
+                    )
+                )
+            );
+
+            return !in_array(
+                $label,
+                [
+                    'mostrar menú',
+                    'mostrar menu',
+                ],
+                true
+            )
+            &&
+            $value !== 'menu';
+        }
+    )
+);
+
         return [
             'message' => trim(
                 $aiResponse->message
@@ -467,12 +514,6 @@ class ChatbotResponseBuilder
                 'Crear incidencia',
                 'incidencia'
             ),
-
-            [
-                'label' => 'Mostrar menú',
-                'action' => 'send',
-                'value' => 'menu',
-            ],
         ];
     }
 
@@ -484,44 +525,62 @@ class ChatbotResponseBuilder
     */
 
     private function forModule(
-        string $key,
-        string $message
-    ): array {
-        $redirect = $this->getRedirect(
-            $key
-        );
+    string $key,
+    string $message
+): array {
+    $createRedirect = $this->getRedirect(
+        $key,
+        'create'
+    );
 
-        return [
-            'message' => $message,
+    $indexRedirect = $this->getRedirect(
+        $key,
+        'index'
+    );
 
-            'quick_actions' => [
-                $this->redirectAction(
-                    $redirect['label'] ?? 'Ir al formulario',
-                    $key
-                ),
 
-                [
-                    'label' => 'Consultar estado',
-                    'action' => 'send',
-                    'value' => 'consultar estado',
-                ],
+    $quickActions = [];
 
-                [
-                    'label' => 'Mostrar menú',
-                    'action' => 'send',
-                    'value' => 'menu',
-                ],
-            ],
 
-            /*
-             * Se conserva para mostrar también el botón principal
-             * definido en msg.redirect.
-             */
-            'redirect' => $redirect,
-
-            'items' => null,
+    if ($createRedirect) {
+        $quickActions[] = [
+            'label' => $createRedirect['action_label'],
+            'action' => 'redirect',
+            'url' => $createRedirect['url'],
         ];
     }
+
+
+    if ($indexRedirect) {
+        $quickActions[] = [
+            'label' => $indexRedirect['action_label'],
+            'action' => 'redirect',
+            'url' => $indexRedirect['url'],
+        ];
+    }
+
+
+    $quickActions[] = [
+        'label' => 'Mostrar menú',
+        'action' => 'send',
+        'value' => 'menu',
+    ];
+
+
+    return [
+        'message' => $message,
+
+        'quick_actions' => $quickActions,
+
+        /*
+         * El botón principal continúa apuntando
+         * al formulario de creación.
+         */
+        'redirect' => $createRedirect,
+
+        'items' => null,
+    ];
+}
 
 
     /*
@@ -531,31 +590,31 @@ class ChatbotResponseBuilder
     */
 
     private function redirectAction(
-        string $label,
-        string $moduleKey
-    ): array {
-        $redirect = $this->getRedirect(
-            $moduleKey
-        );
+    string $label,
+    string $moduleKey,
+    string $destination = 'create'
+): array {
+    $redirect = $this->getRedirect(
+        $moduleKey,
+        $destination
+    );
 
-        /*
-         * Si la ruta no existe, se devuelve una acción segura
-         * que abre nuevamente el menú.
-         */
-        if (!$redirect || empty($redirect['url'])) {
-            return [
-                'label' => $label,
-                'action' => 'send',
-                'value' => 'menu',
-            ];
-        }
 
+    if (!$redirect || empty($redirect['url'])) {
         return [
             'label' => $label,
-            'action' => 'redirect',
-            'url' => $redirect['url'],
+            'action' => 'send',
+            'value' => 'menu',
         ];
     }
+
+
+    return [
+        'label' => $label,
+        'action' => 'redirect',
+        'url' => $redirect['url'],
+    ];
+}
 
 
     /*
@@ -565,29 +624,118 @@ class ChatbotResponseBuilder
     */
 
     private function getRedirect(
-        string $key
-    ): ?array {
-        $module = config(
-            "chatbot.modules.{$key}"
-        );
-
-        if (
-            !is_array($module)
-            || empty($module['create'])
-            || empty($module['label'])
-            || !Route::has($module['create'])
-        ) {
-            return null;
-        }
-
-        return [
-            'label' => 'Ir a: '.$module['label'],
-
-            'url' => route(
-                $module['create']
-            ),
-        ];
+    string $key,
+    string $destination = 'create'
+): ?array {
+    /*
+     * Solo se permiten estos dos destinos.
+     */
+    if (
+        !in_array(
+            $destination,
+            ['create', 'index'],
+            true
+        )
+    ) {
+        return null;
     }
+
+
+    $module = config(
+        "chatbot.modules.{$key}"
+    );
+
+
+    if (
+        !is_array($module)
+        || empty($module[$destination])
+        || !Route::has($module[$destination])
+    ) {
+        return null;
+    }
+
+
+    $moduleLabel = (string) (
+        $module['label']
+        ?? 'Módulo'
+    );
+
+
+    $actionLabel = $destination === 'index'
+        ? $this->getHistoryLabel($key)
+        : $this->getCreateLabel($key);
+
+
+    return [
+        'label' => $destination === 'index'
+            ? 'Ver: '.$actionLabel
+            : 'Ir a: '.$moduleLabel,
+
+        'action_label' => $actionLabel,
+
+        'url' => route(
+            $module[$destination]
+        ),
+    ];
+}
+
+
+    /*
+|--------------------------------------------------------------------------
+| Etiquetas para creación
+|--------------------------------------------------------------------------
+*/
+
+private function getCreateLabel(
+    string $moduleKey
+): string {
+    return match ($moduleKey) {
+
+        'incidencia' =>
+            'Reportar incidencia',
+
+        'solicitud' =>
+            'Crear solicitud',
+
+        'pase_menor_24h' =>
+            'Crear pase temporal',
+
+        'autorizacion_memorando' =>
+            'Crear pase mayor a 24 horas',
+
+        default =>
+            'Crear gestión',
+
+    };
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Etiquetas para historiales
+|--------------------------------------------------------------------------
+*/
+
+private function getHistoryLabel(
+    string $moduleKey
+): string {
+    return match ($moduleKey) {
+
+        'incidencia' =>
+            'Mis incidencias',
+
+        'solicitud' =>
+            'Mis solicitudes',
+
+        'pase_menor_24h',
+        'autorizacion_memorando' =>
+            'Mis pases',
+
+        default =>
+            'Consultar historial',
+
+    };
+}
 
 
     /*
@@ -819,58 +967,78 @@ class ChatbotResponseBuilder
     */
 
     private function inferModuleFromLabel(
-        string $label
-    ): ?string {
-        $normalizedLabel = mb_strtolower(
-            $label
-        );
+    string $label
+): ?string {
+    $normalizedLabel = mb_strtolower(
+        trim($label)
+    );
 
-        if (
-            str_contains(
-                $normalizedLabel,
-                'incidencia'
-            )
-        ) {
-            return 'incidencia';
-        }
 
-        if (
-            str_contains(
-                $normalizedLabel,
-                'solicitud'
-            )
-        ) {
-            return 'solicitud';
-        }
-
-        if (
-            str_contains(
-                $normalizedLabel,
-                'pase'
-            )
-        ) {
-            return 'pase_menor_24h';
-        }
-
-        if (
-            str_contains(
-                $normalizedLabel,
-                'autorización'
-            )
-            || str_contains(
-                $normalizedLabel,
-                'autorizacion'
-            )
-            || str_contains(
-                $normalizedLabel,
-                'memorando'
-            )
-        ) {
-            return 'autorizacion_memorando';
-        }
-
-        return null;
+    if (
+        str_contains(
+            $normalizedLabel,
+            'incidencia'
+        )
+    ) {
+        return 'incidencia';
     }
+
+
+    if (
+        str_contains(
+            $normalizedLabel,
+            'solicitud'
+        )
+    ) {
+        return 'solicitud';
+    }
+
+
+    /*
+     * Primero se verifica el pase mayor.
+     */
+    if (
+        str_contains(
+            $normalizedLabel,
+            'pase mayor'
+        )
+        ||
+        str_contains(
+            $normalizedLabel,
+            'autorización'
+        )
+        ||
+        str_contains(
+            $normalizedLabel,
+            'autorizacion'
+        )
+        ||
+        str_contains(
+            $normalizedLabel,
+            'memorando'
+        )
+    ) {
+        return 'autorizacion_memorando';
+    }
+
+
+    if (
+        str_contains(
+            $normalizedLabel,
+            'pase'
+        )
+        ||
+        str_contains(
+            $normalizedLabel,
+            'temporal'
+        )
+    ) {
+        return 'pase_menor_24h';
+    }
+
+
+    return null;
+}
 
 
     /*
@@ -932,33 +1100,39 @@ class ChatbotResponseBuilder
     */
 
     private function mainMenuActions(): array
-    {
-        return [
-            $this->redirectAction(
-                'Reporte de incidencia',
-                'incidencia'
-            ),
+{
+    return [
 
-            $this->redirectAction(
-                'Solicitudes',
-                'solicitud'
-            ),
+        $this->redirectAction(
+            'Reportar incidencia',
+            'incidencia',
+            'create'
+        ),
 
-            $this->redirectAction(
-                'Pase menor a 24 horas',
-                'pase_menor_24h'
-            ),
+        $this->redirectAction(
+            'Crear solicitud',
+            'solicitud',
+            'create'
+        ),
 
-            $this->redirectAction(
-                'Pase mayor a 24 horas',
-                'autorizacion_memorando'
-            ),
+        $this->redirectAction(
+            'Pase menor a 24 horas',
+            'pase_menor_24h',
+            'create'
+        ),
 
-            [
-                'label' => 'Consultar gestiones',
-                'action' => 'send',
-                'value' => 'consultar estado',
-            ],
-        ];
-    }
+        $this->redirectAction(
+            'Pase mayor a 24 horas',
+            'autorizacion_memorando',
+            'create'
+        ),
+
+        [
+            'label' => 'Consultar gestiones',
+            'action' => 'send',
+            'value' => 'consultar estado',
+        ],
+
+    ];
+}
 }
