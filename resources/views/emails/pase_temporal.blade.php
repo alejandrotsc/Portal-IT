@@ -5,8 +5,13 @@
 
 <meta charset="UTF-8">
 
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
 <title>
-Solicitud de pase menor a 24 horas
+Nueva solicitud de pase menor a 24 horas
 </title>
 
 <style>
@@ -27,26 +32,45 @@ Solicitud de pase menor a 24 horas
 
 <div class="email-header">
 
-<img 
-src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
-class="email-logo"
-alt="TVC"
+<img
+    src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
+    class="email-logo"
+    alt="Televicentro"
 >
 
-
 <h1>
-Solicitud de pase menor a 24 horas
+Nueva solicitud de pase menor a 24 horas
 </h1>
 
-
 <p>
-El Portal TI recibió una nueva solicitud de autorización.
+El Portal TI recibió una nueva gestión que requiere revisión.
 </p>
-
 
 </div>
 
 
+{{-- ESTADO Y ACCIÓN REQUERIDA --}}
+
+<div class="email-section">
+
+<h2>
+Estado de la gestión
+</h2>
+
+<div class="description-box status-box">
+
+<strong>
+Pendiente de revisión
+</strong>
+
+<br><br>
+
+La solicitud fue registrada correctamente. Revisar
+la información registrada y continuar con el proceso correspondiente.
+
+</div>
+
+</div>
 
 
 {{-- SOLICITANTE --}}
@@ -57,10 +81,10 @@ El Portal TI recibió una nueva solicitud de autorización.
 Información del solicitante
 </h2>
 
-
 <table>
 
 <tr>
+
 <td>
 Usuario
 </td>
@@ -68,10 +92,12 @@ Usuario
 <td>
 {{ $remitenteName ?? 'N/A' }}
 </td>
+
 </tr>
 
 
 <tr>
+
 <td>
 Correo
 </td>
@@ -79,28 +105,46 @@ Correo
 <td>
 {{ $remitenteEmail ?? 'N/A' }}
 </td>
+
 </tr>
 
 
 <tr>
+
 <td>
-Fecha solicitud
+Fecha de solicitud
 </td>
 
 <td>
-{{ now()->format('d/m/Y H:i') }}
+{{ $memorando->created_at
+    ? $memorando->created_at
+        ->timezone(config('app.timezone'))
+        ->format('d/m/Y H:i')
+    : now()->format('d/m/Y H:i') }}
 </td>
+
 </tr>
 
+
+@if(!empty($memorando->codigo))
+
+<tr>
+
+<td>
+Código de gestión
+</td>
+
+<td>
+{{ $memorando->codigo }}
+</td>
+
+</tr>
+
+@endif
 
 </table>
 
 </div>
-
-
-
-
-
 
 
 {{-- INFORMACIÓN DEL DOCUMENTO --}}
@@ -111,11 +155,10 @@ Fecha solicitud
 Información del documento
 </h2>
 
-
 <table>
 
-
 <tr>
+
 <td>
 Para
 </td>
@@ -123,11 +166,12 @@ Para
 <td>
 {{ $datos['para_nombre'] ?? 'N/A' }}
 </td>
+
 </tr>
 
 
-
 <tr>
+
 <td>
 CC
 </td>
@@ -135,11 +179,12 @@ CC
 <td>
 {{ $datos['cc_nombre'] ?? 'N/A' }}
 </td>
+
 </tr>
 
 
-
 <tr>
+
 <td>
 De
 </td>
@@ -147,11 +192,12 @@ De
 <td>
 {{ $datos['de_nombre'] ?? 'N/A' }}
 </td>
+
 </tr>
 
 
-
 <tr>
+
 <td>
 Asunto
 </td>
@@ -159,46 +205,40 @@ Asunto
 <td>
 {{ $datos['asunto'] ?? 'N/A' }}
 </td>
-</tr>
 
+</tr>
 
 
 <tr>
+
 <td>
-Fecha documento
+Fecha del documento
 </td>
 
 <td>
-{{ isset($datos['fecha_documento']) 
-    ? \Carbon\Carbon::parse($datos['fecha_documento'])->format('d/m/Y') 
+{{ !empty($datos['fecha_documento'])
+    ? \Carbon\Carbon::parse(
+        $datos['fecha_documento']
+    )->format('d/m/Y')
     : 'N/A' }}
 </td>
+
 </tr>
-
-
 
 </table>
 
 </div>
 
 
-
-
-
-
-
-{{-- INFORMACIÓN DEL COLABORADOR --}}
+{{-- RESPONSABLE DEL EQUIPO --}}
 
 <div class="email-section">
-
 
 <h2>
 Información del responsable del equipo
 </h2>
 
-
 <table>
-
 
 <tr>
 
@@ -213,8 +253,6 @@ Responsable del equipo
 </tr>
 
 
-
-
 <tr>
 
 <td>
@@ -227,29 +265,18 @@ Cargo / Área
 
 </tr>
 
-
-
 </table>
 
-
 </div>
-
-
-
-
-
-
 
 
 {{-- MOTIVO --}}
 
 <div class="email-section">
 
-
 <h2>
 Motivo de autorización
 </h2>
-
 
 <div class="description-box">
 
@@ -257,32 +284,23 @@ Motivo de autorización
 
 </div>
 
-
 </div>
-
-
-
-
-
-
 
 
 {{-- EQUIPOS --}}
 
-@if(!empty($datos['equipos']))
-
+@if(
+    !empty($datos['equipos'])
+    && is_array($datos['equipos'])
+)
 
 <div class="email-section">
-
 
 <h2>
 Equipo(s) registrado(s)
 </h2>
 
-
-
-<table>
-
+<table class="equipment-table">
 
 <tr>
 
@@ -309,73 +327,52 @@ Color
 </tr>
 
 
-
-
 @foreach($datos['equipos'] as $equipo)
 
-
 <tr>
-
 
 <td>
 {{ $equipo['descripcion'] ?? '-' }}
 </td>
 
-
 <td>
 {{ $equipo['marca'] ?? '-' }}
 </td>
-
 
 <td>
 {{ $equipo['modelo'] ?? '-' }}
 </td>
 
-
 <td>
-{{ $equipo['codigo'] ?? '-' }}
+{{ $equipo['codigo']
+    ?? $equipo['serie']
+    ?? '-' }}
 </td>
-
 
 <td>
 {{ $equipo['color'] ?? '-' }}
 </td>
 
-
 </tr>
-
-
 
 @endforeach
 
-
-
 </table>
-
 
 </div>
 
-
 @endif
-
-
-
-
-
 
 
 {{-- OBSERVACIONES --}}
 
 @if(!empty($datos['observaciones']))
 
-
 <div class="email-section">
-
 
 <h2>
 Observaciones
 </h2>
-
 
 <div class="description-box">
 
@@ -383,34 +380,54 @@ Observaciones
 
 </div>
 
-
 </div>
-
 
 @endif
 
 
+{{-- AVISO PARA HELPDESK --}}
 
+<div class="email-section">
 
+<h2>
+Atención requerida por Helpdesk
+</h2>
 
+<div class="description-box helpdesk-box">
+
+Revise los datos del solicitante, la información del responsable
+y los equipos registrados.
+
+<br><br>
+
+Si necesita información adicional, utilice el correo del solicitante
+indicado en esta notificación.
+
+</div>
+
+</div>
 
 
 {{-- FOOTER --}}
 
 <div class="email-footer">
 
-
 <p>
-Portal de Gestiones de Tecnología e Infomación
+Portal de Gestiones de Tecnología e Información
 </p>
 
+<p>
+Notificación interna enviada exclusivamente a Helpdesk.
+</p>
+
+<p>
+© {{ date('Y') }} Televicentro
+</p>
 
 </div>
 
 
-
 </div>
-
 
 </body>
 

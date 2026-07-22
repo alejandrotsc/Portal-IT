@@ -38,11 +38,18 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
+        <link
+    rel="icon"
+    type="image/x-icon"
+    href="{{ asset('img/logo-it.ico') }}"
+    >
+
     <link
         rel="stylesheet"
         href="{{ asset('css/app.css') }}"
     >
 </head>
+
 
 
 <body 

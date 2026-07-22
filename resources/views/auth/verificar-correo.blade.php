@@ -11,7 +11,6 @@
 <div class="relative min-h-screen overflow-hidden bg-slate-100 text-slate-900">
 
     {{-- Fondo decorativo --}}
-
     <div
         class="pointer-events-none absolute inset-0 auth-grid opacity-60"
         aria-hidden="true"
@@ -35,7 +34,7 @@
         >
 
             {{-- ===================================================== --}}
-            {{-- PANEL INSTITUCIONAL --}}
+            {{-- PANEL IZQUIERDO --}}
             {{-- ===================================================== --}}
 
             <aside class="relative hidden overflow-hidden border-r border-slate-200 bg-slate-50 lg:flex lg:flex-col">
@@ -75,7 +74,7 @@
                             </p>
 
                             <p class="mt-0.5 text-xs text-slate-500">
-                                Plataforma corporativa
+                                Verificación de cuenta
                             </p>
 
                         </div>
@@ -93,7 +92,7 @@
 
                         </span>
 
-                        Disponible
+                        Enlace activo
 
                     </div>
 
@@ -107,101 +106,24 @@
                     <div class="max-w-md">
 
                         <span class="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">
-                            Tecnologías de Información
+                            Un último paso
                         </span>
 
                         <h1 class="mt-5 text-4xl font-semibold leading-[1.15] tracking-[-0.035em] text-slate-950">
-                            Crea tu acceso al Portal de Gestiones TI.
+                            Confirma tu correo para proteger tu cuenta.
                         </h1>
 
                         <p class="mt-5 text-[15px] leading-7 text-slate-600">
-                            Registra tu cuenta para reportar problemas técnicos,
-                            solicitar servicios y consultar el seguimiento de tus
-                            gestiones desde un solo lugar.
+                            Te enviamos un código de seis dígitos a tu correo
+                            electrónico. Ingrésalo para completar tu registro
+                            y comenzar a usar el Portal TI.
                         </p>
-
-
-                        <div class="mt-9 space-y-5">
-
-                            <div class="flex items-start gap-4">
-
-                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
-
-                                    <svg
-                                        class="h-[18px] w-[18px]"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        aria-hidden="true"
-                                    >
-                                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                                        <path d="m3 7 9 6 9-6"></path>
-                                    </svg>
-
-                                </div>
-
-                                <div>
-
-                                    <p class="text-sm font-semibold text-slate-800">
-                                        Verificación por correo
-                                    </p>
-
-                                    <p class="mt-1 text-xs leading-5 text-slate-500">
-                                        Recibirás un código de seis dígitos para
-                                        confirmar que el correo te pertenece.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="flex items-start gap-4">
-
-                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
-
-                                    <svg
-                                        class="h-[18px] w-[18px]"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        aria-hidden="true"
-                                    >
-                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
-                                        <path d="M9 12l2 2 4-4"></path>
-                                    </svg>
-
-                                </div>
-
-                                <div>
-
-                                    <p class="text-sm font-semibold text-slate-800">
-                                        Acceso sin contraseña
-                                    </p>
-
-                                    <p class="mt-1 text-xs leading-5 text-slate-500">
-                                        Después de verificar tu cuenta podrás iniciar
-                                        sesión mediante un enlace seguro.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
 
                         <div class="mt-10 border-l-2 border-blue-200 pl-4">
 
                             <p class="text-sm italic leading-6 text-slate-500">
-                                Utiliza información válida y una dirección de correo
-                                a la que tengas acceso.
+                                Nunca compartas este código. El equipo de TI
+                                no te lo solicitará por ningún medio.
                             </p>
 
                         </div>
@@ -237,7 +159,7 @@
                                 <path d="M9 12l2 2 4-4"></path>
                             </svg>
 
-                            Registro protegido
+                            Acceso protegido
 
                         </div>
 
@@ -275,7 +197,7 @@
                                 </p>
 
                                 <p class="text-xs text-slate-500">
-                                    Plataforma corporativa
+                                    Verificación de cuenta
                                 </p>
 
                             </div>
@@ -296,21 +218,67 @@
                             <span class="h-2 w-2 rounded-full bg-blue-600"></span>
 
                             <span class="text-xs font-semibold uppercase tracking-[0.12em] text-blue-600">
-                                Registro sin contraseña
+                                Confirma tu correo
                             </span>
 
                         </div>
 
                         <h2 class="mt-5 text-3xl font-semibold tracking-[-0.035em] text-slate-950">
-                            Crear una cuenta
+                            Ingresa el código
                         </h2>
 
                         <p class="mt-3 text-sm leading-6 text-slate-500">
-                            Ingresa tu nombre y correo. Te enviaremos un código
-                            para verificar tu cuenta.
+                            Enviamos un código de seis dígitos a:
+                        </p>
+
+                        <p class="mt-1 break-all text-sm font-semibold text-slate-800">
+                            {{ $correo }}
                         </p>
 
                     </div>
+
+
+                    {{-- Mensaje de éxito --}}
+
+                    @if(session('success'))
+
+                        <div
+                            role="status"
+                            class="auth-alert mt-7 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5"
+                        >
+
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+
+                                <svg
+                                    class="h-4 w-4"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M20 6L9 17l-5-5"></path>
+                                </svg>
+
+                            </div>
+
+                            <div>
+
+                                <p class="text-sm font-semibold text-emerald-800">
+                                    Código enviado
+                                </p>
+
+                                <p class="mt-1 text-xs leading-5 text-emerald-700">
+                                    {{ session('success') }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    @endif
 
 
                     {{-- Errores --}}
@@ -344,7 +312,7 @@
                             <div>
 
                                 <p class="text-sm font-semibold text-red-800">
-                                    No se pudo completar el registro
+                                    No se pudo verificar el código
                                 </p>
 
                                 <ul class="mt-1 space-y-1 text-xs leading-5 text-red-600">
@@ -366,187 +334,80 @@
                     @endif
 
 
-                    {{-- Formulario --}}
+                    {{-- Formulario de verificación --}}
 
                     <form
                         method="POST"
-                        action="{{ route('register.store') }}"
-                        class="mt-8 space-y-5"
-                        id="registerForm"
+                        action="{{ route('register.verify') }}"
+                        class="mt-8"
+                        id="verificationForm"
                     >
 
                         @csrf
 
-
-                        {{-- Nombre --}}
-
-                        <div>
-
-                            <label
-                                for="nombre"
-                                class="mb-2 block text-sm font-medium text-slate-700"
-                            >
-                                Nombre completo
-                            </label>
-
-                            <div class="relative">
-
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-
-                                    <svg
-                                        class="h-[18px] w-[18px]"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        aria-hidden="true"
-                                    >
-                                        <path d="M20 21a8 8 0 0 0-16 0"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-
-                                </div>
-
-                                <input
-                                    id="nombre"
-                                    name="nombre"
-                                    type="text"
-                                    value="{{ old('nombre') }}"
-                                    placeholder="Nombre y apellido"
-                                    autocomplete="name"
-                                    maxlength="200"
-                                    required
-                                    autofocus
-                                    class="block h-12 w-full rounded-xl border bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400
-                                    @error('nombre')
-                                        border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100
-                                    @else
-                                        border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100
-                                    @enderror"
-                                >
-
-                            </div>
-
-                            @error('nombre')
-
-                                <p class="mt-2 text-xs font-medium text-red-600">
-                                    {{ $message }}
-                                </p>
-
-                            @enderror
-
-                        </div>
+                        <input
+                            type="hidden"
+                            name="correo"
+                            value="{{ $correo }}"
+                        >
 
 
-                        {{-- Correo --}}
-
-                        <div>
-
-                            <label
-                                for="correo"
-                                class="mb-2 block text-sm font-medium text-slate-700"
-                            >
-                                Correo electrónico
-                            </label>
-
-                            <div class="relative">
-
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-
-                                    <svg
-                                        class="h-[18px] w-[18px]"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        aria-hidden="true"
-                                    >
-                                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                                        <path d="m3 7 9 6 9-6"></path>
-                                    </svg>
-
-                                </div>
-
-                                <input
-                                    id="correo"
-                                    name="correo"
-                                    type="email"
-                                    value="{{ old('correo') }}"
-                                    placeholder="nombre@televicentro.com"
-                                    autocomplete="email"
-                                    inputmode="email"
-                                    maxlength="200"
-                                    required
-                                    class="block h-12 w-full rounded-xl border bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400
-                                    @error('correo')
-                                        border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100
-                                    @else
-                                        border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100
-                                    @enderror"
-                                >
-
-                            </div>
-
-                            @error('correo')
-
-                                <p class="mt-2 text-xs font-medium text-red-600">
-                                    {{ $message }}
-                                </p>
-
-                            @enderror
-
-                        </div>
+                        <label
+                            for="codigo"
+                            class="mb-2 block text-sm font-medium text-slate-700"
+                        >
+                            Código de verificación
+                        </label>
 
 
-                        {{-- Explicación --}}
+                        <input
+                            id="codigo"
+                            name="codigo"
+                            type="text"
+                            value="{{ old('codigo') }}"
+                            placeholder="000000"
+                            autocomplete="one-time-code"
+                            inputmode="numeric"
+                            pattern="[0-9]{6}"
+                            minlength="6"
+                            maxlength="6"
+                            required
+                            autofocus
+                            class="block h-16 w-full rounded-xl border bg-white px-4 text-center text-2xl font-bold tracking-[0.45em] text-slate-900 outline-none transition duration-200 placeholder:text-slate-300
+                            @error('codigo')
+                                border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100
+                            @else
+                                border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100
+                            @enderror"
+                        >
 
-                        <div class="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3.5">
 
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm">
+                        @error('codigo')
 
-                                <svg
-                                    class="h-4 w-4"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    aria-hidden="true"
-                                >
-                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                                    <path d="m3 7 9 6 9-6"></path>
-                                    <path d="M9 14h6"></path>
-                                </svg>
-
-                            </div>
-
-                            <p class="text-xs leading-5 text-slate-600">
-                                Después de crear la cuenta recibirás un código de seis
-                                dígitos. El código vencerá en 5 minutos.
+                            <p class="mt-2 text-xs font-medium text-red-600">
+                                {{ $message }}
                             </p>
 
-                        </div>
+                        @enderror
 
 
-                        {{-- Botón --}}
+                        <p class="mt-3 text-xs leading-5 text-slate-500">
+                            El código vence en 5 minutos y solamente puede utilizarse una vez.
+                        </p>
+
 
                         <button
                             type="submit"
-                            id="registerButton"
-                            class="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-blue-700 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+                            id="verificationButton"
+                            class="group mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-blue-700 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
                         >
 
-                            <span id="registerButtonText">
-                                Crear cuenta y verificar correo
+                            <span id="verificationButtonText">
+                                Verificar y continuar
                             </span>
 
                             <svg
-                                id="registerArrow"
+                                id="verificationArrow"
                                 class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
                                 viewBox="0 0 24 24"
                                 fill="none"
@@ -561,7 +422,7 @@
                             </svg>
 
                             <svg
-                                id="registerSpinner"
+                                id="verificationSpinner"
                                 class="hidden h-5 w-5 animate-spin"
                                 viewBox="0 0 24 24"
                                 fill="none"
@@ -588,19 +449,46 @@
                     </form>
 
 
-                    {{-- Login --}}
+                    {{-- Reenviar código --}}
 
                     <div class="mt-8 border-t border-slate-200 pt-7">
 
                         <p class="text-center text-sm text-slate-500">
+                            ¿No recibiste el código?
+                        </p>
 
-                            ¿Ya tienes una cuenta?
+                        <form
+                            method="POST"
+                            action="{{ route('register.resend') }}"
+                            class="mt-3"
+                            id="resendForm"
+                        >
+
+                            @csrf
+
+                            <input
+                                type="hidden"
+                                name="correo"
+                                value="{{ $correo }}"
+                            >
+
+                            <button
+                                type="submit"
+                                id="resendButton"
+                                class="flex h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                Reenviar código
+                            </button>
+
+                        </form>
+
+                        <p class="mt-5 text-center text-sm text-slate-500">
 
                             <a
-                                href="{{ route('login') }}"
-                                class="ml-1 font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+                                href="{{ route('register') }}"
+                                class="font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
                             >
-                                Iniciar sesión
+                                Volver al registro
                             </a>
 
                         </p>
@@ -608,7 +496,7 @@
                     </div>
 
 
-                    {{-- Seguridad --}}
+                    {{-- Información de seguridad --}}
 
                     <div class="mt-8 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5">
 
@@ -631,8 +519,7 @@
                         </div>
 
                         <p class="text-xs leading-5 text-slate-500">
-                            Tu cuenta no utilizará contraseña. El acceso se realizará
-                            únicamente mediante enlaces enviados a tu correo.
+                            Nunca compartas este código. El equipo de TI no te lo solicitará.
                         </p>
 
                     </div>
@@ -708,18 +595,12 @@
 
         from {
             opacity: 0;
-
-            transform:
-                translateY(18px)
-                scale(0.985);
+            transform: translateY(18px) scale(0.985);
         }
 
         to {
             opacity: 1;
-
-            transform:
-                translateY(0)
-                scale(1);
+            transform: translateY(0) scale(1);
         }
 
     }
@@ -729,12 +610,12 @@
 
         from {
             opacity: 0;
-            transform: translateX(16px);
+            transform: translateY(10px);
         }
 
         to {
             opacity: 1;
-            transform: translateX(0);
+            transform: translateY(0);
         }
 
     }
@@ -763,14 +644,6 @@
             animation: none !important;
         }
 
-        *,
-        *::before,
-        *::after {
-            transition-duration: 0.01ms !important;
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-        }
-
     }
 
 </style>
@@ -784,49 +657,84 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    const form =
-        document.getElementById('registerForm');
+    const codigo =
+        document.getElementById('codigo');
 
-    const button =
-        document.getElementById('registerButton');
+    const verificationForm =
+        document.getElementById('verificationForm');
 
-    const buttonText =
-        document.getElementById('registerButtonText');
+    const verificationButton =
+        document.getElementById('verificationButton');
 
-    const arrow =
-        document.getElementById('registerArrow');
+    const verificationButtonText =
+        document.getElementById('verificationButtonText');
 
-    const spinner =
-        document.getElementById('registerSpinner');
+    const verificationArrow =
+        document.getElementById('verificationArrow');
+
+    const verificationSpinner =
+        document.getElementById('verificationSpinner');
+
+    const resendForm =
+        document.getElementById('resendForm');
+
+    const resendButton =
+        document.getElementById('resendButton');
 
 
-    if (
-        !form ||
-        !button ||
-        !buttonText ||
-        !arrow ||
-        !spinner
-    ) {
-        return;
+    if (codigo) {
+
+        codigo.addEventListener('input', function () {
+
+            this.value = this.value
+                .replace(/\D/g, '')
+                .slice(0, 6);
+
+        });
+
     }
 
 
-    form.addEventListener('submit', function () {
+    if (
+        verificationForm &&
+        verificationButton &&
+        verificationButtonText &&
+        verificationArrow &&
+        verificationSpinner
+    ) {
 
-        if (!form.checkValidity()) {
-            return;
-        }
+        verificationForm.addEventListener('submit', function () {
 
-        button.disabled = true;
+            if (!verificationForm.checkValidity()) {
+                return;
+            }
 
-        buttonText.textContent =
-            'Creando cuenta...';
+            verificationButton.disabled = true;
 
-        arrow.classList.add('hidden');
+            verificationButtonText.textContent =
+                'Verificando...';
 
-        spinner.classList.remove('hidden');
+            verificationArrow.classList.add('hidden');
 
-    });
+            verificationSpinner.classList.remove('hidden');
+
+        });
+
+    }
+
+
+    if (resendForm && resendButton) {
+
+        resendForm.addEventListener('submit', function () {
+
+            resendButton.disabled = true;
+
+            resendButton.textContent =
+                'Enviando código...';
+
+        });
+
+    }
 
 });
 

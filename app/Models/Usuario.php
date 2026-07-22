@@ -2,43 +2,73 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class Usuario extends Authenticatable
 {
     use HasFactory;
+    use Notifiable;
 
     protected $table = 'usuarios';
 
-
     protected $fillable = [
         'nombre',
-        'username',
         'correo',
-        'password',
+        'correo_verificado_at',
         'rol_id',
-        'activo'
+        'activo',
     ];
-
 
     protected $hidden = [
-        'password',
-        'remember_token'
+        'remember_token',
     ];
-
 
     protected function casts(): array
     {
         return [
-            'password' => 'hashed',
-            'activo' => 'boolean'
+            'correo_verificado_at' => 'datetime',
+            'activo' => 'boolean',
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Correo
+    |--------------------------------------------------------------------------
+    */
 
+    public function correoEstaVerificado(): bool
+    {
+        return $this->correo_verificado_at !== null;
+    }
 
-    public function rol()
+    public function marcarCorreoComoVerificado(): bool
+    {
+        if ($this->correoEstaVerificado()) {
+            return true;
+        }
+
+        return $this->forceFill([
+            'correo_verificado_at' => now(),
+        ])->save();
+    }
+
+    public function routeNotificationForMail(): string
+    {
+        return $this->correo;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones
+    |--------------------------------------------------------------------------
+    */
+
+    public function rol(): BelongsTo
     {
         return $this->belongsTo(
             Rol::class,
@@ -46,9 +76,15 @@ class Usuario extends Authenticatable
         );
     }
 
+    public function tokensAutenticacion(): HasMany
+    {
+        return $this->hasMany(
+            TokenAutenticacion::class,
+            'usuario_id'
+        );
+    }
 
-
-    public function memorandos()
+    public function memorandos(): HasMany
     {
         return $this->hasMany(
             Memorando::class,
@@ -56,9 +92,7 @@ class Usuario extends Authenticatable
         );
     }
 
-
-
-    public function historial()
+    public function historial(): HasMany
     {
         return $this->hasMany(
             MemorandoHistorial::class,

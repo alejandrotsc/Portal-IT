@@ -5,7 +5,14 @@
 
 <meta charset="UTF-8">
 
-<title>Nueva solicitud de servicio</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+Nueva solicitud de servicio
+</title>
 
 <style>
 
@@ -25,22 +32,21 @@
 
 <div class="email-header">
 
-<img 
-src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
-class="email-logo"
-alt="TVC">
+<img
+    src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
+    class="email-logo"
+    alt="Televicentro"
+>
 
 <h1>
 Nueva solicitud de servicio
 </h1>
 
 <p>
-El Portal TI recibió una nueva solicitud.
+El Portal TI recibió una nueva gestión que requiere revisión.
 </p>
 
 </div>
-
-
 
 
 {{-- IDENTIFICADOR --}}
@@ -58,7 +64,28 @@ Código de solicitud
 </div>
 
 
+{{-- ESTADO --}}
 
+<div class="email-section">
+
+<h2>
+Estado de la gestión
+</h2>
+
+<div class="description-box status-box">
+
+<strong>
+Pendiente de revisión
+</strong>
+
+<br><br>
+
+La solicitud fue registrada correctamente. Revisar
+la información proporcionada y continuar con el proceso correspondiente.
+
+</div>
+
+</div>
 
 
 {{-- INFORMACIÓN GENERAL --}}
@@ -69,9 +96,39 @@ Código de solicitud
 Información general
 </h2>
 
+@php
+
+    $categorias = [
+
+        'computadora' =>
+            'Computadora o accesorios',
+
+        'programa' =>
+            'Instalar un programa',
+
+        'acceso' =>
+            'Solicitar un acceso',
+
+        'vpn' =>
+            'VPN / Acceso remoto',
+
+        'impresora' =>
+            'Impresoras',
+
+        'cuenta' =>
+            'Cuenta o contraseña',
+
+        'cambio' =>
+            'Cambio o configuración de equipo',
+
+        'otra' =>
+            'Otra solicitud',
+
+    ];
+
+@endphp
 
 <table>
-
 
 <tr>
 
@@ -106,11 +163,14 @@ Fecha de solicitud
 </td>
 
 <td>
-{{ $solicitud->created_at->format('d/m/Y H:i') }}
+{{ $solicitud->created_at
+    ? $solicitud->created_at
+        ->timezone(config('app.timezone'))
+        ->format('d/m/Y H:i')
+    : now()->format('d/m/Y H:i') }}
 </td>
 
 </tr>
-
 
 
 <tr>
@@ -120,25 +180,12 @@ Categoría
 </td>
 
 <td>
-@php
-$categorias=[
-'computadora'=>'Computadora o accesorios',
-'programa'=>'Instalar un programa',
-'acceso'=>'Solicitar un acceso',
-'vpn'=>'VPN / Acceso remoto',
-'impresora'=>'Impresoras',
-'cuenta'=>'Cuenta o contraseña',
-'cambio'=>'Cambio o configuración de equipo',
-'otra'=>'Otra solicitud'
-];
-@endphp
-
-{{ $categorias[$solicitud->categoria] ?? $solicitud->categoria }}
-
+{{ $categorias[$solicitud->categoria]
+    ?? $solicitud->categoria
+    ?? 'N/A' }}
 </td>
 
 </tr>
-
 
 
 <tr>
@@ -148,107 +195,145 @@ Asunto
 </td>
 
 <td>
-{{ $solicitud->asunto }}
+{{ $solicitud->asunto ?? 'N/A' }}
 </td>
 
 </tr>
 
-
 </table>
 
-
 </div>
-
-
-
-
-
-
 
 
 {{-- DESCRIPCIÓN --}}
 
 <div class="email-section">
 
-
 <h2>
 Descripción de la solicitud
 </h2>
 
-
 <div class="description-box">
 
-{{ $solicitud->descripcion }}
+{{ $solicitud->descripcion ?? 'N/A' }}
 
 </div>
 
-
 </div>
-
-
-
-
-
-
 
 
 {{-- INFORMACIÓN ADICIONAL --}}
 
-@if($solicitud->datos_extra)
-
+@if(
+    !empty($solicitud->datos_extra)
+    && is_array($solicitud->datos_extra)
+)
 
 <div class="email-section">
-
 
 <h2>
 Información adicional
 </h2>
 
-
 <table>
 
-
-@foreach($solicitud->datos_extra as $campo=>$valor)
-
+@foreach($solicitud->datos_extra as $campo => $valor)
 
 <tr>
 
 <td>
-{{ ucfirst(str_replace('_',' ',$campo)) }}
+{{ ucfirst(
+    str_replace(
+        '_',
+        ' ',
+        $campo
+    )
+) }}
 </td>
-
 
 <td>
-{{ $valor }}
-</td>
 
+@if(is_array($valor))
+
+    {{ implode(
+        ', ',
+        array_map(
+            fn ($item) => is_scalar($item)
+                ? (string) $item
+                : json_encode(
+                    $item,
+                    JSON_UNESCAPED_UNICODE
+                ),
+            $valor
+        )
+    ) }}
+
+@elseif(is_bool($valor))
+
+    {{ $valor ? 'Sí' : 'No' }}
+
+@else
+
+    {{ $valor ?: 'N/A' }}
+
+@endif
+
+</td>
 
 </tr>
 
-
 @endforeach
-
 
 </table>
 
+</div>
+
+@endif
+
+
+{{-- ATENCIÓN PARA HELPDESK --}}
+
+<div class="email-section">
+
+<h2>
+Atención requerida por Helpdesk
+</h2>
+
+<div class="description-box helpdesk-box">
+
+Revise la categoría, descripción e información adicional
+proporcionada por el solicitante.
+
+<br><br>
+
+Si necesita más información, utilice el correo del usuario
+indicado en esta notificación.
+
+</div>
 
 </div>
 
 
-@endif
+{{-- FOOTER --}}
 
 <div class="email-footer">
 
 <p>
-Portal de Gestiones de Tecnología e Infomación
+Portal de Gestiones de Tecnología e Información
+</p>
+
+<p>
+Notificación interna enviada exclusivamente a Helpdesk.
+</p>
+
+<p>
+© {{ date('Y') }} Televicentro
 </p>
 
 </div>
 
 
-
 </div>
-
 
 </body>
 

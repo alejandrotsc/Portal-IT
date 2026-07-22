@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class VerificarCodigoRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -20,6 +20,11 @@ class LoginRequest extends FormRequest
                 'email:rfc',
                 'max:200',
             ],
+
+            'codigo' => [
+                'required',
+                'digits:6',
+            ],
         ];
     }
 
@@ -27,13 +32,16 @@ class LoginRequest extends FormRequest
     {
         return [
             'correo.required' =>
-                'Debe ingresar su correo electrónico.',
+                'No se encontró el correo que debe verificarse.',
 
             'correo.email' =>
-                'Debe ingresar un correo electrónico válido.',
+                'El correo electrónico no es válido.',
 
-            'correo.max' =>
-                'El correo no puede superar los 200 caracteres.',
+            'codigo.required' =>
+                'Debe ingresar el código de verificación.',
+
+            'codigo.digits' =>
+                'El código debe contener exactamente 6 dígitos.',
         ];
     }
 
@@ -42,6 +50,12 @@ class LoginRequest extends FormRequest
         $this->merge([
             'correo' => mb_strtolower(
                 trim((string) $this->correo)
+            ),
+
+            'codigo' => preg_replace(
+                '/\D/',
+                '',
+                (string) $this->codigo
             ),
         ]);
     }

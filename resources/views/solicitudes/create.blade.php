@@ -617,7 +617,7 @@
                         id="cerrarModalSolicitud"
                         class="w-full inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-border bg-white text-sm font-medium text-foreground hover:bg-muted transition"
                     >
-                        Crear otra
+                        Cerrar
                     </button>
 
                     <a

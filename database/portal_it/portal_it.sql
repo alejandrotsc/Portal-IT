@@ -70,16 +70,13 @@ CREATE TABLE usuarios (
         NOT NULL,
 
 
-    username VARCHAR(100)
-        NOT NULL UNIQUE,
-
-
     correo VARCHAR(200)
-        NOT NULL UNIQUE,
+        NOT NULL
+        UNIQUE,
 
 
-    password VARCHAR(255)
-        NOT NULL,
+    correo_verificado_at TIMESTAMP
+        NULL,
 
 
     rol_id BIGINT
@@ -87,81 +84,79 @@ CREATE TABLE usuarios (
 
 
     activo BOOLEAN
+        NOT NULL
         DEFAULT TRUE,
 
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP
+        NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
 
 
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP
+        NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+
+    CONSTRAINT usuarios_rol_id_foreign
+
+        FOREIGN KEY (rol_id)
+
+        REFERENCES roles(id)
 
 );
 
-
-CREATE TABLE soporte_turnos (
+CREATE TABLE tokens_autenticacion (
 
     id BIGSERIAL PRIMARY KEY,
 
-    usuario_id BIGINT NULL,
+    usuario_id BIGINT
+        NOT NULL,
 
-    fecha DATE NOT NULL,
+    correo VARCHAR(200)
+        NOT NULL,
 
-    hora_inicio TIME NOT NULL,
+    token_hash VARCHAR(255)
+        NOT NULL,
 
-    hora_fin TIME NOT NULL,
+    tipo VARCHAR(30)
+        NOT NULL,
 
-    tipo VARCHAR(30) NOT NULL,
-    -- normal / guardia
+    expires_at TIMESTAMP
+        NOT NULL,
 
-    estado VARCHAR(30) DEFAULT 'disponible',
-    -- disponible / asignado / cerrado
+    used_at TIMESTAMP
+        NULL,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    attempts SMALLINT
+        NOT NULL DEFAULT 0,
 
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP
+        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY(usuario_id)
+    updated_at TIMESTAMP
+        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT tokens_autenticacion_usuario_fk
+        FOREIGN KEY (usuario_id)
         REFERENCES usuarios(id)
+        ON DELETE CASCADE,
 
+    CONSTRAINT tokens_autenticacion_tipo_check
+        CHECK (tipo IN ('registro', 'login')),
+
+    CONSTRAINT tokens_autenticacion_attempts_check
+        CHECK (attempts >= 0)
 );
 
-CREATE TABLE soporte_configuracion (
-    id BIGSERIAL PRIMARY KEY,
+CREATE INDEX tokens_autenticacion_correo_tipo_idx
+    ON tokens_autenticacion (correo, tipo);
 
-    usuario_id BIGINT NOT NULL,
+CREATE INDEX tokens_autenticacion_usuario_idx
+    ON tokens_autenticacion (usuario_id);
 
-    participa_soporte BOOLEAN DEFAULT TRUE,
-
-    fecha_inicio DATE DEFAULT CURRENT_DATE,
-
-    fecha_fin DATE,
-
-    activo BOOLEAN DEFAULT TRUE,
-
-    FOREIGN KEY(usuario_id)
-        REFERENCES usuarios(id)
-);
-
-CREATE TABLE soporte_ausencias (
-
-    id BIGSERIAL PRIMARY KEY,
-
-    usuario_id BIGINT NOT NULL,
-
-    fecha_inicio DATE NOT NULL,
-
-    fecha_fin DATE NOT NULL,
-
-    motivo VARCHAR(255),
-
-    reemplazo_id BIGINT,
-
-    FOREIGN KEY(usuario_id)
-        REFERENCES usuarios(id),
-
-    FOREIGN KEY(reemplazo_id)
-        REFERENCES usuarios(id)
-);
+CREATE INDEX tokens_autenticacion_expires_at_idx
+    ON tokens_autenticacion (expires_at);
 
 
 CREATE TABLE incidencias (

@@ -1,304 +1,703 @@
 /* =====================================================
-   PORTAL TI - EMAIL INCIDENCIAS
-   Estilo tipo Notion / Jira: limpio, minimalista, con
-   acentos de color y tipografía cuidada.
-   NOTA: pensado para email, evita flexbox/grid en el
-   layout principal (usa bloques y tablas simples para
-   máxima compatibilidad con clientes de correo).
+   PORTAL DE GESTIONES TI
+   ESTILOS COMPARTIDOS PARA CORREOS OPERATIVOS
+
+   Aplicado a:
+   - Incidencias
+   - Solicitudes
+   - Pases menores a 24 horas
+   - Pases mayores a 24 horas
+
+   Los correos se envían exclusivamente a Helpdesk.
 ===================================================== */
+
+
+/* =====================================================
+   DOCUMENTO
+===================================================== */
+
+html {
+    margin: 0;
+    padding: 0;
+    background-color: #f1f5f9;
+}
+
 
 body {
     margin: 0;
     padding: 32px 16px;
-    background: #f4f5f7;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #37352f;
+    background-color: #f1f5f9;
+
+    color: #334155;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+    font-size: 14px;
+    line-height: 1.5;
+
     -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
 }
+
+
+img {
+    display: block;
+    max-width: 100%;
+    border: 0;
+}
+
+
+table {
+    border-spacing: 0;
+}
+
 
 /* =====================================================
    CONTENEDOR PRINCIPAL
 ===================================================== */
 
 .email-container {
-    max-width: 620px;
+    width: 100%;
+    max-width: 680px;
+
     margin: 0 auto;
-    background: #ffffff;
-    border: 1px solid #e9e9e7;
-    border-radius: 16px;
+
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(15, 15, 15, 0.06), 0 8px 24px rgba(15, 15, 15, 0.04);
+
+    background-color: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-top: 5px solid #2563eb;
+    border-radius: 16px;
+
+    box-shadow:
+        0 1px 3px rgba(15, 23, 42, 0.05),
+        0 14px 35px rgba(15, 23, 42, 0.07);
 }
 
+
 /* =====================================================
-   HEADER
+   ENCABEZADO
 ===================================================== */
 
 .email-header {
-    padding: 32px 32px 24px;
-    border-bottom: 1px solid #edecea;
+    padding: 30px 36px 27px;
+
+    background-color: #ffffff;
+
+    border-bottom: 1px solid #e2e8f0;
 }
 
+
 .email-logo {
-    width: 120px;
+    width: 92px;
     height: auto;
-    margin-bottom: 18px;
+
+    margin: 0 0 22px;
 }
+
 
 .email-eyebrow {
     display: inline-block;
-    font-size: 11px;
+
+    margin: 0 0 12px;
+    padding: 5px 10px;
+
+    color: #1d4ed8;
+    background-color: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
+    line-height: 16px;
     text-transform: uppercase;
-    color: #2383e2;
-    background: #e7f3fe;
-    padding: 4px 10px;
-    border-radius: 6px;
-    margin-bottom: 12px;
 }
+
 
 .email-header h1 {
     margin: 0;
-    font-size: 21px;
+
+    color: #0f172a;
+
+    font-size: 23px;
     font-weight: 700;
-    color: #191919;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.025em;
+    line-height: 1.3;
 }
+
 
 .email-header p {
-    margin: 8px 0 0;
+    margin: 9px 0 0;
+
+    color: #64748b;
+
     font-size: 14px;
-    color: #787774;
-    line-height: 1.55;
+    line-height: 1.6;
 }
 
+
 /* =====================================================
-   CÓDIGO DE INCIDENCIA
+   IDENTIFICADOR DE GESTIÓN
 ===================================================== */
 
 .ticket-card {
-    margin: 24px 32px 0;
-    padding: 16px 20px;
-    background: #ffffff;
-    border: 1px solid #edecea;
-    border-left: 3px solid #2383e2;
+    margin: 26px 36px 2px;
+    padding: 17px 20px;
+
+    color: #0f172a;
+    background-color: #f8fafc;
+
+    border: 1px solid #dbe3ee;
+    border-left: 4px solid #2563eb;
     border-radius: 10px;
-    color: #191919;
 }
+
 
 .ticket-card span {
     display: block;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+
+    margin: 0 0 6px;
+
+    color: #64748b;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 16px;
     text-transform: uppercase;
-    color: #9b9a97;
-    margin-bottom: 6px;
 }
+
 
 .ticket-card strong {
     display: block;
-    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: #191919;
-}
 
-/* Badges de prioridad, tipo Jira. Añade la clase correspondiente
-   según el valor de $incidencia->prioridad */
-.priority-badge {
-    display: inline-block;
-    font-size: 11px;
+    color: #0f172a;
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        Menlo,
+        monospace;
+
+    font-size: 21px;
     font-weight: 700;
     letter-spacing: 0.03em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 999px;
-    margin-top: 10px;
+    line-height: 28px;
 }
 
-.priority-alta {
-    background: #fdecec;
-    color: #c0362c;
-}
-
-.priority-media {
-    background: #fdf3d6;
-    color: #9a6700;
-}
-
-.priority-baja {
-    background: #e5f6e8;
-    color: #1a7f37;
-}
 
 /* =====================================================
    SECCIONES
 ===================================================== */
 
 .email-section {
-    padding: 24px 32px;
-    border-bottom: 1px solid #f1f1ef;
+    padding: 26px 36px;
+
+    border-bottom: 1px solid #eef2f7;
 }
 
-.email-section:last-of-type {
-    border-bottom: none;
-}
 
 .email-section h2 {
-    margin: 0 0 16px;
-    font-size: 13px;
+    margin: 0 0 15px;
+
+    color: #475569;
+
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.09em;
+    line-height: 18px;
     text-transform: uppercase;
-    color: #9b9a97;
 }
 
+
 /* =====================================================
-   TABLAS INFORMACIÓN
+   TABLAS DE INFORMACIÓN
 ===================================================== */
 
 .email-section table {
     width: 100%;
+
     border-collapse: collapse;
+    border-spacing: 0;
 }
+
 
 .email-section table tr {
-    border-bottom: 1px solid #f1f1ef;
+    border-bottom: 1px solid #eef2f7;
 }
+
 
 .email-section table tr:last-child {
-    border-bottom: none;
+    border-bottom: 0;
 }
+
 
 .email-section td {
-    padding: 11px 0;
-    font-size: 14px;
+    padding: 12px 4px;
+
+    color: #0f172a;
+
+    font-size: 13px;
+    line-height: 20px;
     vertical-align: top;
+
+    overflow-wrap: anywhere;
+    word-break: normal;
 }
+
 
 .email-section td:first-child {
-    width: 160px;
-    font-weight: 500;
-    color: #9b9a97;
+    width: 180px;
+
+    padding-left: 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 600;
 }
+
 
 .email-section td:last-child {
-    color: #191919;
-    font-weight: 500;
+    padding-right: 0;
+
+    color: #0f172a;
+    font-weight: 600;
 }
 
+
 /* =====================================================
-   DESCRIPCIÓN
+   CAJAS GENERALES DE TEXTO
 ===================================================== */
 
 .description-box {
-    background: #f7f7f5;
-    border: 1px solid #edecea;
+    padding: 17px 18px;
+
+    color: #334155;
+    background-color: #f8fafc;
+
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 16px 18px;
-    font-size: 14px;
-    line-height: 1.65;
-    color: #37352f;
+
+    font-size: 13px;
+    line-height: 1.7;
+
+    overflow-wrap: anywhere;
 }
 
+
+.description-box strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+
 /* =====================================================
-   ARCHIVOS / EVIDENCIAS
+   ESTADO DE LA GESTIÓN
+===================================================== */
+
+.status-box {
+    color: #854d0e;
+    background-color: #fffbeb;
+
+    border-color: #fde68a;
+    border-left: 4px solid #f59e0b;
+}
+
+
+.status-box strong {
+    color: #92400e;
+}
+
+
+/* =====================================================
+   ATENCIÓN PARA HELPDESK
+===================================================== */
+
+.helpdesk-box {
+    color: #1e40af;
+    background-color: #eff6ff;
+
+    border-color: #bfdbfe;
+    border-left: 4px solid #2563eb;
+}
+
+
+.helpdesk-box strong {
+    color: #1e3a8a;
+}
+
+
+/* =====================================================
+   ARCHIVO O DOCUMENTO ADJUNTO
 ===================================================== */
 
 .attachment-box {
-    background: #f7f7f5;
-    border: 1px solid #edecea;
-    border-radius: 10px;
+    margin: 0 0 12px;
     padding: 16px 18px;
-    margin-bottom: 12px;
+
+    color: #1e40af;
+    background-color: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #3b82f6;
+    border-radius: 10px;
+
+    overflow-wrap: anywhere;
 }
+
+
+.attachment-box:last-child {
+    margin-bottom: 0;
+}
+
 
 .attachment-box p {
     margin: 0;
-    font-size: 14px;
+
+    color: #1e40af;
+
+    font-size: 13px;
     font-weight: 500;
-    color: #37352f;
+    line-height: 20px;
 }
+
+
+.attachment-box strong {
+    color: #1e3a8a;
+    font-weight: 700;
+}
+
+
+/*
+   Cuando attachment-box también se utiliza junto con
+   description-box para el memorando PDF.
+*/
+
+.description-box.attachment-box {
+    margin-bottom: 0;
+    line-height: 1.7;
+}
+
 
 /* =====================================================
    OCR
 ===================================================== */
 
 .ocr-box {
-    margin-top: 12px;
-    background: #ffffff;
-    border: 1px solid #edecea;
-    border-radius: 8px;
+    margin: 14px 0 0;
     padding: 14px 16px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
 }
+
 
 .ocr-box strong {
     display: block;
-    margin-bottom: 8px;
-    font-size: 11px;
+
+    margin: 0 0 8px;
+
+    color: #2563eb;
+
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.07em;
+    line-height: 16px;
     text-transform: uppercase;
-    color: #2383e2;
 }
+
 
 .ocr-box p {
     margin: 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.65;
+
     white-space: pre-line;
-    font-size: 13px;
-    line-height: 1.6;
-    color: #787774;
 }
+
+
+/* =====================================================
+   TABLA DE EQUIPOS
+===================================================== */
+
+.equipment-table {
+    width: 100%;
+
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    border: 1px solid #e2e8f0;
+}
+
+
+.equipment-table tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+
+.equipment-table tr:first-child {
+    background-color: #f8fafc;
+}
+
+
+.email-section .equipment-table td {
+    width: auto;
+
+    padding: 10px 8px;
+
+    color: #334155;
+
+    border-right: 1px solid #eef2f7;
+
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+
+    text-align: left;
+    vertical-align: top;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+.email-section .equipment-table td:last-child {
+    border-right: 0;
+}
+
+
+.email-section .equipment-table tr:first-child td {
+    color: #475569;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 15px;
+    text-transform: uppercase;
+}
+
 
 /* =====================================================
    FOOTER
 ===================================================== */
 
 .email-footer {
-    padding: 20px 32px;
-    background: #fbfbfa;
+    padding: 24px 36px;
+
+    background-color: #f8fafc;
+
+    border-top: 1px solid #e2e8f0;
+
+    text-align: center;
 }
+
 
 .email-footer p {
     margin: 0;
-    font-size: 12px;
-    color: #9b9a97;
-    text-align: center;
-    line-height: 1.5;
+
+    color: #64748b;
+
+    font-size: 11px;
+    line-height: 18px;
 }
 
+
+.email-footer p:first-child {
+    color: #334155;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.email-footer p + p {
+    margin-top: 5px;
+}
+
+
+.email-footer p:last-child {
+    margin-top: 12px;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+}
+
+
 .email-footer a {
-    color: #2383e2;
+    color: #2563eb;
     text-decoration: none;
 }
+
+
+/* =====================================================
+   ENLACES
+===================================================== */
+
+.email-container a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
 
 /* =====================================================
    RESPONSIVE
 ===================================================== */
 
-@media (max-width: 620px) {
+@media only screen and (max-width: 700px) {
+
     body {
-        padding: 16px 8px;
+        padding: 14px 7px;
     }
+
+
+    .email-container {
+        border-radius: 12px;
+    }
+
+
+    .email-header {
+        padding: 25px 22px 22px;
+    }
+
+
+    .email-logo {
+        width: 82px;
+        margin-bottom: 18px;
+    }
+
+
+    .email-header h1 {
+        font-size: 20px;
+        line-height: 1.35;
+    }
+
+
+    .email-header p {
+        font-size: 13px;
+    }
+
+
+    .ticket-card {
+        margin: 22px 22px 0;
+        padding: 15px 17px;
+    }
+
+
+    .ticket-card strong {
+        font-size: 18px;
+        line-height: 25px;
+    }
+
+
+    .email-section {
+        padding: 22px;
+    }
+
+
+    .email-section td {
+        padding-top: 10px;
+        padding-bottom: 10px;
+
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+
+    .email-section td:first-child {
+        width: 125px;
+
+        font-size: 11px;
+    }
+
+
+    .description-box,
+    .attachment-box {
+        padding: 15px 16px;
+    }
+
+
+    .email-section .equipment-table td {
+        padding: 8px 5px;
+
+        font-size: 9px;
+        line-height: 14px;
+    }
+
+
+    .email-section .equipment-table tr:first-child td {
+        font-size: 8px;
+        letter-spacing: 0;
+    }
+
+
+    .email-footer {
+        padding: 22px;
+    }
+
+}
+
+
+/* =====================================================
+   PANTALLAS MUY PEQUEÑAS
+===================================================== */
+
+@media only screen and (max-width: 430px) {
+
+    body {
+        padding: 0;
+    }
+
+
+    .email-container {
+        border-right: 0;
+        border-left: 0;
+        border-radius: 0;
+    }
+
 
     .email-header,
     .email-section,
     .email-footer {
-        padding: 20px;
+        padding-right: 18px;
+        padding-left: 18px;
     }
+
 
     .ticket-card {
-        margin: 20px;
+        margin-right: 18px;
+        margin-left: 18px;
     }
 
-    .ticket-card strong {
-        font-size: 19px;
-    }
 
     .email-section td:first-child {
-        width: 120px;
+        width: 105px;
     }
+
+
+    .email-section .equipment-table td {
+        padding: 7px 4px;
+
+        font-size: 8px;
+        line-height: 12px;
+    }
+
 }

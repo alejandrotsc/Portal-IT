@@ -18,6 +18,12 @@
     <title>
         Portal Gestiones TI
     </title>
+    
+    <link
+    rel="icon"
+    type="image/x-icon"
+    href="{{ asset('img/logo-it.ico') }}"
+    >
 
     {{-- Tailwind compilado --}}
     <link

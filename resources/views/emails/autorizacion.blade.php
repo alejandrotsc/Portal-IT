@@ -3,360 +3,453 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <title>
-        Solicitud de pase mayor a 24 horas
-    </title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <style>
-        {!! file_get_contents(public_path('css/incidencias.css')) !!}
-    </style>
+<title>
+Nueva solicitud de pase mayor a 24 horas
+</title>
+
+<style>
+
+{!! file_get_contents(public_path('css/incidencias.css')) !!}
+
+</style>
 
 </head>
+
 
 <body>
 
 <div class="email-container">
 
-    {{-- HEADER --}}
 
-    <div class="email-header">
+{{-- HEADER --}}
 
-        <img
-            src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
-            class="email-logo"
-            alt="TVC"
-        >
+<div class="email-header">
 
-        <h1>
-            Solicitud de pase mayor a 24 horas
-        </h1>
+<img
+    src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Televicentro_HN_logo_2020.png"
+    class="email-logo"
+    alt="Televicentro"
+>
 
-        <p>
-            El Portal TI recibió una nueva autorización pendiente de firma.
-        </p>
+<h1>
+Nueva solicitud de pase mayor a 24 horas
+</h1>
 
-    </div>
+<p>
+El Portal TI recibió una nueva gestión que requiere revisión.
+</p>
 
+</div>
 
-    {{-- ESTADO --}}
 
-    <div class="email-section">
+{{-- ESTADO Y ACCIÓN REQUERIDA --}}
 
-        <h2>
-            Estado de la gestión
-        </h2>
+<div class="email-section">
 
-        <div class="description-box">
+<h2>
+Estado de la gestión
+</h2>
 
-            Este documento fue generado correctamente y se encuentra
-            pendiente de revisión y firma.
+<div class="description-box status-box">
 
-        </div>
+<strong>
+Pendiente de revisión y firma
+</strong>
 
-    </div>
+<br><br>
 
+El memorando fue generado correctamente. Revisar
+la información registrada y continuar con el proceso correspondiente.
 
-    {{-- SOLICITANTE --}}
+</div>
 
-    <div class="email-section">
+</div>
 
-        <h2>
-            Información del solicitante
-        </h2>
 
-        <table>
+{{-- SOLICITANTE --}}
 
-            <tr>
-                <td>
-                    Usuario
-                </td>
+<div class="email-section">
 
-                <td>
-                    {{ $remitenteName ?? 'N/A' }}
-                </td>
-            </tr>
+<h2>
+Información del solicitante
+</h2>
 
-            <tr>
-                <td>
-                    Correo
-                </td>
+<table>
 
-                <td>
-                    {{ $remitenteEmail ?? 'N/A' }}
-                </td>
-            </tr>
+<tr>
 
-            <tr>
-                <td>
-                    Fecha de solicitud
-                </td>
+<td>
+Usuario
+</td>
 
-                <td>
-                    {{ $memorando->created_at?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i') }}
-                </td>
-            </tr>
+<td>
+{{ $remitenteName ?? 'N/A' }}
+</td>
 
-            @if($memorando->codigo)
+</tr>
 
-                <tr>
-                    <td>
-                        Código
-                    </td>
 
-                    <td>
-                        {{ $memorando->codigo }}
-                    </td>
-                </tr>
+<tr>
 
-            @endif
+<td>
+Correo
+</td>
 
-        </table>
+<td>
+{{ $remitenteEmail ?? 'N/A' }}
+</td>
 
-    </div>
+</tr>
 
 
-    {{-- INFORMACIÓN DEL DOCUMENTO --}}
+<tr>
 
-    <div class="email-section">
+<td>
+Fecha de solicitud
+</td>
 
-        <h2>
-            Información del documento
-        </h2>
+<td>
+{{ $memorando->created_at
+    ? $memorando->created_at
+        ->timezone(config('app.timezone'))
+        ->format('d/m/Y H:i')
+    : now()->format('d/m/Y H:i') }}
+</td>
 
-        <table>
+</tr>
 
-            <tr>
-                <td>
-                    Para
-                </td>
 
-                <td>
-                    {{ $datos['para_nombre'] ?? 'N/A' }}
-                </td>
-            </tr>
+@if(!empty($memorando->codigo))
 
-            <tr>
-                <td>
-                    CC
-                </td>
+<tr>
 
-                <td>
-                    {{ $datos['cc_nombre'] ?? 'N/A' }}
-                </td>
-            </tr>
+<td>
+Código de gestión
+</td>
 
-            <tr>
-                <td>
-                    De
-                </td>
+<td>
+{{ $memorando->codigo }}
+</td>
 
-                <td>
-                    {{ $datos['de_nombre'] ?? 'N/A' }}
-                </td>
-            </tr>
+</tr>
 
-            <tr>
-                <td>
-                    Asunto
-                </td>
+@endif
 
-                <td>
-                    {{ $datos['asunto'] ?? 'N/A' }}
-                </td>
-            </tr>
+</table>
 
-            <tr>
-                <td>
-                    Fecha del documento
-                </td>
+</div>
 
-                <td>
-                    {{ !empty($datos['fecha_documento'])
-                        ? \Carbon\Carbon::parse($datos['fecha_documento'])->format('d/m/Y')
-                        : 'N/A' }}
-                </td>
-            </tr>
 
-        </table>
+{{-- INFORMACIÓN DEL DOCUMENTO --}}
 
-    </div>
+<div class="email-section">
 
+<h2>
+Información del documento
+</h2>
 
-    {{-- INFORMACIÓN DEL COLABORADOR --}}
+<table>
 
-    <div class="email-section">
+<tr>
 
-        <h2>
-            Información del responsable del equipo
-        </h2>
+<td>
+Para
+</td>
 
-        <table>
+<td>
+{{ $datos['para_nombre'] ?? 'N/A' }}
+</td>
 
-            <tr>
+</tr>
 
-                <td>
-                    Responsable del equipo
-                </td>
 
-                <td>
-                    {{ $datos['colaborador'] ?? 'N/A' }}
-                </td>
+<tr>
 
-            </tr>
+<td>
+CC
+</td>
 
-            <tr>
+<td>
+{{ $datos['cc_nombre'] ?? 'N/A' }}
+</td>
 
-                <td>
-                    Cargo / Área
-                </td>
+</tr>
 
-                <td>
-                    {{ $datos['cargo_area'] ?? 'N/A' }}
-                </td>
 
-            </tr>
+<tr>
 
-        </table>
+<td>
+De
+</td>
 
-    </div>
+<td>
+{{ $datos['de_nombre'] ?? 'N/A' }}
+</td>
 
+</tr>
 
-    {{-- MOTIVO --}}
 
-    <div class="email-section">
+<tr>
 
-        <h2>
-            Motivo de autorización
-        </h2>
+<td>
+Asunto
+</td>
 
-        <div class="description-box">
-            {{ $datos['motivo_autorizacion'] ?? 'N/A' }}
-        </div>
+<td>
+{{ $datos['asunto'] ?? 'N/A' }}
+</td>
 
-    </div>
+</tr>
 
 
-    {{-- EQUIPOS --}}
+<tr>
 
-    @if(!empty($datos['equipos']) && is_array($datos['equipos']))
+<td>
+Fecha del documento
+</td>
 
-        <div class="email-section">
+<td>
+{{ !empty($datos['fecha_documento'])
+    ? \Carbon\Carbon::parse(
+        $datos['fecha_documento']
+    )->format('d/m/Y')
+    : 'N/A' }}
+</td>
 
-            <h2>
-                Equipo(s) registrado(s)
-            </h2>
+</tr>
 
-            <table>
+</table>
 
-                <tr>
-                    <td>
-                        Descripción
-                    </td>
+</div>
 
-                    <td>
-                        Marca
-                    </td>
 
-                    <td>
-                        Modelo
-                    </td>
+{{-- RESPONSABLE DEL EQUIPO --}}
 
-                    <td>
-                        Serie
-                    </td>
+<div class="email-section">
 
-                    <td>
-                        Color
-                    </td>
-                </tr>
+<h2>
+Información del responsable del equipo
+</h2>
 
-                @foreach($datos['equipos'] as $equipo)
+<table>
 
-                    <tr>
+<tr>
 
-                        <td>
-                            {{ $equipo['descripcion'] ?? '-' }}
-                        </td>
+<td>
+Responsable del equipo
+</td>
 
-                        <td>
-                            {{ $equipo['marca'] ?? '-' }}
-                        </td>
+<td>
+{{ $datos['colaborador'] ?? 'N/A' }}
+</td>
 
-                        <td>
-                            {{ $equipo['modelo'] ?? '-' }}
-                        </td>
+</tr>
 
-                        <td>
-                            {{ $equipo['codigo'] ?? $equipo['serie'] ?? '-' }}
-                        </td>
 
-                        <td>
-                            {{ $equipo['color'] ?? '-' }}
-                        </td>
+<tr>
 
-                    </tr>
+<td>
+Cargo / Área
+</td>
 
-                @endforeach
+<td>
+{{ $datos['cargo_area'] ?? 'N/A' }}
+</td>
 
-            </table>
+</tr>
 
-        </div>
+</table>
 
-    @endif
+</div>
 
 
-    {{-- OBSERVACIONES --}}
+{{-- MOTIVO --}}
 
-    @if(!empty($datos['observaciones']))
+<div class="email-section">
 
-        <div class="email-section">
+<h2>
+Motivo de autorización
+</h2>
 
-            <h2>
-                Observaciones
-            </h2>
+<div class="description-box">
 
-            <div class="description-box">
-                {{ $datos['observaciones'] }}
-            </div>
+{{ $datos['motivo_autorizacion'] ?? 'N/A' }}
 
-        </div>
+</div>
 
-    @endif
+</div>
 
 
-    {{-- DOCUMENTO ADJUNTO --}}
+{{-- EQUIPOS --}}
 
-    <div class="email-section">
+@if(
+    !empty($datos['equipos'])
+    && is_array($datos['equipos'])
+)
 
-        <h2>
-            Documento adjunto
-        </h2>
+<div class="email-section">
 
-        <div class="description-box">
+<h2>
+Equipo(s) registrado(s)
+</h2>
 
-            El memorando en formato PDF se encuentra adjunto a este correo
-            para su revisión y proceso de firma.
+<table class="equipment-table">
 
-        </div>
+<tr>
 
-    </div>
+<td>
+Descripción
+</td>
 
+<td>
+Marca
+</td>
 
-    {{-- FOOTER --}}
+<td>
+Modelo
+</td>
 
-    <div class="email-footer">
+<td>
+Serie
+</td>
 
-        <p>
-            Portal de Gestiones de Tecnología e Información
-        </p>
+<td>
+Color
+</td>
 
-        <p>
-            Este correo fue generado automáticamente.
-        </p>
+</tr>
 
-    </div>
+
+@foreach($datos['equipos'] as $equipo)
+
+<tr>
+
+<td>
+{{ $equipo['descripcion'] ?? '-' }}
+</td>
+
+<td>
+{{ $equipo['marca'] ?? '-' }}
+</td>
+
+<td>
+{{ $equipo['modelo'] ?? '-' }}
+</td>
+
+<td>
+{{ $equipo['codigo']
+    ?? $equipo['serie']
+    ?? '-' }}
+</td>
+
+<td>
+{{ $equipo['color'] ?? '-' }}
+</td>
+
+</tr>
+
+@endforeach
+
+</table>
+
+</div>
+
+@endif
+
+
+{{-- OBSERVACIONES --}}
+
+@if(!empty($datos['observaciones']))
+
+<div class="email-section">
+
+<h2>
+Observaciones
+</h2>
+
+<div class="description-box">
+
+{{ $datos['observaciones'] }}
+
+</div>
+
+</div>
+
+@endif
+
+
+{{-- DOCUMENTO ADJUNTO --}}
+
+<div class="email-section">
+
+<h2>
+Documento adjunto
+</h2>
+
+<div class="description-box attachment-box">
+
+<strong>
+Memorando de autorización en formato PDF
+</strong>
+
+<br><br>
+
+El documento correspondiente se encuentra adjunto a este correo.
+Revisarlo y continuar con el proceso.
+
+</div>
+
+</div>
+
+
+{{-- AVISO PARA HELPDESK --}}
+
+<div class="email-section">
+
+<h2>
+Atención requerida por Helpdesk
+</h2>
+
+<div class="description-box helpdesk-box">
+
+Revise los datos del solicitante, la información del responsable,
+los equipos registrados y el memorando adjunto.
+
+<br><br>
+
+Si necesita información adicional, utilice el correo del solicitante
+indicado en esta notificación.
+
+</div>
+
+</div>
+
+
+{{-- FOOTER --}}
+
+<div class="email-footer">
+
+<p>
+Portal de Gestiones de Tecnología e Información
+</p>
+
+<p>
+Notificación interna enviada exclusivamente a Helpdesk.
+</p>
+
+<p>
+© {{ date('Y') }} Televicentro
+</p>
+
+</div>
+
 
 </div>
 
