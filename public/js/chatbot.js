@@ -9,7 +9,7 @@
 |
 */
 
-window.chatbotWidget = function () {
+window.chatbotWidget = function (options = {}) {
     return {
 
         /*
@@ -28,6 +28,13 @@ window.chatbotWidget = function () {
 
         messages: [],
 
+        historyStorageKey: String(
+            options.storageKey
+            ?? 'portal-it-chatbot-history'
+        ),
+
+        historyMaxMessages: 80,
+
         requestController: null,
 
         requestTimeout: null,
@@ -44,8 +51,14 @@ window.chatbotWidget = function () {
         */
 
         init() {
+            this.restoreChatHistory();
+
             this.$nextTick(() => {
                 this.renderIcons();
+
+                if (this.messages.length) {
+                    this.scrollBottom();
+                }
             });
 
             /*
@@ -197,6 +210,28 @@ window.chatbotWidget = function () {
                 return;
             }
 
+            /*
+            |------------------------------------------------------------------
+            | Restaurar el menú principal original
+            |------------------------------------------------------------------
+            |
+            | No se consulta nuevamente al backend porque su respuesta
+            | convertiría el menú en quick_actions con una apariencia distinta.
+            |
+            | Al limpiar la conversación, el Blade vuelve a mostrar exactamente
+            | las tarjetas iniciales definidas en el mensaje de bienvenida.
+            |
+            */
+
+            if (action === 'menu.principal') {
+                this.showMainMenu(
+                    label
+                    ?? 'Mostrar menú'
+                );
+
+                return;
+            }
+
             const visibleLabel = String(
                 label
                 ?? 'Continuar'
@@ -209,6 +244,123 @@ window.chatbotWidget = function () {
 
                 visibleLabel
             );
+        },
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mostrar menú principal
+        |--------------------------------------------------------------------------
+        */
+
+        showMainMenu(label = 'Mostrar menú') {
+            this.cancelCurrentRequest();
+
+            this.draft = '';
+            this.loading = false;
+            this.aiMode = false;
+            this.streamStarted = false;
+
+            const lastMessage =
+                this.messages[
+                    this.messages.length - 1
+                ];
+
+            /*
+             * Evitar duplicar el menú si ya es el último mensaje.
+             */
+            if (lastMessage?.kind === 'main_menu') {
+                this.scrollBottom();
+
+                return;
+            }
+
+            this.addMessage({
+                from: 'user',
+                text: String(label).trim()
+                    || 'Mostrar menú',
+            });
+
+            this.addMessage({
+                from: 'bot',
+                kind: 'main_menu',
+                text: '¿En qué puedo ayudarte? Selecciona una opción para continuar.',
+                quick_actions: [
+                    {
+                        label: 'Tengo un problema',
+                        description: 'Algo no funciona correctamente',
+                        icon: 'triangle-alert',
+                        action: 'flow',
+                        value: 'problema.menu',
+                    },
+                    {
+                        label: 'Necesito un servicio',
+                        description: 'Equipos, programas o accesos',
+                        icon: 'clipboard-list',
+                        action: 'flow',
+                        value: 'solicitud.menu',
+                    },
+                    {
+                        label: 'Necesito un pase',
+                        description: 'Pase menor o mayor a 24 horas',
+                        icon: 'badge-check',
+                        action: 'flow',
+                        value: 'pase.menu',
+                    },
+                    {
+                        label: 'Consultar gestiones',
+                        description: 'Revisa estados y seguimientos',
+                        icon: 'history',
+                        action: 'status',
+                        value: 'gestion.estado',
+                    },
+                    {
+                        label: 'Hacer una pregunta',
+                        description: 'Describe lo que necesitas con tus propias palabras',
+                        icon: 'message-square-text',
+                        variant: 'ai',
+                        action: 'flow',
+                        value: 'ai.enable',
+                    },
+                ],
+            });
+
+            this.saveChatHistory();
+
+            this.$nextTick(() => {
+                this.renderIcons();
+                this.scrollBottom();
+            });
+        },
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Iniciar una conversación nueva
+        |--------------------------------------------------------------------------
+        */
+
+        startNewConversation() {
+            this.cancelCurrentRequest();
+
+            this.draft = '';
+            this.loading = false;
+            this.aiMode = false;
+            this.streamStarted = false;
+            this.messages = [];
+
+            this.clearChatHistory();
+
+            this.$nextTick(() => {
+                this.renderIcons();
+
+                const container =
+                    this.$refs.messages;
+
+                if (container) {
+                    container.scrollTop = 0;
+                }
+            });
         },
 
 
@@ -663,6 +815,10 @@ window.chatbotWidget = function () {
                     message.from
                     ?? 'bot',
 
+                kind:
+                    message.kind
+                    ?? null,
+
                 text:
                     message.text
                     ?? '',
@@ -1058,6 +1214,128 @@ window.chatbotWidget = function () {
 
         /*
         |--------------------------------------------------------------------------
+        | Historial temporal de la pestaña
+        |--------------------------------------------------------------------------
+        |
+        | sessionStorage conserva la conversación al navegar por el Portal TI,
+        | pero el navegador la elimina al cerrar la pestaña. La clave incluye
+        | al usuario autenticado desde el Blade para no mezclar conversaciones.
+        |
+        */
+
+        saveChatHistory() {
+            try {
+                const messages = this.messages
+                    .filter((message) => {
+                        return !message.streaming
+                            && (
+                                String(message.text ?? '').trim()
+                                || message.kind === 'main_menu'
+                            );
+                    })
+                    .slice(-this.historyMaxMessages)
+                    .map((message) => ({
+                        ...message,
+                        streaming: false,
+                    }));
+
+                window.sessionStorage.setItem(
+                    this.historyStorageKey,
+                    JSON.stringify({
+                        version: 1,
+                        saved_at: Date.now(),
+                        ai_mode: Boolean(this.aiMode),
+                        messages,
+                    })
+                );
+
+            } catch (error) {
+                console.debug(
+                    'No fue posible guardar el historial temporal del chatbot.'
+                );
+            }
+        },
+
+
+        restoreChatHistory() {
+            try {
+                const stored =
+                    window.sessionStorage.getItem(
+                        this.historyStorageKey
+                    );
+
+                if (!stored) {
+                    return;
+                }
+
+                const history = JSON.parse(stored);
+
+                if (
+                    history?.version !== 1
+                    || !Array.isArray(history.messages)
+                ) {
+                    this.clearChatHistory();
+
+                    return;
+                }
+
+                this.messages = history.messages
+                    .slice(-this.historyMaxMessages)
+                    .filter((message) => {
+                        return message
+                            && typeof message === 'object'
+                            && ['user', 'bot'].includes(message.from);
+                    })
+                    .map((message) => ({
+                        id: message.id
+                            ?? this.generateMessageId(),
+                        from: message.from,
+                        kind: message.kind
+                            ?? null,
+                        text: String(message.text ?? ''),
+                        streaming: false,
+                        quick_actions: Array.isArray(message.quick_actions)
+                            ? message.quick_actions
+                            : [],
+                        redirect: message.redirect
+                            ?? null,
+                        items: Array.isArray(message.items)
+                            ? message.items
+                            : [],
+                        intent: message.intent
+                            ?? null,
+                        ai: message.ai
+                            ?? null,
+                        conversation_id: message.conversation_id
+                            ?? null,
+                    }));
+
+                this.aiMode = Boolean(
+                    history.ai_mode
+                );
+
+            } catch (error) {
+                this.clearChatHistory();
+            }
+        },
+
+
+        clearChatHistory() {
+            try {
+                window.sessionStorage.removeItem(
+                    this.historyStorageKey
+                );
+
+            } catch (error) {
+                console.debug(
+                    'No fue posible limpiar el historial temporal del chatbot.'
+                );
+            }
+        },
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Identificador
         |--------------------------------------------------------------------------
         */
@@ -1080,6 +1358,8 @@ window.chatbotWidget = function () {
         */
 
         afterMessageAdded() {
+            this.saveChatHistory();
+
             this.$nextTick(() => {
                 this.renderIcons();
                 this.scrollBottom();
@@ -1094,6 +1374,8 @@ window.chatbotWidget = function () {
         */
 
         afterStreamComplete() {
+            this.saveChatHistory();
+
             this.$nextTick(() => {
                 this.renderIcons();
                 this.scrollBottom();

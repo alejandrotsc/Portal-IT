@@ -1,6 +1,6 @@
 <?php
 
-return [
+$config = [
 
     /*
     |--------------------------------------------------------------------------
@@ -272,7 +272,7 @@ return [
                 ],
 
                 [
-                    'label' => 'No puedo enviar',
+                    'label' => 'No puedo enviar correos',
                     'action' => 'flow',
                     'value' => 'correo.no_envia',
                 ],
@@ -755,3 +755,154 @@ return [
     ],
 
 ];
+
+/*
+|--------------------------------------------------------------------------
+| Iconos semánticos de las acciones
+|--------------------------------------------------------------------------
+|
+| Los nombres corresponden a Lucide Icons. Los iconos declarados
+| directamente dentro de una acción tienen prioridad sobre este mapa.
+|
+*/
+
+$iconos = [
+    'Tengo un problema' => 'circle-alert',
+    'Necesito un servicio' => 'wrench',
+    'Necesito un pase' => 'contact',
+    'Consultar gestiones' => 'search',
+    'Hacer una pregunta' => 'bot-message-square',
+
+    'Internet o WiFi' => 'wifi',
+    'Outlook o correo' => 'mail',
+    'Computadora lenta' => 'gauge',
+    'No enciende' => 'power',
+    'Impresora' => 'printer',
+    'Sistema o aplicación' => 'app-window',
+    'Teclado, mouse o monitor' => 'keyboard',
+    'Otro problema' => 'circle-help',
+
+    'Sí aparece conectado' => 'circle-check',
+    'No aparece conectado' => 'wifi-off',
+    'No estoy seguro' => 'circle-help',
+    'Aparece conectado' => 'wifi',
+    'Aparece desconectado' => 'wifi-off',
+    'Necesito más ayuda' => 'messages-square',
+
+    'Ya funciona' => 'badge-check',
+    'Ya funciona mejor' => 'badge-check',
+    'Ya abrió' => 'badge-check',
+    'Ya puedo enviar' => 'send',
+    'Ya recibo correos' => 'mail-check',
+    'Ya encendió' => 'circle-check',
+    'Ya imprime' => 'printer-check',
+
+    'Sigue sin funcionar' => 'circle-alert',
+    'No puedo conectarme' => 'wifi-off',
+    'Sigue sin abrir' => 'circle-x',
+    'Continúa el problema' => 'circle-alert',
+    'Sigue igual' => 'circle-alert',
+    'Todo sigue lento' => 'gauge',
+    'Solo una aplicación' => 'app-window',
+    'Enciende alguna luz' => 'lightbulb',
+    'No hace nada' => 'power-off',
+    'Muestra un error' => 'triangle-alert',
+    'Sigue sin imprimir' => 'printer-x',
+    'Nadie puede entrar' => 'users-x',
+    'Reportar incidencia' => 'file-warning',
+
+    'Outlook no abre' => 'app-window',
+    'No puedo enviar' => 'send-horizontal',
+    'No puedo enviar correos' => 'send-horizontal',
+    'No recibo correos' => 'mail-x',
+
+    'Equipo o accesorios' => 'monitor-cog',
+    'Instalar un programa' => 'package-plus',
+    'Solicitar acceso' => 'key-round',
+    'VPN o acceso remoto' => 'shield-check',
+    'Cuenta o contraseña' => 'user-key',
+    'Otra solicitud' => 'clipboard-plus',
+
+    'Menos de 24 horas' => 'clock-3',
+    'Más de 24 horas' => 'calendar-clock',
+
+    'Volver' => 'undo-2',
+    'Volver al menú' => 'layout-grid',
+    'Mostrar menú' => 'layout-grid',
+    'No, gracias' => 'circle-check',
+];
+
+foreach ($config['nodes'] as &$node) {
+    foreach ($node['quick_actions'] ?? [] as &$quickAction) {
+        $label = $quickAction['label'] ?? '';
+
+        if (
+            ! isset($quickAction['icon'])
+            && isset($iconos[$label])
+        ) {
+            $quickAction['icon'] = $iconos[$label];
+        }
+    }
+
+    unset($quickAction);
+}
+
+unset($node);
+
+/*
+|--------------------------------------------------------------------------
+| Navegación hacia el paso anterior
+|--------------------------------------------------------------------------
+|
+| Se agrega "Volver" únicamente cuando el nodo no posee todavía una
+| acción de retorno. Cada nodo regresa a su categoría inmediata.
+|
+*/
+
+$retornos = [
+    'internet.conectado' => 'problema.internet',
+    'internet.desconectado' => 'problema.internet',
+    'internet.no_seguro' => 'problema.internet',
+
+    'correo.no_abre' => 'problema.correo',
+    'correo.no_envia' => 'problema.correo',
+    'correo.no_recibe' => 'problema.correo',
+
+    'problema.lentitud' => 'problema.menu',
+    'problema.encendido' => 'problema.menu',
+    'problema.impresora' => 'problema.menu',
+    'problema.sistema' => 'problema.menu',
+    'problema.periferico' => 'problema.menu',
+];
+
+foreach ($retornos as $nodeKey => $destination) {
+    if (! isset($config['nodes'][$nodeKey])) {
+        continue;
+    }
+
+    $hasBackAction = false;
+
+    foreach (
+        $config['nodes'][$nodeKey]['quick_actions'] ?? []
+        as $quickAction
+    ) {
+        if (
+            ($quickAction['action'] ?? null) === 'flow'
+            && ($quickAction['value'] ?? null) === $destination
+        ) {
+            $hasBackAction = true;
+            break;
+        }
+    }
+
+    if (! $hasBackAction) {
+        $config['nodes'][$nodeKey]['quick_actions'][] = [
+            'label' => 'Volver',
+            'icon' => 'undo-2',
+            'action' => 'flow',
+            'value' => $destination,
+        ];
+    }
+}
+
+return $config;

@@ -1,612 +1,532 @@
 {{-- ==========================================================
-    CHATBOT INTERACTIVO DEL PORTAL TI
+    ASISTENTE TI - DISEÑO CONVERSACIONAL VIVO
+
+    Compatible con public/js/chatbot.js:
+    chatbotWidget(), init(), sendAction(), executeAction(),
+    send(), messages, aiMode, loading y draft.
 ========================================================== --}}
+
+<style>
+    @keyframes chatbot-fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes chatbot-status-pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
+        }
+
+        50% {
+            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+        }
+    }
+
+    .chatbot-welcome {
+        animation: chatbot-fade-up 420ms ease-out both;
+    }
+
+    .chatbot-online-dot {
+        animation: chatbot-status-pulse 2.1s ease-out infinite;
+    }
+
+    .chatbot-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .chatbot-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(148, 163, 184, 0.55) transparent;
+    }
+
+    .chatbot-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chatbot-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.48);
+        border-radius: 999px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .chatbot-welcome,
+        .chatbot-online-dot {
+            animation: none !important;
+        }
+    }
+</style>
 
 <section>
 
     <div
-        class="bg-card rounded-2xl border border-border overflow-hidden"
-        x-data="chatbotWidget()"
+        x-data="chatbotWidget({ storageKey: 'portal-it-chatbot-history-{{ auth()->id() ?? 'guest' }}' })"
         x-init="init()"
+        class="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_8px_28px_rgba(15,23,42,0.055)]"
     >
 
-        {{-- HEADER --}}
-        <div
-            class="px-6 py-4 border-b border-border
-                   flex items-center justify-between gap-3"
+        {{-- ==================================================
+            CABECERA
+        =================================================== --}}
+
+        <header
+            class="relative flex flex-col gap-3 overflow-hidden border-b border-border bg-card px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
         >
 
             <div class="flex items-center gap-3">
 
                 <div
-                    class="w-9 h-9 rounded-xl bg-primary/10
-                           flex items-center justify-center"
+                    class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 shadow-sm"
                 >
                     <i
-                        data-lucide="bot"
-                        class="w-[18px] h-[18px] text-primary"
+                        data-lucide="bot-message-square"
+                        class="h-[18px] w-[18px]"
                     ></i>
+
+                    <i
+                        data-lucide="sparkles"
+                        class="absolute right-1 top-1 h-2 w-2 text-blue-400"
+                    ></i>
+
+                    <span
+                        class="chatbot-online-dot absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-500"
+                    ></span>
                 </div>
 
                 <div>
 
-                    <p class="text-sm font-semibold text-foreground">
-                        Asistente TI
-                    </p>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground">
+                            Asistente TI
+                        </h2>
 
-                    <div class="flex items-center gap-1.5 mt-0.5">
-
-                        <span
-                            class="w-1.5 h-1.5 bg-emerald-400 rounded-full"
-                        ></span>
-
-                        <span class="text-xs text-muted-foreground">
+                        <span class="text-[11px] text-muted-foreground">
                             En línea
                         </span>
-
                     </div>
+
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                        Orientación y acceso a gestiones del Portal TI
+                    </p>
 
                 </div>
 
             </div>
 
 
-            {{-- MODO ACTIVO --}}
             <div
-                class="inline-flex items-center gap-1.5
-                       rounded-full px-2.5 py-1 text-[11px] font-medium"
-                :class="
-                    aiMode
-                        ? 'bg-violet-100 text-violet-700'
-                        : 'bg-blue-50 text-blue-700'
-                "
+                class="relative z-10 inline-flex w-fit items-center gap-1.5 rounded-lg border border-border bg-white/80 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur"
             >
-
                 <i
-                    :data-lucide="
-                        aiMode
-                            ? 'sparkles'
-                            : 'list-tree'
-                    "
-                    class="w-3 h-3"
+                    :data-lucide="aiMode ? 'message-square-text' : 'git-branch'"
+                    class="h-3 w-3"
                 ></i>
 
                 <span
-                    x-text="
-                        aiMode
-                            ? 'Consulta con IA'
-                            : 'Asistente guiado'
-                    "
+                    x-text="aiMode ? 'Consulta libre' : 'Asistencia guiada'"
                 ></span>
-
             </div>
 
-        </div>
+        </header>
 
 
-        {{-- CONTENEDOR DE MENSAJES --}}
+        {{-- ==================================================
+            CONVERSACIÓN
+        =================================================== --}}
+
         <div
             id="chatbot-messages"
             x-ref="messages"
-            class="px-6 py-5 min-h-[180px] max-h-96
-                   overflow-y-auto space-y-4"
+            class="chatbot-scrollbar min-h-[430px] max-h-[560px] space-y-5 overflow-y-auto bg-muted/30 px-5 py-5 sm:px-6"
+            aria-live="polite"
         >
 
             {{-- MENSAJE INICIAL --}}
-            <div class="flex gap-3">
+
+            <div
+                x-show="messages.length === 0"
+                class="chatbot-welcome flex items-start gap-3"
+            >
 
                 <div
-                    class="w-8 h-8 rounded-full bg-primary/10
-                           flex items-center justify-center flex-shrink-0"
+                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-sm"
                 >
                     <i
                         data-lucide="bot"
-                        class="w-[15px] h-[15px] text-primary"
+                        class="h-4 w-4"
                     ></i>
                 </div>
 
-                <div
-                    class="bg-muted rounded-2xl rounded-tl-sm
-                           px-4 py-3 max-w-lg"
-                >
 
-                    <p class="text-sm text-foreground leading-relaxed">
-                        Hola{{ auth()->check() ? ', '.explode(' ', auth()->user()->nombre)[0] : '' }}.
-                        ¿En qué puedo ayudarte? Selecciona una opción
-                        para comenzar.
-                    </p>
+                <div class="w-full max-w-2xl">
+
+                    <div
+                        class="rounded-2xl rounded-tl-md border border-border bg-card px-4 py-3 shadow-sm"
+                    >
+                        <p class="text-sm leading-relaxed text-foreground">
+                            Hola{{ auth()->check() ? ', '.explode(' ', trim(auth()->user()->nombre))[0] : '' }}.
+                            Soy el asistente del Portal TI. ¿Qué necesitas gestionar hoy?
+                        </p>
+                    </div>
 
 
-                    {{-- OPCIONES PRINCIPALES --}}
-                    <div class="flex flex-wrap gap-2 mt-3">
+                    {{-- Opciones iniciales compactas --}}
+
+                    <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
 
                         <button
                             type="button"
-                            @click="
-                                sendAction(
-                                    'problema.menu',
-                                    'Tengo un problema'
-                                )
-                            "
+                            @click="sendAction('problema.menu', 'Tengo un problema')"
                             :disabled="loading"
-                            class="inline-flex items-center gap-1.5
-                                   rounded-full border border-blue-200
-                                   bg-blue-50 px-3 py-1.5
-                                   text-xs font-medium text-blue-700
-                                   hover:border-blue-500
-                                   hover:bg-blue-500 hover:text-white
-                                   disabled:opacity-50
-                                   disabled:cursor-not-allowed
-                                   transition-colors"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <i
-                                data-lucide="circle-alert"
-                                class="w-3 h-3"
-                            ></i>
+                            <span
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-transform duration-300 group-hover:scale-105"
+                            >
+                                <i data-lucide="triangle-alert" class="h-4 w-4"></i>
+                            </span>
 
-                            Tengo un problema
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-xs font-semibold text-foreground">
+                                    Reportar un problema
+                                </span>
+                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+                                    Algo no funciona correctamente
+                                </span>
+                            </span>
+
                         </button>
 
+
                         <button
                             type="button"
-                            @click="
-                                sendAction(
-                                    'solicitud.menu',
-                                    'Necesito un servicio'
-                                )
-                            "
+                            @click="sendAction('solicitud.menu', 'Necesito un servicio')"
                             :disabled="loading"
-                            class="inline-flex items-center gap-1.5
-                                   rounded-full border border-blue-200
-                                   bg-blue-50 px-3 py-1.5
-                                   text-xs font-medium text-blue-700
-                                   hover:border-blue-500
-                                   hover:bg-blue-500 hover:text-white
-                                   disabled:opacity-50
-                                   disabled:cursor-not-allowed
-                                   transition-colors"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <i
-                                data-lucide="wrench"
-                                class="w-3 h-3"
-                            ></i>
+                            <span
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 transition-transform duration-300 group-hover:scale-105"
+                            >
+                                <i data-lucide="clipboard-list" class="h-4 w-4"></i>
+                            </span>
 
-                            Necesito un servicio
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-xs font-semibold text-foreground">
+                                    Solicitar un servicio
+                                </span>
+                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+                                    Equipos, programas o accesos
+                                </span>
+                            </span>
+
                         </button>
 
+
                         <button
                             type="button"
-                            @click="
-                                sendAction(
-                                    'pase.menu',
-                                    'Necesito un pase'
-                                )
-                            "
+                            @click="sendAction('pase.menu', 'Necesito un pase')"
                             :disabled="loading"
-                            class="inline-flex items-center gap-1.5
-                                   rounded-full border border-blue-200
-                                   bg-blue-50 px-3 py-1.5
-                                   text-xs font-medium text-blue-700
-                                   hover:border-blue-500
-                                   hover:bg-blue-500 hover:text-white
-                                   disabled:opacity-50
-                                   disabled:cursor-not-allowed
-                                   transition-colors"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <i
-                                data-lucide="contact"
-                                class="w-3 h-3"
-                            ></i>
+                            <span
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-transform duration-300 group-hover:scale-105"
+                            >
+                                <i data-lucide="badge-check" class="h-4 w-4"></i>
+                            </span>
 
-                            Necesito un pase
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-xs font-semibold text-foreground">
+                                    Gestionar un pase
+                                </span>
+                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+                                    Pase menor o mayor a 24 horas
+                                </span>
+                            </span>
+
                         </button>
 
-                        <button
-                            type="button"
-                            @click="
-                                sendAction(
-                                    'gestion.estado',
-                                    'Consultar gestiones'
-                                )
-                            "
-                            :disabled="loading"
-                            class="inline-flex items-center gap-1.5
-                                   rounded-full border border-blue-200
-                                   bg-blue-50 px-3 py-1.5
-                                   text-xs font-medium text-blue-700
-                                   hover:border-blue-500
-                                   hover:bg-blue-500 hover:text-white
-                                   disabled:opacity-50
-                                   disabled:cursor-not-allowed
-                                   transition-colors"
-                        >
-                            <i
-                                data-lucide="search"
-                                class="w-3 h-3"
-                            ></i>
-
-                            Consultar gestiones
-                        </button>
 
                         <button
                             type="button"
-                            @click="
-                                sendAction(
-                                    'ai.enable',
-                                    'Hacer una pregunta'
-                                )
-                            "
+                            @click="sendAction('gestion.estado', 'Consultar gestiones')"
                             :disabled="loading"
-                            class="inline-flex items-center gap-1.5
-                                   rounded-full border border-violet-200
-                                   bg-violet-50 px-3 py-1.5
-                                   text-xs font-medium text-violet-700
-                                   hover:border-violet-500
-                                   hover:bg-violet-500 hover:text-white
-                                   disabled:opacity-50
-                                   disabled:cursor-not-allowed
-                                   transition-colors"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <i
-                                data-lucide="sparkles"
-                                class="w-3 h-3"
-                            ></i>
+                            <span
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-transform duration-300 group-hover:scale-105"
+                            >
+                                <i data-lucide="history" class="h-4 w-4"></i>
+                            </span>
 
-                            Hacer una pregunta
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-xs font-semibold text-foreground">
+                                    Consultar mis gestiones
+                                </span>
+                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+                                    Revisa estados y seguimientos
+                                </span>
+                            </span>
+
                         </button>
 
                     </div>
 
+
+                    <button
+                        type="button"
+                        @click="sendAction('ai.enable', 'Hacer una pregunta')"
+                        :disabled="loading"
+                        class="chatbot-card group mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left transition-all duration-300 hover:border-violet-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <span
+                            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-transform duration-300 group-hover:scale-105"
+                        >
+                            <i data-lucide="message-square-text" class="h-4 w-4"></i>
+                        </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-foreground">
+                                Escribir otra consulta
+                            </span>
+                            <span class="mt-0.5 block text-[11px] text-muted-foreground">
+                                Describe con tus propias palabras lo que necesitas
+                            </span>
+                        </span>
+
+                    </button>
+
                 </div>
 
             </div>
 
 
-            {{-- MENSAJES DINÁMICOS --}}
+            {{-- ==================================================
+                MENSAJES DINÁMICOS
+            =================================================== --}}
+
             <template
                 x-for="(msg, index) in messages"
                 :key="msg.id ?? index"
             >
 
                 <div
-                    class="flex gap-3"
-                    :class="
-                        msg.from === 'user'
-                            ? 'flex-row-reverse'
-                            : ''
-                    "
+                    class="flex items-start gap-3"
+                    :class="msg.from === 'user' ? 'flex-row-reverse' : ''"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
                 >
 
-                    {{-- ICONO --}}
+                    {{-- Avatar --}}
+
                     <div
-                        class="w-8 h-8 rounded-full
-                               flex items-center justify-center flex-shrink-0"
+                        class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border shadow-sm"
                         :class="
                             msg.from === 'user'
-                                ? 'bg-primary'
-                                : 'bg-primary/10'
+                                ? 'border-blue-600 bg-blue-600 text-white'
+                                : 'border-blue-200 bg-blue-50 text-blue-600'
                         "
                     >
-
                         <i
-                            :data-lucide="
-                                msg.from === 'user'
-                                    ? 'user'
-                                    : 'bot'
-                            "
-                            class="w-[15px] h-[15px]"
-                            :class="
-                                msg.from === 'user'
-                                    ? 'text-white'
-                                    : 'text-primary'
-                            "
+                            :data-lucide="msg.from === 'user' ? 'user-round' : 'bot'"
+                            class="h-4 w-4"
                         ></i>
-
                     </div>
 
 
-                    {{-- BURBUJA --}}
                     <div
-                        class="rounded-2xl px-4 py-3 max-w-lg"
-                        :class="
-                            msg.from === 'user'
-                                ? 'bg-primary text-white rounded-tr-sm'
-                                : 'bg-muted text-foreground rounded-tl-sm'
-                        "
+                        class="max-w-[88%] sm:max-w-2xl"
+                        :class="msg.from === 'user' ? 'items-end' : 'items-start'"
                     >
 
-                        {{-- TEXTO --}}
-                        <p
-                            x-show="msg.text"
-                            x-transition:enter="
-                                transition ease-out duration-200
-                            "
-                            x-transition:enter-start="
-                                opacity-0 translate-y-1
-                            "
-                            x-transition:enter-end="
-                                opacity-100 translate-y-0
-                            "
-                            class="text-sm leading-relaxed whitespace-pre-line"
-                            x-text="msg.text"
-                        ></p>
+                        {{-- Burbuja --}}
 
-
-                        {{-- PROCESANDO --}}
                         <div
-                            x-show="
-                                msg.from === 'bot'
-                                && msg.streaming
-                                && !msg.text
+                            class="rounded-2xl border px-4 py-3 shadow-[0_5px_16px_rgba(15,23,42,0.055)]"
+                            :class="
+                                msg.from === 'user'
+                                    ? 'rounded-tr-md border-primary bg-primary text-white'
+                                    : 'rounded-tl-md border-border bg-card text-foreground'
                             "
-                            class="flex items-center gap-1 py-1"
-                            aria-label="El asistente está procesando"
                         >
 
-                            <span
-                                class="w-1.5 h-1.5 rounded-full
-                                       bg-current opacity-50 animate-bounce"
-                            ></span>
+                            <p
+                                x-show="msg.text"
+                                class="whitespace-pre-line text-sm leading-relaxed"
+                                x-text="msg.text"
+                            ></p>
 
-                            <span
-                                class="w-1.5 h-1.5 rounded-full
-                                       bg-current opacity-50 animate-bounce"
-                                style="animation-delay: 120ms"
-                            ></span>
 
-                            <span
-                                class="w-1.5 h-1.5 rounded-full
-                                       bg-current opacity-50 animate-bounce"
-                                style="animation-delay: 240ms"
-                            ></span>
+                            {{-- Estado de carga --}}
+
+                            <div
+                                x-show="msg.from === 'bot' && msg.streaming && !msg.text"
+                                class="flex items-center gap-1.5 py-1 text-muted-foreground"
+                                aria-label="El asistente está escribiendo"
+                            >
+                                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-60"></span>
+                                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-60" style="animation-delay: 120ms"></span>
+                                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-60" style="animation-delay: 240ms"></span>
+                            </div>
+
+
+                            {{-- Gestiones encontradas --}}
+
+                            <template
+                                x-if="!msg.streaming && msg.items && msg.items.length"
+                            >
+                                <div class="mt-3 space-y-2">
+
+                                    <template
+                                        x-for="(item, i) in msg.items"
+                                        :key="item.id ?? i"
+                                    >
+                                        <a
+                                            :href="item.url"
+                                            class="group block rounded-xl border border-border bg-muted/30 p-3 transition-colors hover:border-primary/30 hover:bg-primary/[0.03]"
+                                        >
+                                            <div class="flex items-start justify-between gap-3">
+
+                                                <div class="min-w-0">
+                                                    <p
+                                                        class="text-xs font-semibold text-foreground"
+                                                        x-text="item.tipo ?? item.type ?? 'Gestión'"
+                                                    ></p>
+
+                                                    <p
+                                                        class="mt-1 truncate text-[11px] text-muted-foreground"
+                                                        x-text="item.title ?? item.titulo ?? item.codigo ?? ''"
+                                                    ></p>
+                                                </div>
+
+                                                <div class="flex flex-shrink-0 items-center gap-2">
+                                                    <span
+                                                        class="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                                                        x-text="item.status ?? item.estado ?? ''"
+                                                    ></span>
+
+                                                    <i
+                                                        data-lucide="external-link"
+                                                        class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                                                    ></i>
+                                                </div>
+
+                                            </div>
+                                        </a>
+                                    </template>
+
+                                </div>
+                            </template>
+
+
+                            {{-- Redirección --}}
+
+                            <template
+                                x-if="!msg.streaming && msg.redirect"
+                            >
+                                <a
+                                    :href="msg.redirect.url"
+                                    class="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90"
+                                >
+                                    <span x-text="msg.redirect.label"></span>
+                                    <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
+                                </a>
+                            </template>
+
+
+                            {{-- Nota de consulta automática --}}
+
+                            <template
+                                x-if="msg.ai && !msg.streaming"
+                            >
+                                <div
+                                    class="mt-3 flex items-start gap-1.5 border-t border-border/70 pt-2 text-[10px] leading-relaxed text-muted-foreground"
+                                >
+                                    <i data-lucide="info" class="mt-0.5 h-3 w-3 flex-shrink-0"></i>
+                                    <span>
+                                        Orientación generada automáticamente. Verifica los datos importantes.
+                                    </span>
+                                </div>
+                            </template>
+
+
+                            {{-- Información local de depuración --}}
+
+                            @if(app()->environment('local'))
+                                <template
+                                    x-if="msg.intent && !msg.streaming"
+                                >
+                                    <div class="mt-3 text-[10px] text-muted-foreground">
+                                        Intent:
+                                        <span x-text="msg.intent.name ?? 'N/A'"></span>
+
+                                        <template x-if="msg.intent.action">
+                                            <span>
+                                                · Acción:
+                                                <span x-text="msg.intent.action"></span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </template>
+                            @endif
 
                         </div>
 
 
-                        {{-- GESTIONES --}}
+                        {{-- Acciones rápidas fuera de la burbuja --}}
+
                         <template
-                            x-if="
-                                !msg.streaming
-                                && msg.items
-                                && msg.items.length
-                            "
+                            x-if="!msg.streaming && msg.quick_actions && msg.quick_actions.length"
                         >
-
-                            <div class="mt-3 space-y-2">
-
-                                <template
-                                    x-for="(item, i) in msg.items"
-                                    :key="item.id ?? i"
-                                >
-
-                                    <a
-                                        :href="item.url"
-                                        class="block rounded-lg border
-                                               border-border bg-card
-                                               px-3 py-2
-                                               hover:border-primary
-                                               transition-colors"
-                                    >
-
-                                        <div
-                                            class="flex items-center
-                                                   justify-between gap-2"
-                                        >
-
-                                            <span
-                                                class="text-xs font-medium"
-                                                x-text="
-                                                    item.tipo
-                                                    ?? item.type
-                                                    ?? 'Gestión'
-                                                "
-                                            ></span>
-
-                                            <span
-                                                class="text-[11px] rounded-full
-                                                       bg-primary/10 text-primary
-                                                       px-2 py-0.5"
-                                                x-text="
-                                                    item.status
-                                                    ?? item.estado
-                                                    ?? ''
-                                                "
-                                            ></span>
-
-                                        </div>
-
-                                        <p
-                                            class="text-xs
-                                                   text-muted-foreground mt-1"
-                                            x-text="
-                                                item.title
-                                                ?? item.titulo
-                                                ?? item.codigo
-                                                ?? ''
-                                            "
-                                        ></p>
-
-                                    </a>
-
-                                </template>
-
-                            </div>
-
-                        </template>
-
-
-                        {{-- REDIRECCIÓN --}}
-                        <template
-                            x-if="
-                                !msg.streaming
-                                && msg.redirect
-                            "
-                        >
-
-                            <a
-                                :href="msg.redirect.url"
-                                class="inline-flex items-center gap-2
-                                       mt-3 px-3 py-1.5 rounded-full
-                                       text-xs font-medium
-                                       bg-primary text-white
-                                       hover:bg-primary/90
-                                       transition-colors"
-                            >
-
-                                <i
-                                    data-lucide="external-link"
-                                    class="w-3 h-3"
-                                ></i>
-
-                                <span
-                                    x-text="msg.redirect.label"
-                                ></span>
-
-                            </a>
-
-                        </template>
-
-
-                        {{-- ACCIONES RÁPIDAS --}}
-                        <template
-                            x-if="
-                                !msg.streaming
-                                && msg.quick_actions
-                                && msg.quick_actions.length
-                            "
-                        >
-
-                            <div class="flex flex-wrap gap-2 mt-3">
+                            <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
 
                                 <template
                                     x-for="(action, i) in msg.quick_actions"
-                                    :key="
-                                        action.value
-                                        ?? action.url
-                                        ?? action.label
-                                        ?? i
-                                    "
+                                    :key="action.value ?? action.url ?? action.label ?? i"
                                 >
-
                                     <button
-    type="button"
+                                        type="button"
+                                        @click="executeAction(action, msg)"
+                                        :disabled="loading"
+                                        class="chatbot-card group flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                                        :class="chatbotActionAppearance(action).buttonClass"
+                                    >
+                                        <span
+                                            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors"
+                                            :class="chatbotActionAppearance(action).iconClass"
+                                        >
+                                            <i
+                                                :data-lucide="chatbotResolvedActionIcon(action)"
+                                                class="h-3.5 w-3.5"
+                                            ></i>
+                                        </span>
 
-    @click="
-        executeAction(
-            action,
-            msg
-        )
-    "
+                                        <span class="min-w-0 flex-1">
+                                            <span
+                                                class="block text-xs font-semibold leading-relaxed text-foreground"
+                                                x-text="action.label"
+                                            ></span>
 
-    :disabled="loading"
+                                            <span
+                                                x-show="action.description"
+                                                class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground"
+                                                x-text="action.description"
+                                            ></span>
+                                        </span>
 
-    class="inline-flex items-center gap-1.5
-           rounded-full border
-           px-3 py-1.5
-           text-xs font-medium
-           disabled:opacity-50
-           disabled:cursor-not-allowed
-           transition-colors"
-
-    :class="
-        action.variant === 'ai'
-            ? 'border-violet-200 bg-violet-50 text-violet-700 hover:border-violet-500 hover:bg-violet-500 hover:text-white'
-            : 'border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-500 hover:bg-blue-500 hover:text-white'
-    "
->
-    <template x-if="action.icon">
-
-        <i
-            :data-lucide="action.icon"
-            class="w-3 h-3"
-        ></i>
-
-    </template>
-
-    <span
-        x-text="action.label"
-    ></span>
-</button>
-
+                                    </button>
                                 </template>
 
                             </div>
-
                         </template>
-
-
-                        {{-- INFORMACIÓN DE IA --}}
-                        <template
-                            x-if="
-                                msg.ai
-                                && !msg.streaming
-                            "
-                        >
-
-                            <div
-                                class="mt-3 pt-2 border-t border-border/60
-                                       flex items-center gap-1.5
-                                       text-[11px] opacity-70"
-                            >
-
-                                <i
-                                    data-lucide="sparkles"
-                                    class="w-3 h-3"
-                                ></i>
-
-                                <span>
-                                    Respuesta asistida por IA
-                                </span>
-
-                            </div>
-
-                        </template>
-
-
-                        {{-- DEBUG LOCAL --}}
-                        @if(app()->environment('local'))
-
-                            <template
-                                x-if="
-                                    msg.intent
-                                    && !msg.streaming
-                                "
-                            >
-
-                                <div
-                                    class="mt-3 text-[10px]
-                                           text-muted-foreground"
-                                >
-                                    Intent:
-
-                                    <span
-                                        x-text="
-                                            msg.intent.name
-                                            ?? 'N/A'
-                                        "
-                                    ></span>
-
-                                    <template
-                                        x-if="
-                                            msg.intent.action
-                                        "
-                                    >
-                                        <span>
-                                            · Acción:
-
-                                            <span
-                                                x-text="
-                                                    msg.intent.action
-                                                "
-                                            ></span>
-                                        </span>
-                                    </template>
-
-                                </div>
-
-                            </template>
-
-                        @endif
 
                     </div>
 
@@ -617,245 +537,787 @@
         </div>
 
 
-        {{-- INPUT --}}
-        <div class="px-6 py-4 border-t border-border">
+        {{-- ==================================================
+            COMPOSITOR
+        =================================================== --}}
 
-            {{-- ESTADO DEL INPUT --}}
-            <div
-                class="flex items-center justify-between gap-3 mb-2"
-            >
+        <footer class="border-t border-border bg-card px-5 py-4 sm:px-6">
+
+            <div class="mb-2 flex items-center justify-between gap-3">
 
                 <p
-                    class="text-xs"
-                    :class="
+                    class="text-[11px] text-muted-foreground"
+                    x-text="
                         aiMode
-                            ? 'text-violet-600'
-                            : 'text-muted-foreground'
+                            ? 'Describe tu consulta en un máximo de 500 caracteres.'
+                            : 'Selecciona una opción de la conversación para continuar.'
                     "
-                >
-                    <span
-                        x-text="
-    aiMode
-        ? 'Describe tu consulta para que la IA pueda ayudarte.'
-        : 'Selecciona una de las opciones del asistente para continuar.'
-"
-                    ></span>
-                </p>
+                ></p>
 
-                <button
-                    x-show="aiMode"
-                    x-cloak
-                    type="button"
-                    @click="
-                        sendAction(
-                            'menu.principal',
-                            'Volver al menú'
-                        )
-                    "
-                    :disabled="loading"
-                    class="text-xs font-medium text-primary
-                           hover:underline disabled:opacity-50"
-                >
-                    Salir del modo IA
-                </button>
+                <div class="flex flex-shrink-0 items-center gap-3">
+
+                    <button
+                        type="button"
+                        @click="if (window.confirm('¿Deseas iniciar una conversación nueva?')) { startNewConversation() }"
+                        :disabled="loading || messages.length === 0"
+                        class="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <i data-lucide="refresh-cw" class="h-3 w-3"></i>
+                        Nueva conversación
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="sendAction('menu.principal', 'Mostrar menú')"
+                        :disabled="loading"
+                        class="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline disabled:opacity-50"
+                    >
+                        <i data-lucide="layout-grid" class="h-3 w-3"></i>
+                        Menú principal
+                    </button>
+
+                </div>
 
             </div>
 
 
             <form
-    @submit.prevent="
-        if (aiMode) {
-            send()
-        }
-    "
-                class="flex items-center gap-3
-                       rounded-xl border px-4 py-3
-                       transition-colors"
+                @submit.prevent="if (aiMode) { send() }"
+                class="flex items-center gap-3 rounded-2xl border px-3.5 py-3 shadow-sm transition-all duration-300"
                 :class="
                     aiMode
-                        ? 'border-violet-300 bg-violet-50/40 focus-within:border-violet-500'
-                        : 'border-border bg-muted/50 focus-within:border-primary/50'
+                        ? 'border-primary/40 bg-card focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10'
+                        : 'border-border bg-muted/40'
                 "
             >
 
                 <i
-                    :data-lucide="
-                        aiMode
-                            ? 'sparkles'
-                            : 'message-circle'
-                    "
-                    class="w-4 h-4"
-                    :class="
-                        aiMode
-                            ? 'text-violet-500'
-                            : 'text-muted-foreground'
-                    "
+                    data-lucide="message-circle"
+                    class="h-4 w-4 flex-shrink-0"
+                    :class="aiMode ? 'text-primary' : 'text-muted-foreground'"
                 ></i>
 
                 <input
-    x-ref="input"
-    x-model="draft"
-    type="text"
-    maxlength="500"
-    autocomplete="off"
-
-    :disabled="
-        loading
-        || !aiMode
-    "
-
-    :placeholder="
-        aiMode
-            ? 'Describe el problema o escribe tu pregunta...'
-            : 'Selecciona una opción para comenzar...'
-    "
-
-    class="flex-1 bg-transparent text-sm
-           outline-none text-foreground
-           placeholder:text-muted-foreground
-           disabled:cursor-not-allowed
-           disabled:opacity-60"
->
+                    x-ref="input"
+                    x-model="draft"
+                    type="text"
+                    maxlength="500"
+                    autocomplete="off"
+                    :disabled="loading || !aiMode"
+                    :placeholder="
+                        aiMode
+                            ? 'Escribe aquí tu consulta...'
+                            : 'Activa la consulta libre para escribir un mensaje'
+                    "
+                    class="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                >
 
                 <button
-    type="submit"
-
-    :disabled="
-        loading
-        || !aiMode
-        || !draft.trim()
-    "
-
-    class="w-8 h-8 rounded-lg
-           flex items-center justify-center
-           disabled:opacity-40
-           disabled:cursor-not-allowed
-           transition-colors"
-
-    :class="
-        aiMode
-            ? 'bg-violet-600 hover:bg-violet-700'
-            : 'bg-muted-foreground/30'
-    "
->
-    <i
-        data-lucide="send"
-        class="w-4 h-4 text-white"
-    ></i>
-</button>
+                    type="submit"
+                    :disabled="loading || !aiMode || !draft.trim()"
+                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all hover:scale-105 hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+                    aria-label="Enviar consulta"
+                >
+                    <i data-lucide="send" class="h-3.5 w-3.5"></i>
+                </button>
 
             </form>
 
 
-            {{-- ATAJOS --}}
-            <div class="flex flex-wrap gap-2 mt-3">
+            <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
 
                 <button
                     type="button"
-                    @click="
-                        sendAction(
-                            'menu.principal',
-                            'Mostrar menú'
-                        )
-                    "
+                    @click="sendAction('problema.menu', 'Tengo un problema')"
                     :disabled="loading"
-                    class="inline-flex items-center gap-1.5
-                           rounded-full border border-border
-                           bg-card px-3 py-1.5
-                           text-xs font-medium text-foreground
-                           hover:border-primary hover:text-primary
-                           disabled:opacity-50
-                           transition-colors"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
                 >
-                    <i
-                        data-lucide="menu"
-                        class="w-3 h-3"
-                    ></i>
-
-                    Menú
-                </button>
-
-                <button
-                    type="button"
-                    @click="
-                        sendAction(
-                            'problema.menu',
-                            'Tengo un problema'
-                        )
-                    "
-                    :disabled="loading"
-                    class="inline-flex items-center gap-1.5
-                           rounded-full border border-border
-                           bg-card px-3 py-1.5
-                           text-xs font-medium text-foreground
-                           hover:border-primary hover:text-primary
-                           disabled:opacity-50
-                           transition-colors"
-                >
-                    <i
-                        data-lucide="circle-alert"
-                        class="w-3 h-3"
-                    ></i>
-
+                    <i data-lucide="triangle-alert" class="h-3 w-3"></i>
                     Problema técnico
                 </button>
 
                 <button
                     type="button"
-                    @click="
-                        sendAction(
-                            'gestion.estado',
-                            'Consultar gestiones'
-                        )
-                    "
+                    @click="sendAction('gestion.estado', 'Consultar gestiones')"
                     :disabled="loading"
-                    class="inline-flex items-center gap-1.5
-                           rounded-full border border-border
-                           bg-card px-3 py-1.5
-                           text-xs font-medium text-foreground
-                           hover:border-primary hover:text-primary
-                           disabled:opacity-50
-                           transition-colors"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
                 >
-                    <i
-                        data-lucide="search"
-                        class="w-3 h-3"
-                    ></i>
-
+                    <i data-lucide="history" class="h-3 w-3"></i>
                     Mis gestiones
                 </button>
 
                 <button
                     type="button"
-                    @click="
-                        sendAction(
-                            'ai.enable',
-                            'Hacer una pregunta'
-                        )
-                    "
+                    @click="sendAction('ai.enable', 'Hacer una pregunta')"
                     :disabled="loading"
-                    class="inline-flex items-center gap-1.5
-                           rounded-full border border-violet-200
-                           bg-violet-50 px-3 py-1.5
-                           text-xs font-medium text-violet-700
-                           hover:border-violet-500
-                           disabled:opacity-50
-                           transition-colors"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
                 >
-                    <i
-                        data-lucide="sparkles"
-                        class="w-3 h-3"
-                    ></i>
-
-                    Preguntar a IA
+                    <i data-lucide="message-square-text" class="h-3 w-3"></i>
+                    Consulta libre
                 </button>
 
             </div>
 
-        </div>
+        </footer>
 
     </div>
 
 </section>
 
-<script src="{{ asset('js/chatbot.js') }}"></script>
+
+<script>
+    window.chatbotActionAppearance = function (action) {
+        const normalize = function (value) {
+            return String(value ?? '')
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+        };
+
+        /*
+         * El texto visible se analiza por separado para que el contexto
+         * interno, por ejemplo "problema.internet", no fuerce el mismo
+         * ícono sobre todas las respuestas del paso.
+         */
+
+        const label = normalize(
+            action?.label
+        );
+
+        const value = normalize(
+            action?.value
+        );
+
+        const source = [
+            value,
+            label,
+            normalize(action?.url),
+            normalize(action?.action),
+            normalize(action?.description),
+        ]
+            .filter(Boolean)
+            .join(' ');
+
+        const appearance = (
+            icon,
+            buttonClass,
+            iconClass
+        ) => ({
+            icon,
+            buttonClass,
+            iconClass,
+        });
+
+/*
+        |--------------------------------------------------------------
+        | No enciende
+        |--------------------------------------------------------------
+        */
+
+        if (label.includes('ya encendio')) {
+    return appearance(
+        'circle-check',
+        'border-border hover:border-emerald-200',
+        'bg-emerald-100 text-emerald-600'
+    );
+}
+
+/*
+        |--------------------------------------------------------------
+        | Impresora
+        |--------------------------------------------------------------
+        */
+
+if (label.includes('ya imprime')) {
+    return appearance(
+        'circle-check',
+        'border-border hover:border-emerald-200',
+        'bg-emerald-100 text-emerald-600'
+    );
+}
+
+if (label.includes('sigue sin imprimir')) {
+    return appearance(
+        'printer-x',
+        'border-border hover:border-rose-200',
+        'bg-rose-100 text-rose-600'
+    );
+}
+
+        /*
+        |--------------------------------------------------------------
+        | Navegación y decisiones
+        |--------------------------------------------------------------
+        */
+
+        if (
+            label.includes('menu')
+            || value.includes('menu.principal')
+            || label === 'inicio'
+        ) {
+            return appearance(
+                'layout-grid',
+                'border-border hover:border-blue-200',
+                'bg-blue-100 text-blue-600'
+            );
+        }
+
+        if (
+            label === 'volver'
+            || label.startsWith('volver ')
+            || label.includes('regresar')
+            || label.includes('anterior')
+        ) {
+            return appearance(
+                'undo-2',
+                'border-border hover:border-slate-300',
+                'bg-slate-100 text-slate-600'
+            );
+        }
+
+        if (
+            label.includes('no estoy seguro')
+            || label.includes('no estoy segura')
+            || label === 'no se'
+            || label.includes('tengo duda')
+        ) {
+            return appearance(
+                'circle-help',
+                'border-border hover:border-amber-200',
+                'bg-amber-100 text-amber-700'
+            );
+        }
+
+        if (
+            label.includes('no aparece conectado')
+            || label.includes('no esta conectado')
+            || label.includes('sin conexion')
+            || label.includes('desconectado')
+        ) {
+            return appearance(
+                'wifi-off',
+                'border-border hover:border-rose-200',
+                'bg-rose-100 text-rose-600'
+            );
+        }
+
+        if (
+            label.includes('si aparece conectado')
+            || label.includes('esta conectado')
+            || label === 'conectado'
+        ) {
+            return appearance(
+                'circle-check',
+                'border-border hover:border-emerald-200',
+                'bg-emerald-100 text-emerald-600'
+            );
+        }
+
+        if (
+            label.includes('cable')
+            || label.includes('ethernet')
+        ) {
+            return appearance(
+                'cable',
+                'border-border hover:border-blue-200',
+                'bg-blue-100 text-blue-600'
+            );
+        }
+
+        if (
+            label.includes('luces')
+            || label.includes('indicador encendido')
+        ) {
+            return appearance(
+                'lightbulb',
+                'border-border hover:border-amber-200',
+                'bg-amber-100 text-amber-700'
+            );
+        }
+
+        if (
+            label.includes('sonido')
+            || label.includes('ruido')
+            || label.includes('pitido')
+        ) {
+            return appearance(
+                'volume-2',
+                'border-border hover:border-violet-200',
+                'bg-violet-100 text-violet-600'
+            );
+        }
+
+        if (
+            label.includes('atascado')
+            || label.includes('atasco')
+        ) {
+            return appearance(
+                'file-x-2',
+                'border-border hover:border-orange-200',
+                'bg-orange-100 text-orange-600'
+            );
+        }
+
+        if (
+            label.includes('funciono')
+            || label.includes('resuelto')
+            || label.includes('ya funciona')
+        ) {
+            return appearance(
+                'badge-check',
+                'border-border hover:border-emerald-200',
+                'bg-emerald-100 text-emerald-600'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Acciones específicas de Outlook y correo
+        |--------------------------------------------------------------
+        |
+        | Se evalúan usando solamente la etiqueta para impedir que el
+        | contexto correo.* asigne el mismo icono a todas las opciones.
+        |
+        */
+
+        if (label.includes('outlook no abre')) {
+            return appearance(
+                'app-window',
+                'border-border hover:border-indigo-200',
+                'bg-indigo-100 text-indigo-600'
+            );
+        }
+
+        if (
+            label.includes('no puedo enviar')
+            || label.includes('no envia')
+        ) {
+            return appearance(
+                'send-horizontal',
+                'border-border hover:border-sky-200',
+                'bg-sky-100 text-sky-600'
+            );
+        }
+
+        if (
+            label.includes('no recibo correo')
+            || label.includes('no recibe correo')
+        ) {
+            return appearance(
+                'mail-x',
+                'border-border hover:border-rose-200',
+                'bg-rose-100 text-rose-600'
+            );
+        }
+
+        if (label.includes('ya abrio')) {
+            return appearance(
+                'badge-check',
+                'border-border hover:border-emerald-200',
+                'bg-emerald-100 text-emerald-600'
+            );
+        }
+
+        if (label.includes('sigue sin abrir')) {
+            return appearance(
+                'circle-x',
+                'border-border hover:border-rose-200',
+                'bg-rose-100 text-rose-600'
+            );
+        }
+
+        if (label.includes('ya puedo enviar')) {
+            return appearance(
+                'send',
+                'border-border hover:border-emerald-200',
+                'bg-emerald-100 text-emerald-600'
+            );
+        }
+
+        if (
+            label.includes('continua el problema')
+            || label.includes('continua fallando')
+        ) {
+            return appearance(
+                'triangle-alert',
+                'border-border hover:border-amber-200',
+                'bg-amber-100 text-amber-700'
+            );
+        }
+
+        if (label.includes('reportar incidencia')) {
+            return appearance(
+                'file-warning',
+                'border-border hover:border-rose-200',
+                'bg-rose-100 text-rose-600'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Diagnósticos del menú "Tengo un problema"
+        |--------------------------------------------------------------
+        |
+        | Estas reglas se evalúan antes que las opciones genéricas para
+        | que "No enciende" no se interprete como una respuesta "No".
+        |
+        */
+
+        if (
+            source.includes('internet')
+            || source.includes('wifi')
+            || source.includes('sin red')
+            || source.includes('conexion')
+        ) {
+            return appearance(
+                'wifi',
+                'border-border hover:border-sky-200',
+                'bg-sky-100 text-sky-600'
+            );
+        }
+
+        if (
+            source.includes('outlook')
+            || source.includes('correo')
+            || source.includes('email')
+        ) {
+            return appearance(
+                'mail',
+                'border-border hover:border-blue-200',
+                'bg-blue-100 text-blue-600'
+            );
+        }
+
+        if (
+            source.includes('computadora lenta')
+            || source.includes('equipo lento')
+            || source.includes('muy lento')
+            || source.includes('se congela')
+            || source.includes('se traba')
+        ) {
+            return appearance(
+                'gauge',
+                'border-border hover:border-amber-200',
+                'bg-amber-100 text-amber-700'
+            );
+        }
+
+        if (
+            source.includes('no enciende')
+            || source.includes('no prende')
+            || source.includes('no arranca')
+            || source.includes('no inicia')
+        ) {
+            return appearance(
+                'power',
+                'border-border hover:border-rose-200',
+                'bg-rose-100 text-rose-600'
+            );
+        }
+
+        if (
+            source.includes('impresora')
+            || source.includes('imprimir')
+        ) {
+            return appearance(
+                'printer',
+                'border-border hover:border-orange-200',
+                'bg-orange-100 text-orange-600'
+            );
+        }
+
+        if (
+            source.includes('sistema')
+            || source.includes('aplicacion')
+        ) {
+            return appearance(
+                'app-window',
+                'border-border hover:border-indigo-200',
+                'bg-indigo-100 text-indigo-600'
+            );
+        }
+
+        if (
+            source.includes('teclado')
+            || source.includes('mouse')
+            || source.includes('periferico')
+        ) {
+            return appearance(
+                'keyboard',
+                'border-border hover:border-cyan-200',
+                'bg-cyan-100 text-cyan-700'
+            );
+        }
+
+        if (
+            source.includes('otro problema')
+            || source.includes('otro inconveniente')
+        ) {
+            return appearance(
+                'circle-help',
+                'border-border hover:border-slate-300',
+                'bg-slate-100 text-slate-600'
+            );
+        }
+
+            if (
+                label === 'si'
+                || label.startsWith('si ')
+                || label.includes('confirmar')
+                || label.includes('continuar')
+            ) {
+            return appearance(
+                'circle-check',
+                'border-border hover:border-emerald-200',
+                'bg-emerald-100 text-emerald-600'
+            );
+        }
+
+            if (
+                label === 'no'
+                || label.startsWith('no ')
+                || label.includes('cancelar')
+                || label.includes('cerrar')
+            ) {
+            return appearance(
+                'circle-x',
+                'border-border hover:border-slate-300',
+                'bg-slate-100 text-slate-600'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Gestiones principales
+        |--------------------------------------------------------------
+        */
+
+        if (
+            source.includes('incidencia')
+            || source.includes('problema')
+            || source.includes('falla')
+            || source.includes('error')
+        ) {
+            return appearance(
+                'triangle-alert',
+                'border-border hover:border-rose-200',
+                'bg-rose-100 text-rose-600'
+            );
+        }
+
+        if (
+            source.includes('solicitud')
+            || source.includes('servicio')
+            || source.includes('requerimiento')
+        ) {
+            return appearance(
+                'clipboard-list',
+                'border-border hover:border-emerald-200',
+                'bg-emerald-100 text-emerald-600'
+            );
+        }
+
+        if (
+            source.includes('mayor')
+            || source.includes('autorizacion')
+            || source.includes('memorando')
+        ) {
+            return appearance(
+                'file-check-2',
+                'border-border hover:border-indigo-200',
+                'bg-indigo-100 text-indigo-600'
+            );
+        }
+
+        if (
+            source.includes('menor')
+            || source.includes('temporal')
+        ) {
+            return appearance(
+                'clock-3',
+                'border-border hover:border-blue-200',
+                'bg-blue-100 text-blue-600'
+            );
+        }
+
+        if (source.includes('pase')) {
+            return appearance(
+                'badge-check',
+                'border-border hover:border-blue-200',
+                'bg-blue-100 text-blue-600'
+            );
+        }
+
+        if (
+            source.includes('estado')
+            || source.includes('seguimiento')
+            || source.includes('gestiones')
+            || source.includes('historial')
+        ) {
+            return appearance(
+                'history',
+                'border-border hover:border-amber-200',
+                'bg-amber-100 text-amber-700'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Categorías tecnológicas
+        |--------------------------------------------------------------
+        */
+
+        if (
+            source.includes('computadora')
+            || source.includes('equipo')
+            || source.includes('laptop')
+            || source.includes('monitor')
+        ) {
+            return appearance(
+                'monitor',
+                'border-border hover:border-sky-200',
+                'bg-sky-100 text-sky-600'
+            );
+        }
+
+        if (
+            source.includes('programa')
+            || source.includes('software')
+            || source.includes('instalar')
+            || source.includes('aplicacion')
+            || source.includes('sistema')
+        ) {
+            return appearance(
+                'package-plus',
+                'border-border hover:border-cyan-200',
+                'bg-cyan-100 text-cyan-700'
+            );
+        }
+
+        if (
+            source.includes('acceso')
+            || source.includes('permiso')
+            || source.includes('credencial')
+        ) {
+            return appearance(
+                'key-round',
+                'border-border hover:border-indigo-200',
+                'bg-indigo-100 text-indigo-600'
+            );
+        }
+
+        if (
+            source.includes('vpn')
+            || source.includes('internet')
+            || source.includes('wifi')
+            || source.includes('red')
+            || source.includes('conexion')
+        ) {
+            return appearance(
+                'wifi',
+                'border-border hover:border-sky-200',
+                'bg-sky-100 text-sky-600'
+            );
+        }
+
+        if (
+            source.includes('impresora')
+            || source.includes('imprimir')
+        ) {
+            return appearance(
+                'printer',
+                'border-border hover:border-orange-200',
+                'bg-orange-100 text-orange-600'
+            );
+        }
+
+        if (
+            source.includes('correo')
+            || source.includes('email')
+            || source.includes('outlook')
+        ) {
+            return appearance(
+                'mail',
+                'border-border hover:border-blue-200',
+                'bg-blue-100 text-blue-600'
+            );
+        }
+
+        if (
+            source.includes('cuenta')
+            || source.includes('contrasena')
+            || source.includes('usuario')
+        ) {
+            return appearance(
+                'circle-user-round',
+                'border-border hover:border-violet-200',
+                'bg-violet-100 text-violet-600'
+            );
+        }
+
+        if (
+            source.includes('configuracion')
+            || source.includes('cambio')
+            || source.includes('ajuste')
+        ) {
+            return appearance(
+                'settings-2',
+                'border-border hover:border-slate-300',
+                'bg-slate-100 text-slate-600'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------
+        | Consulta abierta
+        |--------------------------------------------------------------
+        */
+
+        if (
+            action?.variant === 'ai'
+            || source.includes('pregunta')
+            || source.includes('consulta')
+            || source.includes('asistente')
+        ) {
+            return appearance(
+                'message-square-text',
+                'border-border hover:border-violet-200',
+                'bg-violet-100 text-violet-600'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Opción genérica
+        |--------------------------------------------------------------
+        */
+
+        return appearance(
+            'mouse-pointer-click',
+            'border-border hover:border-primary/30',
+            'bg-primary/10 text-primary'
+        );
+    };
+
+    window.chatbotResolvedActionIcon = function (action) {
+        /*
+         * Usa primero el icono definido por el flujo. Si una acción antigua
+         * no lo incluye, conserva el mapeo semántico como respaldo.
+         */
+        const explicitIcon = String(
+            action?.icon ?? ''
+        ).trim();
+
+        return explicitIcon
+            || window.chatbotActionAppearance(action).icon;
+    };
+</script>
+
+
+@once
+    <script
+        src="{{ asset('js/chatbot.js') }}?v={{ filemtime(public_path('js/chatbot.js')) }}"
+    ></script>
+@endonce

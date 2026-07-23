@@ -99,7 +99,7 @@ class MemorandoController extends Controller
 
 /*
 |--------------------------------------------------------------------------
-| Enviar pase temporal por correo
+| Enviar pase menor a 24 horas por correo
 |--------------------------------------------------------------------------
 */
 
@@ -739,7 +739,7 @@ $memorando->update([
 
             /*
 |--------------------------------------------------------------------------
-| Enviar autorización por correo
+| Enviar pase mayor a 24 horas por correo
 |--------------------------------------------------------------------------
 |
 | Solamente se envía cuando el formulario corresponde a una
