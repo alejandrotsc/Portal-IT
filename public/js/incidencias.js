@@ -1,33 +1,121 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const form = document.getElementById('incidenciaForm');
+
+    if (!form) return;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | EVITAR INICIALIZACIÓN DUPLICADA
+    |--------------------------------------------------------------------------
+    |
+    | Impide registrar dos veces los eventos si este archivo JavaScript
+    | se carga accidentalmente más de una vez.
+    |
+    */
+
+    if (window.__incidenciaFormInicializado) {
+        return;
+    }
+
+    window.__incidenciaFormInicializado = true;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ELEMENTOS DEL FORMULARIO
+    |--------------------------------------------------------------------------
+    */
+
     const dropzone = document.getElementById('dropzone');
     const input = document.getElementById('archivos');
     const preview = document.getElementById('preview');
     const btnCancelar = document.getElementById('btnCancelar');
     const btnEnviar = document.getElementById('btnEnviar');
-    const btnEnviarTexto = document.getElementById('btnEnviarTexto');
 
     const modal = document.getElementById('modalIncidencia');
     const modalIcono = document.getElementById('modalIcono');
     const modalTitulo = document.getElementById('modalTitulo');
     const modalMensaje = document.getElementById('modalMensaje');
     const codigoIncidencia = document.getElementById('codigoIncidencia');
-    const cerrarModalIncidencia = document.getElementById('cerrarModalIncidencia');
 
-    const estadoCorreo = document.getElementById('estadoCorreoIncidencia');
-    const estadoCorreoIcono = document.getElementById('estadoCorreoIncidenciaIcono');
-    const estadoCorreoTitulo = document.getElementById('estadoCorreoIncidenciaTitulo');
-    const estadoCorreoMensaje = document.getElementById('estadoCorreoIncidenciaMensaje');
-    const smtpEstado = document.getElementById('smtpEstadoIncidencia');
+    const cerrarModalIncidencia = document.getElementById(
+        'cerrarModalIncidencia'
+    );
 
-    const btnReportarModal = document.getElementById('btnReportarSmtpIncidencia');
-    const btnReportarPersistente = document.getElementById('btnReportarSmtpIncidenciaPersistente');
+    const estadoCorreo = document.getElementById(
+        'estadoCorreoIncidencia'
+    );
 
-    if (!form) return;
+    const estadoCorreoIcono = document.getElementById(
+        'estadoCorreoIncidenciaIcono'
+    );
+
+    const estadoCorreoTitulo = document.getElementById(
+        'estadoCorreoIncidenciaTitulo'
+    );
+
+    const estadoCorreoMensaje = document.getElementById(
+        'estadoCorreoIncidenciaMensaje'
+    );
+
+    const smtpEstado = document.getElementById(
+        'smtpEstadoIncidencia'
+    );
+
+    const btnReportarModal = document.getElementById(
+        'btnReportarSmtpIncidencia'
+    );
+
+    const btnReportarPersistente = document.getElementById(
+        'btnReportarSmtpIncidenciaPersistente'
+    );
+
 
     let archivosSeleccionados = [];
     let enviando = false;
+    let abriendoOutlook = false;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ETIQUETAS LEGIBLES
+    |--------------------------------------------------------------------------
+    */
+
+    const etiquetasAfectacion = {
+        solo: 'Solo a mí',
+        varios: 'A varias personas',
+        todos: 'A toda el área',
+    };
+
+
+    const etiquetasTiempo = {
+        hoy: 'Desde hoy',
+        ayer: 'Desde ayer',
+        varios_dias: 'Desde hace varios días',
+    };
+
+
+    function obtenerEtiqueta(mapa, valor) {
+        if (!valor) {
+            return 'No especificado';
+        }
+
+        if (mapa[valor]) {
+            return mapa[valor];
+        }
+
+        const texto = String(valor)
+            .replaceAll('_', ' ')
+            .replaceAll('-', ' ')
+            .trim();
+
+        return texto
+            ? texto.charAt(0).toUpperCase() + texto.slice(1)
+            : 'No especificado';
+    }
 
 
     /*
@@ -36,42 +124,70 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     */
 
-    dropzone?.addEventListener('click', () => input?.click());
+    dropzone?.addEventListener('click', () => {
+        input?.click();
+    });
+
 
     input?.addEventListener('change', event => {
         agregarArchivos(event.target.files);
     });
 
+
     dropzone?.addEventListener('dragover', event => {
         event.preventDefault();
-        dropzone.classList.add('border-primary', 'bg-primary/5');
+
+        dropzone.classList.add(
+            'border-primary',
+            'bg-primary/5'
+        );
     });
 
+
     dropzone?.addEventListener('dragleave', () => {
-        dropzone.classList.remove('border-primary', 'bg-primary/5');
+        dropzone.classList.remove(
+            'border-primary',
+            'bg-primary/5'
+        );
     });
+
 
     dropzone?.addEventListener('drop', event => {
         event.preventDefault();
-        dropzone.classList.remove('border-primary', 'bg-primary/5');
+
+        dropzone.classList.remove(
+            'border-primary',
+            'bg-primary/5'
+        );
+
         agregarArchivos(event.dataTransfer.files);
     });
 
 
     function agregarArchivos(files) {
         Array.from(files).forEach(file => {
-            const esImagen = file.type.startsWith('image/');
-            const tamanoPermitido = file.size <= 10 * 1024 * 1024;
 
-            const repetido = archivosSeleccionados.some(actual =>
-                actual.name === file.name
-                && actual.size === file.size
-                && actual.lastModified === file.lastModified
-            );
+            const esImagen =
+                file.type.startsWith('image/');
 
-            if (esImagen && tamanoPermitido && !repetido) {
+            const tamanoPermitido =
+                file.size <= 10 * 1024 * 1024;
+
+            const repetido =
+                archivosSeleccionados.some(actual =>
+                    actual.name === file.name
+                    && actual.size === file.size
+                    && actual.lastModified === file.lastModified
+                );
+
+            if (
+                esImagen
+                && tamanoPermitido
+                && !repetido
+            ) {
                 archivosSeleccionados.push(file);
             }
+
         });
 
         renderPreview();
@@ -86,35 +202,67 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataTransfer = new DataTransfer();
 
         archivosSeleccionados.forEach(file => {
+
             dataTransfer.items.add(file);
 
             const card = document.createElement('div');
-            card.className = 'relative rounded-xl overflow-hidden border border-border bg-white';
+
+            card.className =
+                'relative rounded-xl overflow-hidden '
+                + 'border border-border bg-white';
+
 
             const imagen = document.createElement('img');
-            imagen.className = 'w-full h-28 object-cover';
+
+            imagen.className =
+                'w-full h-28 object-cover';
+
             imagen.alt = file.name;
 
+
             const boton = document.createElement('button');
+
             boton.type = 'button';
-            boton.className = 'absolute top-2 right-2 bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition';
-            boton.setAttribute('aria-label', `Eliminar ${file.name}`);
+
+            boton.className =
+                'absolute top-2 right-2 bg-black/60 '
+                + 'text-white rounded-full w-7 h-7 '
+                + 'flex items-center justify-center '
+                + 'hover:bg-red-600 transition';
+
+            boton.setAttribute(
+                'aria-label',
+                `Eliminar ${file.name}`
+            );
+
             boton.textContent = '×';
 
+
             boton.addEventListener('click', () => {
-                archivosSeleccionados = archivosSeleccionados.filter(actual => actual !== file);
+
+                archivosSeleccionados =
+                    archivosSeleccionados.filter(
+                        actual => actual !== file
+                    );
+
                 renderPreview();
+
             });
 
+
             const reader = new FileReader();
+
             reader.addEventListener('load', event => {
                 imagen.src = event.target.result;
             });
+
             reader.readAsDataURL(file);
+
 
             card.appendChild(imagen);
             card.appendChild(boton);
             preview.appendChild(card);
+
         });
 
         input.files = dataTransfer.files;
@@ -123,17 +271,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /*
     |--------------------------------------------------------------------------
-    | CANCELAR
+    | LIMPIAR FORMULARIO
     |--------------------------------------------------------------------------
     */
 
-    btnCancelar?.addEventListener('click', () => {
+    function limpiarFormulario() {
         form.reset();
+
         archivosSeleccionados = [];
 
-        if (input) input.value = '';
+        if (input) {
+            input.value = '';
+        }
 
         renderPreview();
+    }
+
+
+    btnCancelar?.addEventListener('click', () => {
+        limpiarFormulario();
     });
 
 
@@ -145,89 +301,185 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function abrirOutlook(boton, event) {
         event?.preventDefault();
+        event?.stopPropagation();
+        event?.stopImmediatePropagation();
 
         const url = boton?.dataset.outlookUrl;
-        if (!url) return;
 
-        const ventana = window.open(url, '_blank');
-
-        if (ventana) {
-            ventana.opener = null;
-        } else {
-            window.location.href = url;
+        if (!url || abriendoOutlook) {
+            return;
         }
+
+        abriendoOutlook = true;
+
+        /*
+        | Outlook se abre únicamente en una pestaña nueva.
+        | No se utiliza window.location.href porque eso reemplazaría
+        | la página actual del Portal TI.
+        */
+
+        const nuevaVentana = window.open(
+            url,
+            '_blank'
+        );
+
+        if (nuevaVentana) {
+            nuevaVentana.opener = null;
+        }
+
+        /*
+        | Evita aperturas duplicadas por doble clic.
+        */
+
+        window.setTimeout(() => {
+            abriendoOutlook = false;
+        }, 1000);
     }
 
+
     btnReportarModal?.addEventListener('click', event => {
-        abrirOutlook(btnReportarModal, event);
+        abrirOutlook(
+            btnReportarModal,
+            event
+        );
     });
 
+
     btnReportarPersistente?.addEventListener('click', event => {
-        abrirOutlook(btnReportarPersistente, event);
+        abrirOutlook(
+            btnReportarPersistente,
+            event
+        );
     });
 
 
     /*
     |--------------------------------------------------------------------------
-    | SUBMIT AJAX
+    | ENVIAR INCIDENCIA
     |--------------------------------------------------------------------------
     */
 
     form.addEventListener('submit', async event => {
+
         event.preventDefault();
 
-        if (enviando || !form.reportValidity()) return;
+        if (enviando || !form.reportValidity()) {
+            return;
+        }
 
         enviando = true;
 
-        const datosFormulario = obtenerDatosFormulario();
+        const datosFormulario =
+            obtenerDatosFormulario();
+
         activarCarga();
 
         try {
+
             const response = await fetch(form.action, {
+
                 method: 'POST',
+
                 headers: {
-                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]')?.value ?? '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
+
+                    'X-CSRF-TOKEN':
+                        form.querySelector('[name="_token"]')
+                            ?.value ?? '',
+
+                    'X-Requested-With':
+                        'XMLHttpRequest',
+
+                    'Accept':
+                        'application/json',
+
                 },
+
                 body: new FormData(form),
+
             });
 
-            const texto = await response.text();
+
+            const texto =
+                await response.text();
+
             let data;
 
+
             try {
+
                 data = JSON.parse(texto);
+
             } catch (error) {
-                console.error('Respuesta no JSON:', texto);
-                throw new Error('Laravel devolvió una respuesta inválida.');
+
+                console.error(
+                    'Respuesta no válida del servidor:',
+                    texto
+                );
+
+                throw new Error(
+                    'No pudimos completar el envío en este momento. '
+                    + 'Por favor, intenta nuevamente.'
+                );
+
             }
+
 
             if (!response.ok || !data.success) {
-                throw new Error(obtenerMensajeError(data));
+
+                throw new Error(
+                    obtenerMensajeError(data)
+                );
+
             }
+
 
             if (data.email?.sent === true) {
+
                 mostrarExito(data);
+
             } else {
-                mostrarAdvertenciaSmtp(data, datosFormulario);
+
+                mostrarAdvertenciaCorreo(
+                    data,
+                    datosFormulario
+                );
+
             }
 
-            form.reset();
-            archivosSeleccionados = [];
-            renderPreview();
+
+            /*
+            | La incidencia quedó registrada.
+            */
+
+            limpiarFormulario();
             abrirModal();
 
         } catch (error) {
-            console.error('Error enviando incidencia:', error);
-            mostrarErrorTotal(error, datosFormulario);
+
+            console.error(
+                'Error al enviar la incidencia:',
+                error
+            );
+
+            mostrarErrorTotal(
+                error,
+                datosFormulario
+            );
+
+            /*
+            | Si el registro falló, se conserva la información
+            | ingresada en el formulario.
+            */
+
             abrirModal();
 
         } finally {
+
             enviando = false;
             restaurarBoton();
+
         }
+
     });
 
 
@@ -236,32 +488,71 @@ document.addEventListener('DOMContentLoaded', () => {
             ? Object.values(data.errors)[0]
             : null;
 
-        if (Array.isArray(primerGrupo) && primerGrupo[0]) {
+        if (
+            Array.isArray(primerGrupo)
+            && primerGrupo[0]
+        ) {
             return primerGrupo[0];
         }
 
         return data?.error
             ?? data?.message
-            ?? 'No fue posible registrar la incidencia.';
+            ?? 'No pudimos registrar la incidencia. '
+            + 'Revisa la información e intenta nuevamente.';
     }
 
 
     function obtenerDatosFormulario() {
+        const afectacion =
+            form.querySelector('[name="afectacion"]')
+                ?.value ?? '';
+
+        const tiempo =
+            form.querySelector('[name="tiempo_problema"]')
+                ?.value ?? '';
+
         return {
-            titulo: form.querySelector('[name="titulo"]')?.value ?? 'N/A',
-            descripcion: form.querySelector('[name="descripcion"]')?.value ?? 'N/A',
-            tiempo: form.querySelector('[name="tiempo_problema"]')?.value ?? 'N/A',
-            afectacion: form.querySelector('[name="afectacion"]')?.value ?? 'N/A',
-            equipo: form.querySelector('[name="equipo"]')?.value ?? 'N/A',
-            ubicacion: form.querySelector('[name="ubicacion"]')?.value ?? 'N/A',
-            cantidadArchivos: archivosSeleccionados.length,
+
+            titulo:
+                form.querySelector('[name="titulo"]')
+                    ?.value.trim()
+                || 'No especificado',
+
+            descripcion:
+                form.querySelector('[name="descripcion"]')
+                    ?.value.trim()
+                || 'No especificada',
+
+            tiempo: obtenerEtiqueta(
+                etiquetasTiempo,
+                tiempo
+            ),
+
+            afectacion: obtenerEtiqueta(
+                etiquetasAfectacion,
+                afectacion
+            ),
+
+            equipo:
+                form.querySelector('[name="equipo"]')
+                    ?.value.trim()
+                || 'No especificado',
+
+            ubicacion:
+                form.querySelector('[name="ubicacion"]')
+                    ?.value.trim()
+                || 'No especificada',
+
+            cantidadArchivos:
+                archivosSeleccionados.length,
+
         };
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | VERDE: REGISTRADA Y NOTIFICADA
+    | ÉXITO: REGISTRADA Y NOTIFICADA
     |--------------------------------------------------------------------------
     */
 
@@ -270,123 +561,273 @@ document.addEventListener('DOMContentLoaded', () => {
 
         configurarCabecera(
             'success',
-            'Incidencia registrada',
-            data.message ?? 'La incidencia fue registrada y el equipo TI fue notificado.'
+            'Incidencia enviada',
+            data.message
+                ?? 'Tu incidencia fue registrada correctamente. '
+                + 'El equipo de soporte TI ya fue notificado.'
         );
 
         configurarEstadoCorreo(
             'success',
-            'Correo enviado correctamente',
-            'El servidor SMTP aceptó la notificación para el equipo de soporte TI.'
+            'El equipo de soporte fue notificado',
+            'Tu reporte fue enviado correctamente y '
+            + 'ya puede ser revisado por el equipo de TI.'
         );
 
         mostrarCodigo(data.codigo);
-        actualizarIndicador('success', 'Último envío SMTP correcto');
+
+        actualizarIndicador(
+            'success',
+            'Notificación enviada correctamente'
+        );
+
         refrescarIconos();
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | NARANJA: REGISTRADA, SMTP FALLIDO
+    | ADVERTENCIA: REGISTRADA, PERO NO NOTIFICADA
     |--------------------------------------------------------------------------
     */
 
-    function mostrarAdvertenciaSmtp(data, datosFormulario) {
+    function mostrarAdvertenciaCorreo(
+        data,
+        datosFormulario
+    ) {
         configurarCabecera(
             'warning',
-            'Incidencia registrada con advertencia',
-            data.message ?? 'La incidencia fue registrada, pero el correo no pudo enviarse.'
+            'Incidencia registrada',
+            'Tu incidencia fue guardada correctamente, '
+            + 'pero no pudimos avisar automáticamente '
+            + 'al equipo de soporte.'
         );
 
         configurarEstadoCorreo(
             'warning',
-            'No se pudo enviar el correo',
-            'La incidencia quedó registrada. Puedes informar la falla mediante Outlook 365.'
+            'La notificación no pudo enviarse',
+            'Tu reporte no se perdió. Puedes utilizar '
+            + 'el botón de Outlook para informar al '
+            + 'equipo de soporte.'
         );
 
         mostrarCodigo(data.codigo);
 
-        const outlookUrl = construirOutlook(data, datosFormulario, false);
-        configurarBotonesReporte(outlookUrl, 'warning');
-        actualizarIndicador('warning', 'Último envío SMTP fallido');
+        const outlookUrl = construirOutlook(
+            data,
+            datosFormulario,
+            false
+        );
+
+        configurarBotonesReporte(
+            outlookUrl,
+            'warning'
+        );
+
+        actualizarIndicador(
+            'warning',
+            'La incidencia se guardó, pero el aviso no pudo enviarse'
+        );
+
         refrescarIconos();
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | ROJO: NO SE REGISTRÓ
+    | ERROR: NO SE REGISTRÓ
     |--------------------------------------------------------------------------
     */
 
-    function mostrarErrorTotal(error, datosFormulario) {
+    function mostrarErrorTotal(
+        error,
+        datosFormulario
+    ) {
         configurarCabecera(
             'error',
-            'No se pudo registrar la incidencia',
-            error?.message ?? 'Ocurrió un error procesando el reporte.'
+            'No pudimos enviar tu incidencia',
+            error?.message
+                ?? 'Ocurrió un inconveniente al procesar '
+                + 'tu reporte. Intenta nuevamente.'
         );
 
         configurarEstadoCorreo(
             'error',
-            'La gestión no pudo completarse',
-            'Puedes informar el problema al equipo de Helpdesk mediante Outlook 365.'
+            'El reporte no fue enviado',
+            'Tu información permanece en el formulario. '
+            + 'También puedes utilizar Outlook para '
+            + 'informar al equipo de soporte.'
         );
 
         mostrarCodigo(null);
 
-        const outlookUrl = construirOutlook(null, datosFormulario, true, error);
-        configurarBotonesReporte(outlookUrl, 'error');
-        actualizarIndicador('error', 'No se pudo registrar ni notificar la incidencia');
+        const outlookUrl = construirOutlook(
+            null,
+            datosFormulario,
+            true
+        );
+
+        configurarBotonesReporte(
+            outlookUrl,
+            'error'
+        );
+
+        actualizarIndicador(
+            'error',
+            'No fue posible enviar el reporte'
+        );
+
         refrescarIconos();
     }
 
 
-    function configurarCabecera(tipo, titulo, mensaje) {
+    /*
+    |--------------------------------------------------------------------------
+    | CONFIGURACIÓN DEL MODAL
+    |--------------------------------------------------------------------------
+    */
+
+    function configurarCabecera(
+        tipo,
+        titulo,
+        mensaje
+    ) {
         const estilos = {
-            success: ['bg-green-50', 'border-green-200', 'text-green-600', 'check-circle'],
-            warning: ['bg-amber-50', 'border-amber-200', 'text-amber-600', 'mail-warning'],
-            error: ['bg-red-50', 'border-red-200', 'text-red-600', 'x-circle'],
+
+            success: [
+                'bg-green-50',
+                'border-green-200',
+                'text-green-600',
+                'check-circle',
+            ],
+
+            warning: [
+                'bg-amber-50',
+                'border-amber-200',
+                'text-amber-600',
+                'mail-warning',
+            ],
+
+            error: [
+                'bg-red-50',
+                'border-red-200',
+                'text-red-600',
+                'x-circle',
+            ],
+
         };
 
-        const estilo = estilos[tipo] ?? estilos.error;
+        const estilo =
+            estilos[tipo] ?? estilos.error;
+
 
         if (modalIcono) {
-            modalIcono.className = `w-16 h-16 rounded-2xl ${estilo[0]} border ${estilo[1]} flex items-center justify-center mx-auto`;
-            modalIcono.innerHTML = `<i data-lucide="${estilo[3]}" class="w-8 h-8 ${estilo[2]}"></i>`;
+
+            modalIcono.className =
+                `w-16 h-16 rounded-2xl ${estilo[0]} `
+                + `border ${estilo[1]} flex items-center `
+                + 'justify-center mx-auto';
+
+            modalIcono.innerHTML =
+                `<i data-lucide="${estilo[3]}" `
+                + `class="w-8 h-8 ${estilo[2]}"></i>`;
+
         }
 
-        if (modalTitulo) modalTitulo.textContent = titulo;
-        if (modalMensaje) modalMensaje.textContent = mensaje;
+
+        if (modalTitulo) {
+            modalTitulo.textContent = titulo;
+        }
+
+
+        if (modalMensaje) {
+            modalMensaje.textContent = mensaje;
+        }
     }
 
 
-    function configurarEstadoCorreo(tipo, titulo, mensaje) {
+    function configurarEstadoCorreo(
+        tipo,
+        titulo,
+        mensaje
+    ) {
         const estilos = {
-            success: ['border-green-200', 'bg-green-50/70', 'text-green-800', 'text-green-700', 'mail-check', 'text-green-600'],
-            warning: ['border-amber-200', 'bg-amber-50/70', 'text-amber-800', 'text-amber-700', 'mail-warning', 'text-amber-600'],
-            error: ['border-red-200', 'bg-red-50/70', 'text-red-800', 'text-red-700', 'triangle-alert', 'text-red-600'],
+
+            success: [
+                'border-green-200',
+                'bg-green-50/70',
+                'text-green-800',
+                'text-green-700',
+                'mail-check',
+                'text-green-600',
+            ],
+
+            warning: [
+                'border-amber-200',
+                'bg-amber-50/70',
+                'text-amber-800',
+                'text-amber-700',
+                'mail-warning',
+                'text-amber-600',
+            ],
+
+            error: [
+                'border-red-200',
+                'bg-red-50/70',
+                'text-red-800',
+                'text-red-700',
+                'triangle-alert',
+                'text-red-600',
+            ],
+
         };
 
-        const estilo = estilos[tipo] ?? estilos.error;
+        const estilo =
+            estilos[tipo] ?? estilos.error;
+
 
         if (estadoCorreo) {
-            estadoCorreo.className = `rounded-2xl border ${estilo[0]} ${estilo[1]} p-5 text-left`;
+
+            estadoCorreo.className =
+                `rounded-2xl border ${estilo[0]} `
+                + `${estilo[1]} p-5 text-left`;
+
         }
+
 
         if (estadoCorreoIcono) {
-            estadoCorreoIcono.className = `w-10 h-10 rounded-xl bg-white border ${estilo[0]} flex items-center justify-center`;
-            estadoCorreoIcono.innerHTML = `<i data-lucide="${estilo[4]}" class="w-5 h-5 ${estilo[5]}"></i>`;
+
+            estadoCorreoIcono.className =
+                `w-10 h-10 rounded-xl bg-white border `
+                + `${estilo[0]} flex items-center justify-center`;
+
+            estadoCorreoIcono.innerHTML =
+                `<i data-lucide="${estilo[4]}" `
+                + `class="w-5 h-5 ${estilo[5]}"></i>`;
+
         }
+
 
         if (estadoCorreoTitulo) {
-            estadoCorreoTitulo.className = `text-sm font-semibold ${estilo[2]}`;
-            estadoCorreoTitulo.textContent = titulo;
+
+            estadoCorreoTitulo.className =
+                `text-sm font-semibold ${estilo[2]}`;
+
+            estadoCorreoTitulo.textContent =
+                titulo;
+
         }
 
+
         if (estadoCorreoMensaje) {
-            estadoCorreoMensaje.className = `text-xs ${estilo[3]} leading-relaxed mt-1.5`;
-            estadoCorreoMensaje.textContent = mensaje;
+
+            estadoCorreoMensaje.className =
+                `text-xs ${estilo[3]} `
+                + 'leading-relaxed mt-1.5';
+
+            estadoCorreoMensaje.textContent =
+                mensaje;
+
         }
     }
 
@@ -395,63 +836,129 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!codigoIncidencia) return;
 
         if (codigo) {
-            codigoIncidencia.textContent = codigo;
-            codigoIncidencia.classList.remove('hidden');
-            codigoIncidencia.classList.add('inline-flex');
+
+            codigoIncidencia.textContent =
+                codigo;
+
+            codigoIncidencia.classList.remove(
+                'hidden'
+            );
+
+            codigoIncidencia.classList.add(
+                'inline-flex'
+            );
+
         } else {
+
             codigoIncidencia.textContent = '';
-            codigoIncidencia.classList.add('hidden');
-            codigoIncidencia.classList.remove('inline-flex');
+
+            codigoIncidencia.classList.add(
+                'hidden'
+            );
+
+            codigoIncidencia.classList.remove(
+                'inline-flex'
+            );
+
         }
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | CORREO DE RESPALDO OUTLOOK 365
+    | MENSAJE DE RESPALDO PARA OUTLOOK
     |--------------------------------------------------------------------------
     */
 
-    function construirOutlook(data, datos, errorTotal = false, error = null) {
-        const botonDatos = btnReportarModal ?? btnReportarPersistente;
+    function construirOutlook(
+        data,
+        datos,
+        errorTotal = false
+    ) {
+        const botonDatos =
+            btnReportarModal
+            ?? btnReportarPersistente;
 
-        const recipient = botonDatos?.dataset.recipient || 'helpdesk@televicentro.hn';
-        const userName = botonDatos?.dataset.userName || 'N/A';
-        const userEmail = botonDatos?.dataset.userEmail || 'N/A';
-        const codigo = data?.codigo ?? 'N/A';
-        const deliveryId = data?.email?.delivery_id ?? 'N/A';
+        const recipient =
+            botonDatos?.dataset.recipient
+            || 'helpdesk@televicentro.hn';
+
+        const userName =
+            botonDatos?.dataset.userName
+            || 'No especificado';
+
+        const userEmail =
+            botonDatos?.dataset.userEmail
+            || 'No especificado';
+
+        const codigo =
+            data?.codigo
+            ?? 'No generado';
+
 
         const subject = errorTotal
-            ? '[Portal TI] Error al registrar incidencia'
-            : `[Portal TI] Falla SMTP - Incidencia ${codigo}`;
+            ? '[Portal TI] Apoyo con reporte de incidencia'
+            : `[Portal TI] Seguimiento de incidencia ${codigo}`;
+
+
+        const mensajePrincipal = errorTotal
+            ? 'Intenté registrar una incidencia en el Portal TI, '
+                + 'pero el proceso no pudo completarse.'
+            : 'La incidencia fue registrada en el Portal TI, '
+                + 'pero el equipo de soporte no recibió '
+                + 'la notificación automática.';
+
+
+        const mensajeFinal = errorTotal
+            ? 'Por favor, ayúdenme a revisar y registrar esta incidencia.'
+            : 'Por favor, ayúdenme a dar seguimiento a esta incidencia.';
+
+
+        const cantidadEvidencias =
+            datos.cantidadArchivos === 1
+                ? '1 imagen'
+                : `${datos.cantidadArchivos} imágenes`;
+
 
         const body = [
+
             'Hola, equipo de Helpdesk:',
             '',
-            errorTotal
-                ? 'El Portal TI no pudo registrar una incidencia.'
-                : 'El Portal TI registró una incidencia, pero no pudo enviar la notificación mediante SMTP.',
+
+            mensajePrincipal,
             '',
-            `Usuario: ${userName}`,
-            `Correo del usuario: ${userEmail}`,
-            'Gestión: Reporte de incidencia',
+
+            'Datos del usuario',
+            `Nombre: ${userName}`,
+            `Correo: ${userEmail}`,
+            '',
+
+            'Información de la incidencia',
             `Código: ${codigo}`,
             `Título: ${datos.titulo}`,
             `Descripción: ${datos.descripcion}`,
+            `¿Desde cuándo ocurre?: ${datos.tiempo}`,
             `Equipo: ${datos.equipo}`,
             `Ubicación: ${datos.ubicacion}`,
-            `Afectación: ${datos.afectacion}`,
-            `Cantidad de evidencias: ${datos.cantidadArchivos}`,
-            `Referencia del envío: ${deliveryId}`,
-            `Estado: ${data?.email?.status ?? (errorTotal ? 'error al registrar' : 'fallido')}`,
-            errorTotal ? `Mensaje mostrado: ${error?.message ?? 'Error no especificado'}` : null,
-            `Fecha del reporte: ${new Date().toLocaleString('es-HN')}`,
-            `Página del Portal TI: ${window.location.href}`,
+            `Personas afectadas: ${datos.afectacion}`,
+            `Evidencias seleccionadas: ${cantidadEvidencias}`,
             '',
-            errorTotal
-                ? 'Por favor, revisen la disponibilidad del Portal TI.'
-                : 'La incidencia quedó registrada. Por favor, revisen el servicio SMTP.',
-        ].filter(linea => linea !== null).join('\r\n');
+
+            `Fecha del reporte: ${
+                new Date().toLocaleString(
+                    'es-HN',
+                    {
+                        dateStyle: 'long',
+                        timeStyle: 'short',
+                    }
+                )
+            }`,
+            '',
+
+            mensajeFinal,
+
+        ].join('\r\n');
+
 
         return 'https://outlook.office.com/mail/deeplink/compose'
             + `?to=${encodeURIComponent(recipient)}`
@@ -460,55 +967,125 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function configurarBotonesReporte(url, tipo) {
-        [btnReportarModal, btnReportarPersistente].forEach(boton => {
+    /*
+    |--------------------------------------------------------------------------
+    | BOTONES DE OUTLOOK
+    |--------------------------------------------------------------------------
+    */
+
+    function configurarBotonesReporte(
+        url,
+        tipo
+    ) {
+        [
+            btnReportarModal,
+            btnReportarPersistente,
+        ].forEach(boton => {
+
             if (!boton) return;
 
             boton.dataset.outlookUrl = url;
+
             boton.classList.remove('hidden');
             boton.classList.add('inline-flex');
 
+
             if (tipo === 'error') {
-                boton.classList.remove('border-amber-300', 'bg-amber-50', 'text-amber-800', 'hover:bg-amber-100');
-                boton.classList.add('border-red-300', 'bg-red-50', 'text-red-800', 'hover:bg-red-100');
+
+                boton.classList.remove(
+                    'border-amber-300',
+                    'bg-amber-50',
+                    'text-amber-800',
+                    'hover:bg-amber-100'
+                );
+
+                boton.classList.add(
+                    'border-red-300',
+                    'bg-red-50',
+                    'text-red-800',
+                    'hover:bg-red-100'
+                );
+
             } else {
-                boton.classList.remove('border-red-300', 'bg-red-50', 'text-red-800', 'hover:bg-red-100');
-                boton.classList.add('border-amber-300', 'bg-amber-50', 'text-amber-800', 'hover:bg-amber-100');
+
+                boton.classList.remove(
+                    'border-red-300',
+                    'bg-red-50',
+                    'text-red-800',
+                    'hover:bg-red-100'
+                );
+
+                boton.classList.add(
+                    'border-amber-300',
+                    'bg-amber-50',
+                    'text-amber-800',
+                    'hover:bg-amber-100'
+                );
+
             }
+
         });
     }
 
 
     function ocultarBotonesReporte() {
-        [btnReportarModal, btnReportarPersistente].forEach(boton => {
+        [
+            btnReportarModal,
+            btnReportarPersistente,
+        ].forEach(boton => {
+
             if (!boton) return;
 
             boton.classList.add('hidden');
             boton.classList.remove('inline-flex');
+
             delete boton.dataset.outlookUrl;
+
         });
     }
 
 
-    function actualizarIndicador(tipo, texto) {
+    function actualizarIndicador(
+        tipo,
+        texto
+    ) {
         if (!smtpEstado) return;
 
         const estilos = {
-            success: ['text-green-700', 'bg-green-500'],
-            warning: ['text-amber-700', 'bg-amber-500'],
-            error: ['text-red-700', 'bg-red-500'],
+
+            success: [
+                'text-green-700',
+                'bg-green-500',
+            ],
+
+            warning: [
+                'text-amber-700',
+                'bg-amber-500',
+            ],
+
+            error: [
+                'text-red-700',
+                'bg-red-500',
+            ],
+
         };
 
-        const estilo = estilos[tipo] ?? estilos.error;
+        const estilo =
+            estilos[tipo] ?? estilos.error;
 
-        smtpEstado.className = `inline-flex items-center gap-2 text-xs ${estilo[0]}`;
-        smtpEstado.innerHTML = `<span class="w-2.5 h-2.5 rounded-full ${estilo[1]}"></span>${texto}`;
+        smtpEstado.className =
+            `inline-flex items-center gap-2 `
+            + `text-xs ${estilo[0]}`;
+
+        smtpEstado.innerHTML =
+            `<span class="w-2.5 h-2.5 rounded-full `
+            + `${estilo[1]}"></span>${texto}`;
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | BOTÓN Y MODAL
+    | BOTÓN DE ENVÍO
     |--------------------------------------------------------------------------
     */
 
@@ -516,9 +1093,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btnEnviar) return;
 
         btnEnviar.disabled = true;
+
         btnEnviar.innerHTML = `
             <span class="spinner-envio"></span>
-            <span>Enviando...</span>
+            <span>Enviando reporte...</span>
         `;
     }
 
@@ -527,46 +1105,83 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btnEnviar) return;
 
         btnEnviar.disabled = false;
+
         btnEnviar.innerHTML = `
-            <i id="btnEnviarIcono" data-lucide="send" class="w-4 h-4"></i>
-            <span id="btnEnviarTexto">Enviar reporte</span>
+            <i
+                id="btnEnviarIcono"
+                data-lucide="send"
+                class="w-4 h-4"
+            ></i>
+
+            <span id="btnEnviarTexto">
+                Enviar reporte
+            </span>
         `;
 
         refrescarIconos();
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | MODAL
+    |--------------------------------------------------------------------------
+    */
+
     function abrirModal() {
         if (!modal) return;
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+
         refrescarIconos();
     }
 
 
     function ocultarModal() {
         if (!modal) return;
+
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
 
 
-    cerrarModalIncidencia?.addEventListener('click', ocultarModal);
+    cerrarModalIncidencia?.addEventListener(
+        'click',
+        ocultarModal
+    );
+
 
     modal?.addEventListener('click', event => {
-        if (event.target === modal) ocultarModal();
+        if (event.target === modal) {
+            ocultarModal();
+        }
     });
 
+
     document.addEventListener('keydown', event => {
-        if (event.key === 'Escape') ocultarModal();
+        if (event.key === 'Escape') {
+            ocultarModal();
+        }
     });
+
 
     window.cerrarModal = ocultarModal;
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | ICONOS
+    |--------------------------------------------------------------------------
+    */
+
     function refrescarIconos() {
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 
+
     refrescarIconos();
+
 });

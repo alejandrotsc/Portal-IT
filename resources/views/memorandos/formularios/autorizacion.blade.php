@@ -1,91 +1,252 @@
 <div
-    class="formulario-dinamico space-y-5"
+    class="formulario-dinamico space-y-6"
     data-formulario="autorizacion">
 
 
-    {{-- INFORMACIÓN DE AUTORIZACIÓN --}}
-    <div class="bg-card rounded-2xl border border-border overflow-hidden">
+    {{-- Información de autorización --}}
 
-        <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+    <div class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
 
-            <span class="w-6 h-6 rounded-full bg-primary text-white text-xs font-semibold flex items-center justify-center">
+
+        {{-- Decoración --}}
+
+        <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125">
+        </span>
+
+
+        {{-- Encabezado --}}
+
+        <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
+
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105">
+
                 3
+
             </span>
 
-            <h2 class="text-sm font-semibold text-foreground">
-                Información de autorización
-            </h2>
+            <div class="min-w-0">
+
+                <h2 class="text-sm font-semibold text-foreground">
+
+                    Información de autorización
+
+                </h2>
+
+                <p class="mt-0.5 text-xs text-muted-foreground">
+
+                    Indica quién será responsable del equipo y el motivo de ingreso.
+
+                </p>
+
+            </div>
 
         </div>
 
 
-        <div class="px-6 py-5 space-y-4">
+
+        {{-- Contenido --}}
+
+        <div class="relative space-y-5 px-6 py-5">
 
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
+
+                {{-- Responsable del equipo --}}
 
                 <div>
 
-                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
+                    <label
+                        for="colaborador"
+                        class="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+
                         Responsable del equipo
+
                         <span class="text-primary">*</span>
+
                     </label>
 
 
-                    <input
-                        required
-                        type="text"
-                        name="colaborador"
-                        id="colaborador"
-                        placeholder="Nombre completo del colaborador"
-                        class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all">
+                    <div
+                        @class([
+                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                                $errors->has('colaborador'),
+
+                            'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                                ! $errors->has('colaborador'),
+                        ])>
+
+                        <i
+                            data-lucide="user-round"
+                            stroke-width="1.8"
+                            class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                        </i>
+
+                        <input
+                            type="text"
+                            id="colaborador"
+                            name="colaborador"
+                            value="{{ old('colaborador') }}"
+                            maxlength="200"
+                            autocomplete="name"
+                            placeholder="Nombre completo del colaborador"
+                            required
+                            class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">
+
+                    </div>
+
+
+                    @error('colaborador')
+
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+
+                            <i
+                                data-lucide="circle-alert"
+                                stroke-width="1.8"
+                                class="h-3.5 w-3.5 shrink-0">
+                            </i>
+
+                            {{ $message }}
+
+                        </p>
+
+                    @enderror
 
                 </div>
 
 
+
+                {{-- Cargo / Área --}}
 
                 <div>
 
-                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
+                    <label
+                        for="cargo_area"
+                        class="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+
                         Cargo / Área
+
                         <span class="text-primary">*</span>
+
                     </label>
 
 
-                    <input
-                        required
-                        type="text"
-                        name="cargo_area"
-                        id="cargo_area"
-                        placeholder="Ej: Practicante de Infraestructura"
-                        class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all">
+                    <div
+                        @class([
+                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                                $errors->has('cargo_area'),
+
+                            'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                                ! $errors->has('cargo_area'),
+                        ])>
+
+                        <i
+                            data-lucide="briefcase-business"
+                            stroke-width="1.8"
+                            class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                        </i>
+
+                        <input
+                            type="text"
+                            id="cargo_area"
+                            name="cargo_area"
+                            value="{{ old('cargo_area') }}"
+                            maxlength="200"
+                            autocomplete="organization-title"
+                            placeholder="Ej: Practicante de Infraestructura"
+                            required
+                            class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">
+
+                    </div>
+
+
+                    @error('cargo_area')
+
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+
+                            <i
+                                data-lucide="circle-alert"
+                                stroke-width="1.8"
+                                class="h-3.5 w-3.5 shrink-0">
+                            </i>
+
+                            {{ $message }}
+
+                        </p>
+
+                    @enderror
 
                 </div>
-
 
             </div>
 
 
+
+            {{-- Motivo de autorización --}}
 
             <div>
 
-                <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
+                <label
+                    for="motivo_autorizacion"
+                    class="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+
                     Motivo de autorización
+
                     <span class="text-primary">*</span>
+
                 </label>
 
 
-                <textarea
-                    required
-                    name="motivo_autorizacion"
-                    id="motivo_autorizacion"
-                    rows="4"
-                    placeholder="Describa el motivo por el cual se requiere autorización de ingreso del equipo..."
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"></textarea>
+                <div
+                    @class([
+                        'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+
+                        'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                            $errors->has('motivo_autorizacion'),
+
+                        'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                            ! $errors->has('motivo_autorizacion'),
+                    ])>
+
+                    <i
+                        data-lucide="notebook-pen"
+                        stroke-width="1.8"
+                        class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                    </i>
+
+                    <textarea
+                        id="motivo_autorizacion"
+                        name="motivo_autorizacion"
+                        rows="4"
+                        maxlength="1500"
+                        placeholder="Describe el motivo por el cual se requiere autorización de ingreso del equipo..."
+                        required
+                        class="w-full resize-none border-0 bg-transparent py-2.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">{{ old('motivo_autorizacion') }}</textarea>
+
+                </div>
+
+
+                @error('motivo_autorizacion')
+
+                    <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+
+                        <i
+                            data-lucide="circle-alert"
+                            stroke-width="1.8"
+                            class="h-3.5 w-3.5 shrink-0">
+                        </i>
+
+                        {{ $message }}
+
+                    </p>
+
+                @enderror
 
             </div>
-
 
         </div>
 
@@ -93,420 +254,522 @@
 
 
 
+    {{-- Información del equipo --}}
+
+    <div class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
 
 
-    {{-- INFORMACIÓN DEL EQUIPO --}}
-    <div class="bg-card rounded-2xl border border-border overflow-hidden">
+        {{-- Decoración --}}
+
+        <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125">
+        </span>
 
 
-        <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+        {{-- Encabezado --}}
 
-            <span class="w-6 h-6 rounded-full bg-primary text-white text-xs font-semibold text-center flex items-center justify-center">
+        <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
+
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105">
+
                 4
+
             </span>
 
-            <h2 class="text-sm font-semibold text-foreground">
-                Información del equipo
-            </h2>
+            <div class="min-w-0">
+
+                <h2 class="text-sm font-semibold text-foreground">
+
+                    Información del equipo
+
+                </h2>
+
+                <p class="mt-0.5 text-xs text-muted-foreground">
+
+                    Registra los datos de cada equipo que requiere autorización.
+
+                </p>
+
+            </div>
 
         </div>
 
 
 
-        <div class="px-6 py-5">
+        {{-- Contenido --}}
+
+        <div class="relative px-6 py-5">
 
 
-            <div class="overflow-x-auto rounded-xl border border-border">
+            {{-- Tabla de equipos --}}
 
+            <div class="overflow-hidden rounded-xl border border-border bg-white">
 
-                <table class="w-full text-sm border-collapse">
+                <div class="overflow-x-auto">
 
+                    <table class="w-full min-w-[850px] border-collapse text-sm">
 
-                    <thead>
+                        <thead>
 
-                        <tr class="bg-muted/60 border-b border-border">
+                            <tr class="border-b border-border bg-muted/50">
 
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 
-                            @foreach(['Equipo','Marca','Modelo','Serie','Color'] as $columna)
+                                    Equipo
 
-                            <th class="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                </th>
 
-                                @if($columna === 'Serie')
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 
-                                    {{-- El ícono ahora es de "ayuda" (circle-help), no de "play",
-                                         para dejar claro que es información consultable y no un
-                                         reproductor embebido. Abre el modal #modalSerie de abajo. --}}
-                                    <div class="flex items-center gap-1">
+                                    Marca
 
-                                        Serie
+                                </th>
+
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+
+                                    Modelo
+
+                                </th>
+
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+
+                                    <div class="flex items-center gap-1.5">
+
+                                        <span>
+                                            Serie
+                                        </span>
 
                                         <button
                                             type="button"
                                             id="btnAyudaSerie"
                                             onclick="abrirAyudaSerie()"
                                             title="¿Dónde encontrar el número de serie?"
-                                            class="text-muted-foreground hover:text-primary transition-colors">
+                                            aria-label="Mostrar ayuda para encontrar el número de serie"
+                                            class="group/help inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-primary/10 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
 
                                             <i
                                                 data-lucide="circle-help"
-                                                class="w-4 h-4">
+                                                stroke-width="1.8"
+                                                class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/help:scale-110">
                                             </i>
 
                                         </button>
 
                                     </div>
 
-                                @else
+                                </th>
 
-                                    {{ $columna }}
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 
-                                @endif
+                                    Color
 
+                                </th>
 
-                            </th>
+                                <th class="w-14 px-2 py-3">
 
-                            @endforeach
+                                    <span class="sr-only">
+                                        Acciones
+                                    </span>
 
+                                </th>
 
-                            <th></th>
+                            </tr>
 
-
-                        </tr>
-
-                    </thead>
-
-
-
-
-                    <tbody
-                        id="equipoFilas"
-                        class="divide-y divide-border">
+                        </thead>
 
 
-                        <tr class="fila-equipo">
+                        <tbody
+                            id="equipoFilas"
+                            class="divide-y divide-border">
 
+                            <tr class="fila-equipo transition-colors duration-200 hover:bg-primary/[0.02]">
 
-                            <td class="px-2 py-2">
-                                <input
-                                    required
-                                    type="text"
-                                    name="equipos[0][descripcion]"
-                                    placeholder="Laptop"
-                                    class="input-equipo">
-                            </td>
+                                <td class="px-2 py-2.5">
 
+                                    <input
+                                        type="text"
+                                        name="equipos[0][descripcion]"
+                                        value="{{ old('equipos.0.descripcion') }}"
+                                        placeholder="Laptop"
+                                        maxlength="100"
+                                        required
+                                        class="input-equipo w-full min-w-[120px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
-                            <td class="px-2 py-2">
-                                <input
-                                    required
-                                    type="text"
-                                    name="equipos[0][marca]"
-                                    placeholder="Dell"
-                                    class="input-equipo">
-                            </td>
+                                </td>
 
+                                <td class="px-2 py-2.5">
 
-                            <td class="px-2 py-2">
-                                <input
-                                    required
-                                    type="text"
-                                    name="equipos[0][modelo]"
-                                    placeholder="Latitude 5420"
-                                    class="input-equipo">
-                            </td>
+                                    <input
+                                        type="text"
+                                        name="equipos[0][marca]"
+                                        value="{{ old('equipos.0.marca') }}"
+                                        placeholder="Dell"
+                                        maxlength="100"
+                                        required
+                                        class="input-equipo w-full min-w-[110px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
+                                </td>
 
-                            <td class="px-2 py-2">
-                                <input
-                                    required
-                                    type="text"
-                                    name="equipos[0][codigo]"
-                                    placeholder="SN123456"
-                                    class="input-equipo">
-                            </td>
+                                <td class="px-2 py-2.5">
 
+                                    <input
+                                        type="text"
+                                        name="equipos[0][modelo]"
+                                        value="{{ old('equipos.0.modelo') }}"
+                                        placeholder="Latitude 5420"
+                                        maxlength="100"
+                                        required
+                                        class="input-equipo w-full min-w-[130px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
-                            <td class="px-2 py-2">
-                                <input
-                                    required
-                                    type="text"
-                                    name="equipos[0][color]"
-                                    placeholder="Negro"
-                                    class="input-equipo">
-                            </td>
+                                </td>
 
+                                <td class="px-2 py-2.5">
 
+                                    <input
+                                        type="text"
+                                        name="equipos[0][codigo]"
+                                        value="{{ old('equipos.0.codigo') }}"
+                                        placeholder="SN123456"
+                                        maxlength="100"
+                                        required
+                                        class="input-equipo w-full min-w-[125px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
-                            <td class="px-2 py-2 text-center">
+                                </td>
 
-                                <button
-                                    type="button"
-                                    class="btn-remove-fila p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors">
+                                <td class="px-2 py-2.5">
 
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    <input
+                                        type="text"
+                                        name="equipos[0][color]"
+                                        value="{{ old('equipos.0.color') }}"
+                                        placeholder="Negro"
+                                        maxlength="50"
+                                        required
+                                        class="input-equipo w-full min-w-[100px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
-                                </button>
+                                </td>
 
-                            </td>
+                                <td class="px-2 py-2.5 text-center">
 
+                                    <button
+                                        type="button"
+                                        title="Eliminar equipo"
+                                        aria-label="Eliminar equipo"
+                                        class="btn-remove-fila group/remove inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/10 disabled:cursor-not-allowed disabled:opacity-40">
 
-                        </tr>
+                                        <i
+                                            data-lucide="trash-2"
+                                            stroke-width="1.8"
+                                            class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/remove:scale-110">
+                                        </i>
 
+                                    </button>
 
-                    </tbody>
+                                </td>
 
+                            </tr>
 
-                </table>
+                        </tbody>
 
+                    </table>
+
+                </div>
 
             </div>
 
 
 
+            {{-- Error general de equipos --}}
+
+            @error('equipos')
+
+                <p class="mt-3 flex items-center gap-1.5 text-xs text-red-600">
+
+                    <i
+                        data-lucide="circle-alert"
+                        stroke-width="1.8"
+                        class="h-3.5 w-3.5 shrink-0">
+                    </i>
+
+                    {{ $message }}
+
+                </p>
+
+            @enderror
+
+
+
+            {{-- Agregar equipo --}}
 
             <button
-    type="button"
-    id="agregarFila"
-    class="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl
-           border border-dashed border-border
-           text-sm text-muted-foreground
-           hover:border-primary
-           hover:text-primary
-           hover:bg-primary/5
-           transition-all duration-200">
+                type="button"
+                id="agregarFila"
+                class="group/add mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/30 bg-primary/[0.04] px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/50 hover:bg-primary/[0.08] hover:shadow-md active:scale-[0.98]">
 
-    <i
-        data-lucide="plus"
-        class="w-4 h-4">
-    </i>
+                <i
+                    data-lucide="plus"
+                    stroke-width="2"
+                    class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/add:rotate-90 motion-safe:group-hover/add:scale-110">
+                </i>
 
-    Agregar equipo
+                Agregar equipo
 
-</button>
-
+            </button>
 
         </div>
 
-
     </div>
-
-
 
 </div>
 
 
 
+{{-- Plantilla para nuevas filas --}}
 
-
-{{-- TEMPLATE PARA NUEVAS FILAS --}}
 <template id="templateEquipo">
 
-<tr class="fila-equipo">
+    <tr class="fila-equipo transition-colors duration-200 hover:bg-primary/[0.02]">
 
+        <td class="px-2 py-2.5">
 
-    <td class="px-2 py-2">
-        <input
-            required
-            type="text"
-            name="equipos[INDEX][descripcion]"
-            placeholder="Laptop"
-            class="input-equipo">
-    </td>
+            <input
+                type="text"
+                name="equipos[INDEX][descripcion]"
+                placeholder="Laptop"
+                maxlength="100"
+                required
+                class="input-equipo w-full min-w-[120px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
+        </td>
 
-    <td class="px-2 py-2">
-        <input
-            required
-            type="text"
-            name="equipos[INDEX][marca]"
-            placeholder="Dell"
-            class="input-equipo">
-    </td>
+        <td class="px-2 py-2.5">
 
+            <input
+                type="text"
+                name="equipos[INDEX][marca]"
+                placeholder="Dell"
+                maxlength="100"
+                required
+                class="input-equipo w-full min-w-[110px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
-    <td class="px-2 py-2">
-        <input
-            required
-            type="text"
-            name="equipos[INDEX][modelo]"
-            placeholder="Latitude 5420"
-            class="input-equipo">
-    </td>
+        </td>
 
+        <td class="px-2 py-2.5">
 
-    <td class="px-2 py-2">
-        <input
-            required
-            type="text"
-            name="equipos[INDEX][codigo]"
-            placeholder="SN123456"
-            class="input-equipo">
-    </td>
+            <input
+                type="text"
+                name="equipos[INDEX][modelo]"
+                placeholder="Latitude 5420"
+                maxlength="100"
+                required
+                class="input-equipo w-full min-w-[130px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
+        </td>
 
-    <td class="px-2 py-2">
-        <input
-            required
-            type="text"
-            name="equipos[INDEX][color]"
-            placeholder="Negro"
-            class="input-equipo">
-    </td>
+        <td class="px-2 py-2.5">
 
+            <input
+                type="text"
+                name="equipos[INDEX][codigo]"
+                placeholder="SN123456"
+                maxlength="100"
+                required
+                class="input-equipo w-full min-w-[125px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
+        </td>
 
-    <td class="px-2 py-2 text-center">
+        <td class="px-2 py-2.5">
 
-        <button
-            type="button"
-            class="btn-remove-fila p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors">
+            <input
+                type="text"
+                name="equipos[INDEX][color]"
+                placeholder="Negro"
+                maxlength="50"
+                required
+                class="input-equipo w-full min-w-[100px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
 
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </td>
 
-        </button>
+        <td class="px-2 py-2.5 text-center">
 
-    </td>
+            <button
+                type="button"
+                title="Eliminar equipo"
+                aria-label="Eliminar equipo"
+                class="btn-remove-fila group/remove inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/10">
 
+                <i
+                    data-lucide="trash-2"
+                    stroke-width="1.8"
+                    class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/remove:scale-110">
+                </i>
 
-</tr>
+            </button>
+
+        </td>
+
+    </tr>
 
 </template>
 
 
 
+{{-- Modal de ayuda para el número de serie --}}
 
-{{-- MODAL AYUDA SERIE --}}
-{{-- Nota: se agrega la clase "modal-overlay" solo como gancho opcional
-     para cerrar el modal al hacer click fuera del contenido (ver JS).
-     Tamaño aumentado de max-w-lg a max-w-3xl (y max-h-[90vh] con scroll)
-     para que el video se aprecie bien sin tener que ir a fullscreen. --}}
 <div
     id="modalSerie"
-    class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalSerie"
+    class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
 
 
-    <div
-        class="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl border border-border">
+    {{-- Contenido del modal --}}
+
+    <div class="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20">
 
 
-        {{-- HEADER --}}
+        {{-- Decoración --}}
 
-        <div
-            class="px-6 py-4 border-b border-border flex items-center justify-between sticky top-0 bg-white z-10">
-
-
-            <div class="flex items-center gap-3">
+        <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl">
+        </span>
 
 
-                <div
-                    class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+        {{-- Encabezado --}}
 
+        <div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-white/95 px-6 py-4 backdrop-blur">
+
+            <div class="flex min-w-0 items-center gap-3">
+
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
 
                     <i
                         data-lucide="circle-help"
-                        class="w-5 h-5 text-primary">
+                        stroke-width="1.8"
+                        class="h-5 w-5">
                     </i>
-
 
                 </div>
 
+                <div class="min-w-0">
 
-                <h3 class="text-sm font-semibold text-foreground">
+                    <h3
+                        id="tituloModalSerie"
+                        class="text-sm font-semibold text-foreground">
 
-                    ¿Dónde encontrar el número de serie?
+                        ¿Dónde encontrar el número de serie?
 
-                </h3>
+                    </h3>
 
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+
+                        Guía rápida para identificar el equipo.
+
+                    </p>
+
+                </div>
 
             </div>
-
 
 
             <button
                 type="button"
                 onclick="cerrarAyudaSerie()"
-                class="text-muted-foreground hover:text-red-500 transition-colors">
-
+                title="Cerrar ayuda"
+                aria-label="Cerrar ayuda"
+                class="group/close inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/10">
 
                 <i
                     data-lucide="x"
-                    class="w-5 h-5">
+                    stroke-width="1.8"
+                    class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/close:rotate-90">
                 </i>
 
-
             </button>
-
 
         </div>
 
 
 
+        {{-- Contenido --}}
 
-
-        {{-- BODY --}}
-
-        <div class="p-6">
-
+        <div class="relative p-6">
 
             <video
                 controls
+                preload="metadata"
                 poster="{{ asset('img/snhelp.avif') }}"
-                class="mx-auto max-h-[70vh] w-auto max-w-full rounded-xl border border-border">
-
+                class="mx-auto max-h-[60vh] w-auto max-w-full rounded-xl border border-border bg-slate-950 shadow-sm">
 
                 <source
                     src="{{ asset('videos/snhelp_fixed.mp4') }}"
                     type="video/mp4">
 
-
-                {{-- FALLBACK --}}
-
                 <img
                     src="{{ asset('img/snhelp.avif') }}"
-                    alt="Ubicación número de serie"
+                    alt="Ejemplo de la ubicación del número de serie"
                     class="w-full rounded-xl">
 
+                Tu navegador no puede reproducir este video.
 
             </video>
 
 
+            <div class="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
 
+                <div class="flex items-start gap-3">
 
-            <div class="mt-4 space-y-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 
+                        <i
+                            data-lucide="info"
+                            stroke-width="1.8"
+                            class="h-4 w-4">
+                        </i>
 
-                <p class="text-xs text-muted-foreground leading-relaxed">
+                    </div>
 
-                    Esta guía muestra un ejemplo para equipos
-                    <strong>Dell</strong>.
+                    <div class="space-y-2">
 
-                    La ubicación del número de serie puede cambiar
-                    dependiendo de la <strong>marca</strong> y el
-                    <strong>modelo</strong> de la laptop.
+                        <p class="text-xs leading-relaxed text-muted-foreground">
 
-                </p>
+                            Esta guía muestra un ejemplo para equipos
 
+                            <strong class="font-semibold text-foreground">
+                                Dell
+                            </strong>.
 
+                            La ubicación puede cambiar dependiendo de la marca y el modelo del equipo.
 
-                <p class="text-xs text-muted-foreground leading-relaxed">
+                        </p>
 
-                    Busca etiquetas identificadas como:
+                        <p class="text-xs leading-relaxed text-muted-foreground">
 
-                    <strong>Serial Number</strong>,
-                    <strong>Service Tag</strong>
-                    o
-                    <strong>S/N</strong>.
+                            Busca una etiqueta identificada como
 
-                </p>
+                            <strong class="font-semibold text-foreground">
+                                Serial Number
+                            </strong>,
 
+                            <strong class="font-semibold text-foreground">
+                                Service Tag
+                            </strong>
+
+                            o
+
+                            <strong class="font-semibold text-foreground">
+                                S/N
+                            </strong>.
+
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
 
-
         </div>
 
-
     </div>
-
 
 </div>

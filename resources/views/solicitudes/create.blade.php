@@ -5,52 +5,196 @@
 @section('content')
 
 @php
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESTADO DE LA NOTIFICACIÓN
+    |--------------------------------------------------------------------------
+    */
+
     $emailComprobado = session()->has('email_sent');
-    $emailEnviado = session('email_sent') === true;
+
+    $emailEnviado =
+        session('email_sent') === true;
 
     $outlookUrl = null;
 
-    if ($emailComprobado && ! $emailEnviado) {
-        $destinatario = 'helpdesk@televicentro.hn';
 
-        $asuntoOutlook = '[Portal TI] Falla SMTP - Solicitud '.(
-            session('folio') ?? 'sin folio'
+    /*
+    |--------------------------------------------------------------------------
+    | GENERAR CORREO DE RESPALDO
+    |--------------------------------------------------------------------------
+    */
+
+    if ($emailComprobado && ! $emailEnviado) {
+
+        $destinatario =
+            'helpdesk@televicentro.hn';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORÍAS LEGIBLES
+        |--------------------------------------------------------------------------
+        */
+
+        $categorias = [
+
+            'computadora' =>
+                'Computadora o accesorios',
+
+            'programa' =>
+                'Instalar un programa',
+
+            'acceso' =>
+                'Solicitar un acceso',
+
+            'vpn' =>
+                'VPN / Acceso remoto',
+
+            'impresora' =>
+                'Impresoras',
+
+            'cuenta' =>
+                'Cuenta o contraseña',
+
+            'cambio' =>
+                'Cambio o configuración de equipo',
+
+            'otra' =>
+                'Otra solicitud',
+
+        ];
+
+
+        $categoriaValor =
+            session('solicitud_categoria');
+
+
+        $categoriaTexto =
+            $categorias[$categoriaValor]
+            ?? $categoriaValor
+            ?? 'No especificada';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | INFORMACIÓN DE LA SOLICITUD
+        |--------------------------------------------------------------------------
+        */
+
+        $folio =
+            session('folio')
+            ?? 'Sin folio';
+
+
+        $nombreUsuario =
+            auth()->user()->nombre
+            ?? 'No especificado';
+
+
+        $correoUsuario =
+            auth()->user()->correo
+            ?? 'No especificado';
+
+
+        $asuntoSolicitud =
+            session('solicitud_asunto')
+            ?? 'No especificado';
+
+
+        $fechaSolicitud =
+            now()
+                ->timezone('America/Tegucigalpa')
+                ->format('d/m/Y h:i A');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ASUNTO DE OUTLOOK
+        |--------------------------------------------------------------------------
+        */
+
+        $asuntoOutlook =
+            '[Portal TI] Seguimiento de solicitud '
+            .$folio;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CUERPO DE OUTLOOK
+        |--------------------------------------------------------------------------
+        */
+
+        $cuerpoOutlook = implode(
+            "\r\n",
+            [
+
+                'Hola, equipo de Helpdesk:',
+
+                '',
+
+                'Registré una solicitud de servicio en el Portal TI, '
+                .'pero el equipo de soporte no recibió la notificación automática.',
+
+                '',
+
+                'Datos del usuario',
+
+                'Nombre: '.$nombreUsuario,
+
+                'Correo: '.$correoUsuario,
+
+                '',
+
+                'Información de la solicitud',
+
+                'Folio: '.$folio,
+
+                'Categoría: '.$categoriaTexto,
+
+                'Asunto: '.$asuntoSolicitud,
+
+                'Fecha de la solicitud: '.$fechaSolicitud,
+
+                '',
+
+                'La solicitud quedó registrada correctamente en el Portal TI.',
+
+                '',
+
+                'Por favor, ayúdenme a darle seguimiento.',
+
+            ]
         );
 
-        $cuerpoOutlook = implode("\r\n", [
-            'Hola, equipo de Helpdesk:',
-            '',
-            'El Portal TI registró una solicitud de servicio, pero no pudo enviar la notificación mediante SMTP.',
-            '',
-            'Usuario: '.(auth()->user()->nombre ?? 'N/A'),
-            'Correo del usuario: '.(auth()->user()->correo ?? 'N/A'),
-            'Gestión: Solicitud de servicio',
-            'Folio: '.(session('folio') ?? 'N/A'),
-            'Categoría: '.(session('solicitud_categoria') ?? 'N/A'),
-            'Asunto: '.(session('solicitud_asunto') ?? 'N/A'),
-            'Referencia del envío: '.(session('email_delivery_id') ?? 'N/A'),
-            'Estado registrado: '.(session('email_status') ?? 'fallido'),
-            'Fecha del reporte: '.now()->format('d/m/Y H:i:s'),
-            'Página del Portal TI: '.url()->current(),
-            '',
-            'La solicitud sí quedó registrada en el Portal TI.',
-            '',
-            'Por favor, revisen la configuración o disponibilidad del servicio SMTP.',
-        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ENLACE DE OUTLOOK 365
+        |--------------------------------------------------------------------------
+        */
 
         $outlookUrl =
             'https://outlook.office.com/mail/deeplink/compose?'
             .http_build_query(
                 [
-                    'to' => $destinatario,
-                    'subject' => $asuntoOutlook,
-                    'body' => $cuerpoOutlook,
+                    'to' =>
+                        $destinatario,
+
+                    'subject' =>
+                        $asuntoOutlook,
+
+                    'body' =>
+                        $cuerpoOutlook,
                 ],
                 '',
                 '&',
                 PHP_QUERY_RFC3986
             );
+
     }
+
 @endphp
 
 <form
@@ -64,47 +208,76 @@
 
         <main class="max-w-5xl mx-auto px-6 py-10">
 
-            {{-- HEADER --}}
-<section class="flex items-start justify-between gap-4 mb-8">
+            {{-- Encabezado --}}
 
-    <div>
+            <section class="mb-8">
 
-        <h1 class="text-xl font-semibold text-foreground">
-            Nueva solicitud de servicio
-        </h1>
+                <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-        <p class="text-sm text-muted-foreground mt-1">
-            Selecciona el servicio que necesitas y completa la información.
-        </p>
+                    <div class="flex items-center gap-4">
 
-    </div>
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:bg-primary/15 motion-safe:hover:scale-105">
+
+                            <i
+                                data-lucide="clipboard-plus"
+                                stroke-width="1.8"
+                                class="h-6 w-6">
+                            </i>
+
+                        </div>
+
+                        <div class="min-w-0">
+
+                            <h1 class="text-2xl font-semibold tracking-tight text-foreground">
+                                Nueva solicitud de servicio
+                            </h1>
+
+                            <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                                Selecciona el servicio que necesitas y completa la información.
+                            </p>
+
+                        </div>
+
+                    </div>
 
 
-    <a
-        href="{{ route('mis-solicitudes') }}"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
-               border border-border text-sm font-medium text-foreground
-               hover:bg-muted transition"
-    >
-        <i data-lucide="history" class="w-4 h-4"></i>
+                    <a
+                        href="{{ route('mis-solicitudes') }}"
+                        class="group/history inline-flex items-center justify-center gap-2 rounded-xl border border-primary/10 bg-primary/[0.06] px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 hover:shadow-md active:scale-[0.98]">
 
-        Mis solicitudes
-    </a>
+                        <i
+                            data-lucide="history"
+                            stroke-width="1.8"
+                            class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/history:-rotate-12">
+                        </i>
 
-</section>
+                        Mis solicitudes
+
+                    </a>
+
+                </div>
+
+            </section>
 
 
             {{-- ERRORES DE VALIDACIÓN --}}
             @if($errors->any())
 
-                <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4">
+                <div class="relative mb-6 overflow-hidden rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 via-white to-rose-50/50 p-4 shadow-sm">
 
-                    <div class="flex items-start gap-3">
+                    <span class="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-red-500/10 blur-2xl"></span>
 
-                        <i
-                            data-lucide="circle-alert"
-                            class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
-                        ></i>
+                    <div class="relative flex items-start gap-3">
+
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+
+                            <i
+                                data-lucide="circle-alert"
+                                stroke-width="1.8"
+                                class="h-4 w-4">
+                            </i>
+
+                        </div>
 
                         <div>
 
@@ -112,7 +285,7 @@
                                 Revisa la información ingresada
                             </p>
 
-                            <ul class="mt-2 space-y-1 text-xs text-red-600">
+                            <ul class="mt-2 list-inside list-disc space-y-1 text-xs text-red-600">
 
                                 @foreach($errors->all() as $error)
 
@@ -136,25 +309,33 @@
             <div class="space-y-8">
 
                 {{-- PASO 1 --}}
-                <section class="bg-card rounded-2xl border border-border overflow-hidden">
+                <section class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
 
-                    <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+                    <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
+
+                    <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
 
                         <span
-                            class="w-6 h-6 rounded-full bg-primary text-white
-                                   text-xs font-semibold flex items-center justify-center"
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
                         >
                             1
                         </span>
 
-                        <h2 class="text-sm font-semibold text-foreground">
-                            ¿Qué necesitas hoy?
-                        </h2>
+                        <div>
+
+                            <h2 class="text-sm font-semibold text-foreground">
+                                ¿Qué necesitas hoy?
+                            </h2>
+
+                            <p class="mt-0.5 text-xs text-muted-foreground">
+                                Selecciona la categoría que mejor describa tu solicitud.
+                            </p>
+
+                        </div>
 
                         <span
                             id="cambiarCategoria"
-                            class="hidden ml-auto text-xs text-muted-foreground
-                                   hover:text-foreground cursor-pointer transition"
+                            class="ml-auto hidden cursor-pointer rounded-lg border border-primary/10 bg-primary/[0.05] px-3 py-1.5 text-xs font-medium text-primary transition-all duration-200 hover:border-primary/20 hover:bg-primary/10"
                         >
                             Cambiar selección
                         </span>
@@ -162,7 +343,7 @@
                     </div>
 
 
-                    <div class="p-5">
+                    <div class="relative p-5">
 
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
@@ -243,32 +424,24 @@
                                     data-id="{{ $categoria['id'] }}"
                                     data-color="{{ $categoria['color'] }}"
                                     data-bg="{{ $categoria['bg'] }}"
-                                    class="categoria-card relative group flex flex-col
-                                           items-start gap-3 p-4 rounded-xl border-2
-                                           border-border text-left transition-all
-                                           duration-200 hover:-translate-y-1
-                                           hover:border-primary/40 hover:shadow-lg
-                                           hover:shadow-black/10 bg-white cursor-pointer"
+                                    class="categoria-card group/category relative flex cursor-pointer flex-col items-start gap-3 overflow-hidden rounded-xl border border-border bg-white p-4 text-left shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20 motion-safe:hover:-translate-y-1"
                                 >
 
                                     <span
-                                        class="check-categoria hidden absolute top-2.5 right-2.5
-                                               w-4 h-4 rounded-full bg-primary
-                                               items-center justify-center"
+                                        class="check-categoria absolute right-2.5 top-2.5 hidden h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-sm"
                                     >
-                                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        <i data-lucide="check" stroke-width="2.2" class="h-3 w-3"></i>
                                     </span>
 
 
                                     <div
-                                        class="icon-container w-9 h-9 rounded-lg
-                                               flex items-center justify-center
-                                               transition-colors"
+                                        class="icon-container flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 motion-safe:group-hover/category:scale-110"
                                         style="background-color: {{ $categoria['bg'] }}"
                                     >
                                         <i
                                             data-lucide="{{ $categoria['icon'] }}"
-                                            class="w-[17px] h-[17px]"
+                                            stroke-width="1.8"
+                                            class="h-[18px] w-[18px]"
                                             style="color: {{ $categoria['color'] }}"
                                         ></i>
                                     </div>
@@ -300,32 +473,40 @@
                 {{-- PASO 2 --}}
                 <section
                     id="formularioSolicitud"
-                    class="hidden bg-card rounded-2xl border border-border overflow-hidden"
+                    class="group relative hidden overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md"
                 >
 
-                    <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+                    <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
+
+                    <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
 
                         <span
-                            class="w-6 h-6 rounded-full bg-primary text-white
-                                   text-xs font-semibold flex items-center justify-center"
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
                         >
                             2
                         </span>
 
-                        <h2 class="text-sm font-semibold text-foreground">
-                            Cuéntanos un poco más
-                        </h2>
+                        <div>
+
+                            <h2 class="text-sm font-semibold text-foreground">
+                                Cuéntanos un poco más
+                            </h2>
+
+                            <p class="mt-0.5 text-xs text-muted-foreground">
+                                Completa la información necesaria para procesar tu solicitud.
+                            </p>
+
+                        </div>
 
                         <span
                             id="categoriaSeleccionada"
-                            class="ml-auto hidden text-xs font-medium
-                                   px-2.5 py-1 rounded-full border"
+                            class="ml-auto hidden rounded-full border px-2.5 py-1 text-xs font-medium"
                         ></span>
 
                     </div>
 
 
-                    <div class="px-6 py-5 space-y-5">
+                    <div class="relative space-y-5 px-6 py-5">
 
                         <input
                             type="hidden"
@@ -349,24 +530,42 @@
                                 </span>
                             </label>
 
-                            <input
-                                id="asunto"
-                                type="text"
-                                name="asunto"
-                                value="{{ old('asunto') }}"
-                                data-required="true"
-                                maxlength="255"
-                                autocomplete="off"
-                                class="w-full px-3.5 py-2.5 rounded-lg border
-                                       border-border bg-white text-sm
-                                       focus:outline-none focus:border-primary
-                                       focus:ring-2 focus:ring-primary/10"
-                                placeholder="Describe brevemente tu solicitud"
-                            >
+                            <div
+                                @class([
+                                    'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+
+                                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                                        $errors->has('asunto'),
+
+                                    'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                                        ! $errors->has('asunto'),
+                                ])>
+
+                                <i
+                                    data-lucide="text"
+                                    stroke-width="1.8"
+                                    class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                                </i>
+
+                                <input
+                                    id="asunto"
+                                    type="text"
+                                    name="asunto"
+                                    value="{{ old('asunto') }}"
+                                    data-required="true"
+                                    maxlength="255"
+                                    autocomplete="off"
+                                    class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                                    placeholder="Describe brevemente tu solicitud">
+
+                            </div>
 
                             @error('asunto')
 
-                                <p class="mt-1.5 text-xs text-red-600">
+                                <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+
+                                    <i data-lucide="circle-alert" stroke-width="1.8" class="h-3.5 w-3.5 shrink-0"></i>
+
                                     {{ $message }}
                                 </p>
 
@@ -389,21 +588,40 @@
                                 </span>
                             </label>
 
-                            <textarea
-                                id="descripcion"
-                                name="descripcion"
-                                data-required="true"
-                                rows="4"
-                                class="w-full px-3.5 py-2.5 rounded-lg border
-                                       border-border bg-white text-sm
-                                       focus:outline-none focus:border-primary
-                                       focus:ring-2 focus:ring-primary/10 resize-none"
-                                placeholder="Cuéntanos qué necesitas y para qué lo necesitas"
-                            >{{ old('descripcion') }}</textarea>
+                            <div
+                                @class([
+                                    'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+
+                                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                                        $errors->has('descripcion'),
+
+                                    'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                                        ! $errors->has('descripcion'),
+                                ])>
+
+                                <i
+                                    data-lucide="align-left"
+                                    stroke-width="1.8"
+                                    class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                                </i>
+
+                                <textarea
+                                    id="descripcion"
+                                    name="descripcion"
+                                    data-required="true"
+                                    rows="4"
+                                    maxlength="2000"
+                                    class="w-full resize-none border-0 bg-transparent py-2.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                                    placeholder="Cuéntanos qué necesitas y para qué lo necesitas">{{ old('descripcion') }}</textarea>
+
+                            </div>
 
                             @error('descripcion')
 
-                                <p class="mt-1.5 text-xs text-red-600">
+                                <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+
+                                    <i data-lucide="circle-alert" stroke-width="1.8" class="h-3.5 w-3.5 shrink-0"></i>
+
                                     {{ $message }}
                                 </p>
 
@@ -427,10 +645,20 @@
 
                 @if($emailComprobado)
 
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border p-4 {{ $emailEnviado ? 'border-green-200 bg-green-50/60' : 'border-amber-200 bg-amber-50/60' }}">
+                    <div
+                        @class([
+                            'relative flex flex-col gap-3 overflow-hidden rounded-xl border p-4 shadow-sm sm:flex-row sm:items-center',
 
-                        <div class="inline-flex items-center gap-2 text-xs font-medium {{ $emailEnviado ? 'text-green-700' : 'text-amber-700' }}">
-                            <span class="w-2.5 h-2.5 rounded-full {{ $emailEnviado ? 'bg-green-500' : 'bg-amber-500' }}"></span>
+                            'border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50' =>
+                                $emailEnviado,
+
+                            'border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50' =>
+                                ! $emailEnviado,
+                        ])>
+
+                        <div class="inline-flex items-center gap-2 text-xs font-medium {{ $emailEnviado ? 'text-emerald-700' : 'text-amber-700' }}">
+
+                            <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $emailEnviado ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
 
                             {{ $emailEnviado ? 'Último envío de correo SMTP correcto' : 'Último envío de correo SMTP fallido' }}
                         </div>
@@ -441,9 +669,9 @@
                                 href="{{ $outlookUrl }}"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition"
+                                class="group/outlook inline-flex items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
                             >
-                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                <i data-lucide="external-link" stroke-width="1.8" class="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover/outlook:translate-x-0.5 motion-safe:group-hover/outlook:-translate-y-0.5"></i>
 
                                 Reportar por Outlook 365
                             </a>
@@ -458,14 +686,13 @@
                 {{-- BOTONES --}}
 <div
     id="accionesSolicitud"
-    class="hidden flex justify-end gap-3 pb-10"
+    class="hidden flex flex-col-reverse justify-end gap-3 pb-10 sm:flex-row"
 >
 
     <button
         type="button"
         id="btnCancelar"
-        class="px-5 py-2.5 rounded-xl border border-border
-               text-sm text-muted-foreground hover:bg-muted"
+        class="inline-flex items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground hover:shadow-md active:scale-[0.98]"
     >
         Cancelar
     </button>
@@ -474,14 +701,13 @@
     <button
     type="submit"
     id="btnEnviar"
-    class="px-5 py-2.5 rounded-xl bg-primary text-white
-           text-sm font-medium flex items-center gap-2
-           disabled:opacity-70 disabled:cursor-not-allowed"
+    class="group/send inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:shadow-sm"
 >
     <i
         id="btnEnviarIcono"
         data-lucide="mail"
-        class="w-4 h-4"
+        stroke-width="1.8"
+        class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/send:translate-x-0.5"
     ></i>
 
     <span id="btnEnviarTexto">
@@ -505,23 +731,25 @@
 
     <div
         id="modalSolicitud"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm
-               flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
     >
 
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20">
+
+            <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl"></span>
 
             {{-- Cabecera --}}
 
-            <div class="px-7 pt-8 pb-6 text-center">
+            <div class="relative px-7 pb-6 pt-8 text-center">
 
                 <div
-                    class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto
-                           {{ $emailEnviado ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200' }}"
+                    class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border shadow-sm
+                           {{ $emailEnviado ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200' }}"
                 >
                     <i
-                        data-lucide="{{ $emailEnviado ? 'check-circle' : 'mail-warning' }}"
-                        class="w-8 h-8 {{ $emailEnviado ? 'text-green-600' : 'text-amber-600' }}"
+                        data-lucide="{{ $emailEnviado ? 'circle-check-big' : 'mail-warning' }}"
+                        stroke-width="1.8"
+                        class="h-8 w-8 {{ $emailEnviado ? 'text-emerald-600' : 'text-amber-600' }}"
                     ></i>
                 </div>
 
@@ -545,31 +773,35 @@
 
             {{-- Estado SMTP --}}
 
-            <div class="px-7 pb-7">
+            <div class="relative px-7 pb-7">
 
                 <div
-                    class="rounded-2xl border p-5 text-left
-                           {{ $emailEnviado ? 'border-green-200 bg-green-50/70' : 'border-amber-200 bg-amber-50/70' }}"
+                    class="rounded-2xl border p-5 text-left shadow-sm
+                           {{ $emailEnviado
+                                ? 'border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50'
+                                : 'border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50'
+                           }}"
                 >
                     <div class="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-4">
 
                         <div
-                            class="w-10 h-10 rounded-xl bg-white border flex items-center justify-center
-                                   {{ $emailEnviado ? 'border-green-200' : 'border-amber-200' }}"
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-white shadow-sm
+                                   {{ $emailEnviado ? 'border-emerald-200 text-emerald-600' : 'border-amber-200 text-amber-600' }}"
                         >
                             <i
                                 data-lucide="{{ $emailEnviado ? 'mail-check' : 'mail-warning' }}"
-                                class="w-5 h-5 {{ $emailEnviado ? 'text-green-600' : 'text-amber-600' }}"
+                                stroke-width="1.8"
+                                class="h-5 w-5"
                             ></i>
                         </div>
 
                         <div class="min-w-0">
 
-                            <p class="text-sm font-semibold {{ $emailEnviado ? 'text-green-800' : 'text-amber-800' }}">
+                            <p class="text-sm font-semibold {{ $emailEnviado ? 'text-emerald-800' : 'text-amber-800' }}">
                                 {{ $emailEnviado ? 'Correo enviado correctamente' : 'No se pudo enviar el correo' }}
                             </p>
 
-                            <p class="text-xs leading-relaxed mt-1.5 {{ $emailEnviado ? 'text-green-700' : 'text-amber-700' }}">
+                            <p class="mt-1.5 text-xs leading-relaxed {{ $emailEnviado ? 'text-emerald-700' : 'text-amber-700' }}">
                                 {{ $emailEnviado
                                     ? 'El servidor SMTP aceptó la notificación para el equipo de soporte TI.'
                                     : 'La solicitud quedó registrada. Puedes informar la falla mediante Outlook 365.' }}
@@ -581,9 +813,9 @@
                                     href="{{ $outlookUrl }}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="w-full mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition"
+                                    class="group/outlook-modal mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
                                 >
-                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                    <i data-lucide="external-link" stroke-width="1.8" class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/outlook-modal:translate-x-0.5 motion-safe:group-hover/outlook-modal:-translate-y-0.5"></i>
 
                                     Reportar mediante Outlook 365
                                 </a>
@@ -596,8 +828,8 @@
 
                 </div>
 
-                <div class="flex items-start gap-3 mt-5 px-1">
-                    <i data-lucide="info" class="w-4 h-4 text-muted-foreground shrink-0 mt-0.5"></i>
+                <div class="mt-5 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
+                    <i data-lucide="info" stroke-width="1.8" class="mt-0.5 h-4 w-4 shrink-0 text-primary"></i>
 
                     <p class="text-xs text-muted-foreground leading-relaxed">
                         La solicitud permanecerá disponible en el historial, incluso si la notificación no pudo enviarse.
@@ -615,16 +847,16 @@
                     <button
                         type="button"
                         id="cerrarModalSolicitud"
-                        class="w-full inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-border bg-white text-sm font-medium text-foreground hover:bg-muted transition"
+                        class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-md active:scale-[0.98]"
                     >
                         Cerrar
                     </button>
 
                     <a
                         href="{{ route('mis-solicitudes') }}"
-                        class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition"
+                        class="group/history-modal inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-[0.98]"
                     >
-                        <i data-lucide="history" class="w-4 h-4"></i>
+                        <i data-lucide="history" stroke-width="1.8" class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/history-modal:-rotate-12"></i>
 
                         Mis solicitudes
                     </a>

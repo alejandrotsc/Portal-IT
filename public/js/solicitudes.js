@@ -366,16 +366,118 @@ input.appendChild(opt);
 
 input.name=field.id;
 input.dataset.required=field.required?'true':'false';
+input.required=field.required===true;
+input.id=`campo-dinamico-${field.id}`;
 
-input.className='w-full px-3.5 py-2.5 rounded-lg border border-border bg-white text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all';
+label.htmlFor=input.id;
 
 
-wrapper.appendChild(input);
+const inputContainer=
+    document.createElement('div');
+
+inputContainer.className=
+    'group/field flex min-h-11 w-full items-center gap-2.5 '
+    + 'rounded-lg border border-border bg-white px-3.5 '
+    + 'transition-all duration-200 focus-within:border-primary '
+    + 'focus-within:ring-2 focus-within:ring-primary/10';
+
+
+const icono=
+    document.createElement('i');
+
+icono.dataset.lucide=
+    field.type==='select'
+        ? 'list-filter'
+        : field.type==='textarea'
+            ? 'align-left'
+            : 'text';
+
+icono.setAttribute(
+    'stroke-width',
+    '1.8'
+);
+
+icono.className=
+    'h-4 w-4 shrink-0 text-muted-foreground '
+    + 'transition-all duration-200 '
+    + 'group-focus-within/field:text-primary '
+    + 'motion-safe:group-focus-within/field:scale-110';
+
+if(field.type==='textarea'){
+    inputContainer.classList.remove(
+        'items-center'
+    );
+
+    inputContainer.classList.add(
+        'items-start'
+    );
+
+    icono.classList.add(
+        'mt-3'
+    );
+}
+
+
+input.className=
+    'w-full border-0 bg-transparent py-2.5 text-sm '
+    + 'text-foreground placeholder:text-muted-foreground '
+    + 'focus:outline-none focus:ring-0 '
+    + (
+        field.type==='select'
+            ? 'appearance-none'
+            : ''
+    );
+
+
+input.addEventListener(
+    'input',
+    () => {
+        inputContainer.classList.remove(
+            'border-red-300',
+            'ring-2',
+            'ring-red-500/10'
+        );
+    }
+);
+
+
+inputContainer.appendChild(icono);
+inputContainer.appendChild(input);
+
+
+if(field.type==='select'){
+    const chevron=
+        document.createElement('i');
+
+    chevron.dataset.lucide=
+        'chevron-down';
+
+    chevron.setAttribute(
+        'stroke-width',
+        '1.8'
+    );
+
+    chevron.className=
+        'h-4 w-4 shrink-0 text-muted-foreground '
+        + 'transition-transform duration-200 '
+        + 'group-focus-within/field:rotate-180 '
+        + 'group-focus-within/field:text-primary';
+
+    inputContainer.appendChild(
+        chevron
+    );
+}
+
+
+wrapper.appendChild(inputContainer);
 camposDinamicos.appendChild(wrapper);
 
 
 });
 
+if(window.lucide){
+    lucide.createIcons();
+}
 
 }
 
@@ -421,21 +523,25 @@ const file=item.file;
 
 const div=document.createElement('div');
 
-div.className='flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-white group';
+div.className=
+    'group flex items-center gap-3 rounded-xl border '
+    + 'border-border bg-white px-3 py-2.5 shadow-sm '
+    + 'transition-all duration-200 hover:border-primary/20 '
+    + 'hover:shadow-md';
 
 
 div.innerHTML=`
 
-<div class="w-7 h-7 rounded-lg bg-muted flex items-center justify-center">
+<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 ${iconoArchivo(file.name)}
 </div>
 
 <div class="flex-1 min-w-0">
-<p class="text-xs font-medium text-foreground truncate">${file.name}</p>
+<p class="truncate text-xs font-medium text-foreground">${escaparHtml(file.name)}</p>
 <p class="text-[10px] text-muted-foreground">${formatearPeso(file.size)}</p>
 </div>
 
-<button type="button" class="eliminar-archivo opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all" data-id="${item.id}">
+<button type="button" class="eliminar-archivo inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-all duration-200 hover:bg-red-50 hover:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 group-hover:opacity-100" data-id="${item.id}" aria-label="Eliminar archivo">
 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 <path d="M18 6L6 18M6 6l12 12"/>
 </svg>
@@ -534,7 +640,18 @@ if(input.value.trim()===''){
 
 input.focus();
 
-input.classList.add('border-red-500');
+const contenedor=
+    input.closest('.group\\/field');
+
+contenedor?.classList.remove(
+    'border-border'
+);
+
+contenedor?.classList.add(
+    'border-red-300',
+    'ring-2',
+    'ring-red-500/10'
+);
 
 return false;
 
@@ -726,6 +843,9 @@ function cerrarModalRespuesta(){
     if(modalSolicitud){
 
         modalSolicitud.remove();
+        document.body.classList.remove(
+            'overflow-hidden'
+        );
 
     }
 
@@ -743,6 +863,10 @@ if(cerrarModalSolicitud){
 
 
 if(modalSolicitud){
+
+    document.body.classList.add(
+        'overflow-hidden'
+    );
 
     modalSolicitud.addEventListener(
         'click',
@@ -777,6 +901,19 @@ document.addEventListener(
 if(window.lucide){
 
     lucide.createIcons();
+
+}
+
+
+function escaparHtml(valor){
+
+    const elemento=
+        document.createElement('div');
+
+    elemento.textContent=
+        String(valor??'');
+
+    return elemento.innerHTML;
 
 }
 

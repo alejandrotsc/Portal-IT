@@ -330,95 +330,164 @@
 </header>
 
 {{-- Cinta de avisos TI --}}
-<div class="bg-primary/5 border-b border-primary/10 overflow-hidden">
 
-    <div class="flex items-center">
+@php
 
-        {{-- Etiqueta fija --}}
-        <div class="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-primary">
+    $avisosDisponibles =
+        $avisosTicker
+        ?? collect();
 
-            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+@endphp
 
-            <span class="text-white text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
-                Avisos TI
-            </span>
 
-        </div>
+@if($avisosDisponibles->isNotEmpty())
 
-        {{-- Banda --}}
-        <div class="flex-1 overflow-hidden">
+    <div class="bg-primary/5 border-b border-primary/10 overflow-hidden">
 
-            <div
-                class="ticker flex items-center w-max"
-                onmouseenter="this.style.animationPlayState='paused'"
-                onmouseleave="this.style.animationPlayState='running'"
-            >
+        <div class="flex items-center">
 
-                @for($i = 0; $i < 2; $i++)
 
-                    <div class="flex items-center shrink-0">
+            {{-- Etiqueta fija --}}
 
-                        {{-- Aviso --}}
-                        <div class="flex items-center gap-2 px-8 text-[12px]">
+            <div class="flex shrink-0 items-center gap-2 px-4 py-2 bg-primary">
 
-                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="w-2 h-2 shrink-0 rounded-full bg-white animate-pulse"></span>
 
-                            <strong>Degradación VPN:</strong>
+                <span class="text-white text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
 
-                            <span class="text-muted-foreground">
-                                Latencia elevada en accesos externos — en investigación.
-                            </span>
+                    Avisos TI
+
+                </span>
+
+            </div>
+
+
+
+            {{-- Banda animada --}}
+
+            <div class="flex-1 overflow-hidden">
+
+                <div
+                    class="ticker flex items-center w-max"
+                    onmouseenter="this.style.animationPlayState='paused'"
+                    onmouseleave="this.style.animationPlayState='running'">
+
+
+                    {{--
+                        Se repite dos veces para mantener
+                        el desplazamiento continuo.
+                    --}}
+
+                    @for(
+                        $repeticion = 0;
+                        $repeticion < 2;
+                        $repeticion++
+                    )
+
+                        <div
+                            class="flex items-center shrink-0"
+                            @if($repeticion === 1)
+                                aria-hidden="true"
+                            @endif>
+
+
+                            @foreach($avisosDisponibles as $aviso)
+
+                                @php
+
+                                    $colorAviso =
+                                        $loop->index % 4;
+
+                                @endphp
+
+
+                                {{-- Aviso --}}
+
+                                <div
+                                    @class([
+                                        'flex items-center gap-2 px-8 py-1 text-[12px] whitespace-nowrap rounded-md transition-colors duration-200',
+
+                                        'hover:bg-blue-500/[0.06]' =>
+                                            $colorAviso === 0,
+
+                                        'hover:bg-amber-500/[0.06]' =>
+                                            $colorAviso === 1,
+
+                                        'hover:bg-emerald-500/[0.06]' =>
+                                            $colorAviso === 2,
+
+                                        'hover:bg-violet-500/[0.06]' =>
+                                            $colorAviso === 3,
+                                    ])>
+
+
+                                    {{-- Indicador de color --}}
+
+                                    <span
+                                        @class([
+                                            'w-2 h-2 shrink-0 rounded-full',
+
+                                            'bg-blue-500' =>
+                                                $colorAviso === 0,
+
+                                            'bg-amber-500' =>
+                                                $colorAviso === 1,
+
+                                            'bg-emerald-500' =>
+                                                $colorAviso === 2,
+
+                                            'bg-violet-500' =>
+                                                $colorAviso === 3,
+                                        ])>
+                                    </span>
+
+
+                                    {{-- Título --}}
+
+                                    <strong
+                                        @class([
+                                            'font-semibold',
+
+                                            'text-blue-700' =>
+                                                $colorAviso === 0,
+
+                                            'text-amber-700' =>
+                                                $colorAviso === 1,
+
+                                            'text-emerald-700' =>
+                                                $colorAviso === 2,
+
+                                            'text-violet-700' =>
+                                                $colorAviso === 3,
+                                        ])>
+
+                                        {{ $aviso->titulo }}:
+
+                                    </strong>
+
+
+                                    {{-- Mensaje --}}
+
+                                    <span class="text-muted-foreground">
+
+                                        {{ $aviso->mensaje }}
+
+                                    </span>
+
+                                </div>
+
+
+                                {{-- Separador --}}
+
+                                <div class="w-px h-4 shrink-0 bg-border"></div>
+
+                            @endforeach
 
                         </div>
 
-                        <div class="w-px h-4 bg-border"></div>
+                    @endfor
 
-                        {{-- Aviso --}}
-                        <div class="flex items-center gap-2 px-8 text-[12px]">
-
-                            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-
-                            <strong>Mantenimiento:</strong>
-
-                            <span class="text-muted-foreground">
-                                Servidor de correo — sábado 19 jul, 00:00–04:00 hrs.
-                            </span>
-
-                        </div>
-
-                        <div class="w-px h-4 bg-border"></div>
-
-                        {{-- Aviso --}}
-                        <div class="flex items-center gap-2 px-8 text-[12px]">
-
-                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-
-                            <strong>Restaurado:</strong>
-
-                            <span class="text-muted-foreground">
-                                Sistema MFA funcionando con normalidad.
-                            </span>
-
-                        </div>
-
-                        <div class="w-px h-4 bg-border"></div>
-
-                        {{-- Aviso --}}
-                        <div class="flex items-center gap-2 px-8 text-[12px]">
-
-                            <span class="w-2 h-2 rounded-full bg-primary"></span>
-
-                            <strong>Recordatorio:</strong>
-
-                            <span class="text-muted-foreground">
-                                Actualizar contraseña corporativa antes del 31 de julio.
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                @endfor
+                </div>
 
             </div>
 
@@ -426,4 +495,4 @@
 
     </div>
 
-</div>
+@endif

@@ -25,6 +25,10 @@ function abrirAyudaSerie() {
     modal.classList.add(
         'flex'
     );
+
+    document.body.classList.add(
+        'overflow-hidden'
+    );
 }
 
 
@@ -44,6 +48,10 @@ function cerrarAyudaSerie() {
 
     modal.classList.remove(
         'flex'
+    );
+
+    document.body.classList.remove(
+        'overflow-hidden'
     );
 }
 
@@ -127,6 +135,11 @@ if (
             if (window.lucide) {
                 lucide.createIcons();
             }
+
+            tablaEquipos
+                .lastElementChild
+                ?.querySelector('input')
+                ?.focus();
         }
     );
 
@@ -180,7 +193,15 @@ if (
                 return;
             }
 
-            fila.remove();
+            fila.classList.add(
+                'opacity-0',
+                'scale-[0.98]'
+            );
+
+            window.setTimeout(
+                () => fila.remove(),
+                150
+            );
         }
     );
 }
@@ -557,14 +578,15 @@ document.addEventListener(
 
         if (modalIcono) {
             modalIcono.className =
-                'w-16 h-16 rounded-2xl bg-green-50 '
-                + 'border border-green-200 flex items-center '
-                + 'justify-center mx-auto';
+                'mx-auto flex h-16 w-16 items-center '
+                + 'justify-center rounded-2xl border '
+                + 'border-emerald-200 bg-emerald-50 shadow-sm';
 
             modalIcono.innerHTML = `
                 <i
-                    data-lucide="check-circle"
-                    class="w-8 h-8 text-green-600"
+                    data-lucide="circle-check-big"
+                    stroke-width="1.8"
+                    class="h-8 w-8 text-emerald-600"
                 ></i>
             `;
         }
@@ -585,21 +607,23 @@ document.addEventListener(
 
         if (estadoCorreo) {
             estadoCorreo.className =
-                'rounded-2xl border border-green-200 '
-                + 'bg-green-50/70 p-5 text-left';
+                'rounded-2xl border border-emerald-200 '
+                + 'bg-gradient-to-br from-emerald-50/80 via-white '
+                + 'to-teal-50/50 p-5 text-left shadow-sm';
         }
 
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
-                'w-10 h-10 rounded-xl bg-white border '
-                + 'border-green-200 flex items-center '
-                + 'justify-center shrink-0';
+                'flex h-10 w-10 shrink-0 items-center '
+                + 'justify-center rounded-xl border '
+                + 'border-emerald-200 bg-white text-emerald-600 shadow-sm';
 
             estadoCorreoIcono.innerHTML = `
                 <i
                     data-lucide="mail-check"
-                    class="w-5 h-5 text-green-600"
+                    stroke-width="1.8"
+                    class="h-5 w-5"
                 ></i>
             `;
         }
@@ -607,7 +631,7 @@ document.addEventListener(
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-green-800';
+                'text-sm font-semibold text-emerald-800';
 
             estadoCorreoTitulo.textContent =
                 'Correo enviado correctamente';
@@ -616,7 +640,7 @@ document.addEventListener(
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'text-xs text-green-700 leading-relaxed mt-1.5';
+                'mt-1.5 text-xs leading-relaxed text-emerald-700';
 
             estadoCorreoMensaje.textContent =
                 'El servidor SMTP aceptó la notificación para Helpdesk.';
@@ -647,14 +671,15 @@ document.addEventListener(
     ) {
         if (modalIcono) {
             modalIcono.className =
-                'w-16 h-16 rounded-2xl bg-amber-50 '
-                + 'border border-amber-200 flex items-center '
-                + 'justify-center mx-auto';
+                'mx-auto flex h-16 w-16 items-center '
+                + 'justify-center rounded-2xl border '
+                + 'border-amber-200 bg-amber-50 shadow-sm';
 
             modalIcono.innerHTML = `
                 <i
                     data-lucide="mail-warning"
-                    class="w-8 h-8 text-amber-600"
+                    stroke-width="1.8"
+                    class="h-8 w-8 text-amber-600"
                 ></i>
             `;
         }
@@ -676,20 +701,22 @@ document.addEventListener(
         if (estadoCorreo) {
             estadoCorreo.className =
                 'rounded-2xl border border-amber-200 '
-                + 'bg-amber-50/70 p-5 text-left';
+                + 'bg-gradient-to-br from-amber-50/80 via-white '
+                + 'to-orange-50/50 p-5 text-left shadow-sm';
         }
 
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
-                'w-10 h-10 rounded-xl bg-white border '
-                + 'border-amber-200 flex items-center '
-                + 'justify-center shrink-0';
+                'flex h-10 w-10 shrink-0 items-center '
+                + 'justify-center rounded-xl border '
+                + 'border-amber-200 bg-white text-amber-600 shadow-sm';
 
             estadoCorreoIcono.innerHTML = `
                 <i
                     data-lucide="mail-warning"
-                    class="w-5 h-5 text-amber-600"
+                    stroke-width="1.8"
+                    class="h-5 w-5"
                 ></i>
             `;
         }
@@ -706,7 +733,7 @@ document.addEventListener(
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'text-xs text-amber-700 leading-relaxed mt-1.5';
+                'mt-1.5 text-xs leading-relaxed text-amber-700';
 
             estadoCorreoMensaje.textContent =
                 'La gestión sí quedó registrada. Puedes reportar la falla mediante Outlook 365.';
@@ -750,14 +777,15 @@ document.addEventListener(
     ) {
         if (modalIcono) {
             modalIcono.className =
-                'w-16 h-16 rounded-2xl bg-red-50 '
-                + 'border border-red-200 flex items-center '
-                + 'justify-center mx-auto';
+                'mx-auto flex h-16 w-16 items-center '
+                + 'justify-center rounded-2xl border '
+                + 'border-red-200 bg-red-50 shadow-sm';
 
             modalIcono.innerHTML = `
                 <i
-                    data-lucide="x-circle"
-                    class="w-8 h-8 text-red-600"
+                    data-lucide="circle-x"
+                    stroke-width="1.8"
+                    class="h-8 w-8 text-red-600"
                 ></i>
             `;
         }
@@ -779,20 +807,22 @@ document.addEventListener(
         if (estadoCorreo) {
             estadoCorreo.className =
                 'rounded-2xl border border-red-200 '
-                + 'bg-red-50/70 p-5 text-left';
+                + 'bg-gradient-to-br from-red-50/80 via-white '
+                + 'to-rose-50/50 p-5 text-left shadow-sm';
         }
 
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
-                'w-10 h-10 rounded-xl bg-white border '
-                + 'border-red-200 flex items-center '
-                + 'justify-center shrink-0';
+                'flex h-10 w-10 shrink-0 items-center '
+                + 'justify-center rounded-xl border '
+                + 'border-red-200 bg-white text-red-600 shadow-sm';
 
             estadoCorreoIcono.innerHTML = `
                 <i
                     data-lucide="triangle-alert"
-                    class="w-5 h-5 text-red-600"
+                    stroke-width="1.8"
+                    class="h-5 w-5"
                 ></i>
             `;
         }
@@ -809,7 +839,7 @@ document.addEventListener(
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'text-xs text-red-700 leading-relaxed mt-1.5';
+                'mt-1.5 text-xs leading-relaxed text-red-700';
 
             estadoCorreoMensaje.textContent =
                 'Puedes informar el problema al equipo de Helpdesk mediante Outlook 365.';
@@ -884,59 +914,110 @@ document.addEventListener(
             data?.email?.status
             ?? (
                 errorTotal
-                    ? 'error al registrar'
-                    : 'fallido'
+                    ? 'Error al registrar'
+                    : 'Fallido'
             );
 
 
-        const subject =
-            errorTotal
-                ? '[Portal TI] Error al registrar pase menor a 24 horas'
-                : `[Portal TI] Falla SMTP - Pase menor a 24 horas - ${identificador}`;
+       const subject = errorTotal
+    ? '[Portal TI] Apoyo con solicitud de pase menor a 24 horas'
+    : `[Portal TI] Seguimiento de pase menor a 24 horas - ${identificador}`;
 
 
-        const body = [
-            'Hola, equipo de Helpdesk:',
-            '',
-            errorTotal
-                ? 'El Portal TI no pudo completar una solicitud de pase menor a 24 horas.'
-                : 'El Portal TI registró una solicitud, pero no pudo enviar la notificación mediante SMTP.',
-            '',
-            `Usuario que reporta: ${userName}`,
-            `Correo del usuario: ${userEmail}`,
-            `Solicitante del documento: ${datosFormulario.deNombre}`,
-            `Colaborador: ${datosFormulario.colaborador}`,
-            `Cargo o área: ${datosFormulario.cargoArea}`,
-            'Gestión: Pase menor a 24 horas',
-            `Asunto: ${datosFormulario.asunto}`,
-            `Motivo: ${datosFormulario.motivo}`,
-            `Fecha del documento: ${datosFormulario.fechaDocumento}`,
-            `Código o identificador: ${identificador}`,
-            `Referencia del envío: ${deliveryId}`,
-            `Estado registrado: ${status}`,
-            errorTotal
-                ? `Mensaje mostrado: ${error?.message ?? 'Error no especificado'}`
-                : null,
-            `Fecha del reporte: ${new Date().toLocaleString('es-HN')}`,
-            `Página del Portal TI: ${window.location.href}`,
-            '',
-            errorTotal
-                ? 'Por favor, revisen la disponibilidad del Portal TI.'
-                : 'La gestión quedó registrada. Por favor, revisen la configuración o disponibilidad del servicio SMTP.',
-        ]
-            .filter(
-                (linea) =>
-                    linea !== null
-            )
-            .join('\r\n');
+const mensajePrincipal = errorTotal
+    ? 'Intenté registrar una solicitud de pase menor a 24 horas '
+        + 'en el Portal TI, pero el proceso no pudo completarse.'
+    : 'La solicitud de pase quedó registrada en el Portal TI, '
+        + 'pero el equipo de soporte no recibió la notificación automática.';
 
 
-        return (
-            'https://outlook.office.com/mail/deeplink/compose'
-            + `?to=${encodeURIComponent(recipient)}`
-            + `&subject=${encodeURIComponent(subject)}`
-            + `&body=${encodeURIComponent(body)}`
-        );
+const mensajeFinal = errorTotal
+    ? 'Por favor, ayúdenme a revisar y registrar esta solicitud.'
+    : 'Por favor, ayúdenme a dar seguimiento a esta solicitud.';
+
+
+const body = [
+
+    'Hola, equipo de Helpdesk:',
+
+    '',
+
+    mensajePrincipal,
+
+    '',
+
+    'Datos del usuario',
+
+    `Nombre: ${userName || 'No especificado'}`,
+
+    `Correo: ${userEmail || 'No especificado'}`,
+
+    '',
+
+    'Información del pase',
+
+    `Solicitante: ${
+        datosFormulario.deNombre
+        || 'No especificado'
+    }`,
+
+    `Responsable del equipo: ${
+        datosFormulario.colaborador
+        || 'No especificado'
+    }`,
+
+    `Cargo o área: ${
+        datosFormulario.cargoArea
+        || 'No especificado'
+    }`,
+
+    `Asunto: ${
+        datosFormulario.asunto
+        || 'No especificado'
+    }`,
+
+    `Motivo: ${
+        datosFormulario.motivo
+        || 'No especificado'
+    }`,
+
+    `Fecha del documento: ${
+        datosFormulario.fechaDocumento
+        || 'No especificada'
+    }`,
+
+    `Código: ${
+        identificador
+        || 'No generado'
+    }`,
+
+    '',
+
+    `Fecha de la solicitud: ${
+        new Date().toLocaleString(
+            'es-HN',
+            {
+                dateStyle: 'long',
+                timeStyle: 'short',
+            }
+        )
+    }`,
+
+    '',
+
+    mensajeFinal,
+
+]
+    .filter(linea => linea !== null)
+    .join('\r\n');
+
+
+return (
+    'https://outlook.office.com/mail/deeplink/compose'
+    + `?to=${encodeURIComponent(recipient)}`
+    + `&subject=${encodeURIComponent(subject)}`
+    + `&body=${encodeURIComponent(body)}`
+);
     }
 
 
@@ -978,14 +1059,16 @@ document.addEventListener(
                     'border-amber-300',
                     'bg-amber-50',
                     'text-amber-800',
-                    'hover:bg-amber-100'
+                    'hover:bg-amber-100',
+                    'hover:border-amber-400'
                 );
 
                 boton.classList.add(
                     'border-red-300',
                     'bg-red-50',
                     'text-red-800',
-                    'hover:bg-red-100'
+                    'hover:bg-red-100',
+                    'hover:border-red-400'
                 );
 
             } else {
@@ -993,14 +1076,16 @@ document.addEventListener(
                     'border-red-300',
                     'bg-red-50',
                     'text-red-800',
-                    'hover:bg-red-100'
+                    'hover:bg-red-100',
+                    'hover:border-red-400'
                 );
 
                 boton.classList.add(
                     'border-amber-300',
                     'bg-amber-50',
                     'text-amber-800',
-                    'hover:bg-amber-100'
+                    'hover:bg-amber-100',
+                    'hover:border-amber-400'
                 );
             }
         });
@@ -1046,10 +1131,16 @@ document.addEventListener(
         const colores = {
             success: {
                 text:
-                    'text-green-700',
+                    'text-emerald-700',
 
                 dot:
-                    'bg-green-500',
+                    'bg-emerald-500',
+
+                border:
+                    'border-emerald-200',
+
+                background:
+                    'bg-emerald-50',
             },
 
             warning: {
@@ -1058,6 +1149,12 @@ document.addEventListener(
 
                 dot:
                     'bg-amber-500',
+
+                border:
+                    'border-amber-200',
+
+                background:
+                    'bg-amber-50',
             },
 
             error: {
@@ -1066,6 +1163,12 @@ document.addEventListener(
 
                 dot:
                     'bg-red-500',
+
+                border:
+                    'border-red-200',
+
+                background:
+                    'bg-red-50',
             },
         };
 
@@ -1074,11 +1177,13 @@ document.addEventListener(
             ?? colores.error;
 
         smtpEstadoPase.className =
-            `inline-flex items-center gap-2 text-xs ${color.text}`;
+            'inline-flex items-center gap-2 rounded-lg border '
+            + 'px-3 py-2 text-xs font-medium shadow-sm '
+            + `${color.text} ${color.border} ${color.background}`;
 
         smtpEstadoPase.innerHTML = `
             <span
-                class="h-2.5 w-2.5 rounded-full ${color.dot}"
+                class="h-2.5 w-2.5 shrink-0 rounded-full ${color.dot}"
             ></span>
 
             ${texto}
@@ -1103,7 +1208,8 @@ document.addEventListener(
         btnEnviar.innerHTML = `
             <i
                 data-lucide="loader-circle"
-                class="w-4 h-4 animate-spin"
+                stroke-width="1.8"
+                class="h-4 w-4 animate-spin"
             ></i>
 
             <span>
@@ -1125,8 +1231,10 @@ document.addEventListener(
 
         btnEnviar.innerHTML = `
             <i
+                id="btnEnviarIcono"
                 data-lucide="send"
-                class="w-4 h-4"
+                stroke-width="1.8"
+                class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/send:translate-x-0.5 motion-safe:group-hover/send:-translate-y-0.5"
             ></i>
 
             <span id="btnEnviarTexto">
@@ -1156,6 +1264,10 @@ document.addEventListener(
         modal.classList.add(
             'flex'
         );
+
+        document.body.classList.add(
+            'overflow-hidden'
+        );
     }
 
 
@@ -1170,6 +1282,10 @@ document.addEventListener(
 
         modal.classList.remove(
             'flex'
+        );
+
+        document.body.classList.remove(
+            'overflow-hidden'
         );
     }
 

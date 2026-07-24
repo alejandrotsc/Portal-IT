@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Aviso;
 use App\Services\Chatbot\IntentRecognizerInterface;
 use App\Services\Chatbot\KeywordIntentRecognizer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Inicializar servicios
@@ -36,7 +39,121 @@ class AppServiceProvider extends ServiceProvider
         $this->configurarLimiteVerificacion();
 
         $this->configurarLimiteReenvio();
+
+        $this->compartirAvisosTicker();
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compartir avisos con el layout
+    |--------------------------------------------------------------------------
+    |
+    | Solamente se comparten avisos:
+    |
+    | - Activos.
+    | - Cuya fecha de inicio ya se alcanzó.
+    | - Cuya fecha de finalización aún no ha pasado.
+    |--------------------------------------------------------------------------
+    */
+
+    /*
+|--------------------------------------------------------------------------
+| Compartir avisos visibles
+|--------------------------------------------------------------------------
+*/
+
+private function compartirAvisosTicker(): void
+{
+    /*
+    | Se conserva la colección durante la solicitud para evitar
+    | ejecutar la misma consulta dos veces:
+    |
+    | - Una vez para layouts.app.
+    | - Otra vez para dashboard.*.
+    */
+
+    $avisosTicker = null;
+
+
+    View::composer(
+        [
+            'layouts.app',
+            'dashboard.*',
+        ],
+        function ($view) use (
+            &$avisosTicker
+        ): void {
+            if ($avisosTicker === null) {
+                $ahora = now();
+
+                $avisosTicker = Aviso::query()
+                    ->where(
+                        'activo',
+                        true
+                    )
+
+                    /*
+                    | Publicación inmediata o fecha ya alcanzada.
+                    */
+
+                    ->where(
+                        function ($query) use ($ahora) {
+                            $query
+                                ->whereNull(
+                                    'fecha_inicio'
+                                )
+                                ->orWhere(
+                                    'fecha_inicio',
+                                    '<=',
+                                    $ahora
+                                );
+                        }
+                    )
+
+                    /*
+                    | Sin vencimiento o fecha todavía vigente.
+                    */
+
+                    ->where(
+                        function ($query) use ($ahora) {
+                            $query
+                                ->whereNull(
+                                    'fecha_fin'
+                                )
+                                ->orWhere(
+                                    'fecha_fin',
+                                    '>=',
+                                    $ahora
+                                );
+                        }
+                    )
+
+                    ->orderByDesc(
+                        'created_at'
+                    )
+
+                    ->limit(10)
+
+                    ->get([
+                        'id',
+                        'titulo',
+                        'mensaje',
+                        'fecha_inicio',
+                        'fecha_fin',
+                        'created_at',
+                    ]);
+            }
+
+
+            $view->with(
+                'avisosTicker',
+                $avisosTicker
+            );
+        }
+    );
+}
+
 
     /*
     |--------------------------------------------------------------------------
@@ -58,6 +175,7 @@ class AppServiceProvider extends ServiceProvider
                 $identificador = $this->identificador(
                     $request
                 );
+
 
                 return Limit::perMinute(5)
                     ->by(
@@ -91,6 +209,7 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Límite para reenviar código
@@ -109,6 +228,7 @@ class AppServiceProvider extends ServiceProvider
                 $identificador = $this->identificador(
                     $request
                 );
+
 
                 return Limit::perMinute(2)
                     ->by(
@@ -142,6 +262,7 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Construir identificador del limitador
@@ -172,6 +293,7 @@ class AppServiceProvider extends ServiceProvider
                 )
             )
         );
+
 
         return hash(
             'sha256',

@@ -15,6 +15,7 @@ function abrirAyudaSerie() {
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
 
 }
 
@@ -27,6 +28,7 @@ function cerrarAyudaSerie() {
 
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
 
 }
 
@@ -62,6 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (window.lucide) lucide.createIcons();
 
+            const nuevaFila = tabla.lastElementChild;
+
+            nuevaFila
+                ?.querySelector('input')
+                ?.focus();
+
         });
 
 
@@ -76,7 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!fila || filasActuales.length <= 1) return;
 
-            fila.remove();
+            fila.classList.add(
+                'opacity-0',
+                'scale-[0.98]'
+            );
+
+            window.setTimeout(
+                () => fila.remove(),
+                150
+            );
 
         });
 
@@ -134,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalResultadoTitulo    = document.getElementById('modalResultadoTitulo');
     const modalResultadoMensaje   = document.getElementById('modalResultadoMensaje');
     const estadoCorreo            = document.getElementById('estadoCorreoAutorizacion');
+    const estadoCorreoIcono       = document.getElementById('estadoCorreoIconoContenedor');
     const estadoCorreoTitulo      = document.getElementById('estadoCorreoTitulo');
     const estadoCorreoMensaje     = document.getElementById('estadoCorreoMensaje');
     const btnReportarSmtp         = document.getElementById('btnReportarSmtp');
@@ -211,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contenidoPreview.innerHTML = `
             <div class="flex items-center justify-center py-12">
                 <div class="flex flex-col items-center gap-3 text-muted-foreground">
-                    <svg class="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none">
+                    <svg class="h-6 w-6 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
@@ -242,10 +259,20 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
 
             contenidoPreview.innerHTML = `
-                <p class="text-center text-sm text-red-500 py-8">
-                    Error al cargar el preview: ${err.message}
-                </p>
+                <div class="mx-auto max-w-md rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-center">
+                    <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                        <i data-lucide="circle-alert" class="h-5 w-5"></i>
+                    </div>
+                    <p class="mt-3 text-sm font-semibold text-red-800">
+                        No se pudo cargar la vista previa
+                    </p>
+                    <p class="mt-1 text-xs leading-relaxed text-red-700">
+                        ${escaparHtml(err.message)}
+                    </p>
+                </div>
             `;
+
+            if (window.lucide) lucide.createIcons();
 
         }
 
@@ -318,11 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     tbodySalida.insertAdjacentHTML('beforeend', `
                         <tr>
-                            <td>${vals[0] ?? '-'}</td>
-                            <td>${vals[1] ?? '-'}</td>
-                            <td>${vals[2] ?? '-'}</td>
-                            <td>${vals[3] ?? '-'}</td>
-                            <td>${vals[4] ?? '-'}</td>
+                            <td>${escaparHtml(vals[0] ?? '-')}</td>
+                            <td>${escaparHtml(vals[1] ?? '-')}</td>
+                            <td>${escaparHtml(vals[2] ?? '-')}</td>
+                            <td>${escaparHtml(vals[3] ?? '-')}</td>
+                            <td>${escaparHtml(vals[4] ?? '-')}</td>
                         </tr>
                     `);
 
@@ -386,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnGenerar) {
             btnGenerar.disabled = true;
             btnGenerar.innerHTML = `
-                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
@@ -458,7 +485,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnGenerar) {
                 btnGenerar.disabled = false;
                 btnGenerar.innerHTML = `
-                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <i
+                        id="btnGenerarIcono"
+                        data-lucide="send"
+                        stroke-width="1.8"
+                        class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/send:translate-x-0.5 motion-safe:group-hover/send:-translate-y-0.5">
+                    </i>
                     <span id="btnGenerarTexto">Generar y enviar</span>
                 `;
             }
@@ -522,10 +554,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (modalResultadoIcono) {
             modalResultadoIcono.className =
-                'w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center mx-auto mb-5';
+                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm';
 
             modalResultadoIcono.innerHTML =
-                '<i data-lucide="check-circle" class="w-8 h-8 text-green-600"></i>';
+                '<i data-lucide="circle-check-big" stroke-width="1.8" class="h-8 w-8 text-emerald-600"></i>';
         }
 
         if (modalResultadoTitulo) {
@@ -535,30 +567,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (estadoCorreo) {
             estadoCorreo.className =
-                'mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-left';
+                'rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm';
         }
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-medium text-green-800';
+                'text-sm font-semibold text-emerald-800';
             estadoCorreoTitulo.textContent =
                 'Correo enviado correctamente';
         }
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'text-xs text-green-700 mt-1';
+                'mt-1.5 text-xs leading-relaxed text-emerald-700';
             estadoCorreoMensaje.textContent =
                 'El servidor SMTP aceptó la notificación.';
         }
 
-        if (estadoCorreo) {
-            const icono = estadoCorreo.querySelector('svg, i');
-            icono?.remove();
-            estadoCorreo.querySelector('.flex')?.insertAdjacentHTML(
-                'afterbegin',
-                '<i data-lucide="mail-check" class="w-5 h-5 text-green-600 shrink-0 mt-0.5"></i>'
-            );
+        if (estadoCorreoIcono) {
+            estadoCorreoIcono.className =
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm';
+
+            estadoCorreoIcono.innerHTML =
+                '<i data-lucide="mail-check" stroke-width="1.8" class="h-5 w-5"></i>';
         }
 
         actualizarIndicadorSmtp(true);
@@ -569,48 +600,108 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnReportarSmtp) {
             const recipient =
-                btnReportarSmtp.dataset.recipient
-                || 'helpdesk@televicentro.hn';
+    btnReportarPersistente?.dataset.recipient
+    || 'helpdesk@televicentro.hn';
 
-            const userName =
-                btnReportarSmtp.dataset.userName
-                ?? 'N/A';
 
-            const userEmail =
-                btnReportarSmtp.dataset.userEmail
-                ?? 'N/A';
+const userName =
+    btnReportarPersistente?.dataset.userName
+    || 'No especificado';
 
-            const solicitanteDocumento =
-                form.querySelector('[name="de_nombre"]')?.value
-                ?? 'N/A';
 
-            const asuntoDocumento =
-                form.querySelector('[name="asunto"]')?.value
-                ?? 'N/A';
+const userEmail =
+    btnReportarPersistente?.dataset.userEmail
+    || 'No especificado';
 
-            const subject =
-                `[Portal TI] Falla SMTP - Pase mayor a 24 horas - ${data.codigo ?? data.id ?? 'N/A'}`;
 
-            const body = [
-                'Hola, equipo de soporte TI:',
-                '',
-                'Deseo reportar que el Portal TI no pudo enviar la notificación por correo de la siguiente gestión:',
-                '',
-                `Usuario: ${userName}`,
-                `Correo del usuario: ${userEmail}`,
-                `Solicitante del documento: ${solicitanteDocumento}`,
-                'Gestión: Pase mayor a 24 horas',
-                `Asunto de la gestión: ${asuntoDocumento}`,
-                `Código o identificador: ${data.codigo ?? data.id ?? 'N/A'}`,
-                `Referencia del envío: ${data.email?.delivery_id ?? 'N/A'}`,
-                `Estado registrado: ${data.email?.status ?? 'fallido'}`,
-                `Fecha del reporte: ${new Date().toLocaleString('es-HN')}`,
-                `Página del Portal TI: ${window.location.href}`,
-                '',
-                'El documento sí fue generado y permanece disponible en el Portal TI.',
-                '',
-                'Por favor, revisen la configuración o disponibilidad del servicio SMTP.',
-            ].join('\r\n');
+const solicitante =
+    form.querySelector('[name="de_nombre"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const colaborador =
+    form.querySelector('[name="colaborador"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const cargoArea =
+    form.querySelector('[name="cargo_area"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const asuntoGestion =
+    form.querySelector('[name="asunto"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const motivo =
+    form.querySelector('[name="motivo_autorizacion"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const fechaDocumento =
+    form.querySelector('[name="fecha_documento"]')
+        ?.value
+    || 'No especificada';
+
+
+const subject =
+    '[Portal TI] Apoyo con solicitud de pase mayor a 24 horas';
+
+
+const body = [
+
+    'Hola, equipo de Helpdesk:',
+
+    '',
+
+    'Intenté registrar una solicitud de pase mayor a 24 horas '
+    + 'en el Portal TI, pero el proceso no pudo completarse.',
+
+    '',
+
+    'Datos del usuario',
+
+    `Nombre: ${userName}`,
+
+    `Correo: ${userEmail}`,
+
+    '',
+
+    'Información del pase',
+
+    `Solicitante: ${solicitante}`,
+
+    `Responsable del equipo: ${colaborador}`,
+
+    `Cargo o área: ${cargoArea}`,
+
+    `Asunto: ${asuntoGestion}`,
+
+    `Fecha del documento: ${fechaDocumento}`,
+
+    '',
+
+    `Fecha de la solicitud: ${
+        new Date().toLocaleString(
+            'es-HN',
+            {
+                dateStyle: 'long',
+                timeStyle: 'short',
+            }
+        )
+    }`,
+
+    '',
+
+    'Por favor, ayúdenme a revisar y registrar esta solicitud.',
+
+].join('\r\n');
 
             /*
              * No usar URLSearchParams aquí: convierte los espacios en "+"
@@ -633,16 +724,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     outlookComposeUrl;
 
                 btnReportarPersistente.className =
-                    'inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition';
+                    'group/report inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]';
             }
         }
 
         if (modalResultadoIcono) {
             modalResultadoIcono.className =
-                'w-16 h-16 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-5';
+                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm';
 
             modalResultadoIcono.innerHTML =
-                '<i data-lucide="mail-warning" class="w-8 h-8 text-amber-600"></i>';
+                '<i data-lucide="mail-warning" stroke-width="1.8" class="h-8 w-8 text-amber-600"></i>';
         }
 
         if (modalResultadoTitulo) {
@@ -652,30 +743,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (estadoCorreo) {
             estadoCorreo.className =
-                'mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left';
+                'rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 p-5 text-left shadow-sm';
         }
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-medium text-amber-800';
+                'text-sm font-semibold text-amber-800';
             estadoCorreoTitulo.textContent =
                 'No se pudo enviar el correo';
         }
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'text-xs text-amber-700 mt-1';
+                'mt-1.5 text-xs leading-relaxed text-amber-700';
             estadoCorreoMensaje.textContent =
                 'El documento quedó registrado y puede descargarse. El fallo SMTP fue guardado para revisión.';
         }
 
-        if (estadoCorreo) {
-            const icono = estadoCorreo.querySelector('svg, i');
-            icono?.remove();
-            estadoCorreo.querySelector('.flex')?.insertAdjacentHTML(
-                'afterbegin',
-                '<i data-lucide="mail-warning" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>'
-            );
+        if (estadoCorreoIcono) {
+            estadoCorreoIcono.className =
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-white text-amber-600 shadow-sm';
+
+            estadoCorreoIcono.innerHTML =
+                '<i data-lucide="mail-warning" stroke-width="1.8" class="h-5 w-5"></i>';
         }
 
         actualizarIndicadorSmtp(false);
@@ -700,12 +790,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!smtpEstadoPrevio) return;
 
         smtpEstadoPrevio.className = exitoso
-            ? 'inline-flex items-center gap-2 text-xs text-green-700'
-            : 'inline-flex items-center gap-2 text-xs text-amber-700';
+            ? 'inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm'
+            : 'inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 shadow-sm';
 
         smtpEstadoPrevio.innerHTML = exitoso
-            ? '<span class="h-2.5 w-2.5 rounded-full bg-green-500"></span> Último envío SMTP correcto'
-            : '<span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span> Último envío SMTP fallido';
+            ? '<span class="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500"></span> Último envío SMTP correcto'
+            : '<span class="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500"></span> Último envío SMTP fallido';
     }
 
 
@@ -713,53 +803,117 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (smtpEstadoPrevio) {
             smtpEstadoPrevio.className =
-                'inline-flex items-center gap-2 text-xs text-red-700';
+                'inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 shadow-sm';
 
             smtpEstadoPrevio.innerHTML =
-                '<span class="h-2.5 w-2.5 rounded-full bg-red-500"></span> No se pudo generar ni notificar la gestión';
+                '<span class="h-2.5 w-2.5 shrink-0 rounded-full bg-red-500"></span> No se pudo generar ni notificar la gestión';
         }
 
         if (!btnReportarPersistente) return;
 
         const recipient =
-            btnReportarPersistente.dataset.recipient
-            || 'helpdesk@televicentro.hn';
+    btnReportarPersistente?.dataset.recipient
+    || 'helpdesk@televicentro.hn';
 
-        const userName =
-            btnReportarPersistente.dataset.userName
-            || 'N/A';
 
-        const userEmail =
-            btnReportarPersistente.dataset.userEmail
-            || 'N/A';
+const userName =
+    btnReportarPersistente?.dataset.userName
+    || 'No especificado';
 
-        const solicitante =
-            form.querySelector('[name="de_nombre"]')?.value
-            || 'N/A';
 
-        const asuntoGestion =
-            form.querySelector('[name="asunto"]')?.value
-            || 'N/A';
+const userEmail =
+    btnReportarPersistente?.dataset.userEmail
+    || 'No especificado';
 
-        const subject =
-            '[Portal TI] Error al generar pase mayor a 24 horas';
 
-        const body = [
-            'Hola, equipo de soporte TI:',
-            '',
-            'Deseo reportar que el Portal TI no pudo completar una gestión.',
-            '',
-            `Usuario: ${userName}`,
-            `Correo del usuario: ${userEmail}`,
-            `Solicitante del documento: ${solicitante}`,
-            'Gestión: Pase mayor a 24 horas',
-            `Asunto de la gestión: ${asuntoGestion}`,
-            `Mensaje mostrado: ${error?.message ?? 'Error no especificado'}`,
-            `Fecha del reporte: ${new Date().toLocaleString('es-HN')}`,
-            `Página del Portal TI: ${window.location.href}`,
-            '',
-            'Por favor, revisen la disponibilidad del Portal TI y del servicio de notificación.',
-        ].join('\r\n');
+const solicitante =
+    form.querySelector('[name="de_nombre"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const colaborador =
+    form.querySelector('[name="colaborador"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const cargoArea =
+    form.querySelector('[name="cargo_area"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const asuntoGestion =
+    form.querySelector('[name="asunto"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const motivo =
+    form.querySelector('[name="motivo_autorizacion"]')
+        ?.value.trim()
+    || 'No especificado';
+
+
+const fechaDocumento =
+    form.querySelector('[name="fecha_documento"]')
+        ?.value
+    || 'No especificada';
+
+
+const subject =
+    '[Portal TI] Apoyo con solicitud de pase mayor a 24 horas';
+
+
+const body = [
+
+    'Hola, equipo de Helpdesk:',
+
+    '',
+
+    'Intenté registrar una solicitud de pase mayor a 24 horas '
+    + 'en el Portal TI, pero el proceso no pudo completarse.',
+
+    '',
+
+    'Datos del usuario',
+
+    `Nombre: ${userName}`,
+
+    `Correo: ${userEmail}`,
+
+    '',
+
+    'Información del pase',
+
+    `Solicitante: ${solicitante}`,
+
+    `Responsable del equipo: ${colaborador}`,
+
+    `Cargo o área: ${cargoArea}`,
+
+    `Asunto: ${asuntoGestion}`,
+
+    `Fecha del documento: ${fechaDocumento}`,
+
+    '',
+
+    `Fecha de la solicitud: ${
+        new Date().toLocaleString(
+            'es-HN',
+            {
+                dateStyle: 'long',
+                timeStyle: 'short',
+            }
+        )
+    }`,
+
+    '',
+
+    'Por favor, ayúdenme a revisar y registrar esta solicitud.',
+
+].join('\r\n');
 
         const outlookUrl =
             'https://outlook.office.com/mail/deeplink/compose'
@@ -771,7 +925,7 @@ document.addEventListener('DOMContentLoaded', () => {
             outlookUrl;
 
         btnReportarPersistente.className =
-            'inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-800 hover:bg-red-100 transition';
+            'group/report inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-800 shadow-sm transition-all duration-200 hover:border-red-400 hover:bg-red-100 hover:shadow-md active:scale-[0.98]';
 
         if (window.lucide) lucide.createIcons();
     }
@@ -813,12 +967,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!modal) return;
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
     }
 
     function cerrarModal(modal) {
         if (!modal) return;
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function escaparHtml(valor) {
+        const elemento = document.createElement('div');
+
+        elemento.textContent = String(valor ?? '');
+
+        return elemento.innerHTML;
     }
 
 });

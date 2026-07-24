@@ -21,24 +21,138 @@ class UsuarioController extends Controller
         private readonly TokenAutenticacionService $tokens
     ) {}
 
+
     /*
     |--------------------------------------------------------------------------
     | Listado
     |--------------------------------------------------------------------------
     */
 
-    public function index(): View
-    {
+    public function index(
+        Request $request
+    ): View {
+        $busqueda = trim(
+            (string) $request->input(
+                'buscar',
+                ''
+            )
+        );
+
+        $rolSeleccionado = $request->input(
+            'rol'
+        );
+
+        $estadoSeleccionado = $request->input(
+            'estado'
+        );
+
+
         $usuarios = Usuario::query()
             ->with('rol')
+
+            ->when(
+                $busqueda !== '',
+                function ($query) use ($busqueda) {
+                    $termino = mb_strtolower(
+                        $busqueda
+                    );
+
+                    $query->where(
+                        function ($subquery) use ($termino) {
+                            $subquery
+                                ->whereRaw(
+                                    'LOWER(nombre) LIKE ?',
+                                    ["%{$termino}%"]
+                                )
+                                ->orWhereRaw(
+                                    'LOWER(correo) LIKE ?',
+                                    ["%{$termino}%"]
+                                );
+                        }
+                    );
+                }
+            )
+
+            ->when(
+                filled($rolSeleccionado),
+                fn ($query) => $query->where(
+                    'rol_id',
+                    $rolSeleccionado
+                )
+            )
+
+            ->when(
+                $estadoSeleccionado === 'activo',
+                fn ($query) => $query->where(
+                    'activo',
+                    true
+                )
+            )
+
+            ->when(
+                $estadoSeleccionado === 'inactivo',
+                fn ($query) => $query->where(
+                    'activo',
+                    false
+                )
+            )
+
+            ->when(
+                $estadoSeleccionado === 'pendiente',
+                fn ($query) => $query
+                    ->where('activo', true)
+                    ->whereNull(
+                        'correo_verificado_at'
+                    )
+            )
+
             ->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
+
+
+        $roles = Rol::query()
+            ->orderBy('nombre')
             ->get();
+
+
+        $resumen = [
+            'total' => Usuario::count(),
+
+            'activos' => Usuario::where(
+                'activo',
+                true
+            )->count(),
+
+            'inactivos' => Usuario::where(
+                'activo',
+                false
+            )->count(),
+
+            'pendientes' => Usuario::where(
+                'activo',
+                true
+            )
+                ->whereNull(
+                    'correo_verificado_at'
+                )
+                ->count(),
+        ];
+
 
         return view(
             'usuarios.index',
-            compact('usuarios')
+            compact(
+                'usuarios',
+                'roles',
+                'resumen',
+                'busqueda',
+                'rolSeleccionado',
+                'estadoSeleccionado'
+            )
         );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -58,85 +172,44 @@ class UsuarioController extends Controller
         );
     }
 
+
     public function store(
         Request $request
     ): RedirectResponse {
-        $request->merge([
-            'nombre' => preg_replace(
-                '/\s+/',
-                ' ',
-                trim((string) $request->nombre)
-            ),
+        $this->normalizarDatos(
+            $request
+        );
 
-            'correo' => mb_strtolower(
-                trim((string) $request->correo)
-            ),
-        ]);
+        $validated = $this->validarUsuario(
+            $request
+        );
 
-        $validated = $request->validate([
-            'nombre' => [
-                'required',
-                'string',
-                'min:3',
-                'max:200',
-                'regex:/^[\pL\s.\'-]+$/u',
-            ],
-
-            'correo' => [
-                'required',
-                'string',
-                'email:rfc',
-                'max:200',
-                'unique:usuarios,correo',
-            ],
-
-            'rol_id' => [
-                'required',
-                'integer',
-                'exists:roles,id',
-            ],
-        ], [
-            'nombre.required' =>
-                'Debe ingresar el nombre completo.',
-
-            'nombre.min' =>
-                'El nombre debe tener al menos 3 caracteres.',
-
-            'nombre.regex' =>
-                'El nombre contiene caracteres no permitidos.',
-
-            'correo.required' =>
-                'Debe ingresar el correo electrónico.',
-
-            'correo.email' =>
-                'Debe ingresar un correo electrónico válido.',
-
-            'correo.unique' =>
-                'El correo ya está registrado.',
-
-            'rol_id.required' =>
-                'Debe seleccionar un rol.',
-
-            'rol_id.exists' =>
-                'El rol seleccionado no es válido.',
-        ]);
 
         $usuario = Usuario::create([
             'nombre' => $validated['nombre'],
+
             'correo' => $validated['correo'],
+
             'rol_id' => $validated['rol_id'],
+
             'activo' => true,
+
             'correo_verificado_at' => null,
         ]);
 
+
         try {
-            $this->enviarCodigo($usuario);
+            $this->enviarCodigo(
+                $usuario
+            );
         } catch (Throwable $exception) {
             Log::error(
                 'No se pudo enviar el código al usuario creado por administración.',
                 [
                     'usuario_id' => $usuario->id,
-                    'error' => $exception->getMessage(),
+
+                    'error' =>
+                        $exception->getMessage(),
                 ]
             );
 
@@ -148,13 +221,15 @@ class UsuarioController extends Controller
                 );
         }
 
+
         return redirect()
             ->route('usuarios.index')
             ->with(
                 'success',
-                'Usuario creado. Se envió un código de verificación a su correo.'
+                'Usuario creado correctamente. Se envió un código de verificación a su correo.'
             );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -178,111 +253,94 @@ class UsuarioController extends Controller
         );
     }
 
+
     public function update(
         Request $request,
         Usuario $usuario
     ): RedirectResponse {
-        $request->merge([
-            'nombre' => preg_replace(
-                '/\s+/',
-                ' ',
-                trim((string) $request->nombre)
-            ),
+        $this->normalizarDatos(
+            $request
+        );
 
-            'correo' => mb_strtolower(
-                trim((string) $request->correo)
-            ),
-        ]);
+        $validated = $this->validarUsuario(
+            $request,
+            $usuario
+        );
 
-        $validated = $request->validate([
-            'nombre' => [
-                'required',
-                'string',
-                'min:3',
-                'max:200',
-                'regex:/^[\pL\s.\'-]+$/u',
-            ],
-
-            'correo' => [
-                'required',
-                'string',
-                'email:rfc',
-                'max:200',
-
-                Rule::unique(
-                    'usuarios',
-                    'correo'
-                )->ignore($usuario->id),
-            ],
-
-            'rol_id' => [
-                'required',
-                'integer',
-                'exists:roles,id',
-            ],
-        ], [
-            'nombre.required' =>
-                'Debe ingresar el nombre completo.',
-
-            'nombre.min' =>
-                'El nombre debe tener al menos 3 caracteres.',
-
-            'nombre.regex' =>
-                'El nombre contiene caracteres no permitidos.',
-
-            'correo.required' =>
-                'Debe ingresar el correo electrónico.',
-
-            'correo.email' =>
-                'Debe ingresar un correo electrónico válido.',
-
-            'correo.unique' =>
-                'El correo ya pertenece a otro usuario.',
-
-            'rol_id.required' =>
-                'Debe seleccionar un rol.',
-
-            'rol_id.exists' =>
-                'El rol seleccionado no es válido.',
-        ]);
-
-        $correoAnterior = $usuario->correo;
-
-        $correoCambio = mb_strtolower($correoAnterior)
-            !== $validated['correo'];
-
-        $usuario->update([
-            'nombre' => $validated['nombre'],
-            'correo' => $validated['correo'],
-            'rol_id' => $validated['rol_id'],
-
-            'correo_verificado_at' => $correoCambio
-                ? null
-                : $usuario->correo_verificado_at,
-        ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Si cambió el correo, invalidar tokens y verificar el nuevo correo
+        | Proteger el rol del administrador autenticado
+        |--------------------------------------------------------------------------
+        */
+
+        if (Auth::id() === $usuario->id) {
+            $rolAdministrador = Rol::query()
+                ->where(
+                    'nombre',
+                    'Administrador'
+                )
+                ->first();
+
+            if (
+                ! $rolAdministrador
+                || (int) $validated['rol_id']
+                    !== (int) $rolAdministrador->id
+            ) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'rol_id' =>
+                            'No puedes retirar el rol de administrador de tu propia cuenta.',
+                    ]);
+            }
+        }
+
+
+        $correoCambio = mb_strtolower(
+            $usuario->correo
+        ) !== $validated['correo'];
+
+
+        $usuario->update([
+            'nombre' => $validated['nombre'],
+
+            'correo' => $validated['correo'],
+
+            'rol_id' => $validated['rol_id'],
+
+            'correo_verificado_at' =>
+                $correoCambio
+                    ? null
+                    : $usuario
+                        ->correo_verificado_at,
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Invalidar tokens si cambió el correo
         |--------------------------------------------------------------------------
         */
 
         if ($correoCambio) {
-            $usuario->tokensAutenticacion()
-                ->whereNull('used_at')
-                ->update([
-                    'used_at' => now(),
-                    'updated_at' => now(),
-                ]);
+            $this->invalidarTokens(
+                $usuario
+            );
 
             try {
-                $this->enviarCodigo($usuario);
+                $this->enviarCodigo(
+                    $usuario
+                );
             } catch (Throwable $exception) {
                 Log::error(
                     'No se pudo enviar el código después de cambiar el correo.',
                     [
-                        'usuario_id' => $usuario->id,
-                        'error' => $exception->getMessage(),
+                        'usuario_id' =>
+                            $usuario->id,
+
+                        'error' =>
+                            $exception->getMessage(),
                     ]
                 );
 
@@ -290,10 +348,11 @@ class UsuarioController extends Controller
                     ->route('usuarios.index')
                     ->with(
                         'warning',
-                        'Usuario actualizado, pero no se pudo enviar el código al nuevo correo.'
+                        'El usuario fue actualizado, pero no se pudo enviar el código al nuevo correo.'
                     );
             }
         }
+
 
         return redirect()
             ->route('usuarios.index')
@@ -305,9 +364,10 @@ class UsuarioController extends Controller
             );
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | Cambiar estado
+    | Activar o desactivar
     |--------------------------------------------------------------------------
     */
 
@@ -317,22 +377,22 @@ class UsuarioController extends Controller
         if (Auth::id() === $usuario->id) {
             return back()->withErrors([
                 'usuario' =>
-                    'No puedes desactivar tu propia cuenta.',
+                    'No puedes cambiar el estado de tu propia cuenta.',
             ]);
         }
+
 
         $usuario->update([
             'activo' => ! $usuario->activo,
         ]);
 
+
         if (! $usuario->activo) {
-            $usuario->tokensAutenticacion()
-                ->whereNull('used_at')
-                ->update([
-                    'used_at' => now(),
-                    'updated_at' => now(),
-                ]);
+            $this->invalidarTokens(
+                $usuario
+            );
         }
+
 
         return back()->with(
             'success',
@@ -341,6 +401,7 @@ class UsuarioController extends Controller
                 : 'Usuario desactivado correctamente.'
         );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -358,6 +419,7 @@ class UsuarioController extends Controller
             ]);
         }
 
+
         if ($usuario->correoEstaVerificado()) {
             return back()->with(
                 'success',
@@ -365,14 +427,19 @@ class UsuarioController extends Controller
             );
         }
 
+
         try {
-            $this->enviarCodigo($usuario);
+            $this->enviarCodigo(
+                $usuario
+            );
         } catch (Throwable $exception) {
             Log::error(
                 'No se pudo reenviar el código desde administración.',
                 [
                     'usuario_id' => $usuario->id,
-                    'error' => $exception->getMessage(),
+
+                    'error' =>
+                        $exception->getMessage(),
                 ]
             );
 
@@ -382,46 +449,131 @@ class UsuarioController extends Controller
             ]);
         }
 
+
         return back()->with(
             'success',
             'Se envió un nuevo código de verificación.'
         );
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | Desactivar en lugar de eliminar
+    | Normalizar datos
     |--------------------------------------------------------------------------
     */
 
-    public function destroy(
-        Usuario $usuario
-    ): RedirectResponse {
-        if (Auth::id() === $usuario->id) {
-            return back()->withErrors([
-                'usuario' =>
-                    'No puedes desactivar tu propia cuenta.',
-            ]);
-        }
+    private function normalizarDatos(
+        Request $request
+    ): void {
+        $request->merge([
+            'nombre' => preg_replace(
+                '/\s+/',
+                ' ',
+                trim(
+                    (string) $request->nombre
+                )
+            ),
 
-        $usuario->update([
-            'activo' => false,
+            'correo' => mb_strtolower(
+                trim(
+                    (string) $request->correo
+                )
+            ),
         ]);
+    }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar usuario
+    |--------------------------------------------------------------------------
+    */
+
+    private function validarUsuario(
+        Request $request,
+        ?Usuario $usuario = null
+    ): array {
+        return $request->validate([
+            'nombre' => [
+                'required',
+                'string',
+                'min:3',
+                'max:200',
+                'regex:/^[\pL\s.\'-]+$/u',
+            ],
+
+            'correo' => [
+                'required',
+                'string',
+                'email:rfc',
+                'max:200',
+
+                Rule::unique(
+                    'usuarios',
+                    'correo'
+                )->ignore(
+                    $usuario?->id
+                ),
+            ],
+
+            'rol_id' => [
+                'required',
+                'integer',
+                'exists:roles,id',
+            ],
+        ], [
+            'nombre.required' =>
+                'Debe ingresar el nombre completo.',
+
+            'nombre.min' =>
+                'El nombre debe tener al menos 3 caracteres.',
+
+            'nombre.max' =>
+                'El nombre no puede superar los 200 caracteres.',
+
+            'nombre.regex' =>
+                'El nombre contiene caracteres no permitidos.',
+
+            'correo.required' =>
+                'Debe ingresar el correo electrónico.',
+
+            'correo.email' =>
+                'Debe ingresar un correo electrónico válido.',
+
+            'correo.max' =>
+                'El correo no puede superar los 200 caracteres.',
+
+            'correo.unique' =>
+                'El correo ya pertenece a otro usuario.',
+
+            'rol_id.required' =>
+                'Debe seleccionar un rol.',
+
+            'rol_id.exists' =>
+                'El rol seleccionado no es válido.',
+        ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Invalidar tokens
+    |--------------------------------------------------------------------------
+    */
+
+    private function invalidarTokens(
+        Usuario $usuario
+    ): void {
         $usuario->tokensAutenticacion()
             ->whereNull('used_at')
             ->update([
                 'used_at' => now(),
+
                 'updated_at' => now(),
             ]);
-
-        return redirect()
-            ->route('usuarios.index')
-            ->with(
-                'success',
-                'Usuario desactivado correctamente.'
-            );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -433,9 +585,13 @@ class UsuarioController extends Controller
         Usuario $usuario
     ): void {
         $codigo = $this->tokens
-            ->generarCodigoRegistro($usuario);
+            ->generarCodigoRegistro(
+                $usuario
+            );
 
-        Mail::to($usuario->correo)->send(
+        Mail::to(
+            $usuario->correo
+        )->send(
             new CodigoVerificacionMail(
                 $usuario,
                 $codigo

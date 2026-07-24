@@ -84,6 +84,15 @@ class Usuario extends Authenticatable
         );
     }
 
+
+    public function avisosCreados(): HasMany
+    {
+        return $this->hasMany(
+            Aviso::class,
+            'creado_por'
+        );
+    }
+
     public function memorandos(): HasMany
     {
         return $this->hasMany(

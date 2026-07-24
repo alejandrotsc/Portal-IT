@@ -193,7 +193,6 @@ CREATE TABLE incidencias (
             'Abierta',
             'En_proceso',
             'Resuelta',
-            'Cerrada'
         )),
 
 
@@ -315,6 +314,18 @@ CREATE TABLE solicitudes (
         REFERENCES usuarios(id)
         ON DELETE CASCADE
 
+);
+
+ALTER TABLE solicitudes
+
+ADD CONSTRAINT solicitudes_estado_check
+
+CHECK (
+    estado IN (
+        'pendiente',
+        'finalizada',
+        'cancelada'
+    )
 );
 
 
@@ -796,7 +807,6 @@ CREATE TABLE memorandos (
             estado IN
             (
                 'GENERADO',
-                'EN_FIRMA',
                 'APROBADO',
                 'RECHAZADO',
                 'ARCHIVADO'
@@ -1010,10 +1020,87 @@ CREATE TABLE memorando_historial (
 
 );
 
+CREATE TABLE avisos (
+
+    id BIGSERIAL PRIMARY KEY,
 
 
+    titulo VARCHAR(150)
+        NOT NULL,
 
 
+    mensaje VARCHAR(500)
+        NOT NULL,
+
+
+    fecha_inicio TIMESTAMP
+        NULL,
+
+
+    fecha_fin TIMESTAMP
+        NULL,
+
+
+    activo BOOLEAN
+        NOT NULL
+        DEFAULT TRUE,
+
+
+    creado_por BIGINT
+        NULL,
+
+
+    created_at TIMESTAMP
+        NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+
+    updated_at TIMESTAMP
+        NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+
+    CONSTRAINT avisos_creado_por_foreign
+
+        FOREIGN KEY (creado_por)
+
+        REFERENCES usuarios(id)
+
+        ON DELETE SET NULL,
+
+
+    CONSTRAINT avisos_fechas_validas_check
+
+        CHECK (
+            fecha_inicio IS NULL
+            OR fecha_fin IS NULL
+            OR fecha_fin > fecha_inicio
+        )
+
+);
+
+CREATE INDEX avisos_activo_index
+    ON avisos(activo);
+
+
+CREATE INDEX avisos_fecha_inicio_index
+    ON avisos(fecha_inicio);
+
+
+CREATE INDEX avisos_fecha_fin_index
+    ON avisos(fecha_fin);
+
+
+CREATE INDEX avisos_creado_por_index
+    ON avisos(creado_por);
+
+
+CREATE INDEX avisos_vigencia_index
+    ON avisos(
+        activo,
+        fecha_inicio,
+        fecha_fin
+    );
 
 
 -- ============================================================

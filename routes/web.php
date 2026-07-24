@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AvisoController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidenciaController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\MemorandoController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -25,13 +27,19 @@ Route::middleware('guest')->group(function () {
 
     Route::get(
         '/login',
-        [AuthController::class, 'login']
+        [
+            AuthController::class,
+            'login',
+        ]
     )->name('login');
 
 
     Route::post(
         '/login',
-        [AuthController::class, 'authenticate']
+        [
+            AuthController::class,
+            'authenticate',
+        ]
     )
         ->middleware('throttle:5,1')
         ->name('login.authenticate');
@@ -39,7 +47,10 @@ Route::middleware('guest')->group(function () {
 
     Route::get(
         '/acceso/{token}',
-        [AuthController::class, 'magicLogin']
+        [
+            AuthController::class,
+            'magicLogin',
+        ]
     )
         ->where(
             'token',
@@ -57,13 +68,19 @@ Route::middleware('guest')->group(function () {
 
     Route::get(
         '/registro',
-        [AuthController::class, 'register']
+        [
+            AuthController::class,
+            'register',
+        ]
     )->name('register');
 
 
     Route::post(
         '/registro',
-        [AuthController::class, 'store']
+        [
+            AuthController::class,
+            'store',
+        ]
     )
         ->middleware('throttle:5,1')
         ->name('register.store');
@@ -77,18 +94,19 @@ Route::middleware('guest')->group(function () {
 
     Route::get(
         '/registro/verificar',
-        [AuthController::class, 'verification']
+        [
+            AuthController::class,
+            'verification',
+        ]
     )->name('register.verification');
 
 
-    /*
-    | Utiliza el limitador "verificar-codigo" configurado
-    | en AppServiceProvider.
-    */
-
     Route::post(
         '/registro/verificar',
-        [AuthController::class, 'verify']
+        [
+            AuthController::class,
+            'verify',
+        ]
     )
         ->middleware(
             'throttle:verificar-codigo'
@@ -96,27 +114,24 @@ Route::middleware('guest')->group(function () {
         ->name('register.verify');
 
 
-    /*
-    | Utiliza un contador independiente.
-    |
-    | Los intentos fallidos de verificación no bloquean
-    | el primer reenvío del código.
-    */
-
     Route::post(
         '/registro/reenviar-codigo',
-        [AuthController::class, 'resendCode']
+        [
+            AuthController::class,
+            'resendCode',
+        ]
     )
         ->middleware(
             'throttle:reenviar-codigo'
         )
         ->name('register.resend');
+
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| Rutas autenticadas
+| Rutas para usuarios autenticados
 |--------------------------------------------------------------------------
 */
 
@@ -130,7 +145,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/',
-        [DashboardController::class, 'index']
+        [
+            DashboardController::class,
+            'index',
+        ]
     )->name('dashboard');
 
 
@@ -142,7 +160,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post(
         '/logout',
-        [AuthController::class, 'logout']
+        [
+            AuthController::class,
+            'logout',
+        ]
     )->name('logout');
 
 
@@ -154,13 +175,19 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/memorandos',
-        [MemorandoController::class, 'create']
+        [
+            MemorandoController::class,
+            'create',
+        ]
     )->name('memorandos.create');
 
 
     Route::post(
         '/memorandos',
-        [MemorandoController::class, 'store']
+        [
+            MemorandoController::class,
+            'store',
+        ]
     )->name('memorandos.store');
 
 
@@ -211,13 +238,19 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/mis-pases',
-        [MemorandoController::class, 'misPases']
+        [
+            MemorandoController::class,
+            'misPases',
+        ]
     )->name('memorandos.mis-pases');
 
 
     Route::get(
         '/mis-pases/{memorando}',
-        [MemorandoController::class, 'showPase']
+        [
+            MemorandoController::class,
+            'showPase',
+        ]
     )->name('memorandos.show-pase');
 
 
@@ -259,7 +292,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/memorandos/historico',
-        [MemorandoController::class, 'historico']
+        [
+            MemorandoController::class,
+            'historico',
+        ]
     )->name('memorandos.historico');
 
 
@@ -271,7 +307,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/memorandos/{id}/download',
-        [MemorandoController::class, 'download']
+        [
+            MemorandoController::class,
+            'download',
+        ]
     )->name('memorandos.download');
 
 
@@ -283,13 +322,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/memorandos/{id}/pdf',
-        [MemorandoController::class, 'pdf']
+        [
+            MemorandoController::class,
+            'pdf',
+        ]
     )->name('memorandos.pdf');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Solicitudes
+    | Solicitudes del usuario
     |--------------------------------------------------------------------------
     */
 
@@ -304,13 +346,19 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/solicitudes/create',
-        [SolicitudController::class, 'create']
+        [
+            SolicitudController::class,
+            'create',
+        ]
     )->name('solicitudes.create');
 
 
     Route::post(
         '/solicitudes',
-        [SolicitudController::class, 'store']
+        [
+            SolicitudController::class,
+            'store',
+        ]
     )->name('solicitudes.store');
 
 
@@ -322,8 +370,26 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/solicitudes/{solicitud}',
-        [SolicitudController::class, 'show']
+        [
+            SolicitudController::class,
+            'show',
+        ]
     )->name('solicitudes.show');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Avisos vigentes del Portal TI
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/avisos-ti',
+        [
+            AvisoController::class,
+            'publicos',
+        ]
+    )->name('avisos.publicos');
 
 
     /*
@@ -336,73 +402,56 @@ Route::middleware('auth')->group(function () {
         ->name('chatbot.')
         ->group(function () {
 
-            /*
-            | Preparar el chatbot.
-            */
-
             Route::post(
                 '/warm-up',
-                [ChatbotController::class, 'warmUp']
+                [
+                    ChatbotController::class,
+                    'warmUp',
+                ]
             )->name('warm-up');
 
 
-            /*
-            | Respuesta JSON completa.
-            */
-
             Route::post(
                 '/message',
-                [ChatbotController::class, 'message']
+                [
+                    ChatbotController::class,
+                    'message',
+                ]
             )->name('message');
 
 
-            /*
-            | Respuesta progresiva.
-            */
-
             Route::post(
                 '/stream',
-                [ChatbotController::class, 'stream']
+                [
+                    ChatbotController::class,
+                    'stream',
+                ]
             )->name('stream');
 
 
-            /*
-            | Consultar estado de gestiones.
-            */
-
             Route::get(
                 '/estado',
-                [ChatbotController::class, 'estado']
+                [
+                    ChatbotController::class,
+                    'estado',
+                ]
             )->name('estado');
 
 
-            /*
-            | Registrar utilidad de la respuesta.
-            */
-
             Route::post(
                 '/feedback',
-                [ChatbotController::class, 'feedback']
+                [
+                    ChatbotController::class,
+                    'feedback',
+                ]
             )->name('feedback');
+
         });
 
 
     /*
     |--------------------------------------------------------------------------
-    | Incidencias / Tickets
-    |--------------------------------------------------------------------------
-    |
-    | Usuarios:
-    | - Crear tickets.
-    | - Consultar seguimiento.
-    |
-    | UsuarioTI:
-    | - Ver cola.
-    | - Tomar casos.
-    | - Resolver.
-    |
-    | Administrador:
-    | - Asignación manual.
+    | Incidencias
     |--------------------------------------------------------------------------
     */
 
@@ -440,13 +489,19 @@ Route::middleware('auth')->group(function () {
 
     Route::post(
         '/incidencias/{incidencia}/tomar',
-        [IncidenciaController::class, 'tomar']
+        [
+            IncidenciaController::class,
+            'tomar',
+        ]
     )->name('incidencias.tomar');
 
 
     Route::post(
         '/incidencias/{incidencia}/asignar',
-        [IncidenciaController::class, 'asignar']
+        [
+            IncidenciaController::class,
+            'asignar',
+        ]
     )->name('incidencias.asignar');
 
 
@@ -461,20 +516,114 @@ Route::middleware('auth')->group(function () {
 
     Route::post(
         '/incidencias/{incidencia}/resolver',
-        [IncidenciaController::class, 'resolver']
+        [
+            IncidenciaController::class,
+            'resolver',
+        ]
     )->name('incidencias.resolver');
 
 
     Route::post(
         '/incidencias/{incidencia}/cerrar',
-        [IncidenciaController::class, 'cerrar']
+        [
+            IncidenciaController::class,
+            'cerrar',
+        ]
     )->name('incidencias.cerrar');
+
 });
 
 
 /*
 |--------------------------------------------------------------------------
+| Gestión interna de solicitudes
+|--------------------------------------------------------------------------
+|
+| Acceso:
+|
+| - UsuarioTI
+| - Administrador
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'rol:UsuarioTI,Administrador',
+])
+    ->prefix('administracion')
+    ->name('admin.')
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Listado
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/solicitudes',
+            [
+                SolicitudController::class,
+                'administracion',
+            ]
+        )->name('solicitudes');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detalle
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/solicitudes/{solicitud}',
+            [
+                SolicitudController::class,
+                'showAdministracion',
+            ]
+        )->name('solicitudes.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Finalizar
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/solicitudes/{solicitud}/finalizar',
+            [
+                SolicitudController::class,
+                'finalizar',
+            ]
+        )->name('solicitudes.finalizar');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cancelar
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/solicitudes/{solicitud}/cancelar',
+            [
+                SolicitudController::class,
+                'cancelar',
+            ]
+        )->name('solicitudes.cancelar');
+
+    });
+
+
+/*
+|--------------------------------------------------------------------------
 | Administración
+|--------------------------------------------------------------------------
+|
+| Acceso exclusivo:
+|
+| - Administrador
 |--------------------------------------------------------------------------
 */
 
@@ -492,8 +641,20 @@ Route::middleware([
     Route::resource(
         'usuarios',
         UsuarioController::class
-    );
+    )->only([
+        'index',
+        'create',
+        'store',
+        'edit',
+        'update',
+    ]);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activar o desactivar usuario
+    |--------------------------------------------------------------------------
+    */
 
     Route::patch(
         '/usuarios/{usuario}/estado',
@@ -504,13 +665,54 @@ Route::middleware([
     )->name('usuarios.change-status');
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Reenviar verificación
+    |--------------------------------------------------------------------------
+    */
+
     Route::post(
         '/usuarios/{usuario}/reenviar-verificacion',
         [
             UsuarioController::class,
             'resendVerification',
         ]
-    )->name('usuarios.resend-verification');
+    )
+        ->middleware('throttle:3,10')
+        ->name('usuarios.resend-verification');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Avisos de TI
+    |--------------------------------------------------------------------------
+    */
+
+    Route::resource(
+        'avisos',
+        AvisoController::class
+    )->only([
+        'index',
+        'create',
+        'store',
+        'edit',
+        'update',
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activar o desactivar aviso
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/avisos/{aviso}/estado',
+        [
+            AvisoController::class,
+            'changeStatus',
+        ]
+    )->name('avisos.change-status');
 
 
     /*
@@ -535,4 +737,5 @@ Route::middleware([
             'asignar',
         ]
     )->name('admin.incidencias.asignar');
+
 });

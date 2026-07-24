@@ -19,22 +19,8 @@
         }
     }
 
-    @keyframes chatbot-status-pulse {
-        0%, 100% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
-        }
-
-        50% {
-            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
-        }
-    }
-
     .chatbot-welcome {
         animation: chatbot-fade-up 420ms ease-out both;
-    }
-
-    .chatbot-online-dot {
-        animation: chatbot-status-pulse 2.1s ease-out infinite;
     }
 
     .chatbot-card {
@@ -58,8 +44,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .chatbot-welcome,
-        .chatbot-online-dot {
+        .chatbot-welcome {
             animation: none !important;
         }
     }
@@ -70,7 +55,7 @@
     <div
         x-data="chatbotWidget({ storageKey: 'portal-it-chatbot-history-{{ auth()->id() ?? 'guest' }}' })"
         x-init="init()"
-        class="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_8px_28px_rgba(15,23,42,0.055)]"
+        class="group/chatbot relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/15 hover:shadow-lg hover:shadow-blue-500/5"
     >
 
         {{-- ==================================================
@@ -78,17 +63,19 @@
         =================================================== --}}
 
         <header
-            class="relative flex flex-col gap-3 overflow-hidden border-b border-border bg-card px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            class="relative flex flex-col gap-3 overflow-hidden border-b border-border bg-gradient-to-r from-primary/[0.055] via-white to-blue-50/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
         >
 
-            <div class="flex items-center gap-3">
+            <span class="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-primary/10 blur-3xl pointer-events-none transition-all duration-500 group-hover/chatbot:bg-primary/20 motion-safe:group-hover/chatbot:scale-125"></span>
+
+            <div class="relative z-10 flex items-center gap-3">
 
                 <div
-                    class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 shadow-sm"
+                    class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 shadow-sm transition-all duration-300 group-hover/chatbot:border-blue-300 group-hover/chatbot:bg-blue-100 motion-safe:group-hover/chatbot:scale-105"
                 >
                     <i
                         data-lucide="bot-message-square"
-                        class="h-[18px] w-[18px]"
+                        class="h-[18px] w-[18px] transition-transform duration-300 motion-safe:group-hover/chatbot:scale-110"
                     ></i>
 
                     <i
@@ -96,9 +83,10 @@
                         class="absolute right-1 top-1 h-2 w-2 text-blue-400"
                     ></i>
 
-                    <span
-                        class="chatbot-online-dot absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-500"
-                    ></span>
+                    <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
+                        <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping"></span>
+                        <span class="relative inline-flex h-3 w-3 rounded-full border-2 border-white bg-emerald-500"></span>
+                    </span>
                 </div>
 
                 <div>
@@ -108,9 +96,6 @@
                             Asistente TI
                         </h2>
 
-                        <span class="text-[11px] text-muted-foreground">
-                            En línea
-                        </span>
                     </div>
 
                     <p class="mt-0.5 text-xs text-muted-foreground">
@@ -186,12 +171,12 @@
                             type="button"
                             @click="sendAction('problema.menu', 'Tengo un problema')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-transform duration-300 group-hover:scale-105"
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-all duration-300 group-hover:bg-blue-200 motion-safe:group-hover:scale-105"
                             >
-                                <i data-lucide="triangle-alert" class="h-4 w-4"></i>
+                                <i data-lucide="triangle-alert" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
                             </span>
 
                             <span class="min-w-0 flex-1">
@@ -210,12 +195,12 @@
                             type="button"
                             @click="sendAction('solicitud.menu', 'Necesito un servicio')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-lg hover:shadow-cyan-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 transition-transform duration-300 group-hover:scale-105"
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 transition-all duration-300 group-hover:bg-cyan-200 motion-safe:group-hover:scale-105"
                             >
-                                <i data-lucide="clipboard-list" class="h-4 w-4"></i>
+                                <i data-lucide="clipboard-list" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
                             </span>
 
                             <span class="min-w-0 flex-1">
@@ -234,12 +219,12 @@
                             type="button"
                             @click="sendAction('pase.menu', 'Necesito un pase')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-transform duration-300 group-hover:scale-105"
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-all duration-300 group-hover:bg-indigo-200 motion-safe:group-hover:scale-105"
                             >
-                                <i data-lucide="badge-check" class="h-4 w-4"></i>
+                                <i data-lucide="badge-check" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
                             </span>
 
                             <span class="min-w-0 flex-1">
@@ -258,12 +243,12 @@
                             type="button"
                             @click="sendAction('gestion.estado', 'Consultar gestiones')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-lg hover:shadow-sky-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-transform duration-300 group-hover:scale-105"
+                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-all duration-300 group-hover:bg-sky-200 motion-safe:group-hover:scale-105"
                             >
-                                <i data-lucide="history" class="h-4 w-4"></i>
+                                <i data-lucide="history" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
                             </span>
 
                             <span class="min-w-0 flex-1">
@@ -284,12 +269,12 @@
                         type="button"
                         @click="sendAction('ai.enable', 'Hacer una pregunta')"
                         :disabled="loading"
-                        class="chatbot-card group mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left transition-all duration-300 hover:border-violet-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                        class="chatbot-card group mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <span
-                            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-transform duration-300 group-hover:scale-105"
+                            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-all duration-300 group-hover:bg-violet-200 motion-safe:group-hover:scale-105"
                         >
-                            <i data-lucide="message-square-text" class="h-4 w-4"></i>
+                            <i data-lucide="message-square-text" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
                         </span>
 
                         <span class="min-w-0 flex-1">
@@ -391,7 +376,7 @@
                                     >
                                         <a
                                             :href="item.url"
-                                            class="group block rounded-xl border border-border bg-muted/30 p-3 transition-colors hover:border-primary/30 hover:bg-primary/[0.03]"
+                                            class="group/item block rounded-xl border border-border bg-muted/30 p-3 shadow-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/[0.03] hover:shadow-md motion-safe:hover:-translate-y-0.5"
                                         >
                                             <div class="flex items-start justify-between gap-3">
 
@@ -415,7 +400,7 @@
 
                                                     <i
                                                         data-lucide="external-link"
-                                                        class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                                                        class="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 group-hover/item:translate-x-0.5"
                                                     ></i>
                                                 </div>
 
@@ -434,10 +419,10 @@
                             >
                                 <a
                                     :href="msg.redirect.url"
-                                    class="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90"
+                                    class="group/redirect mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
                                 >
                                     <span x-text="msg.redirect.label"></span>
-                                    <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
+                                    <i data-lucide="external-link" class="h-3.5 w-3.5 transition-transform duration-200 group-hover/redirect:translate-x-0.5"></i>
                                 </a>
                             </template>
 
@@ -496,16 +481,16 @@
                                         type="button"
                                         @click="executeAction(action, msg)"
                                         :disabled="loading"
-                                        class="chatbot-card group flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                                        class="chatbot-card group/action flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                                         :class="chatbotActionAppearance(action).buttonClass"
                                     >
                                         <span
-                                            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors"
+                                            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-300 motion-safe:group-hover/action:scale-105"
                                             :class="chatbotActionAppearance(action).iconClass"
                                         >
                                             <i
                                                 :data-lucide="chatbotResolvedActionIcon(action)"
-                                                class="h-3.5 w-3.5"
+                                                class="h-3.5 w-3.5 transition-transform duration-300 motion-safe:group-hover/action:scale-110"
                                             ></i>
                                         </span>
 
@@ -583,7 +568,7 @@
 
             <form
                 @submit.prevent="if (aiMode) { send() }"
-                class="flex items-center gap-3 rounded-2xl border px-3.5 py-3 shadow-sm transition-all duration-300"
+                class="group/composer flex items-center gap-3 rounded-2xl border px-3.5 py-3 shadow-sm transition-all duration-300"
                 :class="
                     aiMode
                         ? 'border-primary/40 bg-card focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10'
@@ -593,7 +578,7 @@
 
                 <i
                     data-lucide="message-circle"
-                    class="h-4 w-4 flex-shrink-0"
+                    class="h-4 w-4 flex-shrink-0 transition-all duration-200 group-focus-within/composer:text-primary motion-safe:group-focus-within/composer:scale-110"
                     :class="aiMode ? 'text-primary' : 'text-muted-foreground'"
                 ></i>
 
@@ -615,10 +600,10 @@
                 <button
                     type="submit"
                     :disabled="loading || !aiMode || !draft.trim()"
-                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all hover:scale-105 hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+                    class="group/send flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
                     aria-label="Enviar consulta"
                 >
-                    <i data-lucide="send" class="h-3.5 w-3.5"></i>
+                    <i data-lucide="send" class="h-3.5 w-3.5 transition-transform duration-200 group-hover/send:translate-x-0.5"></i>
                 </button>
 
             </form>
