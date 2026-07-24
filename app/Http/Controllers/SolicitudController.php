@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Mail\SolicitudMail;
 use App\Models\Solicitud;
 use App\Services\Mail\TrackedMailService;
+use App\Notifications\EstadoSolicitudActualizadoNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -256,92 +258,167 @@ class SolicitudController extends Controller
     */
 
     public function misSolicitudes(
-        Request $request
-    ): View {
-        $request->validate([
-            'mes' => [
-                'nullable',
-                'integer',
-                'between:1,12',
-            ],
+    Request $request
+): View {
+    /*
+    |--------------------------------------------------------------------------
+    | Validación de filtros
+    |--------------------------------------------------------------------------
+    */
 
-            'anio' => [
-                'nullable',
-                'integer',
-                'between:2020,'.now()->year,
-            ],
-        ]);
+    $validated = $request->validate([
+        'mes' => [
+            'nullable',
+            'integer',
+            'between:1,12',
+        ],
+
+        'anio' => [
+            'nullable',
+            'integer',
+            'between:2020,'.now()->year,
+        ],
+    ]);
 
 
-        $mes = (int) $request->input(
-            'mes',
-            now()->month
+    $mes = (int) (
+        $validated['mes']
+        ?? now()->month
+    );
+
+    $anio = (int) (
+        $validated['anio']
+        ?? now()->year
+    );
+
+    $usuarioId = (int) Auth::id();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Años disponibles
+    |--------------------------------------------------------------------------
+    */
+
+    $aniosDisponibles = Solicitud::query()
+        ->where(
+            'usuario_id',
+            $usuarioId
+        )
+        ->whereNotNull(
+            'created_at'
+        )
+        ->selectRaw(
+            'EXTRACT(YEAR FROM created_at)::int AS anio'
+        )
+        ->distinct()
+        ->orderByDesc('anio')
+        ->pluck('anio')
+        ->map(
+            static fn ($valor): int =>
+                (int) $valor
         );
 
-        $anio = (int) $request->input(
-            'anio',
+
+    if (
+        ! $aniosDisponibles->contains(
+            now()->year
+        )
+    ) {
+        $aniosDisponibles->push(
             now()->year
         );
-
-
-        $aniosDisponibles = Solicitud::query()
-            ->where(
-                'usuario_id',
-                Auth::id()
-            )
-            ->whereNotNull(
-                'created_at'
-            )
-            ->selectRaw(
-                'EXTRACT(YEAR FROM created_at)::int AS anio'
-            )
-            ->distinct()
-            ->orderByDesc('anio')
-            ->pluck('anio');
-
-
-        if (
-            ! $aniosDisponibles->contains(
-                now()->year
-            )
-        ) {
-            $aniosDisponibles->push(
-                now()->year
-            );
-
-            $aniosDisponibles = $aniosDisponibles
-                ->sortDesc()
-                ->values();
-        }
-
-
-        $solicitudes = Solicitud::query()
-            ->where(
-                'usuario_id',
-                Auth::id()
-            )
-            ->whereMonth(
-                'created_at',
-                $mes
-            )
-            ->whereYear(
-                'created_at',
-                $anio
-            )
-            ->latest()
-            ->get();
-
-
-        return view(
-            'solicitudes.mis-solicitudes',
-            compact(
-                'solicitudes',
-                'mes',
-                'anio',
-                'aniosDisponibles'
-            )
-        );
     }
+
+
+    $aniosDisponibles = $aniosDisponibles
+        ->unique()
+        ->sortDesc()
+        ->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Consulta del periodo
+    |--------------------------------------------------------------------------
+    */
+
+    $consultaPeriodo = Solicitud::query()
+        ->where(
+            'usuario_id',
+            $usuarioId
+        )
+        ->whereMonth(
+            'created_at',
+            $mes
+        )
+        ->whereYear(
+            'created_at',
+            $anio
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resumen del periodo
+    |--------------------------------------------------------------------------
+    |
+    | Se calcula antes de paginar para que los valores representen todas
+    | las solicitudes del periodo y no únicamente la página visible.
+    |
+    */
+
+    $totalSolicitudes = (clone $consultaPeriodo)
+        ->count();
+
+
+    $solicitudesPendientes = (clone $consultaPeriodo)
+        ->whereIn(
+            'estado',
+            [
+                'pendiente',
+                'en_proceso',
+            ]
+        )
+        ->count();
+
+
+    $ultimaSolicitud = (clone $consultaPeriodo)
+        ->latest('created_at')
+        ->first();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Listado paginado
+    |--------------------------------------------------------------------------
+    */
+
+    $solicitudes = (clone $consultaPeriodo)
+        ->latest('created_at')
+        ->paginate(10)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Vista
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'solicitudes.mis-solicitudes',
+        compact(
+            'solicitudes',
+            'mes',
+            'anio',
+            'aniosDisponibles',
+            'totalSolicitudes',
+            'solicitudesPendientes',
+            'ultimaSolicitud'
+        )
+    );
+}
 
 
     /*
@@ -596,6 +673,11 @@ class SolicitudController extends Controller
         ]);
 
 
+        $this->notificarEstadoSolicitud(
+            $solicitud
+        );
+
+
         return back()->with(
             'success',
             'La solicitud fue marcada como finalizada.'
@@ -629,10 +711,55 @@ class SolicitudController extends Controller
         ]);
 
 
+        $this->notificarEstadoSolicitud(
+            $solicitud
+        );
+
+
         return back()->with(
             'success',
             'La solicitud fue cancelada.'
         );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar actualización de estado
+    |--------------------------------------------------------------------------
+    */
+
+    private function notificarEstadoSolicitud(
+        Solicitud $solicitud
+    ): void {
+        try {
+            $solicitud->loadMissing(
+                'usuario'
+            );
+
+            $solicitud->usuario?->notify(
+                new EstadoSolicitudActualizadoNotification(
+                    $solicitud
+                )
+            );
+        } catch (\Throwable $exception) {
+            Log::error(
+                'No se pudo registrar la notificación del cambio de estado de la solicitud.',
+                [
+                    'solicitud_id' =>
+                        $solicitud->id,
+
+                    'usuario_id' =>
+                        $solicitud->usuario_id,
+
+                    'estado' =>
+                        $solicitud->estado,
+
+                    'error' =>
+                        $exception->getMessage(),
+                ]
+            );
+        }
     }
 
 

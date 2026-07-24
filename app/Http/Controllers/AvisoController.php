@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aviso;
+use App\Models\Usuario;
+use App\Notifications\NuevoAvisoTiNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class AvisoController extends Controller
@@ -326,7 +330,7 @@ public function publicos(): View
         );
 
 
-        Aviso::create([
+        $aviso = Aviso::create([
             'titulo' => $validated['titulo'],
 
             'mensaje' => $validated['mensaje'],
@@ -347,6 +351,13 @@ public function publicos(): View
             'creado_por' =>
                 Auth::id(),
         ]);
+
+
+        if ($this->estaVisibleAhora($aviso)) {
+            $this->notificarNuevoAviso(
+                $aviso
+            );
+        }
 
 
         return redirect()
@@ -393,6 +404,12 @@ public function publicos(): View
         );
 
 
+        $estabaVisible =
+            $this->estaVisibleAhora(
+                $aviso
+            );
+
+
         $aviso->update([
             'titulo' => $validated['titulo'],
 
@@ -413,6 +430,18 @@ public function publicos(): View
         ]);
 
 
+        $aviso->refresh();
+
+        if (
+            ! $estabaVisible
+            && $this->estaVisibleAhora($aviso)
+        ) {
+            $this->notificarNuevoAviso(
+                $aviso
+            );
+        }
+
+
         return redirect()
             ->route('avisos.index')
             ->with(
@@ -431,9 +460,25 @@ public function publicos(): View
     public function changeStatus(
         Aviso $aviso
     ): RedirectResponse {
+        $estabaVisible =
+            $this->estaVisibleAhora(
+                $aviso
+            );
+
         $aviso->update([
             'activo' => ! $aviso->activo,
         ]);
+
+        $aviso->refresh();
+
+        if (
+            ! $estabaVisible
+            && $this->estaVisibleAhora($aviso)
+        ) {
+            $this->notificarNuevoAviso(
+                $aviso
+            );
+        }
 
 
         return back()->with(
@@ -442,6 +487,84 @@ public function publicos(): View
                 ? 'Aviso activado correctamente.'
                 : 'Aviso desactivado correctamente.'
         );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar si el aviso está visible
+    |--------------------------------------------------------------------------
+    */
+
+    private function estaVisibleAhora(
+        Aviso $aviso
+    ): bool {
+        if (! $aviso->activo) {
+            return false;
+        }
+
+        $ahora = now();
+
+        if (
+            $aviso->fecha_inicio
+            && $aviso->fecha_inicio->isFuture()
+        ) {
+            return false;
+        }
+
+        if (
+            $aviso->fecha_fin
+            && $aviso->fecha_fin->isPast()
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar aviso visible
+    |--------------------------------------------------------------------------
+    */
+
+    private function notificarNuevoAviso(
+        Aviso $aviso
+    ): void {
+        try {
+            $usuarios = Usuario::query()
+                ->where(
+                    'activo',
+                    true
+                )
+                ->whereKeyNot(
+                    Auth::id()
+                )
+                ->get();
+
+            if ($usuarios->isEmpty()) {
+                return;
+            }
+
+            Notification::send(
+                $usuarios,
+                new NuevoAvisoTiNotification(
+                    $aviso
+                )
+            );
+        } catch (\Throwable $exception) {
+            Log::error(
+                'No se pudieron registrar las notificaciones del aviso TI.',
+                [
+                    'aviso_id' =>
+                        $aviso->id,
+
+                    'error' =>
+                        $exception->getMessage(),
+                ]
+            );
+        }
     }
 
 

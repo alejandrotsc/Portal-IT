@@ -6,34 +6,45 @@
 
 <div class="min-h-screen bg-background">
 
-<main class="max-w-5xl mx-auto px-6 py-8 space-y-8">
+<main class="mx-auto max-w-5xl space-y-8 px-6 py-10">
 
     {{-- HEADER --}}
 
-    <section class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+    <section class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-        <div>
+        <div class="flex items-center gap-4">
 
-            <h1 class="text-xl font-semibold text-foreground">
-                Reporte de incidencia
-            </h1>
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:bg-primary/15 motion-safe:hover:scale-105">
 
-            <p class="text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                Describe el problema que estás presentando y adjunta evidencia
-                para que TI pueda ayudarte.
-            </p>
+                <i
+                    data-lucide="triangle-alert"
+                    stroke-width="1.8"
+                    class="h-6 w-6">
+                </i>
+
+            </div>
+
+            <div class="min-w-0">
+
+                <h1 class="text-2xl font-semibold tracking-tight text-foreground">
+                    Reporte de incidencia
+                </h1>
+
+                <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    Describe el problema que estás presentando y adjunta evidencia
+                    para que TI pueda ayudarte.
+                </p>
+
+            </div>
 
         </div>
 
 
         <a
             href="{{ route('mis-incidencias') }}"
-            class="inline-flex items-center justify-center gap-2
-                   px-4 py-2.5 rounded-xl border border-border
-                   bg-white text-sm font-medium text-foreground
-                   hover:bg-muted transition"
+            class="group/history inline-flex items-center justify-center gap-2 rounded-xl border border-primary/10 bg-primary/[0.06] px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 hover:shadow-md active:scale-[0.98]"
         >
-            <i data-lucide="history" class="w-4 h-4"></i>
+            <i data-lucide="history" stroke-width="1.8" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/history:-rotate-12"></i>
 
             Mis incidencias
         </a>
@@ -53,25 +64,34 @@
 
         {{-- INFORMACIÓN DEL PROBLEMA --}}
 
-        <section class="bg-card rounded-2xl border border-border overflow-hidden">
+        <section class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
 
-            <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+            <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
+
+            <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
 
                 <span
-                    class="w-6 h-6 rounded-full bg-primary text-white
-                           text-xs font-semibold flex items-center justify-center"
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
                 >
                     1
                 </span>
 
-                <h2 class="text-sm font-semibold text-foreground">
-                    Información del problema
-                </h2>
+                <div>
+
+                    <h2 class="text-sm font-semibold text-foreground">
+                        Información del problema
+                    </h2>
+
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                        Explícanos qué sucede y desde cuándo lo estás experimentando.
+                    </p>
+
+                </div>
 
             </div>
 
 
-            <div class="px-6 py-5 space-y-5">
+            <div class="relative space-y-5 px-6 py-5">
 
                 <div>
 
@@ -85,19 +105,35 @@
                         <span class="text-primary">*</span>
                     </label>
 
-                    <input
-                        id="titulo"
-                        type="text"
-                        name="titulo"
-                        required
-                        maxlength="255"
-                        value="{{ old('titulo', request('titulo')) }}"
-                        placeholder="Ej: No puedo ingresar al correo corporativo"
-                        class="w-full px-3.5 py-2.5 rounded-lg border
-                               border-border bg-white text-sm
-                               focus:outline-none focus:border-primary
-                               focus:ring-2 focus:ring-primary/10"
-                    >
+                    <div
+                        @class([
+                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' => $errors->has('titulo'),
+                            'border-border focus-within:border-primary focus-within:ring-primary/10' => ! $errors->has('titulo'),
+                        ])>
+
+                        <i data-lucide="text" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110"></i>
+
+                        <input
+                            id="titulo"
+                            type="text"
+                            name="titulo"
+                            required
+                            maxlength="255"
+                            value="{{ old('titulo', request('titulo')) }}"
+                            placeholder="Ej: No puedo ingresar al correo corporativo"
+                            class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">
+
+                    </div>
+
+                    @error('titulo')
+
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                            <i data-lucide="circle-alert" stroke-width="1.8" class="h-3.5 w-3.5 shrink-0"></i>
+                            {{ $message }}
+                        </p>
+
+                    @enderror
 
                 </div>
 
@@ -114,17 +150,34 @@
                         <span class="text-primary">*</span>
                     </label>
 
-                    <textarea
-                        id="descripcion"
-                        name="descripcion"
-                        required
-                        rows="5"
-                        placeholder="Indica qué ocurrió, qué estabas intentando hacer y si aparece algún mensaje..."
-                        class="w-full px-3.5 py-2.5 rounded-lg border
-                               border-border bg-white text-sm resize-none
-                               focus:outline-none focus:border-primary
-                               focus:ring-2 focus:ring-primary/10"
-                    >{{ old('descripcion', request('descripcion')) }}</textarea>
+                    <div
+                        @class([
+                            'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' => $errors->has('descripcion'),
+                            'border-border focus-within:border-primary focus-within:ring-primary/10' => ! $errors->has('descripcion'),
+                        ])>
+
+                        <i data-lucide="align-left" stroke-width="1.8" class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110"></i>
+
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            required
+                            rows="5"
+                            maxlength="3000"
+                            placeholder="Indica qué ocurrió, qué estabas intentando hacer y si aparece algún mensaje..."
+                            class="w-full resize-none border-0 bg-transparent py-2.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">{{ old('descripcion', request('descripcion')) }}</textarea>
+
+                    </div>
+
+                    @error('descripcion')
+
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                            <i data-lucide="circle-alert" stroke-width="1.8" class="h-3.5 w-3.5 shrink-0"></i>
+                            {{ $message }}
+                        </p>
+
+                    @enderror
 
                 </div>
 
@@ -141,12 +194,14 @@
                             ¿Cuándo empezó?
                         </label>
 
+                        <div class="group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border border-border bg-white px-3.5 transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                            <i data-lucide="clock-3" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110"></i>
+
                         <select
                             id="tiempo_problema"
                             name="tiempo_problema"
-                            class="w-full px-3.5 py-2.5 rounded-lg border
-                                   border-border bg-white text-sm"
-                        >
+                            class="w-full appearance-none border-0 bg-transparent py-2.5 text-sm text-foreground focus:outline-none focus:ring-0">
                             <option value="">
                                 Seleccione
                             </option>
@@ -173,6 +228,10 @@
                             </option>
                         </select>
 
+                            <i data-lucide="chevron-down" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-focus-within/field:rotate-180 group-focus-within/field:text-primary"></i>
+
+                        </div>
+
                     </div>
 
 
@@ -186,12 +245,14 @@
                             ¿A quién afecta?
                         </label>
 
+                        <div class="group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border border-border bg-white px-3.5 transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                            <i data-lucide="users-round" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110"></i>
+
                         <select
                             id="afectacion"
                             name="afectacion"
-                            class="w-full px-3.5 py-2.5 rounded-lg border
-                                   border-border bg-white text-sm"
-                        >
+                            class="w-full appearance-none border-0 bg-transparent py-2.5 text-sm text-foreground focus:outline-none focus:ring-0">
                             <option
                                 value="solo"
                                 @selected(old('afectacion', 'solo') === 'solo')
@@ -214,6 +275,10 @@
                             </option>
                         </select>
 
+                            <i data-lucide="chevron-down" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-focus-within/field:rotate-180 group-focus-within/field:text-primary"></i>
+
+                        </div>
+
                     </div>
 
                 </div>
@@ -225,38 +290,50 @@
 
         {{-- EVIDENCIA --}}
 
-        <section class="bg-card rounded-2xl border border-border overflow-hidden">
+        <section class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
 
-            <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+            <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
+
+            <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
 
                 <span
-                    class="w-6 h-6 rounded-full bg-primary text-white
-                           text-xs font-semibold flex items-center
-                           justify-center shrink-0"
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
                 >
                     2
                 </span>
 
-                <h2 class="text-sm font-semibold text-foreground">
-                    Evidencia del problema
-                </h2>
+                <div>
+
+                    <h2 class="text-sm font-semibold text-foreground">
+                        Evidencia del problema
+                    </h2>
+
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                        Añade capturas que ayuden a identificar lo sucedido.
+                    </p>
+
+                </div>
 
             </div>
 
 
-            <div class="px-6 py-5 space-y-5">
+            <div class="relative space-y-5 px-6 py-5">
 
                 <div
                     id="dropzone"
-                    class="flex flex-col items-center justify-center h-48
-                           rounded-xl border-2 border-dashed border-border
-                           hover:border-primary hover:bg-primary/5
-                           cursor-pointer transition"
+                    role="button"
+                    tabindex="0"
+                    class="group/dropzone flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.03] via-white to-blue-50/40 transition-all duration-300 hover:border-primary/50 hover:bg-primary/[0.06] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
-                    <i
-                        data-lucide="image"
-                        class="w-8 h-8 text-muted-foreground mb-3"
-                    ></i>
+                    <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover/dropzone:bg-primary/15 motion-safe:group-hover/dropzone:scale-110">
+
+                        <i
+                            data-lucide="image-up"
+                            stroke-width="1.8"
+                            class="h-6 w-6">
+                        </i>
+
+                    </div>
 
                     <p class="text-sm text-muted-foreground">
                         Arrastra tus capturas aquí
@@ -287,11 +364,12 @@
                 ></div>
 
 
-                <div class="flex items-start gap-3 bg-muted/50 rounded-xl p-4">
+                <div class="flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
 
                     <i
                         data-lucide="info"
-                        class="w-5 h-5 text-primary shrink-0"
+                        stroke-width="1.8"
+                        class="h-4 w-4 shrink-0 text-primary mt-0.5"
                     ></i>
 
                     <p class="text-xs text-muted-foreground leading-relaxed">
@@ -309,26 +387,34 @@
 
         {{-- INFORMACIÓN ADICIONAL --}}
 
-        <section class="bg-card rounded-2xl border border-border overflow-hidden">
+        <section class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
 
-            <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+            <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
+
+            <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
 
                 <span
-                    class="w-6 h-6 rounded-full bg-primary text-white
-                           text-xs font-semibold flex items-center
-                           justify-center shrink-0"
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
                 >
                     3
                 </span>
 
-                <h2 class="text-sm font-semibold text-foreground">
-                    Información adicional
-                </h2>
+                <div>
+
+                    <h2 class="text-sm font-semibold text-foreground">
+                        Información adicional
+                    </h2>
+
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                        Estos datos ayudarán a ubicar y revisar el problema.
+                    </p>
+
+                </div>
 
             </div>
 
 
-            <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="relative grid grid-cols-1 gap-5 px-6 py-5 sm:grid-cols-2">
 
                 <div>
 
@@ -340,15 +426,20 @@
                         Equipo relacionado
                     </label>
 
-                    <input
-                        id="equipo"
-                        type="text"
-                        name="equipo"
-                        value="{{ old('equipo', request('equipo')) }}"
-                        placeholder="Ej: Laptop Dell, impresora..."
-                        class="w-full px-3.5 py-2.5 rounded-lg border
-                               border-border bg-white text-sm"
-                    >
+                    <div class="group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border border-border bg-white px-3.5 transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i data-lucide="monitor" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110"></i>
+
+                        <input
+                            id="equipo"
+                            type="text"
+                            name="equipo"
+                            maxlength="200"
+                            value="{{ old('equipo', request('equipo')) }}"
+                            placeholder="Ej: Laptop Dell, impresora..."
+                            class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">
+
+                    </div>
 
                 </div>
 
@@ -363,15 +454,20 @@
                         Lugar donde ocurre
                     </label>
 
-                    <input
-                        id="ubicacion"
-                        type="text"
-                        name="ubicacion"
-                        value="{{ old('ubicacion', request('ubicacion')) }}"
-                        placeholder="Ej: Oficina, Producción..."
-                        class="w-full px-3.5 py-2.5 rounded-lg border
-                               border-border bg-white text-sm"
-                    >
+                    <div class="group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border border-border bg-white px-3.5 transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i data-lucide="map-pin" stroke-width="1.8" class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110"></i>
+
+                        <input
+                            id="ubicacion"
+                            type="text"
+                            name="ubicacion"
+                            maxlength="200"
+                            value="{{ old('ubicacion', request('ubicacion')) }}"
+                            placeholder="Ej: Oficina, Producción..."
+                            class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">
+
+                    </div>
 
                 </div>
 
@@ -390,10 +486,12 @@
 
                 <div
                     id="smtpEstadoIncidencia"
-                    class="inline-flex items-center gap-2
-                           text-xs text-muted-foreground"
+                    class="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-xs text-muted-foreground shadow-sm"
                 >
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span class="relative flex h-2.5 w-2.5 shrink-0">
+                        <span class="absolute inline-flex h-full w-full rounded-full bg-slate-300 opacity-60"></span>
+                        <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-slate-400"></span>
+                    </span>
 
                     El correo SMTP se comprobará al enviar
                 </div>
@@ -405,12 +503,9 @@
                     data-recipient="helpdesk@televicentro.hn"
                     data-user-name="{{ auth()->user()->nombre ?? 'N/A' }}"
                     data-user-email="{{ auth()->user()->correo ?? 'N/A' }}"
-                    class="hidden items-center justify-center gap-1.5
-                           rounded-lg border border-amber-300 bg-amber-50
-                           px-3 py-1.5 text-xs font-medium text-amber-800
-                           hover:bg-amber-100 transition"
+                    class="group/report hidden items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
                 >
-                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="external-link" stroke-width="1.8" class="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover/report:translate-x-0.5 motion-safe:group-hover/report:-translate-y-0.5"></i>
 
                     Reportar por Outlook 365
                 </button>
@@ -418,15 +513,12 @@
             </div>
 
 
-            <div class="flex justify-end gap-3">
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 
                 <button
                     id="btnCancelar"
                     type="button"
-                    class="inline-flex items-center justify-center
-                           px-5 py-2.5 rounded-xl border border-border
-                           bg-white text-sm text-muted-foreground
-                           hover:bg-muted transition-colors"
+                    class="inline-flex items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground hover:shadow-md active:scale-[0.98]"
                 >
                     Cancelar
                 </button>
@@ -435,15 +527,13 @@
                 <button
                     id="btnEnviar"
                     type="submit"
-                    class="inline-flex items-center justify-center gap-2
-                           px-5 py-2.5 rounded-xl bg-primary text-white
-                           text-sm font-medium disabled:opacity-70
-                           disabled:cursor-not-allowed"
+                    class="group/send inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:shadow-sm"
                 >
                     <i
                         id="btnEnviarIcono"
                         data-lucide="send"
-                        class="w-4 h-4"
+                        stroke-width="1.8"
+                        class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/send:translate-x-0.5 motion-safe:group-hover/send:-translate-y-0.5"
                     ></i>
 
                     <span id="btnEnviarTexto">
@@ -466,27 +556,26 @@
 
 <div
     id="modalIncidencia"
-    class="fixed inset-0 bg-black/40 backdrop-blur-sm
-           hidden items-center justify-center z-50 p-4"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
 >
     <div
-        class="bg-white rounded-2xl shadow-2xl
-               max-w-lg w-full overflow-hidden"
+        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20"
     >
+
+        <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl"></span>
 
         {{-- CABECERA --}}
 
-        <div class="px-7 pt-8 pb-6 text-center">
+        <div class="relative px-7 pb-6 pt-8 text-center">
 
             <div
                 id="modalIcono"
-                class="w-16 h-16 rounded-2xl bg-green-50 border
-                       border-green-200 flex items-center
-                       justify-center mx-auto"
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm"
             >
                 <i
-                    data-lucide="check-circle"
-                    class="w-8 h-8 text-green-600"
+                    data-lucide="circle-check-big"
+                    stroke-width="1.8"
+                    class="h-8 w-8 text-emerald-600"
                 ></i>
             </div>
 
@@ -520,12 +609,11 @@
 
         {{-- ESTADO SMTP --}}
 
-        <div class="px-7 pb-7">
+        <div class="relative px-7 pb-7">
 
             <div
                 id="estadoCorreoIncidencia"
-                class="rounded-2xl border border-green-200
-                       bg-green-50/70 p-5 text-left"
+                class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm"
             >
                 <div
                     class="grid grid-cols-[40px_minmax(0,1fr)]
@@ -533,13 +621,12 @@
                 >
                     <div
                         id="estadoCorreoIncidenciaIcono"
-                        class="w-10 h-10 rounded-xl bg-white border
-                               border-green-200 flex items-center
-                               justify-center"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm"
                     >
                         <i
                             data-lucide="mail-check"
-                            class="w-5 h-5 text-green-600"
+                            stroke-width="1.8"
+                            class="h-5 w-5"
                         ></i>
                     </div>
 
@@ -548,7 +635,7 @@
 
                         <p
                             id="estadoCorreoIncidenciaTitulo"
-                            class="text-sm font-semibold text-green-800"
+                            class="text-sm font-semibold text-emerald-800"
                         >
                             Correo enviado correctamente
                         </p>
@@ -556,7 +643,7 @@
 
                         <p
                             id="estadoCorreoIncidenciaMensaje"
-                            class="text-xs text-green-700 leading-relaxed mt-1.5"
+                            class="mt-1.5 text-xs leading-relaxed text-emerald-700"
                         >
                             El servidor SMTP aceptó la notificación.
                         </p>
@@ -568,13 +655,9 @@
                             data-recipient="helpdesk@televicentro.hn"
                             data-user-name="{{ auth()->user()->nombre ?? 'N/A' }}"
                             data-user-email="{{ auth()->user()->correo ?? 'N/A' }}"
-                            class="hidden w-full mt-4 items-center
-                                   justify-center gap-2 rounded-xl border
-                                   border-amber-300 bg-white px-4 py-2.5
-                                   text-xs font-semibold text-amber-800
-                                   hover:bg-amber-100 transition"
+                            class="group/report-modal mt-4 hidden w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
                         >
-                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                            <i data-lucide="external-link" stroke-width="1.8" class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/report-modal:translate-x-0.5 motion-safe:group-hover/report-modal:-translate-y-0.5"></i>
 
                             Reportar mediante Outlook 365
                         </button>
@@ -586,11 +669,12 @@
             </div>
 
 
-            <div class="flex items-start gap-3 mt-5 px-1">
+            <div class="mt-5 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
 
                 <i
                     data-lucide="info"
-                    class="w-4 h-4 text-muted-foreground shrink-0 mt-0.5"
+                    stroke-width="1.8"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-primary"
                 ></i>
 
                 <p class="text-xs text-muted-foreground leading-relaxed">
@@ -612,10 +696,7 @@
                 <button
                     type="button"
                     id="cerrarModalIncidencia"
-                    class="w-full inline-flex items-center justify-center
-                           px-5 py-2.5 rounded-xl border border-border
-                           bg-white text-sm font-medium text-foreground
-                           hover:bg-muted transition"
+                    class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-md active:scale-[0.98]"
                 >
                     Cerrar
                 </button>
@@ -623,12 +704,9 @@
 
                 <a
                     href="{{ route('mis-incidencias') }}"
-                    class="w-full inline-flex items-center justify-center
-                           gap-2 px-5 py-2.5 rounded-xl bg-primary
-                           text-white text-sm font-medium hover:opacity-90
-                           transition"
+                    class="group/history-modal inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-[0.98]"
                 >
-                    <i data-lucide="history" class="w-4 h-4"></i>
+                    <i data-lucide="history" stroke-width="1.8" class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/history-modal:-rotate-12"></i>
 
                     Mis incidencias
                 </a>

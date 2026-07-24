@@ -6,6 +6,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\MemorandoController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
@@ -169,6 +170,29 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Notificaciones
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/notificaciones',
+        [NotificacionController::class, 'index']
+    )->name('notificaciones.index');
+
+
+    Route::get(
+        '/notificaciones/{notification}',
+        [NotificacionController::class, 'abrir']
+    )->name('notificaciones.abrir');
+
+
+    Route::patch(
+        '/notificaciones/marcar-todas/leidas',
+        [NotificacionController::class, 'marcarTodasComoLeidas']
+    )->name('notificaciones.marcar-todas');
+
+    /*
+    |--------------------------------------------------------------------------
     | Memorandos
     |--------------------------------------------------------------------------
     */
@@ -298,6 +322,20 @@ Route::middleware('auth')->group(function () {
         ]
     )->name('memorandos.historico');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Visualizar PDF
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/memorandos/{memorando}/pdf',
+        [
+            MemorandoController::class,
+            'pdf',
+        ]
+    )->name('memorandos.pdf');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -306,27 +344,13 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::get(
-        '/memorandos/{id}/download',
+        '/memorandos/{memorando}/download',
         [
             MemorandoController::class,
             'download',
         ]
     )->name('memorandos.download');
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Visualizar PDF
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get(
-        '/memorandos/{id}/pdf',
-        [
-            MemorandoController::class,
-            'pdf',
-        ]
-    )->name('memorandos.pdf');
 
 
     /*
@@ -459,7 +483,6 @@ Route::middleware('auth')->group(function () {
         'incidencias',
         IncidenciaController::class
     )->only([
-        'index',
         'create',
         'store',
         'show',
@@ -480,56 +503,6 @@ Route::middleware('auth')->group(function () {
         ]
     )->name('mis-incidencias');
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Acciones de soporte
-    |--------------------------------------------------------------------------
-    */
-
-    Route::post(
-        '/incidencias/{incidencia}/tomar',
-        [
-            IncidenciaController::class,
-            'tomar',
-        ]
-    )->name('incidencias.tomar');
-
-
-    Route::post(
-        '/incidencias/{incidencia}/asignar',
-        [
-            IncidenciaController::class,
-            'asignar',
-        ]
-    )->name('incidencias.asignar');
-
-
-    Route::post(
-        '/incidencias/{incidencia}/diagnostico',
-        [
-            IncidenciaController::class,
-            'diagnostico',
-        ]
-    )->name('incidencias.diagnostico');
-
-
-    Route::post(
-        '/incidencias/{incidencia}/resolver',
-        [
-            IncidenciaController::class,
-            'resolver',
-        ]
-    )->name('incidencias.resolver');
-
-
-    Route::post(
-        '/incidencias/{incidencia}/cerrar',
-        [
-            IncidenciaController::class,
-            'cerrar',
-        ]
-    )->name('incidencias.cerrar');
 
 });
 
@@ -555,8 +528,68 @@ Route::middleware([
     ->group(function () {
 
         /*
+|--------------------------------------------------------------------------
+| Administración de pases
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/pases',
+    [
+        MemorandoController::class,
+        'administracionPases',
+    ]
+)->name('pases');
+
+
+/*
+|--------------------------------------------------------------------------
+| Detalle del pase
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/pases/{memorando}',
+    [
+        MemorandoController::class,
+        'showAdministracionPase',
+    ]
+)->name('pases.show');
+
+
+/*
+|--------------------------------------------------------------------------
+| Aprobar pase
+|--------------------------------------------------------------------------
+*/
+
+Route::patch(
+    '/pases/{memorando}/aprobar',
+    [
+        MemorandoController::class,
+        'aprobarPase',
+    ]
+)->name('pases.aprobar');
+
+
+/*
+|--------------------------------------------------------------------------
+| Rechazar pase
+|--------------------------------------------------------------------------
+*/
+
+Route::patch(
+    '/pases/{memorando}/rechazar',
+    [
+        MemorandoController::class,
+        'rechazarPase',
+    ]
+)->name('pases.rechazar');
+
+
+        /*
         |--------------------------------------------------------------------------
-        | Listado
+        | Administración de solicitudes
         |--------------------------------------------------------------------------
         */
 
@@ -730,12 +763,78 @@ Route::middleware([
     )->name('admin.incidencias');
 
 
-    Route::post(
-        '/administracion/incidencias/{incidencia}/asignar',
+    /*
+    |--------------------------------------------------------------------------
+    | Detalle administrativo
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/administracion/incidencias/{incidencia}',
         [
             IncidenciaController::class,
-            'asignar',
+            'showAdministracion',
         ]
-    )->name('admin.incidencias.asignar');
+    )->name('admin.incidencias.show');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Iniciar atención
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/administracion/incidencias/{incidencia}/iniciar',
+        [
+            IncidenciaController::class,
+            'iniciar',
+        ]
+    )->name('admin.incidencias.iniciar');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/administracion/incidencias/{incidencia}/resolver',
+        [
+            IncidenciaController::class,
+            'resolver',
+        ]
+    )->name('admin.incidencias.resolver');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reabrir
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/administracion/incidencias/{incidencia}/reabrir',
+        [
+            IncidenciaController::class,
+            'reabrir',
+        ]
+    )->name('admin.incidencias.reabrir');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar prioridad
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/administracion/incidencias/{incidencia}/prioridad',
+        [
+            IncidenciaController::class,
+            'actualizarPrioridad',
+        ]
+    )->name('admin.incidencias.prioridad');
 
 });

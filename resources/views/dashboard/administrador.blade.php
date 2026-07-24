@@ -35,7 +35,7 @@
 
                     <p class="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
 
-                        Administra usuarios, avisos informativos y solicitudes registradas en el portal.
+                        Administra usuarios, solicitudes, incidencias, pases y avisos informativos del portal.
 
                     </p>
 
@@ -75,64 +75,13 @@
         </h2>
 
         <p class="mt-1 text-sm text-muted-foreground">
-            Información actual de usuarios, solicitudes y avisos.
+            Actividad actual de usuarios y gestiones pendientes de revisión.
         </p>
 
     </div>
 
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-
-        {{-- Usuarios registrados --}}
-
-        <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 motion-safe:hover:-translate-y-1">
-
-            {{-- Decoración --}}
-
-            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:bg-blue-400/20 motion-safe:group-hover:scale-150">
-            </div>
-
-
-            <div class="relative mb-5 flex items-center justify-between">
-
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:bg-blue-100 motion-safe:group-hover:scale-105">
-
-                    <i
-                        data-lucide="users"
-                        stroke-width="1.8"
-                        class="h-5 w-5 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
-                    </i>
-
-                </div>
-
-
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-700">
-
-                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500">
-                    </span>
-
-                    Total
-
-                </span>
-
-            </div>
-
-
-            <p class="relative text-2xl font-semibold leading-none text-foreground">
-
-                {{ $totalUsuarios ?? 0 }}
-
-            </p>
-
-            <p class="relative mt-2 text-sm text-muted-foreground">
-
-                Usuarios registrados
-
-            </p>
-
-        </div>
-
 
 
         {{-- Usuarios conectados --}}
@@ -244,7 +193,58 @@
 
 
 
-        {{-- Avisos activos --}}
+        {{-- Incidencias abiertas --}}
+
+        <div class="group relative overflow-hidden rounded-2xl border border-violet-200/60 bg-gradient-to-br from-violet-50 via-white to-indigo-50/50 p-5 shadow-sm transition-all duration-300 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/10 motion-safe:hover:-translate-y-1">
+
+            {{-- Decoración --}}
+
+            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet-400/10 transition-all duration-500 group-hover:bg-violet-400/20 motion-safe:group-hover:scale-150">
+            </div>
+
+
+            <div class="relative mb-5 flex items-center justify-between">
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 transition-all duration-300 group-hover:bg-violet-100 motion-safe:group-hover:scale-105">
+
+                    <i
+                        data-lucide="triangle-alert"
+                        stroke-width="1.8"
+                        class="h-5 w-5 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
+                    </i>
+
+                </div>
+
+
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-700">
+
+                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500">
+                    </span>
+
+                    Abiertas
+
+                </span>
+
+            </div>
+
+
+            <p class="relative text-2xl font-semibold leading-none text-foreground">
+
+                {{ $incidenciasAbiertas ?? 0 }}
+
+            </p>
+
+            <p class="relative mt-2 text-sm text-muted-foreground">
+
+                Incidencias por atender
+
+            </p>
+
+        </div>
+
+
+
+        {{-- Pases por revisar --}}
 
         <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 motion-safe:hover:-translate-y-1">
 
@@ -259,7 +259,7 @@
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:bg-amber-100 motion-safe:group-hover:scale-105">
 
                     <i
-                        data-lucide="megaphone"
+                        data-lucide="file-check-2"
                         stroke-width="1.8"
                         class="h-5 w-5 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
                     </i>
@@ -272,7 +272,7 @@
                     <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500">
                     </span>
 
-                    Publicados
+                    Pendientes
 
                 </span>
 
@@ -281,13 +281,13 @@
 
             <p class="relative text-2xl font-semibold leading-none text-foreground">
 
-                {{ $avisosActivos ?? 0 }}
+                {{ $pasesPorRevisar ?? 0 }}
 
             </p>
 
             <p class="relative mt-2 text-sm text-muted-foreground">
 
-                Avisos visibles en el portal
+                Pases por revisar
 
             </p>
 
@@ -420,6 +420,103 @@
 
 
 
+                {{-- Administración de pases --}}
+
+                <a
+                    href="{{ route('admin.pases') }}"
+                    class="group block h-full">
+
+                    <div class="relative h-full overflow-hidden bg-card rounded-2xl border border-border p-5 shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-lg hover:shadow-sky-500/10 motion-safe:hover:-translate-y-1">
+
+
+                        {{-- Fondo degradado --}}
+
+                        <div
+                            class="absolute inset-0 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity duration-300"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    rgba(240, 249, 255, 0.95) 0%,
+                                    rgba(255, 255, 255, 0.20) 55%,
+                                    rgba(239, 246, 255, 0.90) 100%
+                                );
+                            ">
+                        </div>
+
+
+                        <div class="relative z-10 h-full flex flex-col">
+
+                            <div class="flex items-start justify-between mb-5">
+
+                                <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-sky-100 transition-all duration-300 group-hover:bg-sky-200 motion-safe:group-hover:scale-105">
+
+                                    <i
+                                        data-lucide="file-check-2"
+                                        stroke-width="1.8"
+                                        class="w-5 h-5 text-sky-600 transition-transform duration-300 motion-safe:group-hover:scale-110">
+                                    </i>
+
+                                </div>
+
+
+                                <i
+                                    data-lucide="arrow-right"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4 text-sky-500 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 motion-safe:group-hover:translate-x-1">
+                                </i>
+
+                            </div>
+
+
+                            <h3 class="text-sm font-semibold text-foreground mb-2">
+
+                                Administración de pases
+
+                            </h3>
+
+                            <p class="text-xs text-muted-foreground leading-relaxed">
+
+                                Revisa los pases registrados y determina si deben aprobarse o rechazarse.
+
+                            </p>
+
+
+                            <div class="mt-auto pt-5 flex flex-wrap gap-2">
+
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium text-sky-700">
+
+                                    <i
+                                        data-lucide="files"
+                                        stroke-width="1.8"
+                                        class="w-3 h-3 shrink-0">
+                                    </i>
+
+                                    Ver pases
+
+                                </span>
+
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700">
+
+                                    <i
+                                        data-lucide="badge-check"
+                                        stroke-width="1.8"
+                                        class="w-3 h-3 shrink-0">
+                                    </i>
+
+                                    Aprobar o rechazar
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+
                 {{-- Administración de solicitudes --}}
 
                 <a
@@ -504,6 +601,103 @@
                                     </i>
 
                                     Actualizar estados
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+
+                {{-- Administración de incidencias --}}
+
+                <a
+                    href="{{ route('admin.incidencias') }}"
+                    class="group block h-full">
+
+                    <div class="relative h-full overflow-hidden bg-card rounded-2xl border border-border p-5 shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/10 motion-safe:hover:-translate-y-1">
+
+
+                        {{-- Fondo degradado --}}
+
+                        <div
+                            class="absolute inset-0 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity duration-300"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    rgba(245, 243, 255, 0.95) 0%,
+                                    rgba(255, 255, 255, 0.20) 55%,
+                                    rgba(238, 242, 255, 0.90) 100%
+                                );
+                            ">
+                        </div>
+
+
+                        <div class="relative z-10 h-full flex flex-col">
+
+                            <div class="flex items-start justify-between mb-5">
+
+                                <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-violet-100 transition-all duration-300 group-hover:bg-violet-200 motion-safe:group-hover:scale-105">
+
+                                    <i
+                                        data-lucide="triangle-alert"
+                                        stroke-width="1.8"
+                                        class="w-5 h-5 text-violet-600 transition-transform duration-300 motion-safe:group-hover:scale-110">
+                                    </i>
+
+                                </div>
+
+
+                                <i
+                                    data-lucide="arrow-right"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4 text-violet-500 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 motion-safe:group-hover:translate-x-1">
+                                </i>
+
+                            </div>
+
+
+                            <h3 class="text-sm font-semibold text-foreground mb-2">
+
+                                Administración de incidencias
+
+                            </h3>
+
+                            <p class="text-xs text-muted-foreground leading-relaxed">
+
+                                Consulta los reportes, establece su prioridad y actualiza el estado de atención.
+
+                            </p>
+
+
+                            <div class="mt-auto pt-5 flex flex-wrap gap-2">
+
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-medium text-violet-700">
+
+                                    <i
+                                        data-lucide="inbox"
+                                        stroke-width="1.8"
+                                        class="w-3 h-3 shrink-0">
+                                    </i>
+
+                                    Ver incidencias
+
+                                </span>
+
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-medium text-indigo-700">
+
+                                    <i
+                                        data-lucide="activity"
+                                        stroke-width="1.8"
+                                        class="w-3 h-3 shrink-0">
+                                    </i>
+
+                                    Gestionar atención
 
                                 </span>
 
@@ -648,7 +842,7 @@
 
                         <p class="text-sm text-muted-foreground mt-1 leading-relaxed">
 
-                            Los cambios realizados en usuarios, solicitudes y avisos pueden afectar directamente el acceso, seguimiento y la información mostrada dentro del portal.
+                            Los cambios realizados en usuarios, solicitudes, incidencias, pases y avisos pueden afectar directamente el acceso, seguimiento y la información mostrada dentro del portal.
 
                         </p>
 

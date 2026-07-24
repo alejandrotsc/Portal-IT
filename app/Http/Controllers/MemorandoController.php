@@ -10,6 +10,7 @@ use App\Models\MemorandoArchivo;
 use App\Models\MemorandoHistorial;
 use App\Models\FolioCounter;
 use App\Services\Mail\TrackedMailService;
+use App\Notifications\EstadoPaseActualizadoNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,9 @@ use App\Mail\PaseTemporalMail;
 use App\Mail\AutorizacionMail;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 
 class MemorandoController extends Controller
@@ -1077,8 +1081,7 @@ break;
 
 public function misPases(Request $request)
 {
-    $request->validate([
-
+    $validated = $request->validate([
         'mes' => [
             'nullable',
             'integer',
@@ -1096,49 +1099,48 @@ public function misPases(Request $request)
             'string',
             'in:todos,pase_temporal,autorizacion',
         ],
-
     ]);
 
 
-    $mes = (int) $request->input(
-        'mes',
-        now()->month
+    $mes = (int) (
+        $validated['mes']
+        ?? now()->month
     );
 
-
-    $anio = (int) $request->input(
-        'anio',
-        now()->year
+    $anio = (int) (
+        $validated['anio']
+        ?? now()->year
     );
 
+    $tipoSeleccionado = $validated['tipo']
+        ?? 'todos';
 
-    $tipoSeleccionado = $request->input(
-        'tipo',
-        'todos'
-    );
+    $usuarioId = (int) auth()->id();
 
 
     /*
     |--------------------------------------------------------------------------
-    | Consulta base
+    | Consulta base del usuario
     |--------------------------------------------------------------------------
     */
 
     $consultaBase = Memorando::query()
-
         ->where(
             'solicitante_id',
-            auth()->id()
+            $usuarioId
         )
-
-        ->whereHas('tipo', function ($query) {
-
-            $query->whereIn('slug', [
-                'pase_temporal',
-                'autorizacion',
-            ]);
-
-        });
+        ->whereHas(
+            'tipo',
+            function ($query) {
+                $query->whereIn(
+                    'slug',
+                    [
+                        'pase_temporal',
+                        'autorizacion',
+                    ]
+                );
+            }
+        );
 
 
     /*
@@ -1148,79 +1150,106 @@ public function misPases(Request $request)
     */
 
     $aniosDisponibles = (clone $consultaBase)
-
-        ->whereNotNull('created_at')
-
+        ->whereNotNull(
+            'created_at'
+        )
         ->selectRaw(
             'EXTRACT(YEAR FROM created_at)::int AS anio'
         )
-
         ->distinct()
-
         ->orderByDesc('anio')
-
-        ->pluck('anio');
-
-
-    if(!$aniosDisponibles->contains(now()->year)){
-
-        $aniosDisponibles->push(
+        ->pluck('anio')
+        ->map(
+            static fn ($valor): int =>
+                (int) $valor
+        )
+        ->push(
             now()->year
-        );
-
-
-        $aniosDisponibles = $aniosDisponibles
-            ->sortDesc()
-            ->values();
-
-    }
+        )
+        ->unique()
+        ->sortDesc()
+        ->values();
 
 
     /*
     |--------------------------------------------------------------------------
-    | Aplicar filtros
+    | Consulta del periodo seleccionado
     |--------------------------------------------------------------------------
     */
 
-    $memorandos = $consultaBase
-
-        ->with([
-            'tipo',
-            'solicitante',
-        ])
-
+    $consultaPeriodo = (clone $consultaBase)
         ->whereMonth(
             'created_at',
             $mes
         )
-
         ->whereYear(
             'created_at',
             $anio
-        )
+        );
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resumen del periodo
+    |--------------------------------------------------------------------------
+    |
+    | Estos valores se calculan antes de paginar y no cambian al seleccionar
+    | un tipo. De esta manera muestran el resumen completo del mes.
+    |
+    */
+
+    $totalPases = (clone $consultaPeriodo)
+        ->count();
+
+    $pasesMenores = (clone $consultaPeriodo)
+        ->whereHas(
+            'tipo',
+            fn ($query) => $query->where(
+                'slug',
+                'pase_temporal'
+            )
+        )
+        ->count();
+
+    $pasesMayores = (clone $consultaPeriodo)
+        ->whereHas(
+            'tipo',
+            fn ($query) => $query->where(
+                'slug',
+                'autorizacion'
+            )
+        )
+        ->count();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Listado filtrado y paginado
+    |--------------------------------------------------------------------------
+    */
+
+    $memorandos = (clone $consultaPeriodo)
+        ->with([
+            'tipo',
+            'solicitante',
+        ])
         ->when(
             $tipoSeleccionado !== 'todos',
             function ($query) use ($tipoSeleccionado) {
-
                 $query->whereHas(
                     'tipo',
                     function ($tipoQuery) use ($tipoSeleccionado) {
-
                         $tipoQuery->where(
                             'slug',
                             $tipoSeleccionado
                         );
-
                     }
                 );
-
             }
         )
-
-        ->latest()
-
-        ->get();
+        ->latest('created_at')
+        ->paginate(10)
+        ->withQueryString();
 
 
     return view(
@@ -1230,11 +1259,13 @@ public function misPases(Request $request)
             'mes',
             'anio',
             'tipoSeleccionado',
-            'aniosDisponibles'
+            'aniosDisponibles',
+            'totalPases',
+            'pasesMenores',
+            'pasesMayores'
         )
     );
 }
-
 
 /*
 |--------------------------------------------------------------------------
@@ -1301,6 +1332,485 @@ public function showPase(
         compact('memorando')
     );
 }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Administración de pases
+    |--------------------------------------------------------------------------
+    */
+
+    public function administracionPases(
+        Request $request
+    ): View {
+        $validated = $request->validate([
+            'buscar' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+
+            'estado' => [
+                'nullable',
+                Rule::in(
+                    Memorando::ESTADOS_ADMINISTRATIVOS
+                ),
+            ],
+
+            'tipo' => [
+                'nullable',
+                Rule::in([
+                    'pase_temporal',
+                    'autorizacion',
+                ]),
+            ],
+        ]);
+
+        $busqueda = trim(
+            (string) (
+                $validated['buscar']
+                ?? ''
+            )
+        );
+
+        $estadoSeleccionado =
+            $validated['estado']
+            ?? null;
+
+        $tipoSeleccionado =
+            $validated['tipo']
+            ?? null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consulta base
+        |--------------------------------------------------------------------------
+        |
+        | El módulo administrativo únicamente incluye:
+        |
+        | - Pases menores a 24 horas.
+        | - Pases mayores a 24 horas.
+        |--------------------------------------------------------------------------
+        */
+
+        $consultaBase = Memorando::query()
+            ->whereHas(
+                'tipo',
+                function ($query) {
+                    $query->whereIn(
+                        'slug',
+                        [
+                            'pase_temporal',
+                            'autorizacion',
+                        ]
+                    );
+                }
+            );
+
+        $memorandos = (clone $consultaBase)
+            ->with([
+                'tipo',
+                'solicitante',
+                'archivos',
+            ])
+            ->when(
+                $busqueda !== '',
+                function ($query) use ($busqueda) {
+
+                    $termino = mb_strtolower(
+                        trim($busqueda)
+                    );
+
+                    $codigoNormalizado = mb_strtoupper(
+                        preg_replace(
+                            '/\s+/',
+                            '',
+                            $busqueda
+                        )
+                    );
+
+                    $idBuscado = null;
+
+                    if (
+                        preg_match(
+                            '/^PASE-?0*(\d+)$/',
+                            $codigoNormalizado,
+                            $coincidencias
+                        )
+                    ) {
+                        $idBuscado =
+                            (int) $coincidencias[1];
+                    } elseif (
+                        ctype_digit($codigoNormalizado)
+                    ) {
+                        $idBuscado =
+                            (int) $codigoNormalizado;
+                    }
+
+                    $query->where(
+                        function ($subquery) use (
+                            $termino,
+                            $idBuscado
+                        ) {
+                            $subquery
+                                ->whereRaw(
+                                    "LOWER(COALESCE(codigo, '')) LIKE ?",
+                                    ["%{$termino}%"]
+                                )
+                                ->orWhereRaw(
+                                    'LOWER(asunto) LIKE ?',
+                                    ["%{$termino}%"]
+                                )
+                                ->orWhereRaw(
+                                    'LOWER(de_nombre) LIKE ?',
+                                    ["%{$termino}%"]
+                                )
+                                ->orWhereHas(
+                                    'solicitante',
+                                    function ($usuarioQuery) use ($termino) {
+                                        $usuarioQuery
+                                            ->whereRaw(
+                                                'LOWER(nombre) LIKE ?',
+                                                ["%{$termino}%"]
+                                            )
+                                            ->orWhereRaw(
+                                                'LOWER(correo) LIKE ?',
+                                                ["%{$termino}%"]
+                                            );
+                                    }
+                                )
+                                ->when(
+                                    $idBuscado !== null,
+                                    fn ($codigoQuery) =>
+                                        $codigoQuery->orWhere(
+                                            'id',
+                                            $idBuscado
+                                        )
+                                );
+                        }
+                    );
+                }
+            )
+            ->when(
+                filled($estadoSeleccionado),
+                fn ($query) => $query->where(
+                    'estado',
+                    $estadoSeleccionado
+                )
+            )
+            ->when(
+                filled($tipoSeleccionado),
+                fn ($query) => $query->whereHas(
+                    'tipo',
+                    fn ($tipoQuery) => $tipoQuery->where(
+                        'slug',
+                        $tipoSeleccionado
+                    )
+                )
+            )
+            ->latest('created_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        $resumen = [
+            'total' =>
+                (clone $consultaBase)
+                    ->count(),
+
+            'generados' =>
+                (clone $consultaBase)
+                    ->where(
+                        'estado',
+                        Memorando::ESTADO_GENERADO
+                    )
+                    ->count(),
+
+            'aprobados' =>
+                (clone $consultaBase)
+                    ->where(
+                        'estado',
+                        Memorando::ESTADO_APROBADO
+                    )
+                    ->count(),
+
+            'rechazados' =>
+                (clone $consultaBase)
+                    ->where(
+                        'estado',
+                        Memorando::ESTADO_RECHAZADO
+                    )
+                    ->count(),
+        ];
+
+        return view(
+            'administracion.pases.index',
+            compact(
+                'memorandos',
+                'resumen',
+                'busqueda',
+                'estadoSeleccionado',
+                'tipoSeleccionado'
+            )
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detalle administrativo del pase
+    |--------------------------------------------------------------------------
+    */
+
+    public function showAdministracionPase(
+        Memorando $memorando
+    ): View {
+        $this->asegurarQueEsPase(
+            $memorando
+        );
+
+        $memorando->load([
+            'tipo',
+            'solicitante',
+            'archivos',
+            'historial' => fn ($query) =>
+                $query->latest('created_at'),
+        ]);
+
+        return view(
+            'administracion.pases.show',
+            compact('memorando')
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aprobar pase
+    |--------------------------------------------------------------------------
+    */
+
+    public function aprobarPase(
+        Memorando $memorando
+    ): RedirectResponse {
+        $this->asegurarQueEsPase(
+            $memorando
+        );
+
+        if (! $memorando->estaGenerado()) {
+            return back()->withErrors([
+                'memorando' =>
+                    'Solamente se pueden aprobar pases pendientes de revisión.',
+            ]);
+        }
+
+        DB::transaction(
+            function () use ($memorando) {
+                $estadoAnterior =
+                    $memorando->estado;
+
+                $memorando->update([
+                    'estado' =>
+                        Memorando::ESTADO_APROBADO,
+                ]);
+
+                MemorandoHistorial::create([
+                    'memorando_id' =>
+                        $memorando->id,
+
+                    'usuario_id' =>
+                        auth()->id(),
+
+                    'estado_anterior' =>
+                        $estadoAnterior,
+
+                    'estado_nuevo' =>
+                        Memorando::ESTADO_APROBADO,
+
+                    'comentario' =>
+                        'Pase aprobado desde el panel administrativo.',
+                ]);
+            }
+        );
+
+        $this->notificarEstadoPase(
+            $memorando
+        );
+
+        return back()->with(
+            'success',
+            'El pase fue aprobado correctamente.'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rechazar pase
+    |--------------------------------------------------------------------------
+    */
+
+    public function rechazarPase(
+    Request $request,
+    Memorando $memorando
+): RedirectResponse {
+
+    $this->asegurarQueEsPase(
+        $memorando
+    );
+
+
+    if (! $memorando->estaGenerado()) {
+
+        return back()->withErrors([
+            'memorando' =>
+                'Solamente se pueden rechazar pases pendientes de revisión.',
+        ]);
+
+    }
+
+
+    $validated = $request->validate(
+        [
+            'comentario' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+        ],
+        [
+            'comentario.required' =>
+                'Debes indicar el motivo del rechazo.',
+
+            'comentario.max' =>
+                'El motivo del rechazo no puede superar los 500 caracteres.',
+        ]
+    );
+
+
+    $comentario = trim(
+        $validated['comentario']
+    );
+
+
+    DB::transaction(
+        function () use (
+            $memorando,
+            $comentario
+        ) {
+
+            $estadoAnterior =
+                $memorando->estado;
+
+
+            $memorando->update([
+                'estado' =>
+                    Memorando::ESTADO_RECHAZADO,
+            ]);
+
+
+            MemorandoHistorial::create([
+                'memorando_id' =>
+                    $memorando->id,
+
+                'usuario_id' =>
+                    auth()->id(),
+
+                'estado_anterior' =>
+                    $estadoAnterior,
+
+                'estado_nuevo' =>
+                    Memorando::ESTADO_RECHAZADO,
+
+                'comentario' =>
+                    $comentario,
+            ]);
+
+        }
+    );
+
+
+    $this->notificarEstadoPase(
+        $memorando
+    );
+
+
+    return redirect()
+        ->route(
+            'admin.pases.show',
+            $memorando
+        )
+        ->with(
+            'success',
+            'El pase fue rechazado correctamente.'
+        );
+}
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar actualización del pase
+    |--------------------------------------------------------------------------
+    */
+
+    private function notificarEstadoPase(
+        Memorando $memorando
+    ): void {
+        try {
+            $memorando->loadMissing(
+                'solicitante'
+            );
+
+            $memorando->solicitante?->notify(
+                new EstadoPaseActualizadoNotification(
+                    $memorando
+                )
+            );
+        } catch (\Throwable $exception) {
+            Log::error(
+                'No se pudo registrar la notificación del cambio de estado del pase.',
+                [
+                    'memorando_id' =>
+                        $memorando->id,
+
+                    'solicitante_id' =>
+                        $memorando->solicitante_id,
+
+                    'estado' =>
+                        $memorando->estado,
+
+                    'error' =>
+                        $exception->getMessage(),
+                ]
+            );
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar que el memorando sea un pase
+    |--------------------------------------------------------------------------
+    */
+
+    private function asegurarQueEsPase(
+        Memorando $memorando
+    ): void {
+        $memorando->loadMissing(
+            'tipo'
+        );
+
+        abort_unless(
+            in_array(
+                $memorando->tipo?->slug,
+                [
+                    'pase_temporal',
+                    'autorizacion',
+                ],
+                true
+            ),
+            404
+        );
+    }
 
 
     /*

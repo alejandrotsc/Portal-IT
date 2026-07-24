@@ -2,64 +2,6 @@
 
 @section('content')
 
-@php
-
-    $meses = [
-        1 => 'Enero',
-        2 => 'Febrero',
-        3 => 'Marzo',
-        4 => 'Abril',
-        5 => 'Mayo',
-        6 => 'Junio',
-        7 => 'Julio',
-        8 => 'Agosto',
-        9 => 'Septiembre',
-        10 => 'Octubre',
-        11 => 'Noviembre',
-        12 => 'Diciembre',
-    ];
-
-    $categoriasSolicitud = [
-        'computadora' => 'Computadora o accesorios',
-        'programa' => 'Instalar un programa',
-        'acceso' => 'Solicitar un acceso',
-        'vpn' => 'VPN / Acceso remoto',
-        'impresora' => 'Impresoras',
-        'cuenta' => 'Cuenta o contraseña',
-        'cambio' => 'Cambio o configuración de equipo',
-        'otra' => 'Otra solicitud',
-    ];
-
-    $totalSolicitudes = $totalSolicitudes
-        ?? (
-            method_exists($solicitudes, 'total')
-                ? $solicitudes->total()
-                : $solicitudes->count()
-        );
-
-    $coleccionSolicitudes = method_exists(
-        $solicitudes,
-        'getCollection'
-    )
-        ? $solicitudes->getCollection()
-        : $solicitudes;
-
-    $solicitudesPendientes = $solicitudesPendientes
-        ?? $coleccionSolicitudes
-            ->whereIn(
-                'estado',
-                [
-                    'pendiente',
-                    'en_proceso',
-                ]
-            )
-            ->count();
-
-    $ultimaSolicitud = $ultimaSolicitud
-        ?? $coleccionSolicitudes->first();
-
-@endphp
-
 <div class="min-h-screen bg-background">
 
     <main class="max-w-7xl mx-auto px-6 py-10">
@@ -81,34 +23,23 @@
                             class="w-3.5 h-3.5 shrink-0">
                         </i>
 
-                        Seguimiento personal
+                        Gestión interna
 
                     </div>
 
                     <h1 class="text-2xl font-semibold text-foreground tracking-tight">
-                        Mis solicitudes
+
+                        Administración de incidencias
+
                     </h1>
 
                     <p class="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-                        Consulta las solicitudes enviadas al equipo TI y revisa su estado actual.
+
+                        Consulta los reportes registrados, administra su prioridad y actualiza su estado de atención.
+
                     </p>
 
                 </div>
-
-
-                <a
-                    href="{{ route('solicitudes.create') }}"
-                    class="group/create inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
-
-                    <i
-                        data-lucide="plus"
-                        stroke-width="1.8"
-                        class="w-4 h-4 shrink-0 transition-transform duration-200 group-hover/create:rotate-90">
-                    </i>
-
-                    Nueva solicitud
-
-                </a>
 
             </div>
 
@@ -116,14 +47,98 @@
 
 
 
+        {{-- Mensajes --}}
+
+        @if(session('success'))
+
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800">
+
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600">
+
+                    <i
+                        data-lucide="circle-check"
+                        stroke-width="1.8"
+                        class="w-4 h-4">
+                    </i>
+
+                </div>
+
+                <p class="pt-1.5 leading-relaxed">
+
+                    {{ session('success') }}
+
+                </p>
+
+            </div>
+
+        @endif
+
+
+        @if(session('warning'))
+
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
+
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-amber-100 text-amber-600">
+
+                    <i
+                        data-lucide="triangle-alert"
+                        stroke-width="1.8"
+                        class="w-4 h-4">
+                    </i>
+
+                </div>
+
+                <p class="pt-1.5 leading-relaxed">
+
+                    {{ session('warning') }}
+
+                </p>
+
+            </div>
+
+        @endif
+
+
+        @if($errors->any())
+
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800">
+
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600">
+
+                    <i
+                        data-lucide="circle-alert"
+                        stroke-width="1.8"
+                        class="w-4 h-4">
+                    </i>
+
+                </div>
+
+                <div class="pt-1.5">
+
+                    @foreach($errors->all() as $error)
+
+                        <p>
+                            {{ $error }}
+                        </p>
+
+                    @endforeach
+
+                </div>
+
+            </div>
+
+        @endif
+
+
+
         {{-- Resumen --}}
 
         <section class="mb-8">
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
 
-                {{-- Solicitudes --}}
+                {{-- Total --}}
 
                 <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10">
 
@@ -144,11 +159,15 @@
                         <div>
 
                             <p class="text-2xl font-semibold text-foreground">
-                                {{ $totalSolicitudes ?? 0 }}
+
+                                {{ $resumen['total'] ?? 0 }}
+
                             </p>
 
                             <p class="text-sm text-muted-foreground">
-                                Solicitudes
+
+                                Incidencias registradas
+
                             </p>
 
                         </div>
@@ -159,7 +178,7 @@
 
 
 
-                {{-- Pendientes --}}
+                {{-- Abiertas --}}
 
                 <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10">
 
@@ -170,7 +189,7 @@
                         <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-amber-100">
 
                             <i
-                                data-lucide="clock-3"
+                                data-lucide="circle-alert"
                                 stroke-width="1.8"
                                 class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
                             </i>
@@ -180,11 +199,15 @@
                         <div>
 
                             <p class="text-2xl font-semibold text-foreground">
-                                {{ $solicitudesPendientes ?? 0 }}
+
+                                {{ $resumen['abiertas'] ?? 0 }}
+
                             </p>
 
                             <p class="text-sm text-muted-foreground">
-                                Pendientes
+
+                                Abiertas
+
                             </p>
 
                         </div>
@@ -195,18 +218,18 @@
 
 
 
-                {{-- Última solicitud --}}
+                {{-- En proceso --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-cyan-200/60 bg-gradient-to-br from-cyan-50 via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg hover:shadow-cyan-500/10">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-400/20"></div>
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-cyan-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-cyan-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-emerald-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-cyan-500/10 text-cyan-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-cyan-100">
 
                             <i
-                                data-lucide="calendar-check-2"
+                                data-lucide="loader-circle"
                                 stroke-width="1.8"
                                 class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
                             </i>
@@ -215,18 +238,56 @@
 
                         <div>
 
-                            <p class="text-xl font-semibold text-foreground">
+                            <p class="text-2xl font-semibold text-foreground">
 
-                                {{ $ultimaSolicitud?->created_at
-                                    ?->timezone('America/Tegucigalpa')
-                                    ->format('d/m/Y')
-                                    ?? '—'
-                                }}
+                                {{ $resumen['en_proceso'] ?? 0 }}
 
                             </p>
 
                             <p class="text-sm text-muted-foreground">
-                                Último
+
+                                En proceso
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                {{-- Resueltas --}}
+
+                <div class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-500/10">
+
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-slate-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-slate-400/20"></div>
+
+                    <div class="relative flex items-center gap-4">
+
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-slate-500/10 text-slate-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-slate-200">
+
+                            <i
+                                data-lucide="circle-check-big"
+                                stroke-width="1.8"
+                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
+                            </i>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-2xl font-semibold text-foreground">
+
+                                {{ $resumen['resueltas'] ?? 0 }}
+
+                            </p>
+
+                            <p class="text-sm text-muted-foreground">
+
+                                Resueltas
+
                             </p>
 
                         </div>
@@ -253,11 +314,15 @@
                 <div class="mb-5">
 
                     <h2 class="text-base font-semibold text-foreground">
-                        Solicitudes registradas
+
+                        Incidencias registradas
+
                     </h2>
 
                     <p class="text-sm text-muted-foreground mt-1">
-                        Selecciona un periodo para consultar las solicitudes enviadas.
+
+                        Busca por código, título o solicitante y filtra por estado y prioridad.
+
                     </p>
 
                 </div>
@@ -265,36 +330,111 @@
 
                 <form
                     method="GET"
-                    action="{{ route('mis-solicitudes') }}"
-                    class="grid grid-cols-1 sm:grid-cols-[190px_150px_max-content] gap-3 sm:items-center">
+                    action="{{ route('admin.incidencias') }}"
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_190px_190px_auto] gap-3">
 
 
-                    {{-- Mes --}}
+                    {{-- Búsqueda --}}
 
                     <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
 
                         <i
-                            data-lucide="calendar-days"
+                            data-lucide="search"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                        <input
+                            type="search"
+                            name="buscar"
+                            value="{{ $busqueda }}"
+                            placeholder="Código, título o solicitante..."
+                            autocomplete="off"
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none">
+
+                    </div>
+
+
+
+                    {{-- Estado --}}
+
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i
+                            data-lucide="list-filter"
                             stroke-width="1.8"
                             class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
                         </i>
 
                         <select
-                            id="mes"
-                            name="mes"
+                            name="estado"
                             class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
 
-                            @foreach($meses as $numero => $nombre)
+                            <option value="">
+                                Todos los estados
+                            </option>
+
+                            <option
+                                value="Abierta"
+                                @selected($estadoSeleccionado === 'Abierta')>
+
+                                Abiertas
+
+                            </option>
+
+                            <option
+                                value="En_proceso"
+                                @selected($estadoSeleccionado === 'En_proceso')>
+
+                                En proceso
+
+                            </option>
+
+                            <option
+                                value="Resuelta"
+                                @selected($estadoSeleccionado === 'Resuelta')>
+
+                                Resueltas
+
+                            </option>
+
+                        </select>
+
+                        <i
+                            data-lucide="chevron-down"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                    </div>
+
+
+
+                    {{-- Prioridad --}}
+
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i
+                            data-lucide="flag"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                        <select
+                            name="prioridad"
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+
+                            <option value="">
+                                Todas las prioridades
+                            </option>
+
+                            @foreach(\App\Models\Incidencia::PRIORIDADES as $prioridad)
 
                                 <option
-                                    value="{{ $numero }}"
-                                    @selected(
-                                        (int) $mes
-                                        ===
-                                        (int) $numero
-                                    )>
+                                    value="{{ $prioridad }}"
+                                    @selected($prioridadSeleccionada === $prioridad)>
 
-                                    {{ $nombre }}
+                                    {{ $prioridad }}
 
                                 </option>
 
@@ -312,56 +452,13 @@
 
 
 
-                    {{-- Año --}}
+                    {{-- Acciones de filtros --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
-
-                        <i
-                            data-lucide="calendar-range"
-                            stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
-                        </i>
-
-                        <select
-                            id="anio"
-                            name="anio"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
-
-                            @foreach($aniosDisponibles as $anioDisponible)
-
-                                <option
-                                    value="{{ $anioDisponible }}"
-                                    @selected(
-                                        (int) $anio
-                                        ===
-                                        (int) $anioDisponible
-                                    )>
-
-                                    {{ $anioDisponible }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                        <i
-                            data-lucide="chevron-down"
-                            stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
-                        </i>
-
-                    </div>
-
-
-
-                    {{-- Acciones --}}
-
-                    <div class="flex items-center gap-2 justify-self-start">
+                    <div class="flex items-center gap-2">
 
                         <button
                             type="submit"
-                            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold whitespace-nowrap shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
+                            class="inline-flex flex-1 items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
 
                             <i
                                 data-lucide="filter"
@@ -373,20 +470,22 @@
 
                         </button>
 
+
                         @if(
-                            (int) $mes !== now()->month
-                            || (int) $anio !== now()->year
+                            $busqueda !== ''
+                            || filled($estadoSeleccionado)
+                            || filled($prioridadSeleccionada)
                         )
 
                             <a
-                                href="{{ route('mis-solicitudes') }}"
-                                title="Volver al mes actual"
+                                href="{{ route('admin.incidencias') }}"
+                                title="Limpiar filtros"
                                 class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary active:translate-y-0">
 
                                 <i
-                                    data-lucide="rotate-ccw"
+                                    data-lucide="x"
                                     stroke-width="1.8"
-                                    class="w-4 h-4 transition-transform duration-200 group-hover/clear:-rotate-90">
+                                    class="w-4 h-4 transition-transform duration-200 group-hover/clear:rotate-90">
                                 </i>
 
                             </a>
@@ -405,26 +504,26 @@
 
             <div class="overflow-x-auto">
 
-                <table class="w-full min-w-[980px]">
+                <table class="w-full min-w-[1050px]">
 
                     <thead class="border-b border-border bg-muted/40">
 
                         <tr class="text-left">
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Solicitud
+                                Incidencia
                             </th>
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Categoría
+                                Solicitante
+                            </th>
+
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Prioridad
                             </th>
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                 Estado
-                            </th>
-
-                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Notificación
                             </th>
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -442,12 +541,12 @@
 
                     <tbody class="divide-y divide-border">
 
-                        @forelse($solicitudes as $solicitud)
+                        @forelse($incidencias as $incidencia)
 
                             <tr class="group transition-colors duration-200 hover:bg-primary/[0.025]">
 
 
-                                {{-- Solicitud --}}
+                                {{-- Incidencia --}}
 
                                 <td class="px-5 py-4">
 
@@ -467,20 +566,20 @@
 
                                             <a
                                                 href="{{ route(
-                                                    'solicitudes.show',
-                                                    $solicitud
+                                                    'admin.incidencias.show',
+                                                    $incidencia
                                                 ) }}"
                                                 class="text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary">
 
-                                                {{ $solicitud->folio }}
+                                                {{ $incidencia->codigo }}
 
                                             </a>
 
                                             <p
-                                                title="{{ $solicitud->asunto }}"
-                                                class="max-w-[310px] mt-1 text-xs text-muted-foreground truncate">
+                                                title="{{ $incidencia->titulo }}"
+                                                class="max-w-[280px] mt-1 text-xs text-muted-foreground truncate">
 
-                                                {{ $solicitud->asunto }}
+                                                {{ $incidencia->titulo }}
 
                                             </p>
 
@@ -491,90 +590,93 @@
                                 </td>
 
 
-                                {{-- Categoría --}}
+
+                                {{-- Solicitante --}}
 
                                 <td class="px-5 py-4">
 
-                                    <span class="inline-flex items-center gap-1.5 max-w-[220px] px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 group-hover:border-blue-300 group-hover:bg-blue-100/70">
+                                    <div class="min-w-0">
+
+                                        <p class="max-w-[220px] text-sm font-medium text-foreground truncate">
+
+                                            {{ $incidencia->usuario?->nombre
+                                                ?? 'Usuario no disponible'
+                                            }}
+
+                                        </p>
+
+                                        <p class="max-w-[220px] mt-0.5 text-xs text-muted-foreground truncate">
+
+                                            {{ $incidencia->usuario?->correo
+                                                ?? 'Sin correo registrado'
+                                            }}
+
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+
+
+                                {{-- Prioridad --}}
+
+                                <td class="px-5 py-4">
+
+                                    <span
+                                        @class([
+                                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-all duration-200',
+
+                                            'border-slate-200 bg-slate-50 text-slate-600' =>
+                                                $incidencia->prioridad === \App\Models\Incidencia::PRIORIDAD_BAJA,
+
+                                            'border-blue-200 bg-blue-50 text-blue-700' =>
+                                                $incidencia->prioridad === \App\Models\Incidencia::PRIORIDAD_MEDIA,
+
+                                            'border-amber-200 bg-amber-50 text-amber-700' =>
+                                                $incidencia->prioridad === \App\Models\Incidencia::PRIORIDAD_ALTA,
+
+                                            'border-red-200 bg-red-50 text-red-700' =>
+                                                $incidencia->prioridad === \App\Models\Incidencia::PRIORIDAD_CRITICA,
+                                        ])>
 
                                         <i
-                                            data-lucide="tag"
+                                            data-lucide="flag"
                                             stroke-width="1.8"
                                             class="w-3.5 h-3.5 shrink-0">
                                         </i>
 
-                                        <span class="truncate">
-
-                                            {{ $categoriasSolicitud[$solicitud->categoria]
-                                                ?? str($solicitud->categoria)
-                                                    ->replace('_', ' ')
-                                                    ->title()
-                                            }}
-
-                                        </span>
+                                        {{ $incidencia->prioridad }}
 
                                     </span>
 
                                 </td>
 
 
+
                                 {{-- Estado --}}
 
                                 <td class="px-5 py-4">
 
-                                    @if(
-                                        in_array(
-                                            $solicitud->estado,
-                                            [
-                                                'finalizada',
-                                                'completada',
-                                            ],
-                                            true
-                                        )
-                                    )
+                                    @if($incidencia->estaResuelta())
 
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
 
                                             <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500"></span>
 
-                                            {{ $solicitud->estado === 'completada'
-                                                ? 'Completada'
-                                                : 'Finalizada'
-                                            }}
+                                            Resuelta
 
                                         </span>
 
-                                    @elseif(
-                                        in_array(
-                                            $solicitud->estado,
-                                            [
-                                                'cancelada',
-                                                'rechazada',
-                                            ],
-                                            true
-                                        )
-                                    )
+                                    @elseif($incidencia->estaEnProceso())
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-700">
-
-                                            <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-500"></span>
-
-                                            {{ $solicitud->estado === 'rechazada'
-                                                ? 'Rechazada'
-                                                : 'Cancelada'
-                                            }}
-
-                                        </span>
-
-                                    @elseif($solicitud->estado === 'en_proceso')
-
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-xs font-medium text-blue-700">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700">
 
                                             <span class="relative flex w-1.5 h-1.5 shrink-0">
 
-                                                <span class="absolute inline-flex w-full h-full rounded-full bg-blue-400 opacity-60 animate-ping"></span>
+                                                <span class="absolute inline-flex w-full h-full rounded-full bg-cyan-400 opacity-60 animate-ping"></span>
 
-                                                <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                                <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
 
                                             </span>
 
@@ -594,7 +696,7 @@
 
                                             </span>
 
-                                            Pendiente
+                                            Abierta
 
                                         </span>
 
@@ -602,42 +704,6 @@
 
                                 </td>
 
-
-                                {{-- Notificación --}}
-
-                                <td class="px-5 py-4">
-
-                                    @if($solicitud->correo_enviado)
-
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
-
-                                            <i
-                                                data-lucide="mail-check"
-                                                stroke-width="1.8"
-                                                class="w-4 h-4 shrink-0 text-emerald-600">
-                                            </i>
-
-                                            Enviada
-
-                                        </span>
-
-                                    @else
-
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
-
-                                            <i
-                                                data-lucide="mail-x"
-                                                stroke-width="1.8"
-                                                class="w-4 h-4 shrink-0 text-red-600">
-                                            </i>
-
-                                            No enviada
-
-                                        </span>
-
-                                    @endif
-
-                                </td>
 
 
                                 {{-- Registro --}}
@@ -646,7 +712,7 @@
 
                                     <p class="text-sm text-foreground">
 
-                                        {{ $solicitud->created_at
+                                        {{ $incidencia->created_at
                                             ?->timezone('America/Tegucigalpa')
                                             ->format('d/m/Y') }}
 
@@ -654,13 +720,14 @@
 
                                     <p class="mt-0.5 text-xs text-muted-foreground">
 
-                                        {{ $solicitud->created_at
+                                        {{ $incidencia->created_at
                                             ?->timezone('America/Tegucigalpa')
                                             ->format('h:i A') }}
 
                                     </p>
 
                                 </td>
+
 
 
                                 {{-- Acción --}}
@@ -671,8 +738,8 @@
 
                                         <a
                                             href="{{ route(
-                                                'solicitudes.show',
-                                                $solicitud
+                                                'admin.incidencias.show',
+                                                $incidencia
                                             ) }}"
                                             class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-white text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
 
@@ -711,20 +778,26 @@
                                     </div>
 
                                     <h3 class="mt-4 text-sm font-semibold text-foreground">
-                                        No se encontraron solicitudes
+
+                                        No se encontraron incidencias
+
                                     </h3>
 
                                     <p class="max-w-md mx-auto mt-1 text-sm leading-relaxed text-muted-foreground">
-                                        No existen solicitudes registradas durante {{ $meses[$mes] }} de {{ $anio }}.
+
+                                        No existen incidencias que coincidan con los filtros seleccionados.
+
                                     </p>
 
+
                                     @if(
-                                        (int) $mes !== now()->month
-                                        || (int) $anio !== now()->year
+                                        $busqueda !== ''
+                                        || filled($estadoSeleccionado)
+                                        || filled($prioridadSeleccionada)
                                     )
 
                                         <a
-                                            href="{{ route('mis-solicitudes') }}"
+                                            href="{{ route('admin.incidencias') }}"
                                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 mt-5 rounded-lg border border-primary/20 bg-primary/5 text-sm font-semibold text-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
 
                                             <i
@@ -733,7 +806,7 @@
                                                 class="w-4 h-4">
                                             </i>
 
-                                            Ver mes actual
+                                            Limpiar filtros
 
                                         </a>
 
@@ -750,19 +823,17 @@
                 </table>
 
             </div>
+
+
+
             {{-- Paginación personalizada --}}
 
-            @if(
-                method_exists(
-                    $solicitudes,
-                    'hasPages'
-                )
-                && $solicitudes->hasPages()
-            )
+            @if($incidencias->hasPages())
 
                 @php
-                    $paginaActual = $solicitudes->currentPage();
-                    $ultimaPagina = $solicitudes->lastPage();
+
+                    $paginaActual = $incidencias->currentPage();
+                    $ultimaPagina = $incidencias->lastPage();
 
                     $paginaInicial = max(
                         1,
@@ -791,81 +862,118 @@
                             $ultimaPagina - 4
                         );
                     }
+
                 @endphp
 
 
                 <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between">
 
+
+                    {{-- Información --}}
+
                     <p class="text-xs text-muted-foreground">
+
                         Mostrando
 
                         <span class="font-semibold text-foreground">
-                            {{ $solicitudes->firstItem() }}
+
+                            {{ $incidencias->firstItem() }}
+
                         </span>
 
                         a
 
                         <span class="font-semibold text-foreground">
-                            {{ $solicitudes->lastItem() }}
+
+                            {{ $incidencias->lastItem() }}
+
                         </span>
 
                         de
 
                         <span class="font-semibold text-foreground">
-                            {{ $solicitudes->total() }}
+
+                            {{ $incidencias->total() }}
+
                         </span>
 
-                        solicitudes
+                        incidencias
+
                     </p>
 
 
+
+                    {{-- Controles --}}
+
                     <nav
-                        aria-label="Paginación de solicitudes"
+                        aria-label="Paginación de incidencias"
                         class="flex flex-wrap items-center gap-1">
 
-                        @if($solicitudes->onFirstPage())
+
+                        {{-- Anterior --}}
+
+                        @if($incidencias->onFirstPage())
 
                             <span
                                 aria-disabled="true"
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
 
-                                <i data-lucide="chevron-left" stroke-width="1.8" class="w-4 h-4"></i>
+                                <i
+                                    data-lucide="chevron-left"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4">
+                                </i>
 
                             </span>
 
                         @else
 
                             <a
-                                href="{{ $solicitudes->previousPageUrl() }}"
+                                href="{{ $incidencias->previousPageUrl() }}"
                                 rel="prev"
                                 aria-label="Página anterior"
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
 
-                                <i data-lucide="chevron-left" stroke-width="1.8" class="w-4 h-4"></i>
+                                <i
+                                    data-lucide="chevron-left"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4">
+                                </i>
 
                             </a>
 
                         @endif
 
 
+
+                        {{-- Primera página y separación --}}
+
                         @if($paginaInicial > 1)
 
                             <a
-                                href="{{ $solicitudes->url(1) }}"
+                                href="{{ $incidencias->url(1) }}"
                                 class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm">
+
                                 1
+
                             </a>
+
 
                             @if($paginaInicial > 2)
 
                                 <span class="inline-flex items-center justify-center w-7 h-9 text-xs text-muted-foreground">
+
                                     …
+
                                 </span>
 
                             @endif
 
                         @endif
 
+
+
+                        {{-- Números de página --}}
 
                         @for(
                             $pagina = $paginaInicial;
@@ -878,15 +986,19 @@
                                 <span
                                     aria-current="page"
                                     class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-primary bg-primary text-xs font-semibold text-white shadow-sm">
+
                                     {{ $pagina }}
+
                                 </span>
 
                             @else
 
                                 <a
-                                    href="{{ $solicitudes->url($pagina) }}"
+                                    href="{{ $incidencias->url($pagina) }}"
                                     class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+
                                     {{ $pagina }}
+
                                 </a>
 
                             @endif
@@ -894,34 +1006,53 @@
                         @endfor
 
 
+
+                        {{-- Última página y separación --}}
+
                         @if($paginaFinal < $ultimaPagina)
 
-                            @if($paginaFinal < $ultimaPagina - 1)
+                            @if(
+                                $paginaFinal
+                                <
+                                $ultimaPagina - 1
+                            )
 
                                 <span class="inline-flex items-center justify-center w-7 h-9 text-xs text-muted-foreground">
+
                                     …
+
                                 </span>
 
                             @endif
 
+
                             <a
-                                href="{{ $solicitudes->url($ultimaPagina) }}"
+                                href="{{ $incidencias->url($ultimaPagina) }}"
                                 class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+
                                 {{ $ultimaPagina }}
+
                             </a>
 
                         @endif
 
 
-                        @if($solicitudes->hasMorePages())
+
+                        {{-- Siguiente --}}
+
+                        @if($incidencias->hasMorePages())
 
                             <a
-                                href="{{ $solicitudes->nextPageUrl() }}"
+                                href="{{ $incidencias->nextPageUrl() }}"
                                 rel="next"
                                 aria-label="Página siguiente"
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
 
-                                <i data-lucide="chevron-right" stroke-width="1.8" class="w-4 h-4"></i>
+                                <i
+                                    data-lucide="chevron-right"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4">
+                                </i>
 
                             </a>
 
@@ -931,7 +1062,11 @@
                                 aria-disabled="true"
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
 
-                                <i data-lucide="chevron-right" stroke-width="1.8" class="w-4 h-4"></i>
+                                <i
+                                    data-lucide="chevron-right"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4">
+                                </i>
 
                             </span>
 

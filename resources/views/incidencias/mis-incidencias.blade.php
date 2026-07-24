@@ -4,71 +4,202 @@
 
 <div class="min-h-screen bg-background">
 
-    <main class="max-w-5xl mx-auto px-6 py-8 space-y-6">
+    <main class="max-w-7xl mx-auto px-6 py-10">
 
-        {{-- =====================================================
-            HEADER
-        ====================================================== --}}
-        <section
-            class="flex flex-col sm:flex-row
-                   sm:items-start sm:justify-between gap-4"
-        >
 
-            <div>
+        {{-- Encabezado --}}
 
-                <h1 class="text-xl font-semibold text-foreground">
-                    Mis incidencias
-                </h1>
+        <section class="mb-8">
 
-                <p class="text-sm text-muted-foreground mt-1">
-                    Consulta los reportes enviados al equipo TI.
-                </p>
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+
+                <div>
+
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary">
+
+                        <i
+                            data-lucide="ticket-check"
+                            stroke-width="1.8"
+                            class="w-3.5 h-3.5 shrink-0">
+                        </i>
+
+                        Seguimiento personal
+
+                    </div>
+
+                    <h1 class="text-2xl font-semibold text-foreground tracking-tight">
+                        Mis incidencias
+                    </h1>
+
+                    <p class="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
+                        Consulta los reportes enviados al equipo TI y revisa su estado actual.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{{ route('incidencias.create') }}"
+                    class="group/create inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
+
+                    <i
+                        data-lucide="plus"
+                        stroke-width="1.8"
+                        class="w-4 h-4 shrink-0 transition-transform duration-200 group-hover/create:rotate-90">
+                    </i>
+
+                    Reportar incidencia
+
+                </a>
 
             </div>
-
-
-            <a
-                href="{{ route('incidencias.create') }}"
-                class="inline-flex items-center justify-center gap-2
-                       px-4 py-2.5 rounded-xl
-                       bg-primary text-white
-                       text-sm font-medium
-                       hover:opacity-90 transition-opacity"
-            >
-                <i
-                    data-lucide="arrow-left"
-                    class="w-4 h-4"
-                ></i>
-
-                Reportar incidencia
-            </a>
 
         </section>
 
 
-        {{-- =====================================================
-            FILTRO Y RESUMEN
-        ====================================================== --}}
-        <section
-            class="bg-card border border-border
-                   rounded-2xl overflow-hidden"
-        >
 
-            {{-- FILTRO --}}
-            <div
-                class="px-5 py-4 border-b border-border
-                       flex flex-col lg:flex-row
-                       lg:items-end lg:justify-between gap-4"
-            >
+        {{-- Resumen --}}
 
-                <div>
+        <section class="mb-8">
 
-                    <p class="text-sm font-medium text-foreground">
-                        Historial
-                    </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-                    <p class="text-xs text-muted-foreground mt-1">
-                        {{ $meses[$mes] }} de {{ $anio }}
+
+                {{-- Reportes --}}
+
+                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10">
+
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-400/20"></div>
+
+                    <div class="relative flex items-center gap-4">
+
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-100">
+
+                            <i
+                                data-lucide="tickets"
+                                stroke-width="1.8"
+                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
+                            </i>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-2xl font-semibold text-foreground">
+                                {{ $totalIncidencias ?? 0 }}
+                            </p>
+
+                            <p class="text-sm text-muted-foreground">
+                                Reportes
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                {{-- Evidencias --}}
+
+                <div class="group relative overflow-hidden rounded-2xl border border-violet-200/60 bg-gradient-to-br from-violet-50 via-white to-purple-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/10">
+
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-violet-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-violet-400/20"></div>
+
+                    <div class="relative flex items-center gap-4">
+
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-violet-500/10 text-violet-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-violet-100">
+
+                            <i
+                                data-lucide="paperclip"
+                                stroke-width="1.8"
+                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
+                            </i>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-2xl font-semibold text-foreground">
+                                {{ $totalEvidencias ?? 0 }}
+                            </p>
+
+                            <p class="text-sm text-muted-foreground">
+                                Evidencias
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                {{-- Último reporte --}}
+
+                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10">
+
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-400/20"></div>
+
+                    <div class="relative flex items-center gap-4">
+
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-emerald-100">
+
+                            <i
+                                data-lucide="calendar-check-2"
+                                stroke-width="1.8"
+                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
+                            </i>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-xl font-semibold text-foreground">
+
+                                {{ $ultimaIncidencia?->created_at
+                                    ?->timezone('America/Tegucigalpa')
+                                    ->format('d/m/Y')
+                                    ?? '—'
+                                }}
+
+                            </p>
+
+                            <p class="text-sm text-muted-foreground">
+                                Último
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        {{-- Listado --}}
+
+        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md">
+
+
+            {{-- Cabecera y filtros --}}
+
+            <div class="px-5 py-5 border-b border-border">
+
+                <div class="mb-5">
+
+                    <h2 class="text-base font-semibold text-foreground">
+                        Incidencias registradas
+                    </h2>
+
+                    <p class="text-sm text-muted-foreground mt-1">
+                        Selecciona un periodo para consultar los reportes enviados.
                     </p>
 
                 </div>
@@ -77,532 +208,657 @@
                 <form
                     method="GET"
                     action="{{ route('mis-incidencias') }}"
-                    class="flex flex-col sm:flex-row
-                           sm:items-end gap-2"
-                >
+                    class="grid grid-cols-1 sm:grid-cols-[190px_150px_max-content] gap-3 sm:items-center">
 
-                    {{-- MES --}}
-                    <div>
 
-                        <label
-                            for="mes"
-                            class="sr-only"
-                        >
-                            Mes
-                        </label>
+                    {{-- Mes --}}
+
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i
+                            data-lucide="calendar-days"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
 
                         <select
                             id="mes"
                             name="mes"
-                            class="w-full sm:w-40
-                                   px-3 py-2 rounded-lg
-                                   border border-border
-                                   bg-white text-sm text-foreground
-                                   focus:outline-none
-                                   focus:border-primary
-                                   focus:ring-2 focus:ring-primary/10"
-                        >
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+
                             @foreach($meses as $numero => $nombre)
 
                                 <option
                                     value="{{ $numero }}"
                                     @selected(
-                                        (int) $mes ===
+                                        (int) $mes
+                                        ===
                                         (int) $numero
-                                    )
-                                >
+                                    )>
+
                                     {{ $nombre }}
+
                                 </option>
 
                             @endforeach
+
                         </select>
+
+                        <i
+                            data-lucide="chevron-down"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
 
                     </div>
 
 
-                    {{-- AÑO --}}
-                    <div>
 
-                        <label
-                            for="anio"
-                            class="sr-only"
-                        >
-                            Año
-                        </label>
+                    {{-- Año --}}
+
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i
+                            data-lucide="calendar-range"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
 
                         <select
                             id="anio"
                             name="anio"
-                            class="w-full sm:w-28
-                                   px-3 py-2 rounded-lg
-                                   border border-border
-                                   bg-white text-sm text-foreground
-                                   focus:outline-none
-                                   focus:border-primary
-                                   focus:ring-2 focus:ring-primary/10"
-                        >
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+
                             @foreach($aniosDisponibles as $anioDisponible)
 
                                 <option
                                     value="{{ $anioDisponible }}"
                                     @selected(
-                                        (int) $anio ===
+                                        (int) $anio
+                                        ===
                                         (int) $anioDisponible
-                                    )
-                                >
+                                    )>
+
                                     {{ $anioDisponible }}
+
                                 </option>
 
                             @endforeach
+
                         </select>
+
+                        <i
+                            data-lucide="chevron-down"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
 
                     </div>
 
 
-                    {{-- APLICAR --}}
-                    <button
-                        type="submit"
-                        class="inline-flex items-center
-                               justify-center gap-2
-                               px-3.5 py-2 rounded-lg
-                               border border-border
-                               bg-white text-sm font-medium
-                               text-foreground
-                               hover:bg-muted
-                               transition-colors"
-                    >
-                        <i
-                            data-lucide="filter"
-                            class="w-3.5 h-3.5"
-                        ></i>
 
-                        Filtrar
-                    </button>
+                    {{-- Acciones --}}
 
+                    <div class="flex items-center gap-2 justify-self-start">
 
-                    {{-- MES ACTUAL --}}
-                    <a
-                        href="{{ route('mis-incidencias') }}"
-                        class="inline-flex items-center
-                               justify-center
-                               px-3 py-2
-                               text-xs font-medium
-                               text-muted-foreground
-                               hover:text-primary
-                               transition-colors"
-                    >
-                        Mes actual
-                    </a>
+                        <button
+                            type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold whitespace-nowrap shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
+
+                            <i
+                                data-lucide="filter"
+                                stroke-width="1.8"
+                                class="w-4 h-4 shrink-0">
+                            </i>
+
+                            Filtrar
+
+                        </button>
+
+                        @if(
+                            (int) $mes !== now()->month
+                            || (int) $anio !== now()->year
+                        )
+
+                            <a
+                                href="{{ route('mis-incidencias') }}"
+                                title="Volver al mes actual"
+                                class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary active:translate-y-0">
+
+                                <i
+                                    data-lucide="rotate-ccw"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4 transition-transform duration-200 group-hover/clear:-rotate-90">
+                                </i>
+
+                            </a>
+
+                        @endif
+
+                    </div>
 
                 </form>
 
             </div>
 
 
-            {{-- RESUMEN COMPACTO --}}
-            <div
-                class="grid grid-cols-1 sm:grid-cols-3
-                       divide-y sm:divide-y-0
-                       sm:divide-x divide-border"
-            >
 
-                {{-- REPORTES --}}
-                <div class="px-5 py-3.5">
+            {{-- Tabla --}}
 
-                    <div class="flex items-center gap-2.5">
+            <div class="overflow-x-auto">
 
-                        <i
-                            data-lucide="clipboard-list"
-                            class="w-4 h-4 text-muted-foreground"
-                        ></i>
+                <table class="w-full min-w-[980px]">
 
-                        <p class="text-xs text-muted-foreground">
-                            Reportes
-                        </p>
+                    <thead class="border-b border-border bg-muted/40">
 
-                        <span
-                            class="ml-auto text-sm font-semibold
-                                   text-foreground"
-                        >
-                            {{ $incidencias->count() }}
-                        </span>
+                        <tr class="text-left">
 
-                    </div>
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Incidencia
+                            </th>
 
-                </div>
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Estado
+                            </th>
 
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Equipo
+                            </th>
 
-                {{-- EVIDENCIAS --}}
-                <div class="px-5 py-3.5">
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Evidencias
+                            </th>
 
-                    <div class="flex items-center gap-2.5">
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Registro
+                            </th>
 
-                        <i
-                            data-lucide="paperclip"
-                            class="w-4 h-4 text-muted-foreground"
-                        ></i>
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Acción
+                            </th>
 
-                        <p class="text-xs text-muted-foreground">
-                            Evidencias
-                        </p>
+                        </tr>
 
-                        <span
-                            class="ml-auto text-sm font-semibold
-                                   text-foreground"
-                        >
-                            {{
-                                $incidencias->sum(
-                                    fn ($incidencia) =>
-                                        $incidencia
-                                            ->archivos
-                                            ->count()
-                                )
-                            }}
-                        </span>
-
-                    </div>
-
-                </div>
+                    </thead>
 
 
-                {{-- ÚLTIMO REPORTE --}}
-                <div class="px-5 py-3.5">
+                    <tbody class="divide-y divide-border">
 
-                    <div class="flex items-center gap-2.5">
+                        @forelse($incidencias as $incidencia)
 
-                        <i
-                            data-lucide="clock-3"
-                            class="w-4 h-4 text-muted-foreground"
-                        ></i>
-
-                        <p class="text-xs text-muted-foreground">
-                            Último
-                        </p>
-
-                        <span
-                            class="ml-auto text-sm font-medium
-                                   text-foreground"
-                        >
-                            @if($incidencias->first())
-
-                                {{
-                                    $incidencias
-                                        ->first()
-                                        ->created_at
-                                        ->format('d/m/Y')
-                                }}
-
-                            @else
-
-                                —
-
-                            @endif
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
+                            <tr class="group transition-colors duration-200 hover:bg-primary/[0.025]">
 
 
-        {{-- =====================================================
-            LISTADO
-        ====================================================== --}}
-        <section>
+                                {{-- Incidencia --}}
 
-            <div
-                class="flex items-center justify-between
-                       gap-4 mb-3"
-            >
+                                <td class="px-5 py-4">
 
-                <h2 class="text-sm font-medium text-foreground">
-                    Incidencias registradas
-                </h2>
+                                    <div class="flex items-start gap-3">
 
-                <span class="text-xs text-muted-foreground">
-                    {{ $incidencias->count() }}
+                                        <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/15">
 
-                    {{
-                        $incidencias->count() === 1
-                            ? 'resultado'
-                            : 'resultados'
-                    }}
-                </span>
+                                            <i
+                                                data-lucide="ticket-check"
+                                                stroke-width="1.8"
+                                                class="w-[18px] h-[18px] transition-transform duration-300 group-hover:scale-110">
+                                            </i>
 
-            </div>
+                                        </div>
 
+                                        <div class="min-w-0">
 
-            <div
-                class="bg-card border border-border
-                       rounded-2xl overflow-hidden"
-            >
-
-                @forelse($incidencias as $incidencia)
-
-                    <a
-                        href="{{
-                            route(
-                                'incidencias.show',
-                                $incidencia
-                            )
-                        }}"
-                        class="group block px-5 py-4
-                               border-b border-border
-                               last:border-b-0
-                               hover:bg-muted/40
-                               transition-colors"
-                    >
-
-                        <div
-                            class="flex items-start
-                                   justify-between gap-5"
-                        >
-
-                            {{-- INFORMACIÓN --}}
-                            <div class="min-w-0 flex-1">
-
-                                <div
-                                    class="flex flex-wrap
-                                           items-center gap-x-2 gap-y-1"
-                                >
-
-                                    <span
-                                        class="text-xs font-semibold
-                                               text-primary"
-                                    >
-                                        {{ $incidencia->codigo }}
-                                    </span>
-
-                                    <span
-                                        class="w-1 h-1 rounded-full
-                                               bg-border"
-                                    ></span>
-
-                                    <span
-                                        class="text-xs
-                                               text-muted-foreground"
-                                    >
-                                        {{
-                                            $incidencia
-                                                ->created_at
-                                                ->format('d/m/Y')
-                                        }}
-                                    </span>
-
-                                    <span
-                                        class="text-xs
-                                               text-muted-foreground"
-                                    >
-                                        {{
-                                            $incidencia
-                                                ->created_at
-                                                ->format('H:i')
-                                        }}
-                                    </span>
-
-                                </div>
-
-
-                                <h3
-                                    class="text-sm font-medium
-                                           text-foreground mt-1.5
-                                           truncate"
-                                >
-                                    {{ $incidencia->titulo }}
-                                </h3>
-
-
-                                <p
-                                    class="text-xs text-muted-foreground
-                                           mt-1 leading-relaxed
-                                           line-clamp-1"
-                                >
-                                    {{
-                                        Str::limit(
-                                            $incidencia->descripcion,
-                                            130
-                                        )
-                                    }}
-                                </p>
-
-
-                                {{-- INFORMACIÓN SECUNDARIA --}}
-                                @if(
-                                    $incidencia->equipo
-                                    || $incidencia->archivos->count()
-                                )
-
-                                    <div
-                                        class="flex flex-wrap items-center
-                                               gap-3 mt-2.5
-                                               text-[11px]
-                                               text-muted-foreground"
-                                    >
-
-                                        @if($incidencia->equipo)
-
-                                            <span
-                                                class="inline-flex
-                                                       items-center gap-1"
-                                            >
-                                                <i
-                                                    data-lucide="laptop"
-                                                    class="w-3 h-3"
-                                                ></i>
-
-                                                {{
-                                                    Str::limit(
-                                                        $incidencia->equipo,
-                                                        35
-                                                    )
-                                                }}
-                                            </span>
-
-                                        @endif
-
-
-                                        @if($incidencia->archivos->count())
-
-                                            <span
-                                                class="inline-flex
-                                                       items-center gap-1"
-                                            >
-                                                <i
-                                                    data-lucide="paperclip"
-                                                    class="w-3 h-3"
-                                                ></i>
-
-                                                {{
+                                            <a
+                                                href="{{ route(
+                                                    'incidencias.show',
                                                     $incidencia
-                                                        ->archivos
-                                                        ->count()
-                                                }}
+                                                ) }}"
+                                                class="text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary">
 
-                                                {{
-                                                    $incidencia
-                                                        ->archivos
-                                                        ->count() === 1
-                                                            ? 'evidencia'
-                                                            : 'evidencias'
-                                                }}
-                                            </span>
+                                                {{ $incidencia->codigo }}
 
-                                        @endif
+                                            </a>
+
+                                            <p
+                                                title="{{ $incidencia->titulo }}"
+                                                class="max-w-[310px] mt-1 text-xs text-muted-foreground truncate">
+
+                                                {{ $incidencia->titulo }}
+
+                                            </p>
+
+                                        </div>
 
                                     </div>
 
-                                @endif
-
-                            </div>
+                                </td>
 
 
-                            {{-- FLECHA --}}
-                            <i
-                                data-lucide="chevron-right"
-                                class="w-4 h-4 mt-2 shrink-0
-                                       text-muted-foreground
-                                       group-hover:text-primary
-                                       group-hover:translate-x-0.5
-                                       transition-all"
-                            ></i>
 
-                        </div>
+                                {{-- Estado --}}
 
-                    </a>
+                                <td class="px-5 py-4">
 
-                @empty
+                                    @if($incidencia->estado === 'Resuelta')
 
-                    {{-- SIN RESULTADOS --}}
-                    <div class="px-6 py-12 text-center">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
 
-                        <div
-                            class="w-11 h-11 rounded-full
-                                   bg-muted
-                                   flex items-center justify-center
-                                   mx-auto"
-                        >
-                            <i
-                                data-lucide="calendar-x"
-                                class="w-5 h-5
-                                       text-muted-foreground"
-                            ></i>
-                        </div>
+                                            <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500"></span>
 
-                        <h3
-                            class="text-sm font-medium
-                                   text-foreground mt-4"
-                        >
-                            Sin incidencias en este periodo
-                        </h3>
+                                            Resuelta
 
-                        <p
-                            class="text-xs text-muted-foreground
-                                   mt-1.5"
-                        >
-                            No hay reportes registrados durante
-                            {{ $meses[$mes] }} de {{ $anio }}.
-                        </p>
+                                        </span>
+
+                                    @elseif($incidencia->estado === 'En_proceso')
+
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700">
+
+                                            <span class="relative flex w-1.5 h-1.5 shrink-0">
+
+                                                <span class="absolute inline-flex w-full h-full rounded-full bg-cyan-400 opacity-60 animate-ping"></span>
+
+                                                <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+
+                                            </span>
+
+                                            En proceso
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700">
+
+                                            <span class="relative flex w-1.5 h-1.5 shrink-0">
+
+                                                <span class="absolute inline-flex w-full h-full rounded-full bg-amber-400 opacity-60 animate-ping"></span>
+
+                                                <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+
+                                            </span>
+
+                                            Abierta
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
 
 
-                        <div
-                            class="flex flex-wrap items-center
-                                   justify-center gap-3 mt-5"
-                        >
 
-                            <a
-                                href="{{ route('mis-incidencias') }}"
-                                class="text-xs font-medium
-                                       text-muted-foreground
-                                       hover:text-primary
-                                       transition-colors"
-                            >
-                                Ver mes actual
-                            </a>
+                                {{-- Equipo --}}
 
-                            <a
-                                href="{{ route('incidencias.create') }}"
-                                class="inline-flex items-center gap-1.5
-                                       px-3.5 py-2 rounded-lg
-                                       bg-primary text-white
-                                       text-xs font-medium
-                                       hover:opacity-90
-                                       transition-opacity"
-                            >
-                                <i
-                                    data-lucide="plus"
-                                    class="w-3.5 h-3.5"
-                                ></i>
+                                <td class="px-5 py-4">
 
-                                Reportar incidencia
-                            </a>
+                                    @if($incidencia->equipo)
 
-                        </div>
+                                        <span class="inline-flex items-center gap-1.5 max-w-[210px] text-sm text-foreground">
 
-                    </div>
+                                            <i
+                                                data-lucide="laptop"
+                                                stroke-width="1.8"
+                                                class="w-3.5 h-3.5 shrink-0 text-muted-foreground">
+                                            </i>
 
-                @endforelse
+                                            <span class="truncate">
+                                                {{ $incidencia->equipo }}
+                                            </span>
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="text-xs text-muted-foreground">
+                                            No especificado
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+
+
+                                {{-- Evidencias --}}
+
+                                <td class="px-5 py-4">
+
+                                    @if($incidencia->archivos->count())
+
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-violet-200/70 bg-violet-50 text-xs font-medium text-violet-700">
+
+                                            <i
+                                                data-lucide="paperclip"
+                                                stroke-width="1.8"
+                                                class="w-3.5 h-3.5 shrink-0">
+                                            </i>
+
+                                            {{ $incidencia->archivos->count() }}
+
+                                            {{
+                                                $incidencia->archivos->count() === 1
+                                                    ? 'archivo'
+                                                    : 'archivos'
+                                            }}
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="text-xs text-muted-foreground">
+                                            Sin archivos
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+
+
+                                {{-- Registro --}}
+
+                                <td class="px-5 py-4">
+
+                                    <p class="text-sm text-foreground">
+
+                                        {{ $incidencia->created_at
+                                            ?->timezone('America/Tegucigalpa')
+                                            ->format('d/m/Y') }}
+
+                                    </p>
+
+                                    <p class="mt-0.5 text-xs text-muted-foreground">
+
+                                        {{ $incidencia->created_at
+                                            ?->timezone('America/Tegucigalpa')
+                                            ->format('h:i A') }}
+
+                                    </p>
+
+                                </td>
+
+
+
+                                {{-- Acción --}}
+
+                                <td class="px-5 py-4">
+
+                                    <div class="flex items-center justify-end">
+
+                                        <a
+                                            href="{{ route(
+                                                'incidencias.show',
+                                                $incidencia
+                                            ) }}"
+                                            class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-white text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+
+                                            Ver detalle
+
+                                            <i
+                                                data-lucide="arrow-right"
+                                                stroke-width="1.8"
+                                                class="w-3.5 h-3.5 shrink-0 transition-transform duration-200 group-hover/button:translate-x-0.5">
+                                            </i>
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        @empty
+
+                            <tr>
+
+                                <td
+                                    colspan="6"
+                                    class="px-6 py-16 text-center">
+
+                                    <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-2xl bg-primary/5 text-primary">
+
+                                        <i
+                                            data-lucide="inbox"
+                                            stroke-width="1.7"
+                                            class="w-6 h-6">
+                                        </i>
+
+                                    </div>
+
+                                    <h3 class="mt-4 text-sm font-semibold text-foreground">
+                                        No se encontraron incidencias
+                                    </h3>
+
+                                    <p class="max-w-md mx-auto mt-1 text-sm leading-relaxed text-muted-foreground">
+                                        No existen incidencias registradas durante {{ $meses[$mes] }} de {{ $anio }}.
+                                    </p>
+
+                                    @if(
+                                        (int) $mes !== now()->month
+                                        || (int) $anio !== now()->year
+                                    )
+
+                                        <a
+                                            href="{{ route('mis-incidencias') }}"
+                                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 mt-5 rounded-lg border border-primary/20 bg-primary/5 text-sm font-semibold text-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
+
+                                            <i
+                                                data-lucide="rotate-ccw"
+                                                stroke-width="1.8"
+                                                class="w-4 h-4">
+                                            </i>
+
+                                            Ver mes actual
+
+                                        </a>
+
+                                    @endif
+
+                                </td>
+
+                            </tr>
+
+                        @endforelse
+
+                    </tbody>
+
+                </table>
 
             </div>
+
+
+
+            {{-- Paginación personalizada --}}
+
+            @if($incidencias->hasPages())
+
+                @php
+                    $paginaActual = $incidencias->currentPage();
+                    $ultimaPagina = $incidencias->lastPage();
+
+                    $paginaInicial = max(
+                        1,
+                        $paginaActual - 2
+                    );
+
+                    $paginaFinal = min(
+                        $ultimaPagina,
+                        $paginaActual + 2
+                    );
+
+                    if ($paginaActual <= 3) {
+                        $paginaFinal = min(
+                            5,
+                            $ultimaPagina
+                        );
+                    }
+
+                    if (
+                        $paginaActual
+                        >=
+                        $ultimaPagina - 2
+                    ) {
+                        $paginaInicial = max(
+                            1,
+                            $ultimaPagina - 4
+                        );
+                    }
+                @endphp
+
+
+                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between">
+
+                    <p class="text-xs text-muted-foreground">
+                        Mostrando
+
+                        <span class="font-semibold text-foreground">
+                            {{ $incidencias->firstItem() }}
+                        </span>
+
+                        a
+
+                        <span class="font-semibold text-foreground">
+                            {{ $incidencias->lastItem() }}
+                        </span>
+
+                        de
+
+                        <span class="font-semibold text-foreground">
+                            {{ $incidencias->total() }}
+                        </span>
+
+                        incidencias
+                    </p>
+
+
+                    <nav
+                        aria-label="Paginación de incidencias"
+                        class="flex flex-wrap items-center gap-1">
+
+                        @if($incidencias->onFirstPage())
+
+                            <span
+                                aria-disabled="true"
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+
+                                <i data-lucide="chevron-left" stroke-width="1.8" class="w-4 h-4"></i>
+
+                            </span>
+
+                        @else
+
+                            <a
+                                href="{{ $incidencias->previousPageUrl() }}"
+                                rel="prev"
+                                aria-label="Página anterior"
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+
+                                <i data-lucide="chevron-left" stroke-width="1.8" class="w-4 h-4"></i>
+
+                            </a>
+
+                        @endif
+
+
+                        @if($paginaInicial > 1)
+
+                            <a
+                                href="{{ $incidencias->url(1) }}"
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm">
+                                1
+                            </a>
+
+                            @if($paginaInicial > 2)
+
+                                <span class="inline-flex items-center justify-center w-7 h-9 text-xs text-muted-foreground">
+                                    …
+                                </span>
+
+                            @endif
+
+                        @endif
+
+
+                        @for(
+                            $pagina = $paginaInicial;
+                            $pagina <= $paginaFinal;
+                            $pagina++
+                        )
+
+                            @if($pagina === $paginaActual)
+
+                                <span
+                                    aria-current="page"
+                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-primary bg-primary text-xs font-semibold text-white shadow-sm">
+                                    {{ $pagina }}
+                                </span>
+
+                            @else
+
+                                <a
+                                    href="{{ $incidencias->url($pagina) }}"
+                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                    {{ $pagina }}
+                                </a>
+
+                            @endif
+
+                        @endfor
+
+
+                        @if($paginaFinal < $ultimaPagina)
+
+                            @if($paginaFinal < $ultimaPagina - 1)
+
+                                <span class="inline-flex items-center justify-center w-7 h-9 text-xs text-muted-foreground">
+                                    …
+                                </span>
+
+                            @endif
+
+                            <a
+                                href="{{ $incidencias->url($ultimaPagina) }}"
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                {{ $ultimaPagina }}
+                            </a>
+
+                        @endif
+
+
+                        @if($incidencias->hasMorePages())
+
+                            <a
+                                href="{{ $incidencias->nextPageUrl() }}"
+                                rel="next"
+                                aria-label="Página siguiente"
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+
+                                <i data-lucide="chevron-right" stroke-width="1.8" class="w-4 h-4"></i>
+
+                            </a>
+
+                        @else
+
+                            <span
+                                aria-disabled="true"
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+
+                                <i data-lucide="chevron-right" stroke-width="1.8" class="w-4 h-4"></i>
+
+                            </span>
+
+                        @endif
+
+                    </nav>
+
+                </div>
+
+            @endif
 
         </section>
 
     </main>
 
 </div>
-
-
-<script>
-    document.addEventListener(
-        'DOMContentLoaded',
-        () => {
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
-        }
-    );
-</script>
 
 @endsection

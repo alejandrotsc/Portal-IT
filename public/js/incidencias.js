@@ -128,6 +128,16 @@ document.addEventListener('DOMContentLoaded', () => {
         input?.click();
     });
 
+    dropzone?.addEventListener('keydown', event => {
+        if (
+            event.key === 'Enter'
+            || event.key === ' '
+        ) {
+            event.preventDefault();
+            input?.click();
+        }
+    });
+
 
     input?.addEventListener('change', event => {
         agregarArchivos(event.target.files);
@@ -139,7 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dropzone.classList.add(
             'border-primary',
-            'bg-primary/5'
+            'bg-primary/[0.08]',
+            'shadow-md'
         );
     });
 
@@ -147,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dropzone?.addEventListener('dragleave', () => {
         dropzone.classList.remove(
             'border-primary',
-            'bg-primary/5'
+            'bg-primary/[0.08]',
+            'shadow-md'
         );
     });
 
@@ -157,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dropzone.classList.remove(
             'border-primary',
-            'bg-primary/5'
+            'bg-primary/[0.08]',
+            'shadow-md'
         );
 
         agregarArchivos(event.dataTransfer.files);
@@ -208,14 +221,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
 
             card.className =
-                'relative rounded-xl overflow-hidden '
-                + 'border border-border bg-white';
+                'group/preview relative overflow-hidden rounded-xl '
+                + 'border border-border bg-white shadow-sm '
+                + 'transition-all duration-300 hover:border-primary/20 '
+                + 'hover:shadow-lg hover:shadow-primary/10 '
+                + 'motion-safe:hover:-translate-y-1';
 
 
             const imagen = document.createElement('img');
 
             imagen.className =
-                'w-full h-28 object-cover';
+                'h-28 w-full object-cover transition-transform '
+                + 'duration-500 motion-safe:group-hover/preview:scale-105';
 
             imagen.alt = file.name;
 
@@ -225,17 +242,25 @@ document.addEventListener('DOMContentLoaded', () => {
             boton.type = 'button';
 
             boton.className =
-                'absolute top-2 right-2 bg-black/60 '
-                + 'text-white rounded-full w-7 h-7 '
-                + 'flex items-center justify-center '
-                + 'hover:bg-red-600 transition';
+                'absolute right-2 top-2 flex h-8 w-8 items-center '
+                + 'justify-center rounded-lg border border-white/20 '
+                + 'bg-slate-950/70 text-white shadow-sm backdrop-blur-sm '
+                + 'transition-all duration-200 hover:bg-red-600 '
+                + 'focus:outline-none focus:ring-2 focus:ring-white/60 '
+                + 'motion-safe:hover:scale-110';
 
             boton.setAttribute(
                 'aria-label',
                 `Eliminar ${file.name}`
             );
 
-            boton.textContent = '×';
+            boton.innerHTML = `
+                <i
+                    data-lucide="x"
+                    stroke-width="2"
+                    class="h-4 w-4">
+                </i>
+            `;
 
 
             boton.addEventListener('click', () => {
@@ -266,6 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         input.files = dataTransfer.files;
+
+        refrescarIconos();
     }
 
 
@@ -695,10 +722,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const estilos = {
 
             success: [
-                'bg-green-50',
-                'border-green-200',
-                'text-green-600',
-                'check-circle',
+                'bg-emerald-50',
+                'border-emerald-200',
+                'text-emerald-600',
+                'circle-check-big',
             ],
 
             warning: [
@@ -712,7 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'bg-red-50',
                 'border-red-200',
                 'text-red-600',
-                'x-circle',
+                'circle-x',
             ],
 
         };
@@ -724,13 +751,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalIcono) {
 
             modalIcono.className =
-                `w-16 h-16 rounded-2xl ${estilo[0]} `
-                + `border ${estilo[1]} flex items-center `
-                + 'justify-center mx-auto';
+                `mx-auto flex h-16 w-16 items-center `
+                + `justify-center rounded-2xl border ${estilo[1]} `
+                + `${estilo[0]} shadow-sm`;
 
             modalIcono.innerHTML =
-                `<i data-lucide="${estilo[3]}" `
-                + `class="w-8 h-8 ${estilo[2]}"></i>`;
+                `<i data-lucide="${estilo[3]}" stroke-width="1.8" `
+                + `class="h-8 w-8 ${estilo[2]}"></i>`;
 
         }
 
@@ -754,17 +781,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const estilos = {
 
             success: [
-                'border-green-200',
-                'bg-green-50/70',
-                'text-green-800',
-                'text-green-700',
+                'border-emerald-200',
+                'bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50',
+                'text-emerald-800',
+                'text-emerald-700',
                 'mail-check',
-                'text-green-600',
+                'text-emerald-600',
             ],
 
             warning: [
                 'border-amber-200',
-                'bg-amber-50/70',
+                'bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50',
                 'text-amber-800',
                 'text-amber-700',
                 'mail-warning',
@@ -773,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             error: [
                 'border-red-200',
-                'bg-red-50/70',
+                'bg-gradient-to-br from-red-50/80 via-white to-rose-50/50',
                 'text-red-800',
                 'text-red-700',
                 'triangle-alert',
@@ -790,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             estadoCorreo.className =
                 `rounded-2xl border ${estilo[0]} `
-                + `${estilo[1]} p-5 text-left`;
+                + `${estilo[1]} p-5 text-left shadow-sm`;
 
         }
 
@@ -798,12 +825,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (estadoCorreoIcono) {
 
             estadoCorreoIcono.className =
-                `w-10 h-10 rounded-xl bg-white border `
-                + `${estilo[0]} flex items-center justify-center`;
+                `flex h-10 w-10 shrink-0 items-center justify-center `
+                + `rounded-xl border ${estilo[0]} bg-white `
+                + `${estilo[5]} shadow-sm`;
 
             estadoCorreoIcono.innerHTML =
-                `<i data-lucide="${estilo[4]}" `
-                + `class="w-5 h-5 ${estilo[5]}"></i>`;
+                `<i data-lucide="${estilo[4]}" stroke-width="1.8" `
+                + 'class="h-5 w-5"></i>';
 
         }
 
@@ -822,8 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (estadoCorreoMensaje) {
 
             estadoCorreoMensaje.className =
-                `text-xs ${estilo[3]} `
-                + 'leading-relaxed mt-1.5';
+                `mt-1.5 text-xs leading-relaxed ${estilo[3]}`;
 
             estadoCorreoMensaje.textContent =
                 mensaje;
@@ -996,14 +1023,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     'border-amber-300',
                     'bg-amber-50',
                     'text-amber-800',
-                    'hover:bg-amber-100'
+                    'hover:bg-amber-100',
+                    'hover:border-amber-400'
                 );
 
                 boton.classList.add(
                     'border-red-300',
                     'bg-red-50',
                     'text-red-800',
-                    'hover:bg-red-100'
+                    'hover:bg-red-100',
+                    'hover:border-red-400'
                 );
 
             } else {
@@ -1012,14 +1041,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     'border-red-300',
                     'bg-red-50',
                     'text-red-800',
-                    'hover:bg-red-100'
+                    'hover:bg-red-100',
+                    'hover:border-red-400'
                 );
 
                 boton.classList.add(
                     'border-amber-300',
                     'bg-amber-50',
                     'text-amber-800',
-                    'hover:bg-amber-100'
+                    'hover:bg-amber-100',
+                    'hover:border-amber-400'
                 );
 
             }
@@ -1054,18 +1085,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const estilos = {
 
             success: [
-                'text-green-700',
-                'bg-green-500',
+                'text-emerald-700',
+                'bg-emerald-500',
+                'border-emerald-200',
+                'bg-emerald-50',
             ],
 
             warning: [
                 'text-amber-700',
                 'bg-amber-500',
+                'border-amber-200',
+                'bg-amber-50',
             ],
 
             error: [
                 'text-red-700',
                 'bg-red-500',
+                'border-red-200',
+                'bg-red-50',
             ],
 
         };
@@ -1074,11 +1111,12 @@ document.addEventListener('DOMContentLoaded', () => {
             estilos[tipo] ?? estilos.error;
 
         smtpEstado.className =
-            `inline-flex items-center gap-2 `
-            + `text-xs ${estilo[0]}`;
+            'inline-flex items-center gap-2 rounded-lg border '
+            + 'px-3 py-2 text-xs font-medium shadow-sm '
+            + `${estilo[0]} ${estilo[2]} ${estilo[3]}`;
 
         smtpEstado.innerHTML =
-            `<span class="w-2.5 h-2.5 rounded-full `
+            `<span class="h-2.5 w-2.5 shrink-0 rounded-full `
             + `${estilo[1]}"></span>${texto}`;
     }
 
@@ -1110,7 +1148,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <i
                 id="btnEnviarIcono"
                 data-lucide="send"
-                class="w-4 h-4"
+                stroke-width="1.8"
+                class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/send:translate-x-0.5 motion-safe:group-hover/send:-translate-y-0.5"
             ></i>
 
             <span id="btnEnviarTexto">
@@ -1133,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
 
         refrescarIconos();
     }
@@ -1143,6 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+        document.body.classList.remove('overflow-hidden');
     }
 
 

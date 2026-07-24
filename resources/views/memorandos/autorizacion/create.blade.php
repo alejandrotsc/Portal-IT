@@ -53,12 +53,12 @@
                     <div class="min-w-0">
 
                     <h1 class="text-2xl font-semibold text-foreground tracking-tight">
-                        Generación de memorandos internos
+                        Pase mayor a 24 horas
                     </h1>
 
 
                     <p class="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                        Complete los campos requeridos para generar el documento oficial de autorización.
+                        Complete los campos requeridos para solicitar una autorización de ingreso de equipo tecnológico.
                     </p>
 
                     </div>

@@ -3,48 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IncidenciaArchivo extends Model
 {
-
-    protected $table = 'incidencia_archivos';
+    protected $table =
+        'incidencia_archivos';
 
 
     protected $fillable = [
-
         'incidencia_id',
-
         'usuario_id',
-
         'nombre_original',
-
         'nombre_archivo',
-
         'ruta',
-
         'extension',
-
         'tamano',
-
-        'texto_ocr'
-
+        'texto_ocr',
     ];
 
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Casting
-    |--------------------------------------------------------------------------
-    */
 
     protected $casts = [
-
-        'tamano' => 'integer'
-
+        'tamano' =>
+            'integer',
     ];
-
-
 
 
     /*
@@ -53,7 +35,7 @@ class IncidenciaArchivo extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function incidencia()
+    public function incidencia(): BelongsTo
     {
         return $this->belongsTo(
             Incidencia::class,
@@ -62,22 +44,17 @@ class IncidenciaArchivo extends Model
     }
 
 
-
-
-
     /*
     |--------------------------------------------------------------------------
     | Usuario que subió el archivo
     |--------------------------------------------------------------------------
     */
 
-    public function usuario()
+    public function usuario(): BelongsTo
     {
         return $this->belongsTo(
             Usuario::class,
             'usuario_id'
         );
     }
-
-
 }

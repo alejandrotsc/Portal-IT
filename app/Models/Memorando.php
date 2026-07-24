@@ -3,10 +3,60 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Memorando extends Model
 {
-    protected $table = 'memorandos';
+    /*
+    |--------------------------------------------------------------------------
+    | Estados
+    |--------------------------------------------------------------------------
+    */
+
+    public const ESTADO_GENERADO =
+        'GENERADO';
+
+    public const ESTADO_EN_FIRMA =
+        'EN_FIRMA';
+
+    public const ESTADO_APROBADO =
+        'APROBADO';
+
+    public const ESTADO_RECHAZADO =
+        'RECHAZADO';
+
+    public const ESTADO_ARCHIVADO =
+        'ARCHIVADO';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Estados utilizados por administración
+    |--------------------------------------------------------------------------
+    |
+    | EN_FIRMA y ARCHIVADO permanecen definidos para conservar compatibilidad
+    | con registros o funcionalidades existentes, pero no aparecerán en el
+    | nuevo módulo administrativo.
+    |
+    */
+
+    public const ESTADOS_ADMINISTRATIVOS = [
+        self::ESTADO_GENERADO,
+        self::ESTADO_APROBADO,
+        self::ESTADO_RECHAZADO,
+    ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración del modelo
+    |--------------------------------------------------------------------------
+    */
+
+    protected $table =
+        'memorandos';
 
 
     protected $fillable = [
@@ -21,33 +71,17 @@ class Memorando extends Model
         'observaciones',
         'fecha_documento',
         'archivo_pdf',
-        'datos_extra'
+        'datos_extra',
     ];
 
 
     protected $casts = [
-        'datos_extra' => 'array',
-        'fecha_documento' => 'date'
+        'datos_extra' =>
+            'array',
+
+        'fecha_documento' =>
+            'date',
     ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Estados del memorando
-    |--------------------------------------------------------------------------
-    */
-
-    const ESTADO_GENERADO = 'GENERADO';
-
-    const ESTADO_EN_FIRMA = 'EN_FIRMA';
-
-    const ESTADO_APROBADO = 'APROBADO';
-
-    const ESTADO_RECHAZADO = 'RECHAZADO';
-
-    const ESTADO_ARCHIVADO = 'ARCHIVADO';
-
-
 
 
     /*
@@ -56,11 +90,7 @@ class Memorando extends Model
     |--------------------------------------------------------------------------
     */
 
-
-    /**
-     * Tipo de memorando
-     */
-    public function tipo()
+    public function tipo(): BelongsTo
     {
         return $this->belongsTo(
             MemorandoTipo::class,
@@ -69,11 +99,7 @@ class Memorando extends Model
     }
 
 
-
-    /**
-     * Usuario que creó el memorando
-     */
-    public function solicitante()
+    public function solicitante(): BelongsTo
     {
         return $this->belongsTo(
             Usuario::class,
@@ -82,11 +108,7 @@ class Memorando extends Model
     }
 
 
-
-    /**
-     * Información específica de solicitud de compra
-     */
-    public function solicitudCompra()
+    public function solicitudCompra(): HasOne
     {
         return $this->hasOne(
             SolicitudCompra::class,
@@ -95,11 +117,7 @@ class Memorando extends Model
     }
 
 
-
-    /**
-     * Artículos asociados
-     */
-    public function articulos()
+    public function articulos(): HasMany
     {
         return $this->hasMany(
             MemorandoArticulo::class,
@@ -108,11 +126,7 @@ class Memorando extends Model
     }
 
 
-
-    /**
-     * Archivos adjuntos
-     */
-    public function archivos()
+    public function archivos(): HasMany
     {
         return $this->hasMany(
             MemorandoArchivo::class,
@@ -121,11 +135,7 @@ class Memorando extends Model
     }
 
 
-
-    /**
-     * Aprobaciones
-     */
-    public function aprobaciones()
+    public function aprobaciones(): HasMany
     {
         return $this->hasMany(
             Aprobacion::class,
@@ -134,11 +144,7 @@ class Memorando extends Model
     }
 
 
-
-    /**
-     * Historial de cambios
-     */
-    public function historial()
+    public function historial(): HasMany
     {
         return $this->hasMany(
             MemorandoHistorial::class,
@@ -147,28 +153,70 @@ class Memorando extends Model
     }
 
 
-
     /*
     |--------------------------------------------------------------------------
-    | Helpers
+    | Helpers de estado
     |--------------------------------------------------------------------------
     */
 
-
-    public function requiereFolio()
+    public function estaGenerado(): bool
     {
-        return $this->tipo?->requiere_folio === true;
+        return $this->estado
+            === self::ESTADO_GENERADO;
     }
 
 
-    public function estaAprobado()
+    public function estaEnFirma(): bool
     {
-        return $this->estado === self::ESTADO_APROBADO;
+        return $this->estado
+            === self::ESTADO_EN_FIRMA;
     }
 
 
-    public function tienePdf()
+    public function estaAprobado(): bool
     {
-        return !empty($this->archivo_pdf);
+        return $this->estado
+            === self::ESTADO_APROBADO;
+    }
+
+
+    public function estaRechazado(): bool
+    {
+        return $this->estado
+            === self::ESTADO_RECHAZADO;
+    }
+
+
+    public function estaArchivado(): bool
+    {
+        return $this->estado
+            === self::ESTADO_ARCHIVADO;
+    }
+
+
+    public function estaPendienteDeRevision(): bool
+    {
+        return $this->estaGenerado();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers generales
+    |--------------------------------------------------------------------------
+    */
+
+    public function requiereFolio(): bool
+    {
+        return $this->tipo?->requiere_folio
+            === true;
+    }
+
+
+    public function tienePdf(): bool
+    {
+        return filled(
+            $this->archivo_pdf
+        );
     }
 }

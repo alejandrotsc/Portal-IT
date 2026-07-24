@@ -344,6 +344,48 @@ CREATE INDEX solicitudes_created_at_index
 ON solicitudes(created_at);
 
 
+CREATE TABLE notifications (
+
+    id UUID PRIMARY KEY,
+
+    type VARCHAR(255) NOT NULL,
+
+    notifiable_type VARCHAR(255) NOT NULL,
+
+    notifiable_id BIGINT NOT NULL,
+
+    data JSONB NOT NULL,
+
+    read_at TIMESTAMP NULL,
+
+    created_at TIMESTAMP NULL,
+
+    updated_at TIMESTAMP NULL
+
+);
+
+
+CREATE INDEX notifications_notifiable_index
+ON notifications (
+    notifiable_type,
+    notifiable_id
+);
+
+
+CREATE INDEX notifications_read_at_index
+ON notifications (
+    read_at
+);
+
+
+CREATE INDEX notifications_created_at_index
+ON notifications (
+    created_at DESC
+);
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+
 -- ============================================================
 -- CHATBOT CONVERSATIONS
 -- ASISTENTE VIRTUAL TI

@@ -10,7 +10,7 @@
         {{-- Navegación --}}
 
         <a
-            href="{{ route('admin.solicitudes') }}"
+            href="{{ route('admin.incidencias') }}"
             class="group inline-flex items-center gap-2 mb-6 px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 text-sm font-medium text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
 
             <i
@@ -20,7 +20,7 @@
             </i>
 
             <span>
-                Volver a solicitudes
+                Volver a incidencias
             </span>
 
         </a>
@@ -110,30 +110,36 @@
 
                             <h1 class="text-2xl font-semibold text-foreground tracking-tight">
 
-                                {{ $solicitud->folio }}
+                                {{ $incidencia->codigo }}
 
                             </h1>
 
 
                             {{-- Estado --}}
 
-                            @if($solicitud->estado === 'finalizada')
+                            @if($incidencia->estaResuelta())
 
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
 
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 
-                                    Finalizada
+                                    Resuelta
 
                                 </span>
 
-                            @elseif($solicitud->estado === 'cancelada')
+                            @elseif($incidencia->estaEnProceso())
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-600">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700">
 
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                    <span class="relative flex w-1.5 h-1.5 shrink-0">
 
-                                    Cancelada
+                                        <span class="absolute inline-flex w-full h-full rounded-full bg-cyan-400 opacity-60 animate-ping"></span>
+
+                                        <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+
+                                    </span>
+
+                                    En proceso
 
                                 </span>
 
@@ -149,7 +155,7 @@
 
                                     </span>
 
-                                    Pendiente
+                                    Abierta
 
                                 </span>
 
@@ -159,7 +165,7 @@
 
                         <p class="mt-2 text-sm text-muted-foreground leading-relaxed">
 
-                            Consulta la información registrada y actualiza el estado de seguimiento.
+                            Consulta el reporte, revisa las evidencias y actualiza su seguimiento.
 
                         </p>
 
@@ -182,7 +188,7 @@
 
                     <span class="font-medium text-foreground">
 
-                        {{ $solicitud->created_at
+                        {{ $incidencia->created_at
                             ?->timezone('America/Tegucigalpa')
                             ->format('d/m/Y h:i A') }}
 
@@ -204,7 +210,7 @@
             <div class="space-y-6">
 
 
-                {{-- Información de la solicitud --}}
+                {{-- Información de la incidencia --}}
 
                 <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md">
 
@@ -224,7 +230,7 @@
 
                             <h2 class="text-sm font-semibold text-foreground">
 
-                                Información de la solicitud
+                                Información de la incidencia
 
                             </h2>
 
@@ -242,53 +248,108 @@
                     <div class="p-6 space-y-6">
 
 
-                        {{-- Categoría --}}
+                        {{-- Título --}}
 
                         <div>
 
                             <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
 
-                                Categoría
-
-                            </p>
-
-                            <div class="mt-2">
-
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 hover:border-blue-300 hover:bg-blue-100">
-
-                                    <i
-                                        data-lucide="tag"
-                                        stroke-width="1.8"
-                                        class="w-3.5 h-3.5">
-                                    </i>
-
-                                    {{ str($solicitud->categoria)
-                                        ->replace('_', ' ')
-                                        ->title() }}
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-
-                        {{-- Asunto --}}
-
-                        <div>
-
-                            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-
-                                Asunto
+                                Título del reporte
 
                             </p>
 
                             <p class="mt-2 text-sm font-semibold text-foreground leading-relaxed">
 
-                                {{ $solicitud->asunto }}
+                                {{ $incidencia->titulo }}
 
                             </p>
+
+                        </div>
+
+
+
+                        {{-- Contexto --}}
+
+                        @php
+
+                            $tiemposProblema = [
+                                'hoy' =>
+                                    'Hoy',
+
+                                'ayer' =>
+                                    'Ayer',
+
+                                'varios_dias' =>
+                                    'Hace varios días',
+                            ];
+
+                            $afectaciones = [
+                                'solo' =>
+                                    'Solo a mí',
+
+                                'varios' =>
+                                    'A varias personas',
+
+                                'todos' =>
+                                    'A toda el área',
+                            ];
+
+                            $tiempoMostrado =
+                                $tiemposProblema[
+                                    $incidencia->tiempo_problema
+                                ]
+                                ?? (
+                                    filled($incidencia->tiempo_problema)
+                                        ? str($incidencia->tiempo_problema)
+                                            ->replace('_', ' ')
+                                            ->title()
+                                        : 'No especificado'
+                                );
+
+                            $afectacionMostrada =
+                                $afectaciones[
+                                    $incidencia->afectacion
+                                ]
+                                ?? (
+                                    filled($incidencia->afectacion)
+                                        ? str($incidencia->afectacion)
+                                            ->replace('_', ' ')
+                                            ->title()
+                                        : 'No especificado'
+                                );
+
+                        @endphp
+
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                            @foreach([
+                                '¿Cuándo empezó?' => $tiempoMostrado,
+                                '¿A quién afecta?' => $afectacionMostrada,
+                                'Equipo' => $incidencia->equipo,
+                                'Ubicación' => $incidencia->ubicacion,
+                            ] as $etiqueta => $valor)
+
+                                <div class="rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02]">
+
+                                    <p class="text-xs font-medium text-muted-foreground">
+
+                                        {{ $etiqueta }}
+
+                                    </p>
+
+                                    <p class="mt-1.5 text-sm font-medium text-foreground break-words">
+
+                                        {{ filled($valor)
+                                            ? $valor
+                                            : 'No especificado'
+                                        }}
+
+                                    </p>
+
+                                </div>
+
+                            @endforeach
 
                         </div>
 
@@ -306,7 +367,7 @@
 
                             <div class="mt-2 rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02]">
 
-                                <p class="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{{ $solicitud->descripcion }}</p>
+                                <p class="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{{ $incidencia->descripcion }}</p>
 
                             </div>
 
@@ -318,12 +379,9 @@
 
 
 
-                {{-- Información adicional --}}
+                {{-- Evidencias --}}
 
-                @if(
-                    is_array($solicitud->datos_extra)
-                    && count($solicitud->datos_extra) > 0
-                )
+                @if($incidencia->archivos->isNotEmpty())
 
                     <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-200 hover:shadow-md">
 
@@ -332,7 +390,7 @@
                             <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-blue-500/10 text-blue-600 transition-transform duration-300 group-hover:scale-105">
 
                                 <i
-                                    data-lucide="list-tree"
+                                    data-lucide="paperclip"
                                     stroke-width="1.8"
                                     class="w-[18px] h-[18px]">
                                 </i>
@@ -343,13 +401,13 @@
 
                                 <h2 class="text-sm font-semibold text-foreground">
 
-                                    Información adicional
+                                    Evidencias adjuntas
 
                                 </h2>
 
                                 <p class="mt-1 text-xs text-muted-foreground">
 
-                                    Datos específicos correspondientes a la categoría.
+                                    Archivos enviados por el usuario junto al reporte.
 
                                 </p>
 
@@ -358,58 +416,58 @@
                         </div>
 
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6">
 
-                            @foreach($solicitud->datos_extra as $campo => $valor)
+                            @foreach($incidencia->archivos as $archivo)
 
-                                @continue(
-                                    $valor === null
-                                    || $valor === ''
-                                    || $valor === []
-                                )
+                                <a
+                                    href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($archivo->ruta) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="group/file flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.03] hover:shadow-sm">
 
-                                @php
+                                    <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg bg-primary/10 text-primary transition-transform duration-200 group-hover/file:scale-105">
 
-                                    $nombreCampo = str($campo)
-                                        ->replace('_', ' ')
-                                        ->title();
+                                        <i
+                                            data-lucide="image"
+                                            stroke-width="1.8"
+                                            class="w-[18px] h-[18px]">
+                                        </i>
 
-                                    if (is_array($valor)) {
-                                        $valorMostrado = collect($valor)
-                                            ->filter(
-                                                fn ($item) =>
-                                                    $item !== null
-                                                    && $item !== ''
-                                            )
-                                            ->implode(', ');
-                                    } elseif (is_bool($valor)) {
-                                        $valorMostrado = $valor
-                                            ? 'Sí'
-                                            : 'No';
-                                    } else {
-                                        $valorMostrado = (string) $valor;
-                                    }
+                                    </div>
 
-                                @endphp
+                                    <div class="min-w-0 flex-1">
 
-                                <div class="px-6 py-4 border-b border-border transition-colors duration-200 hover:bg-primary/[0.025] last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0">
+                                        <p
+                                            title="{{ $archivo->nombre_original }}"
+                                            class="text-sm font-semibold text-foreground truncate">
 
-                                    <p class="text-xs font-medium text-muted-foreground">
+                                            {{ $archivo->nombre_original }}
 
-                                        {{ $nombreCampo }}
+                                        </p>
 
-                                    </p>
+                                        <p class="mt-1 text-xs text-muted-foreground">
 
-                                    <p class="mt-1 text-sm font-medium text-foreground break-words">
+                                            {{ mb_strtoupper($archivo->extension) }}
 
-                                        {{ $valorMostrado !== ''
-                                            ? $valorMostrado
-                                            : 'No especificado'
-                                        }}
+                                            ·
 
-                                    </p>
+                                            {{ number_format(
+                                                $archivo->tamano / 1024,
+                                                1
+                                            ) }} KB
 
-                                </div>
+                                        </p>
+
+                                    </div>
+
+                                    <i
+                                        data-lucide="external-link"
+                                        stroke-width="1.8"
+                                        class="w-4 h-4 shrink-0 text-muted-foreground transition-colors duration-200 group-hover/file:text-primary">
+                                    </i>
+
+                                </a>
 
                             @endforeach
 
@@ -447,7 +505,7 @@
 
                             <p class="mt-1 text-xs text-muted-foreground">
 
-                                Resultado del envío realizado al registrar la solicitud.
+                                Resultado del aviso enviado al equipo de TI.
 
                             </p>
 
@@ -458,7 +516,7 @@
 
                     <div class="p-6">
 
-                        @if($solicitud->correo_enviado)
+                        @if($incidencia->correo_enviado)
 
                             <div class="group/mail flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm">
 
@@ -482,13 +540,13 @@
 
                                     <p class="mt-1 text-xs leading-relaxed text-emerald-700">
 
-                                        El equipo responsable recibió una notificación sobre esta solicitud.
+                                        El equipo responsable recibió una notificación sobre esta incidencia.
 
-                                        @if($solicitud->correo_enviado_at)
+                                        @if($incidencia->fecha_envio_correo)
 
                                             El envío se realizó el
 
-                                            {{ $solicitud->correo_enviado_at
+                                            {{ $incidencia->fecha_envio_correo
                                                 ->timezone('America/Tegucigalpa')
                                                 ->format('d/m/Y h:i A') }}.
 
@@ -524,7 +582,7 @@
 
                                     <p class="mt-1 text-xs leading-relaxed text-amber-700">
 
-                                        La solicitud quedó registrada, pero no fue posible completar la notificación por correo.
+                                        La incidencia quedó registrada, pero no fue posible completar la notificación por correo.
 
                                     </p>
 
@@ -568,10 +626,10 @@
 
                             <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-full bg-primary/10 text-sm font-semibold text-primary transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/15">
 
-                                {{ $solicitud->usuario?->nombre
+                                {{ $incidencia->usuario?->nombre
                                     ? mb_strtoupper(
                                         mb_substr(
-                                            $solicitud->usuario->nombre,
+                                            $incidencia->usuario->nombre,
                                             0,
                                             1
                                         )
@@ -585,17 +643,17 @@
 
                                 <p class="text-sm font-semibold text-foreground truncate">
 
-                                    {{ $solicitud->usuario?->nombre
+                                    {{ $incidencia->usuario?->nombre
                                         ?? 'Usuario no disponible'
                                     }}
 
                                 </p>
 
                                 <p
-                                    title="{{ $solicitud->usuario?->correo }}"
+                                    title="{{ $incidencia->usuario?->correo }}"
                                     class="mt-0.5 text-xs text-muted-foreground truncate">
 
-                                    {{ $solicitud->usuario?->correo
+                                    {{ $incidencia->usuario?->correo
                                         ?? 'Sin correo registrado'
                                     }}
 
@@ -640,7 +698,7 @@
                                 Estado
                             </span>
 
-                            @if($solicitud->estado === 'finalizada')
+                            @if($incidencia->estaResuelta())
 
                                 <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
 
@@ -650,21 +708,21 @@
                                         class="w-3.5 h-3.5">
                                     </i>
 
-                                    Finalizada
+                                    Resuelta
 
                                 </span>
 
-                            @elseif($solicitud->estado === 'cancelada')
+                            @elseif($incidencia->estaEnProceso())
 
-                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700">
 
                                     <i
-                                        data-lucide="circle-x"
+                                        data-lucide="loader-circle"
                                         stroke-width="1.8"
                                         class="w-3.5 h-3.5">
                                     </i>
 
-                                    Cancelada
+                                    En proceso
 
                                 </span>
 
@@ -678,7 +736,7 @@
                                         class="w-3.5 h-3.5">
                                     </i>
 
-                                    Pendiente
+                                    Abierta
 
                                 </span>
 
@@ -690,11 +748,11 @@
                         <div class="flex items-start justify-between gap-4">
 
                             <span class="text-xs text-muted-foreground">
-                                Folio
+                                Código
                             </span>
 
                             <span class="text-xs font-semibold text-foreground">
-                                {{ $solicitud->folio }}
+                                {{ $incidencia->codigo }}
                             </span>
 
                         </div>
@@ -703,14 +761,12 @@
                         <div class="flex items-start justify-between gap-4">
 
                             <span class="text-xs text-muted-foreground">
-                                Categoría
+                                Evidencias
                             </span>
 
                             <span class="max-w-[150px] text-right text-xs font-medium text-foreground">
 
-                                {{ str($solicitud->categoria)
-                                    ->replace('_', ' ')
-                                    ->title() }}
+                                {{ $incidencia->archivos->count() }}
 
                             </span>
 
@@ -725,7 +781,7 @@
 
                             <span class="text-right text-xs font-medium text-foreground">
 
-                                {{ $solicitud->created_at
+                                {{ $incidencia->created_at
                                     ?->timezone('America/Tegucigalpa')
                                     ->format('d/m/Y') }}
 
@@ -739,9 +795,97 @@
 
 
 
-                {{-- Acciones --}}
+                {{-- Prioridad --}}
 
-                @if($solicitud->estado === 'pendiente')
+                <section class="group relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/[0.05] via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
+
+                    <div class="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150"></div>
+
+                    <div class="relative">
+
+                        <h2 class="text-sm font-semibold text-foreground">
+
+                            Prioridad
+
+                        </h2>
+
+                        <p class="mt-1 text-xs text-muted-foreground leading-relaxed">
+
+                            Clasificación interna para organizar la atención.
+
+                        </p>
+
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'admin.incidencias.prioridad',
+                                $incidencia
+                            ) }}"
+                            class="mt-4 space-y-3">
+
+                            @csrf
+                            @method('PATCH')
+
+                            <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                                <i
+                                    data-lucide="flag"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4 shrink-0 text-primary">
+                                </i>
+
+                                <select
+                                    name="prioridad"
+                                    required
+                                    class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+
+                                    @foreach(\App\Models\Incidencia::PRIORIDADES as $prioridad)
+
+                                        <option
+                                            value="{{ $prioridad }}"
+                                            @selected($incidencia->prioridad === $prioridad)>
+
+                                            {{ $prioridad }}
+
+                                        </option>
+
+                                    @endforeach
+
+                                </select>
+
+                                <i
+                                    data-lucide="chevron-down"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                                </i>
+
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-primary/20 bg-primary/5 text-sm font-semibold text-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
+
+                                <i
+                                    data-lucide="save"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4">
+                                </i>
+
+                                Guardar prioridad
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+
+
+                {{-- Acciones de estado --}}
+
+                @if(! $incidencia->estaResuelta())
 
                     <section class="group relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/[0.05] via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
 
@@ -757,7 +901,7 @@
 
                             <p class="mt-1 text-xs text-muted-foreground leading-relaxed">
 
-                                Indica si la solicitud fue atendida o si debe cancelarse.
+                                Actualiza el avance conforme se atienda el reporte.
 
                             </p>
 
@@ -765,65 +909,71 @@
                             <div class="mt-5 space-y-3">
 
 
-                                {{-- Finalizar --}}
+                                {{-- Iniciar --}}
+
+                                @if($incidencia->estaAbierta())
+
+                                    <form
+                                        method="POST"
+                                        action="{{ route(
+                                            'admin.incidencias.iniciar',
+                                            $incidencia
+                                        ) }}"
+                                        onsubmit="return confirm('¿Confirmas que deseas iniciar la atención de esta incidencia?')">
+
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button
+                                            type="submit"
+                                            class="group/iniciar inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
+
+                                            <i
+                                                data-lucide="play"
+                                                stroke-width="1.8"
+                                                class="w-4 h-4 transition-transform duration-200 group-hover/iniciar:scale-110">
+                                            </i>
+
+                                            Iniciar atención
+
+                                        </button>
+
+                                    </form>
+
+                                @endif
+
+
+
+                                {{-- Resolver --}}
 
                                 <form
                                     method="POST"
                                     action="{{ route(
-                                        'admin.solicitudes.finalizar',
-                                        $solicitud
+                                        'admin.incidencias.resolver',
+                                        $incidencia
                                     ) }}"
-                                    onsubmit="return confirm('¿Confirmas que esta solicitud fue atendida y puede marcarse como finalizada?')">
+                                    onsubmit="return confirm('¿Confirmas que esta incidencia fue atendida y puede marcarse como resuelta?')">
 
                                     @csrf
                                     @method('PATCH')
 
                                     <button
                                         type="submit"
-                                        class="group/finalizar inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0">
+                                        class="group/resolver inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/70 hover:shadow-sm active:translate-y-0">
 
                                         <i
                                             data-lucide="circle-check-big"
                                             stroke-width="1.8"
-                                            class="w-4 h-4 transition-transform duration-200 group-hover/finalizar:scale-110">
+                                            class="w-4 h-4 transition-transform duration-200 group-hover/resolver:scale-110">
                                         </i>
 
-                                        Marcar como finalizada
+                                        Marcar como resuelta
 
                                     </button>
 
                                 </form>
 
 
-
-                                {{-- Cancelar --}}
-
-                                <form
-                                    method="POST"
-                                    action="{{ route(
-                                        'admin.solicitudes.cancelar',
-                                        $solicitud
-                                    ) }}"
-                                    onsubmit="return confirm('¿Confirmas que deseas cancelar esta solicitud? Esta acción cambiará su estado administrativo.')">
-
-                                    @csrf
-                                    @method('PATCH')
-
-                                    <button
-                                        type="submit"
-                                        class="group/cancelar inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow-sm active:translate-y-0">
-
-                                        <i
-                                            data-lucide="circle-x"
-                                            stroke-width="1.8"
-                                            class="w-4 h-4 transition-transform duration-200 group-hover/cancelar:scale-110">
-                                        </i>
-
-                                        Cancelar solicitud
-
-                                    </button>
-
-                                </form>
 
                             </div>
 
@@ -833,14 +983,14 @@
 
                 @else
 
-                    <section class="group rounded-2xl border border-border bg-muted/20 p-5 transition-all duration-300 hover:border-primary/15 hover:bg-primary/[0.025]">
+                    <section class="group rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm">
 
                         <div class="flex items-start gap-3">
 
-                            <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-muted text-muted-foreground transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 transition-transform duration-300 group-hover:scale-105">
 
                                 <i
-                                    data-lucide="lock-keyhole"
+                                    data-lucide="circle-check-big"
                                     stroke-width="1.8"
                                     class="w-[18px] h-[18px]">
                                 </i>
@@ -851,19 +1001,47 @@
 
                                 <h2 class="text-sm font-semibold text-foreground">
 
-                                    Seguimiento completado
+                                    Incidencia resuelta
 
                                 </h2>
 
                                 <p class="mt-1 text-xs text-muted-foreground leading-relaxed">
 
-                                    Esta solicitud ya no tiene acciones administrativas pendientes.
+                                    La atención fue completada. Puedes reabrirla si el problema requiere seguimiento adicional.
 
                                 </p>
 
                             </div>
 
                         </div>
+
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'admin.incidencias.reabrir',
+                                $incidencia
+                            ) }}"
+                            class="mt-4"
+                            onsubmit="return confirm('¿Confirmas que deseas reabrir esta incidencia?')">
+
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="group/reabrir inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-emerald-200 bg-white text-sm font-semibold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/50 hover:shadow-sm active:translate-y-0">
+
+                                <i
+                                    data-lucide="rotate-ccw"
+                                    stroke-width="1.8"
+                                    class="w-4 h-4 transition-transform duration-300 group-hover/reabrir:-rotate-45">
+                                </i>
+
+                                Reabrir incidencia
+
+                            </button>
+
+                        </form>
 
                     </section>
 

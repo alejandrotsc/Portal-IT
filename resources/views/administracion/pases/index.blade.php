@@ -11,37 +11,29 @@
 
         <section class="mb-8">
 
-            <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary">
 
-                <div>
+                <i
+                    data-lucide="file-check-2"
+                    stroke-width="1.8"
+                    class="w-3.5 h-3.5 shrink-0">
+                </i>
 
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary">
-
-                        <i
-                            data-lucide="clipboard-list"
-                            stroke-width="1.8"
-                            class="w-3.5 h-3.5 shrink-0">
-                        </i>
-
-                        Gestión interna
-
-                    </div>
-
-                    <h1 class="text-2xl font-semibold text-foreground tracking-tight">
-
-                        Administración de solicitudes
-
-                    </h1>
-
-                    <p class="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-
-                        Consulta las solicitudes registradas y actualiza su estado de seguimiento.
-
-                    </p>
-
-                </div>
+                Gestión interna
 
             </div>
+
+            <h1 class="text-2xl font-semibold text-foreground tracking-tight">
+
+                Administración de pases
+
+            </h1>
+
+            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+
+                Consulta los pases registrados y actualiza su estado de revisión.
+
+            </p>
 
         </section>
 
@@ -66,31 +58,6 @@
                 <p class="pt-1.5 leading-relaxed">
 
                     {{ session('success') }}
-
-                </p>
-
-            </div>
-
-        @endif
-
-
-        @if(session('warning'))
-
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
-
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-amber-100 text-amber-600">
-
-                    <i
-                        data-lucide="triangle-alert"
-                        stroke-width="1.8"
-                        class="w-4 h-4">
-                    </i>
-
-                </div>
-
-                <p class="pt-1.5 leading-relaxed">
-
-                    {{ session('warning') }}
 
                 </p>
 
@@ -137,164 +104,85 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
+                @php
 
-                {{-- Total --}}
+                    $tarjetasResumen = [
+                        [
+                            'valor' => $resumen['total'] ?? 0,
+                            'texto' => 'Pases registrados',
+                            'icono' => 'files',
+                            'clases' => 'border-blue-200/60 from-blue-50 to-indigo-50/60 hover:border-blue-300 hover:shadow-blue-500/10',
+                            'circulo' => 'bg-blue-400/10 group-hover:bg-blue-400/20',
+                            'iconoClases' => 'bg-blue-500/10 text-blue-600 group-hover:bg-blue-100',
+                        ],
+                        [
+                            'valor' => $resumen['generados'] ?? 0,
+                            'texto' => 'Por revisar',
+                            'icono' => 'clock-3',
+                            'clases' => 'border-amber-200/60 from-amber-50 to-orange-50/50 hover:border-amber-300 hover:shadow-amber-500/10',
+                            'circulo' => 'bg-amber-400/10 group-hover:bg-amber-400/20',
+                            'iconoClases' => 'bg-amber-500/10 text-amber-600 group-hover:bg-amber-100',
+                        ],
+                        [
+                            'valor' => $resumen['aprobados'] ?? 0,
+                            'texto' => 'Aprobados',
+                            'icono' => 'badge-check',
+                            'clases' => 'border-emerald-200/60 from-emerald-50 to-teal-50/50 hover:border-emerald-300 hover:shadow-emerald-500/10',
+                            'circulo' => 'bg-emerald-400/10 group-hover:bg-emerald-400/20',
+                            'iconoClases' => 'bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-100',
+                        ],
+                        [
+                            'valor' => $resumen['rechazados'] ?? 0,
+                            'texto' => 'Rechazados',
+                            'icono' => 'circle-x',
+                            'clases' => 'border-slate-200 from-slate-50 to-slate-100/60 hover:border-slate-300 hover:shadow-slate-500/10',
+                            'circulo' => 'bg-slate-400/10 group-hover:bg-slate-400/20',
+                            'iconoClases' => 'bg-slate-500/10 text-slate-600 group-hover:bg-slate-200',
+                        ],
+                    ];
 
-                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10">
-
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-400/20"></div>
-
-                    <div class="relative flex items-center gap-4">
-
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-100">
-
-                            <i
-                                data-lucide="files"
-                                stroke-width="1.8"
-                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-2xl font-semibold text-foreground">
-
-                                {{ $resumen['total'] ?? 0 }}
-
-                            </p>
-
-                            <p class="text-sm text-muted-foreground">
-
-                                Solicitudes registradas
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                {{-- Pendientes --}}
-
-                <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10">
-
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-amber-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-amber-400/20"></div>
-
-                    <div class="relative flex items-center gap-4">
-
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-amber-100">
-
-                            <i
-                                data-lucide="clock-3"
-                                stroke-width="1.8"
-                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-2xl font-semibold text-foreground">
-
-                                {{ $resumen['pendientes'] ?? 0 }}
-
-                            </p>
-
-                            <p class="text-sm text-muted-foreground">
-
-                                Pendientes
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
+                @endphp
 
 
+                @foreach($tarjetasResumen as $tarjeta)
 
-                {{-- Finalizadas --}}
+                    <div class="group relative overflow-hidden rounded-2xl border bg-gradient-to-br via-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg {{ $tarjeta['clases'] }}">
 
-                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                        <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full transition-all duration-500 group-hover:scale-150 {{ $tarjeta['circulo'] }}"></div>
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-400/20"></div>
+                        <div class="relative flex items-center gap-4">
 
-                    <div class="relative flex items-center gap-4">
+                            <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl transition-all duration-300 group-hover:scale-105 {{ $tarjeta['iconoClases'] }}">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-emerald-100">
+                                <i
+                                    data-lucide="{{ $tarjeta['icono'] }}"
+                                    stroke-width="1.8"
+                                    class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
+                                </i>
 
-                            <i
-                                data-lucide="circle-check-big"
-                                stroke-width="1.8"
-                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
-                            </i>
+                            </div>
 
-                        </div>
+                            <div class="min-w-0">
 
-                        <div>
+                                <p class="text-2xl font-semibold leading-none text-foreground">
 
-                            <p class="text-2xl font-semibold text-foreground">
+                                    {{ $tarjeta['valor'] }}
 
-                                {{ $resumen['finalizadas'] ?? 0 }}
+                                </p>
 
-                            </p>
+                                <p class="mt-2 text-sm text-muted-foreground">
 
-                            <p class="text-sm text-muted-foreground">
+                                    {{ $tarjeta['texto'] }}
 
-                                Finalizadas
+                                </p>
 
-                            </p>
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
-
-
-
-                {{-- Canceladas --}}
-
-                <div class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-500/10">
-
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-slate-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-slate-400/20"></div>
-
-                    <div class="relative flex items-center gap-4">
-
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-slate-500/10 text-slate-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-slate-200">
-
-                            <i
-                                data-lucide="circle-x"
-                                stroke-width="1.8"
-                                class="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-2xl font-semibold text-foreground">
-
-                                {{ $resumen['canceladas'] ?? 0 }}
-
-                            </p>
-
-                            <p class="text-sm text-muted-foreground">
-
-                                Canceladas
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
+                @endforeach
 
             </div>
 
@@ -315,13 +203,13 @@
 
                     <h2 class="text-base font-semibold text-foreground">
 
-                        Solicitudes recibidas
+                        Pases registrados
 
                     </h2>
 
-                    <p class="text-sm text-muted-foreground mt-1">
+                    <p class="mt-1 text-sm text-muted-foreground">
 
-                        Busca por folio, asunto o solicitante y filtra los resultados.
+                        Busca por código, asunto o solicitante y filtra los resultados.
 
                     </p>
 
@@ -330,7 +218,7 @@
 
                 <form
                     method="GET"
-                    action="{{ route('admin.solicitudes') }}"
+                    action="{{ route('admin.pases') }}"
                     class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_190px_210px_auto] gap-3">
 
 
@@ -348,7 +236,7 @@
                             type="search"
                             name="buscar"
                             value="{{ $busqueda }}"
-                            placeholder="Folio, asunto o solicitante..."
+                            placeholder="Código, asunto o solicitante..."
                             autocomplete="off"
                             class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none">
 
@@ -375,32 +263,26 @@
                             </option>
 
                             <option
-                                value="pendiente"
-                                @selected(
-                                    $estadoSeleccionado === 'pendiente'
-                                )>
+                                value="GENERADO"
+                                @selected($estadoSeleccionado === 'GENERADO')>
 
-                                Pendientes
+                                Por revisar
 
                             </option>
 
                             <option
-                                value="finalizada"
-                                @selected(
-                                    $estadoSeleccionado === 'finalizada'
-                                )>
+                                value="APROBADO"
+                                @selected($estadoSeleccionado === 'APROBADO')>
 
-                                Finalizadas
+                                Aprobados
 
                             </option>
 
                             <option
-                                value="cancelada"
-                                @selected(
-                                    $estadoSeleccionado === 'cancelada'
-                                )>
+                                value="RECHAZADO"
+                                @selected($estadoSeleccionado === 'RECHAZADO')>
 
-                                Canceladas
+                                Rechazados
 
                             </option>
 
@@ -416,39 +298,39 @@
 
 
 
-                    {{-- Categoría --}}
+                    {{-- Tipo --}}
 
                     <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
 
                         <i
-                            data-lucide="tags"
+                            data-lucide="files"
                             stroke-width="1.8"
                             class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
                         </i>
 
                         <select
-                            name="categoria"
+                            name="tipo"
                             class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
 
                             <option value="">
-                                Todas las categorías
+                                Todos los tipos
                             </option>
 
-                            @foreach($categorias as $categoria)
+                            <option
+                                value="pase_temporal"
+                                @selected($tipoSeleccionado === 'pase_temporal')>
 
-                                <option
-                                    value="{{ $categoria }}"
-                                    @selected(
-                                        $categoriaSeleccionada === $categoria
-                                    )>
+                                Pase menor a 24 horas
 
-                                    {{ str($categoria)
-                                        ->replace('_', ' ')
-                                        ->title() }}
+                            </option>
 
-                                </option>
+                            <option
+                                value="autorizacion"
+                                @selected($tipoSeleccionado === 'autorizacion')>
 
-                            @endforeach
+                                Pase mayor a 24 horas
+
+                            </option>
 
                         </select>
 
@@ -462,7 +344,7 @@
 
 
 
-                    {{-- Acciones de filtros --}}
+                    {{-- Acciones --}}
 
                     <div class="flex items-center gap-2">
 
@@ -473,7 +355,7 @@
                             <i
                                 data-lucide="filter"
                                 stroke-width="1.8"
-                                class="w-4 h-4 shrink-0">
+                                class="w-4 h-4">
                             </i>
 
                             Filtrar
@@ -484,11 +366,11 @@
                         @if(
                             $busqueda !== ''
                             || filled($estadoSeleccionado)
-                            || filled($categoriaSeleccionada)
+                            || filled($tipoSeleccionado)
                         )
 
                             <a
-                                href="{{ route('admin.solicitudes') }}"
+                                href="{{ route('admin.pases') }}"
                                 title="Limpiar filtros"
                                 class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary active:translate-y-0">
 
@@ -514,14 +396,14 @@
 
             <div class="overflow-x-auto">
 
-                <table class="w-full min-w-[1050px]">
+                <table class="w-full min-w-[1100px]">
 
                     <thead class="border-b border-border bg-muted/40">
 
                         <tr class="text-left">
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Solicitud
+                                Pase
                             </th>
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -529,7 +411,7 @@
                             </th>
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Categoría
+                                Tipo
                             </th>
 
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -551,12 +433,29 @@
 
                     <tbody class="divide-y divide-border">
 
-                        @forelse($solicitudes as $solicitud)
+                        @forelse($memorandos as $memorando)
+
+                            @php
+
+                                $esPaseTemporal =
+                                    $memorando->tipo?->slug
+                                    === 'pase_temporal';
+
+                                $codigoMostrado =
+                                    $memorando->codigo
+                                    ?: 'PASE-'.str_pad(
+                                        (string) $memorando->id,
+                                        5,
+                                        '0',
+                                        STR_PAD_LEFT
+                                    );
+
+                            @endphp
 
                             <tr class="group transition-colors duration-200 hover:bg-primary/[0.025]">
 
 
-                                {{-- Solicitud --}}
+                                {{-- Pase --}}
 
                                 <td class="px-5 py-4">
 
@@ -565,31 +464,30 @@
                                         <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/15">
 
                                             <i
-                                                data-lucide="file-text"
+                                                data-lucide="file-check-2"
                                                 stroke-width="1.8"
                                                 class="w-[18px] h-[18px] transition-transform duration-300 group-hover:scale-110">
                                             </i>
-
                                         </div>
 
                                         <div class="min-w-0">
 
                                             <a
                                                 href="{{ route(
-                                                    'admin.solicitudes.show',
-                                                    $solicitud
+                                                    'admin.pases.show',
+                                                    $memorando
                                                 ) }}"
                                                 class="text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary">
 
-                                                {{ $solicitud->folio }}
+                                                {{ $codigoMostrado }}
 
                                             </a>
 
                                             <p
-                                                title="{{ $solicitud->asunto }}"
+                                                title="{{ $memorando->asunto }}"
                                                 class="max-w-[280px] mt-1 text-xs text-muted-foreground truncate">
 
-                                                {{ $solicitud->asunto }}
+                                                {{ $memorando->asunto }}
 
                                             </p>
 
@@ -605,45 +503,54 @@
 
                                 <td class="px-5 py-4">
 
-                                    <div class="min-w-0">
+                                    <p class="max-w-[220px] text-sm font-medium text-foreground truncate">
 
-                                        <p class="max-w-[220px] text-sm font-medium text-foreground truncate">
+                                        {{ $memorando->solicitante?->nombre
+                                            ?? 'Usuario no disponible'
+                                        }}
 
-                                            {{ $solicitud->usuario?->nombre
-                                                ?? 'Usuario no disponible'
-                                            }}
+                                    </p>
 
-                                        </p>
+                                    <p class="max-w-[220px] mt-0.5 text-xs text-muted-foreground truncate">
 
-                                        <p class="max-w-[220px] mt-0.5 text-xs text-muted-foreground truncate">
+                                        {{ $memorando->solicitante?->correo
+                                            ?? 'Sin correo registrado'
+                                        }}
 
-                                            {{ $solicitud->usuario?->correo
-                                                ?? 'Sin correo registrado'
-                                            }}
-
-                                        </p>
-
-                                    </div>
+                                    </p>
 
                                 </td>
 
 
 
-                                {{-- Categoría --}}
+                                {{-- Tipo --}}
 
                                 <td class="px-5 py-4">
 
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 group-hover:border-blue-300 group-hover:bg-blue-100/70">
+                                    <span
+                                        @class([
+                                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium',
+
+                                            'border-sky-200 bg-sky-50 text-sky-700' =>
+                                                $esPaseTemporal,
+
+                                            'border-indigo-200 bg-indigo-50 text-indigo-700' =>
+                                                ! $esPaseTemporal,
+                                        ])>
 
                                         <i
-                                            data-lucide="tag"
+                                            data-lucide="{{ $esPaseTemporal
+                                                ? 'timer'
+                                                : 'calendar-range'
+                                            }}"
                                             stroke-width="1.8"
-                                            class="w-3.5 h-3.5 shrink-0">
+                                            class="w-3.5 h-3.5">
                                         </i>
 
-                                        {{ str($solicitud->categoria)
-                                            ->replace('_', ' ')
-                                            ->title() }}
+                                        {{ $esPaseTemporal
+                                            ? 'Menor a 24 horas'
+                                            : 'Mayor a 24 horas'
+                                        }}
 
                                     </span>
 
@@ -655,23 +562,23 @@
 
                                 <td class="px-5 py-4">
 
-                                    @if($solicitud->estado === 'finalizada')
+                                    @if($memorando->estaAprobado())
 
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
 
-                                            <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500"></span>
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 
-                                            Finalizada
+                                            Aprobado
 
                                         </span>
 
-                                    @elseif($solicitud->estado === 'cancelada')
+                                    @elseif($memorando->estaRechazado())
 
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-600">
 
-                                            <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-500"></span>
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
 
-                                            Cancelada
+                                            Rechazado
 
                                         </span>
 
@@ -679,7 +586,7 @@
 
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700">
 
-                                            <span class="relative flex w-1.5 h-1.5 shrink-0">
+                                            <span class="relative flex w-1.5 h-1.5">
 
                                                 <span class="absolute inline-flex w-full h-full rounded-full bg-amber-400 opacity-60 animate-ping"></span>
 
@@ -687,7 +594,7 @@
 
                                             </span>
 
-                                            Pendiente
+                                            Por revisar
 
                                         </span>
 
@@ -703,7 +610,7 @@
 
                                     <p class="text-sm text-foreground">
 
-                                        {{ $solicitud->created_at
+                                        {{ $memorando->created_at
                                             ?->timezone('America/Tegucigalpa')
                                             ->format('d/m/Y') }}
 
@@ -711,7 +618,7 @@
 
                                     <p class="mt-0.5 text-xs text-muted-foreground">
 
-                                        {{ $solicitud->created_at
+                                        {{ $memorando->created_at
                                             ?->timezone('America/Tegucigalpa')
                                             ->format('h:i A') }}
 
@@ -729,8 +636,8 @@
 
                                         <a
                                             href="{{ route(
-                                                'admin.solicitudes.show',
-                                                $solicitud
+                                                'admin.pases.show',
+                                                $memorando
                                             ) }}"
                                             class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-white text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
 
@@ -739,7 +646,7 @@
                                             <i
                                                 data-lucide="arrow-right"
                                                 stroke-width="1.8"
-                                                class="w-3.5 h-3.5 shrink-0 transition-transform duration-200 group-hover/button:translate-x-0.5">
+                                                class="w-3.5 h-3.5 transition-transform duration-200 group-hover/button:translate-x-0.5">
                                             </i>
 
                                         </a>
@@ -770,13 +677,13 @@
 
                                     <h3 class="mt-4 text-sm font-semibold text-foreground">
 
-                                        No se encontraron solicitudes
+                                        No se encontraron pases
 
                                     </h3>
 
                                     <p class="max-w-md mx-auto mt-1 text-sm leading-relaxed text-muted-foreground">
 
-                                        No existen solicitudes que coincidan con los filtros seleccionados.
+                                        No existen pases que coincidan con los filtros seleccionados.
 
                                     </p>
 
@@ -784,11 +691,11 @@
                                     @if(
                                         $busqueda !== ''
                                         || filled($estadoSeleccionado)
-                                        || filled($categoriaSeleccionada)
+                                        || filled($tipoSeleccionado)
                                     )
 
                                         <a
-                                            href="{{ route('admin.solicitudes') }}"
+                                            href="{{ route('admin.pases') }}"
                                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 mt-5 rounded-lg border border-primary/20 bg-primary/5 text-sm font-semibold text-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
 
                                             <i
@@ -817,14 +724,17 @@
 
 
 
-            {{-- Paginación personalizada --}}
+            {{-- Paginación --}}
 
-            @if($solicitudes->hasPages())
+            @if($memorandos->hasPages())
 
                 @php
 
-                    $paginaActual = $solicitudes->currentPage();
-                    $ultimaPagina = $solicitudes->lastPage();
+                    $paginaActual =
+                        $memorandos->currentPage();
+
+                    $ultimaPagina =
+                        $memorandos->lastPage();
 
                     $paginaInicial = max(
                         1,
@@ -845,8 +755,7 @@
 
                     if (
                         $paginaActual
-                        >=
-                        $ultimaPagina - 2
+                        >= $ultimaPagina - 2
                     ) {
                         $paginaInicial = max(
                             1,
@@ -859,55 +768,38 @@
 
                 <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between">
 
-
-                    {{-- Información --}}
-
                     <p class="text-xs text-muted-foreground">
 
                         Mostrando
 
                         <span class="font-semibold text-foreground">
-
-                            {{ $solicitudes->firstItem() }}
-
+                            {{ $memorandos->firstItem() }}
                         </span>
 
                         a
 
                         <span class="font-semibold text-foreground">
-
-                            {{ $solicitudes->lastItem() }}
-
+                            {{ $memorandos->lastItem() }}
                         </span>
 
                         de
 
                         <span class="font-semibold text-foreground">
-
-                            {{ $solicitudes->total() }}
-
+                            {{ $memorandos->total() }}
                         </span>
 
-                        solicitudes
+                        pases
 
                     </p>
 
 
-
-                    {{-- Controles --}}
-
                     <nav
-                        aria-label="Paginación de solicitudes"
+                        aria-label="Paginación de pases"
                         class="flex flex-wrap items-center gap-1">
 
+                        @if($memorandos->onFirstPage())
 
-                        {{-- Anterior --}}
-
-                        @if($solicitudes->onFirstPage())
-
-                            <span
-                                aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -920,10 +812,8 @@
                         @else
 
                             <a
-                                href="{{ $solicitudes->previousPageUrl() }}"
-                                rel="prev"
-                                aria-label="Página anterior"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                href="{{ $memorandos->previousPageUrl() }}"
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -936,35 +826,26 @@
                         @endif
 
 
-
-                        {{-- Primera página y separación --}}
-
                         @if($paginaInicial > 1)
 
                             <a
-                                href="{{ $solicitudes->url(1) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm">
+                                href="{{ $memorandos->url(1) }}"
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
 
                                 1
 
                             </a>
 
-
                             @if($paginaInicial > 2)
 
                                 <span class="inline-flex items-center justify-center w-7 h-9 text-xs text-muted-foreground">
-
                                     …
-
                                 </span>
 
                             @endif
 
                         @endif
 
-
-
-                        {{-- Números de página --}}
 
                         @for(
                             $pagina = $paginaInicial;
@@ -974,9 +855,7 @@
 
                             @if($pagina === $paginaActual)
 
-                                <span
-                                    aria-current="page"
-                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-primary bg-primary text-xs font-semibold text-white shadow-sm">
+                                <span class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-primary bg-primary text-xs font-semibold text-white shadow-sm">
 
                                     {{ $pagina }}
 
@@ -985,8 +864,8 @@
                             @else
 
                                 <a
-                                    href="{{ $solicitudes->url($pagina) }}"
-                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                    href="{{ $memorandos->url($pagina) }}"
+                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
 
                                     {{ $pagina }}
 
@@ -997,29 +876,19 @@
                         @endfor
 
 
-
-                        {{-- Última página y separación --}}
-
                         @if($paginaFinal < $ultimaPagina)
 
-                            @if(
-                                $paginaFinal
-                                <
-                                $ultimaPagina - 1
-                            )
+                            @if($paginaFinal < $ultimaPagina - 1)
 
                                 <span class="inline-flex items-center justify-center w-7 h-9 text-xs text-muted-foreground">
-
                                     …
-
                                 </span>
 
                             @endif
 
-
                             <a
-                                href="{{ $solicitudes->url($ultimaPagina) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                href="{{ $memorandos->url($ultimaPagina) }}"
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
 
                                 {{ $ultimaPagina }}
 
@@ -1028,16 +897,11 @@
                         @endif
 
 
-
-                        {{-- Siguiente --}}
-
-                        @if($solicitudes->hasMorePages())
+                        @if($memorandos->hasMorePages())
 
                             <a
-                                href="{{ $solicitudes->nextPageUrl() }}"
-                                rel="next"
-                                aria-label="Página siguiente"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                href="{{ $memorandos->nextPageUrl() }}"
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
 
                                 <i
                                     data-lucide="chevron-right"
@@ -1049,9 +913,7 @@
 
                         @else
 
-                            <span
-                                aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
 
                                 <i
                                     data-lucide="chevron-right"

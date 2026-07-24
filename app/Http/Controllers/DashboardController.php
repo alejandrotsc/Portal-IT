@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Aviso;
+use App\Models\Incidencia;
+use App\Models\Memorando;
 use App\Models\Solicitud;
-use App\Models\Usuario;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -41,7 +41,6 @@ class DashboardController extends Controller
         };
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Dashboard administrativo
@@ -51,29 +50,6 @@ class DashboardController extends Controller
     private function dashboardAdministrador(): View
     {
         $ahora = now();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Total de usuarios registrados
-        |--------------------------------------------------------------------------
-        */
-
-        $totalUsuarios = Usuario::query()
-            ->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Usuarios conectados
-        |--------------------------------------------------------------------------
-        |
-        | Se considera conectado a un usuario que haya tenido actividad
-        | durante los últimos cinco minutos.
-        |
-        | Se cuentan usuarios únicos y no la cantidad de sesiones.
-        |--------------------------------------------------------------------------
-        */
 
         $usuariosConectados = DB::table(
             'sessions'
@@ -104,7 +80,6 @@ class DashboardController extends Controller
                 'sessions.user_id'
             );
 
-
         /*
         |--------------------------------------------------------------------------
         | Solicitudes pendientes
@@ -118,67 +93,55 @@ class DashboardController extends Controller
             )
             ->count();
 
-
         /*
         |--------------------------------------------------------------------------
-        | Avisos visibles actualmente
+        | Incidencias abiertas
         |--------------------------------------------------------------------------
         |
-        | El aviso debe:
-        |
-        | - Estar activo.
-        | - Haber alcanzado su fecha de inicio.
-        | - No haber superado su fecha de finalización.
+        | Solo se cuentan las incidencias que todavía no han comenzado
+        | su proceso de atención.
         |--------------------------------------------------------------------------
         */
 
-        $avisosActivos = Aviso::query()
+        $incidenciasAbiertas = Incidencia::query()
             ->where(
-                'activo',
-                true
+                'estado',
+                Incidencia::ESTADO_ABIERTA
             )
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pases por revisar
+        |--------------------------------------------------------------------------
+        */
+
+        $pasesPorRevisar = Memorando::query()
             ->where(
-                function ($query) use ($ahora) {
-                    $query
-                        ->whereNull(
-                            'fecha_inicio'
-                        )
-                        ->orWhere(
-                            'fecha_inicio',
-                            '<=',
-                            $ahora
-                        );
-                }
+                'estado',
+                Memorando::ESTADO_GENERADO
             )
-            ->where(
-                function ($query) use ($ahora) {
-                    $query
-                        ->whereNull(
-                            'fecha_fin'
-                        )
-                        ->orWhere(
-                            'fecha_fin',
-                            '>=',
-                            $ahora
-                        );
+            ->whereHas(
+                'tipo',
+                function ($query) {
+                    $query->whereIn(
+                        'slug',
+                        [
+                            'pase_temporal',
+                            'autorizacion',
+                        ]
+                    );
                 }
             )
             ->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Mostrar dashboard
-        |--------------------------------------------------------------------------
-        */
-
         return view(
             'dashboard.administrador',
             compact(
-                'totalUsuarios',
                 'usuariosConectados',
+                'pasesPorRevisar',
                 'solicitudesPendientes',
-                'avisosActivos'
+                'incidenciasAbiertas'
             )
         );
     }
