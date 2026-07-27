@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Avisos TI')
+
 @section('content')
 
 <div class="min-h-screen bg-background">

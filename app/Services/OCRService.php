@@ -212,45 +212,86 @@ class OcrService
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Buscar mensajes de error sin código
-        |--------------------------------------------------------------------------
-        */
+       /*
+|--------------------------------------------------------------------------
+| 2. Buscar mensajes de error o fallo
+|--------------------------------------------------------------------------
+|
+| Detecta palabras relevantes en español e inglés.
+| También obtiene contexto anterior y posterior.
+|
+*/
 
-        $mensajesError = [];
+$mensajesError = [];
 
-        foreach ($lineasUtiles as $indice => $linea) {
-            if (!$this->pareceMensajeError($linea)) {
-                continue;
-            }
+foreach ($lineasUtiles as $indice => $linea) {
 
-            $mensajesError[] = $linea;
+    if (!$this->pareceMensajeError($linea)) {
+        continue;
+    }
 
-            /*
-             * Cuando la siguiente línea parece una explicación,
-             * también se agrega.
-             */
-            if (
-                isset($lineasUtiles[$indice + 1]) &&
-                $this->esLineaDescriptiva(
-                    $lineasUtiles[$indice + 1]
-                )
-            ) {
-                $mensajesError[] =
-                    $lineasUtiles[$indice + 1];
-            }
-        }
+    /*
+     * Línea anterior:
+     * puede contener el título de la ventana.
+     */
+    if (
+        isset($lineasUtiles[$indice - 1]) &&
+        $this->esLineaDescriptiva(
+            $lineasUtiles[$indice - 1]
+        )
+    ) {
+        $mensajesError[] =
+            $lineasUtiles[$indice - 1];
+    }
 
-        $mensajesError = array_values(
-            array_unique($mensajesError)
-        );
+    /*
+     * Línea donde se identificó el patrón.
+     */
+    $mensajesError[] = $linea;
 
-        if (!empty($mensajesError)) {
-            return $this->limitarResultado(
-                implode("\n", $mensajesError)
-            );
-        }
+    /*
+     * Primera línea posterior:
+     * generalmente contiene la explicación.
+     */
+    if (
+        isset($lineasUtiles[$indice + 1]) &&
+        $this->esLineaDescriptiva(
+            $lineasUtiles[$indice + 1]
+        )
+    ) {
+        $mensajesError[] =
+            $lineasUtiles[$indice + 1];
+    }
+
+    /*
+     * Segunda línea posterior:
+     * puede contener código, causa o recomendación.
+     */
+    if (
+        isset($lineasUtiles[$indice + 2]) &&
+        (
+            $this->esLineaDescriptiva(
+                $lineasUtiles[$indice + 2]
+            ) ||
+            $this->contieneCodigoError(
+                $lineasUtiles[$indice + 2]
+            )
+        )
+    ) {
+        $mensajesError[] =
+            $lineasUtiles[$indice + 2];
+    }
+}
+
+$mensajesError = array_values(
+    array_unique($mensajesError)
+);
+
+if (!empty($mensajesError)) {
+    return $this->limitarResultado(
+        implode("\n", $mensajesError)
+    );
+}
 
         /*
         |--------------------------------------------------------------------------
@@ -401,58 +442,283 @@ class OcrService
     /**
      * Patrones de mensajes de error en español e inglés.
      */
-    private function patronesMensajesError(): array
-    {
-        return [
-            '/\berror\b/iu',
-            '/\bexception\b/iu',
-            '/\badvertencia\b/iu',
-            '/\bwarning\b/iu',
-            '/\bfatal\b/iu',
-            '/\bfalla\b/iu',
-            '/\bfall[oó]\b/iu',
-            '/\bproblema\b/iu',
-            '/\bdenegad[oa]\b/iu',
+    /**
+ * Patrones de mensajes de error en español e inglés.
+ *
+ * No se limita únicamente a la palabra "error".
+ * Incluye fallos, permisos, conexión, archivos,
+ * autenticación, instalación y aplicaciones.
+ */
+private function patronesMensajesError(): array
+{
+    return [
 
-            '/\bno se pudo\b/iu',
-            '/\bno se puede\b/iu',
-            '/\bno fue posible\b/iu',
-            '/\bno se encuentra\b/iu',
-            '/\bno encontrado\b/iu',
-            '/\bno disponible\b/iu',
-            '/\bno responde\b/iu',
-            '/\bno existe\b/iu',
-            '/\bno tiene permisos\b/iu',
-            '/\bno tiene acceso\b/iu',
-            '/\bno se reconoce\b/iu',
-            '/\bno se pudo completar\b/iu',
-            '/\bno se pudo iniciar\b/iu',
-            '/\bno se pudo conectar\b/iu',
+        /*
+        |--------------------------------------------------------------------------
+        | Palabras generales
+        |--------------------------------------------------------------------------
+        */
 
-            '/\bsin conexi[oó]n\b/iu',
-            '/\bconexi[oó]n rechazada\b/iu',
-            '/\bconexi[oó]n interrumpida\b/iu',
-            '/\btiempo de espera\b/iu',
-            '/\bacceso denegado\b/iu',
-            '/\barchivo dañado\b/iu',
-            '/\barchivo no encontrado\b/iu',
-            '/\bpágina no encontrada\b/iu',
-            '/\bpagina no encontrada\b/iu',
+        '/\berror(?:es)?\b/iu',
+        '/\bexception\b/iu',
+        '/\bwarning\b/iu',
+        '/\badvertencia\b/iu',
+        '/\bfatal\b/iu',
+        '/\bcritical\b/iu',
+        '/\bcrítico\b/iu',
+        '/\bcritico\b/iu',
 
-            '/\bfailed\b/iu',
-            '/\bfailure\b/iu',
-            '/\baccess denied\b/iu',
-            '/\bpermission denied\b/iu',
-            '/\bnot found\b/iu',
-            '/\bunavailable\b/iu',
-            '/\bcannot\b/iu',
-            '/\bunable to\b/iu',
-            '/\bconnection refused\b/iu',
-            '/\bconnection failed\b/iu',
-            '/\btimeout\b/iu',
-            '/\btimed out\b/iu',
-        ];
-    }
+        '/\bfalla(?:s)?\b/iu',
+        '/\bfall[oó]\b/iu',
+        '/\bfallando\b/iu',
+        '/\bproblema(?:s)?\b/iu',
+
+        '/\bfailed\b/iu',
+        '/\bfailure\b/iu',
+        '/\bfault\b/iu',
+        '/\bproblem\b/iu',
+        '/\bissue\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mensajes generales en español
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bno se pudo\b/iu',
+        '/\bno se puede\b/iu',
+        '/\bno fue posible\b/iu',
+        '/\bno es posible\b/iu',
+        '/\bno se logra\b/iu',
+        '/\bno funciona\b/iu',
+        '/\bdejó de funcionar\b/iu',
+        '/\bdejo de funcionar\b/iu',
+        '/\bha dejado de funcionar\b/iu',
+        '/\bocurrió un problema\b/iu',
+        '/\bocurrio un problema\b/iu',
+        '/\balgo salió mal\b/iu',
+        '/\balgo salio mal\b/iu',
+        '/\berror inesperado\b/iu',
+        '/\boperación fallida\b/iu',
+        '/\boperacion fallida\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mensajes generales en inglés
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bsomething went wrong\b/iu',
+        '/\ban error occurred\b/iu',
+        '/\ban unexpected error occurred\b/iu',
+        '/\bunexpected error\b/iu',
+        '/\boperation failed\b/iu',
+        '/\brequest failed\b/iu',
+        '/\bprocess failed\b/iu',
+        '/\bapplication failed\b/iu',
+        '/\bapplication error\b/iu',
+        '/\bservice failed\b/iu',
+
+        '/\bcannot\b/iu',
+        '/\bcan\'t\b/iu',
+        '/\bcould not\b/iu',
+        '/\bunable to\b/iu',
+        '/\bnot able to\b/iu',
+        '/\bwas not successful\b/iu',
+        '/\bhas stopped working\b/iu',
+        '/\bstopped working\b/iu',
+        '/\bnot responding\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Acceso, permisos y autenticación
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bacceso denegado\b/iu',
+        '/\bpermiso denegado\b/iu',
+        '/\bpermisos insuficientes\b/iu',
+        '/\bno tiene permisos\b/iu',
+        '/\bno tiene acceso\b/iu',
+        '/\bno autorizado\b/iu',
+        '/\bautenticación fallida\b/iu',
+        '/\bautenticacion fallida\b/iu',
+        '/\bcredenciales incorrectas\b/iu',
+        '/\bcontraseña incorrecta\b/iu',
+        '/\bcontrasena incorrecta\b/iu',
+        '/\bsesión expirada\b/iu',
+        '/\bsesion expirada\b/iu',
+
+        '/\baccess denied\b/iu',
+        '/\bpermission denied\b/iu',
+        '/\binsufficient permissions\b/iu',
+        '/\bunauthorized\b/iu',
+        '/\bforbidden\b/iu',
+        '/\bauthentication failed\b/iu',
+        '/\blogin failed\b/iu',
+        '/\binvalid credentials\b/iu',
+        '/\bincorrect password\b/iu',
+        '/\bsession expired\b/iu',
+        '/\baccount locked\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Conectividad y red
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bsin conexi[oó]n\b/iu',
+        '/\bno hay conexi[oó]n\b/iu',
+        '/\bno se pudo conectar\b/iu',
+        '/\bno se puede conectar\b/iu',
+        '/\bconexi[oó]n rechazada\b/iu',
+        '/\bconexi[oó]n interrumpida\b/iu',
+        '/\bconexi[oó]n perdida\b/iu',
+        '/\bservidor no disponible\b/iu',
+        '/\bservicio no disponible\b/iu',
+        '/\btiempo de espera\b/iu',
+        '/\bse agotó el tiempo\b/iu',
+        '/\bse agoto el tiempo\b/iu',
+
+        '/\bno internet\b/iu',
+        '/\bno network\b/iu',
+        '/\bnetwork error\b/iu',
+        '/\bnetwork failure\b/iu',
+        '/\bconnection failed\b/iu',
+        '/\bconnection refused\b/iu',
+        '/\bconnection lost\b/iu',
+        '/\bconnection interrupted\b/iu',
+        '/\bserver unavailable\b/iu',
+        '/\bservice unavailable\b/iu',
+        '/\bhost unreachable\b/iu',
+        '/\bnetwork unreachable\b/iu',
+        '/\btimeout\b/iu',
+        '/\btimed out\b/iu',
+        '/\bdns error\b/iu',
+        '/\bdns failure\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Archivos y rutas
+        |--------------------------------------------------------------------------
+        */
+
+        '/\barchivo no encontrado\b/iu',
+        '/\barchivo dañado\b/iu',
+        '/\barchivo corrupto\b/iu',
+        '/\bruta no encontrada\b/iu',
+        '/\bcarpeta no encontrada\b/iu',
+        '/\bno se puede abrir el archivo\b/iu',
+        '/\bno se pudo guardar\b/iu',
+        '/\bno se puede guardar\b/iu',
+
+        '/\bfile not found\b/iu',
+        '/\bmissing file\b/iu',
+        '/\bfile is missing\b/iu',
+        '/\bcorrupt file\b/iu',
+        '/\bfile is corrupted\b/iu',
+        '/\bpath not found\b/iu',
+        '/\bdirectory not found\b/iu',
+        '/\bcannot open file\b/iu',
+        '/\bunable to open file\b/iu',
+        '/\bcannot save\b/iu',
+        '/\bfailed to save\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Datos inválidos
+        |--------------------------------------------------------------------------
+        */
+
+        '/\binválid[oa]\b/iu',
+        '/\binvalid[oa]\b/iu',
+        '/\bdato incorrecto\b/iu',
+        '/\bformato incorrecto\b/iu',
+        '/\bformato no válido\b/iu',
+        '/\bformato no valido\b/iu',
+        '/\bcampo requerido\b/iu',
+        '/\binformación incompleta\b/iu',
+        '/\binformacion incompleta\b/iu',
+
+        '/\binvalid\b/iu',
+        '/\bincorrect\b/iu',
+        '/\bnot valid\b/iu',
+        '/\bmalformed\b/iu',
+        '/\bmissing required\b/iu',
+        '/\brequired field\b/iu',
+        '/\bincomplete data\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Instalación, actualización y ejecución
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bno se pudo instalar\b/iu',
+        '/\bno se pudo actualizar\b/iu',
+        '/\bno se pudo iniciar\b/iu',
+        '/\bno se pudo ejecutar\b/iu',
+        '/\bno se puede ejecutar\b/iu',
+        '/\binstalación fallida\b/iu',
+        '/\binstalacion fallida\b/iu',
+        '/\bactualización fallida\b/iu',
+        '/\bactualizacion fallida\b/iu',
+
+        '/\binstallation failed\b/iu',
+        '/\bupdate failed\b/iu',
+        '/\bfailed to install\b/iu',
+        '/\bfailed to update\b/iu',
+        '/\bfailed to start\b/iu',
+        '/\bfailed to launch\b/iu',
+        '/\bfailed to execute\b/iu',
+        '/\bcannot start\b/iu',
+        '/\bcannot launch\b/iu',
+        '/\bcannot run\b/iu',
+        '/\bunable to start\b/iu',
+        '/\bunable to launch\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recursos y almacenamiento
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bsin espacio\b/iu',
+        '/\bespacio insuficiente\b/iu',
+        '/\bmemoria insuficiente\b/iu',
+        '/\bsin memoria\b/iu',
+        '/\brecurso no disponible\b/iu',
+
+        '/\bnot enough space\b/iu',
+        '/\binsufficient disk space\b/iu',
+        '/\bdisk full\b/iu',
+        '/\bout of memory\b/iu',
+        '/\binsufficient memory\b/iu',
+        '/\bresource unavailable\b/iu',
+
+        /*
+        |--------------------------------------------------------------------------
+        | No encontrado o no disponible
+        |--------------------------------------------------------------------------
+        */
+
+        '/\bno encontrado\b/iu',
+        '/\bno encontrada\b/iu',
+        '/\bno se encuentra\b/iu',
+        '/\bno existe\b/iu',
+        '/\bno disponible\b/iu',
+        '/\bno responde\b/iu',
+        '/\bpágina no encontrada\b/iu',
+        '/\bpagina no encontrada\b/iu',
+
+        '/\bnot found\b/iu',
+        '/\bdoes not exist\b/iu',
+        '/\bunavailable\b/iu',
+        '/\bnot available\b/iu',
+        '/\bnot responding\b/iu',
+        '/\bpage not found\b/iu',
+    ];
+}
 
     /**
      * Normaliza el texto producido por Tesseract.

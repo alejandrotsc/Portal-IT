@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Administración de pases')
+
 @section('content')
 
 @php

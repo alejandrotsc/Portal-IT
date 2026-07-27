@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Pase mayor a 24 horas')
+
 @section('content')
 
 <link rel="stylesheet" href="{{ asset('css/pases.css') }}">

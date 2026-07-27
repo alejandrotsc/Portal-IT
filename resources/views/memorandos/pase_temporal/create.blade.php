@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Pase menor a 24 horas')
+
 @section('content')
 
 <link

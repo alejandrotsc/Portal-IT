@@ -251,6 +251,7 @@ function iniciarNotificaciones() {
 
 
             actualizarInterfaz();
+            animarContador();
             animarCampana();
 
         }
@@ -581,6 +582,11 @@ actualizarFavicon(
         );
 
 
+        animarNuevaNotificacion(
+            enlace
+        );
+
+
         limitarNotificaciones();
         recrearIconos();
     }
@@ -675,8 +681,71 @@ actualizarFavicon(
 
     /*
     |--------------------------------------------------------------------------
+    | Animación del contador
+    |--------------------------------------------------------------------------
+    */
+
+    function animarContador() {
+
+        if (
+            !contador
+            ||
+            cantidadNoLeidas <= 0
+        ) {
+            return;
+        }
+
+
+        contador
+            .getAnimations()
+            .forEach(
+                animacion => {
+                    animacion.cancel();
+                }
+            );
+
+
+        contador.animate(
+            [
+                {
+                    transform: 'scale(0.55)',
+                    opacity: 0.25,
+                },
+                {
+                    transform: 'scale(1.4)',
+                    opacity: 1,
+                    offset: 0.45,
+                },
+                {
+                    transform: 'scale(0.9)',
+                    opacity: 1,
+                    offset: 0.72,
+                },
+                {
+                    transform: 'scale(1.08)',
+                    opacity: 1,
+                    offset: 0.88,
+                },
+                {
+                    transform: 'scale(1)',
+                    opacity: 1,
+                },
+            ],
+            {
+                duration: 650,
+                easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Animación de la campana
     |--------------------------------------------------------------------------
+    |
+    | Simula un balanceo real de campana sin usar desvanecidos.
+    |
     */
 
     function animarCampana() {
@@ -686,20 +755,70 @@ actualizarFavicon(
         }
 
 
-        botonCampana.classList.add(
-            'animate-pulse'
+        botonCampana
+            .getAnimations()
+            .forEach(
+                animacion => {
+                    animacion.cancel();
+                }
+            );
+
+
+        botonCampana.animate(
+            [
+                { transform: 'rotate(0deg) scale(1)' },
+                { transform: 'rotate(-18deg) scale(1.08)', offset: 0.16 },
+                { transform: 'rotate(16deg) scale(1.08)', offset: 0.32 },
+                { transform: 'rotate(-12deg) scale(1.06)', offset: 0.48 },
+                { transform: 'rotate(9deg) scale(1.04)', offset: 0.64 },
+                { transform: 'rotate(-5deg) scale(1.02)', offset: 0.78 },
+                { transform: 'rotate(3deg) scale(1.01)', offset: 0.9 },
+                { transform: 'rotate(0deg) scale(1)' },
+            ],
+            {
+                duration: 850,
+                easing: 'ease-in-out',
+                transformOrigin: '50% 15%',
+            }
         );
+    }
 
 
-        window.setTimeout(
-            () => {
+    /*
+    |--------------------------------------------------------------------------
+    | Animación de una nueva notificación
+    |--------------------------------------------------------------------------
+    */
 
-                botonCampana.classList.remove(
-                    'animate-pulse'
-                );
+    function animarNuevaNotificacion(
+        elemento
+    ) {
 
-            },
-            1500
+        if (!elemento) {
+            return;
+        }
+
+
+        elemento.animate(
+            [
+                {
+                    opacity: 0,
+                    transform: 'translateY(-12px) scale(0.98)',
+                },
+                {
+                    opacity: 1,
+                    transform: 'translateY(3px) scale(1.01)',
+                    offset: 0.72,
+                },
+                {
+                    opacity: 1,
+                    transform: 'translateY(0) scale(1)',
+                },
+            ],
+            {
+                duration: 460,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            }
         );
     }
 
