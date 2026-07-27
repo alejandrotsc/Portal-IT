@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Mail\SolicitudMail;
 use App\Models\Solicitud;
-use App\Services\Mail\TrackedMailService;
+use App\Models\Usuario;
 use App\Notifications\EstadoSolicitudActualizadoNotification;
+use App\Notifications\NuevaSolicitudNotification;
+use App\Services\Mail\TrackedMailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -206,6 +209,17 @@ class SolicitudController extends Controller
                     ? $delivery->sent_at
                     : null,
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notificar nueva solicitud a los administradores
+        |--------------------------------------------------------------------------
+        */
+
+        $this->notificarNuevaSolicitud(
+            $solicitud
+        );
 
 
         /*
@@ -720,6 +734,79 @@ class SolicitudController extends Controller
             'success',
             'La solicitud fue cancelada.'
         );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar nueva solicitud a los administradores
+    |--------------------------------------------------------------------------
+    */
+
+    private function notificarNuevaSolicitud(
+        Solicitud $solicitud
+    ): void {
+        try {
+            $solicitud->loadMissing(
+                'usuario'
+            );
+
+            $administradores =
+                Usuario::query()
+                    ->where(
+                        'activo',
+                        true
+                    )
+                    ->whereHas(
+                        'rol',
+                        function ($query) {
+                            $query->where(
+                                'nombre',
+                                'Administrador'
+                            );
+                        }
+                    )
+                    ->get();
+
+            if ($administradores->isEmpty()) {
+                Log::warning(
+                    'No existen administradores activos para recibir la notificación de la nueva solicitud.',
+                    [
+                        'solicitud_id' =>
+                            $solicitud->id,
+
+                        'folio' =>
+                            $solicitud->folio,
+                    ]
+                );
+
+                return;
+            }
+
+            Notification::send(
+                $administradores,
+                new NuevaSolicitudNotification(
+                    $solicitud
+                )
+            );
+        } catch (\Throwable $exception) {
+            Log::error(
+                'No se pudo enviar la notificación de la nueva solicitud a los administradores.',
+                [
+                    'solicitud_id' =>
+                        $solicitud->id,
+
+                    'folio' =>
+                        $solicitud->folio,
+
+                    'usuario_id' =>
+                        $solicitud->usuario_id,
+
+                    'error' =>
+                        $exception->getMessage(),
+                ]
+            );
+        }
     }
 
 

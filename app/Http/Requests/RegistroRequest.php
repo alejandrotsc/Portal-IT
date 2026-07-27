@@ -61,7 +61,7 @@ class RegistroRequest extends FormRequest
                 'El correo no puede superar los 200 caracteres.',
 
             'correo.regex' =>
-                'Solo se permiten correos con dominio @televicentro.com o @televicentro.hn.',
+                'Solo se permiten correos con dominio @televicentro.com o @televicentro.hn',
 
             'correo.unique' =>
                 'El correo electrónico ya está registrado.',

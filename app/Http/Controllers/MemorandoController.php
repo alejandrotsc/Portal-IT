@@ -9,12 +9,15 @@ use App\Models\MemorandoArticulo;
 use App\Models\MemorandoArchivo;
 use App\Models\MemorandoHistorial;
 use App\Models\FolioCounter;
+use App\Models\Usuario;
 use App\Services\Mail\TrackedMailService;
 use App\Notifications\EstadoPaseActualizadoNotification;
+use App\Notifications\NuevoPaseNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 use App\Mail\PaseTemporalMail;
@@ -358,6 +361,16 @@ public function storePaseTemporal(
             $delivery->fueEnviado();
 
         DB::commit();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notificar nuevo pase a los administradores
+        |--------------------------------------------------------------------------
+        */
+
+        $this->notificarNuevoPase(
+            $memorando
+        );
 
         return response()->json([
 
@@ -823,6 +836,22 @@ if ($tipo->formulario === 'autorizacion') {
 */
 
 DB::commit();
+
+/*
+|--------------------------------------------------------------------------
+| Notificar nuevo pase a los administradores
+|--------------------------------------------------------------------------
+|
+| Este método store() también procesa otros memorandos. Por eso únicamente
+| se notifica cuando el formulario corresponde a una autorización.
+|
+*/
+
+if ($tipo->formulario === 'autorizacion') {
+    $this->notificarNuevoPase(
+        $memorando
+    );
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -1744,6 +1773,83 @@ public function showPase(
             'El pase fue rechazado correctamente.'
         );
 }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar nuevo pase a los administradores
+    |--------------------------------------------------------------------------
+    */
+
+    private function notificarNuevoPase(
+        Memorando $memorando
+    ): void {
+        try {
+            $memorando->loadMissing([
+                'tipo',
+                'solicitante',
+            ]);
+
+            $administradores =
+                Usuario::query()
+                    ->where(
+                        'activo',
+                        true
+                    )
+                    ->whereHas(
+                        'rol',
+                        function ($query) {
+                            $query->where(
+                                'nombre',
+                                'Administrador'
+                            );
+                        }
+                    )
+                    ->get();
+
+            if ($administradores->isEmpty()) {
+                Log::warning(
+                    'No existen administradores activos para recibir la notificación del nuevo pase.',
+                    [
+                        'memorando_id' =>
+                            $memorando->id,
+
+                        'tipo' =>
+                            $memorando->tipo?->slug,
+
+                        'solicitante_id' =>
+                            $memorando->solicitante_id,
+                    ]
+                );
+
+                return;
+            }
+
+            Notification::send(
+                $administradores,
+                new NuevoPaseNotification(
+                    $memorando
+                )
+            );
+        } catch (\Throwable $exception) {
+            Log::error(
+                'No se pudo enviar la notificación del nuevo pase a los administradores.',
+                [
+                    'memorando_id' =>
+                        $memorando->id,
+
+                    'tipo' =>
+                        $memorando->tipo?->slug,
+
+                    'solicitante_id' =>
+                        $memorando->solicitante_id,
+
+                    'error' =>
+                        $exception->getMessage(),
+                ]
+            );
+        }
+    }
 
 
     /*

@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Mail\IncidenciaMail;
 use App\Models\Incidencia;
 use App\Models\IncidenciaArchivo;
+use App\Models\Usuario;
 use App\Services\Mail\TrackedMailService;
 use App\Notifications\EstadoIncidenciaActualizadoNotification;
+use App\Notifications\NuevaIncidenciaNotification;
 use App\Services\OcrService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -292,6 +295,16 @@ class IncidenciaController extends Controller
                     ? $delivery->sent_at
                     : null,
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notificar nueva incidencia a los administradores
+        |--------------------------------------------------------------------------
+        */
+
+        $this->notificarNuevaIncidencia(
+            $incidencia
+        );
 
         return response()->json([
             'success' =>
@@ -733,6 +746,78 @@ class IncidenciaController extends Controller
             'La incidencia fue reabierta correctamente.'
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar nueva incidencia a los administradores
+    |--------------------------------------------------------------------------
+    */
+
+    private function notificarNuevaIncidencia(
+        Incidencia $incidencia
+    ): void {
+        try {
+            $incidencia->loadMissing(
+                'usuario'
+            );
+
+            $administradores = Usuario::query()
+                ->where(
+                    'activo',
+                    true
+                )
+                ->whereHas(
+                    'rol',
+                    function ($query) {
+                        $query->where(
+                            'nombre',
+                            'Administrador'
+                        );
+                    }
+                )
+                ->get();
+
+            if ($administradores->isEmpty()) {
+                Log::warning(
+                    'No existen administradores activos para recibir la notificación de la nueva incidencia.',
+                    [
+                        'incidencia_id' =>
+                            $incidencia->id,
+
+                        'codigo' =>
+                            $incidencia->codigo,
+                    ]
+                );
+
+                return;
+            }
+
+            Notification::send(
+                $administradores,
+                new NuevaIncidenciaNotification(
+                    $incidencia
+                )
+            );
+        } catch (\Throwable $exception) {
+            Log::error(
+                'No se pudo enviar la notificación de la nueva incidencia a los administradores.',
+                [
+                    'incidencia_id' =>
+                        $incidencia->id,
+
+                    'codigo' =>
+                        $incidencia->codigo,
+
+                    'usuario_id' =>
+                        $incidencia->usuario_id,
+
+                    'error' =>
+                        $exception->getMessage(),
+                ]
+            );
+        }
+    }
+
 
     /*
     |--------------------------------------------------------------------------
