@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Incidencia;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class EstadoIncidenciaActualizadoNotification extends Notification
@@ -28,6 +29,7 @@ class EstadoIncidenciaActualizadoNotification extends Notification
     ): array {
         return [
             'database',
+            'broadcast',
         ];
     }
 
@@ -41,6 +43,58 @@ class EstadoIncidenciaActualizadoNotification extends Notification
     public function toDatabase(
         object $notifiable
     ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos enviados en tiempo real
+    |--------------------------------------------------------------------------
+    */
+
+    public function toBroadcast(
+        object $notifiable
+    ): BroadcastMessage {
+        return new BroadcastMessage(
+            $this->datosNotificacion()
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tipo del evento broadcast
+    |--------------------------------------------------------------------------
+    */
+
+    public function broadcastType(): string
+    {
+        return 'estado-incidencia-actualizado';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compatibilidad
+    |--------------------------------------------------------------------------
+    */
+
+    public function toArray(
+        object $notifiable
+    ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos comunes
+    |--------------------------------------------------------------------------
+    */
+
+    private function datosNotificacion(): array
+    {
         return [
             'titulo' =>
                 $this->obtenerTitulo(),
@@ -60,24 +114,21 @@ class EstadoIncidenciaActualizadoNotification extends Notification
             'gestion_id' =>
                 $this->incidencia->id,
 
+            'incidencia_id' =>
+                $this->incidencia->id,
+
             'codigo' =>
                 $this->incidencia->codigo,
 
             'url' =>
-                url(
-                    '/incidencias/'
-                    .$this->incidencia->id
+                route(
+                    'incidencias.show',
+                    [
+                        'incidencia' =>
+                            $this->incidencia->id,
+                    ]
                 ),
         ];
-    }
-
-
-    public function toArray(
-        object $notifiable
-    ): array {
-        return $this->toDatabase(
-            $notifiable
-        );
     }
 
 

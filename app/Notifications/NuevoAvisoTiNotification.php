@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Aviso;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class NuevoAvisoTiNotification extends Notification
@@ -21,6 +22,13 @@ class NuevoAvisoTiNotification extends Notification
     |--------------------------------------------------------------------------
     | Canales
     |--------------------------------------------------------------------------
+    |
+    | database:
+    | Guarda la notificación para mostrarla en el historial y la campana.
+    |
+    | broadcast:
+    | Envía la notificación en tiempo real mediante Laravel Reverb.
+    |
     */
 
     public function via(
@@ -28,19 +36,76 @@ class NuevoAvisoTiNotification extends Notification
     ): array {
         return [
             'database',
+            'broadcast',
         ];
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Datos almacenados
+    | Datos almacenados en la base de datos
     |--------------------------------------------------------------------------
     */
 
     public function toDatabase(
         object $notifiable
     ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos transmitidos mediante Reverb
+    |--------------------------------------------------------------------------
+    */
+
+    public function toBroadcast(
+        object $notifiable
+    ): BroadcastMessage {
+        return new BroadcastMessage(
+            $this->datosNotificacion()
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tipo de notificación transmitida
+    |--------------------------------------------------------------------------
+    */
+
+    public function broadcastType(): string
+    {
+        return 'nuevo-aviso-ti';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compatibilidad
+    |--------------------------------------------------------------------------
+    */
+
+    public function toArray(
+        object $notifiable
+    ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos comunes
+    |--------------------------------------------------------------------------
+    |
+    | Se utiliza el mismo formato para database y broadcast para evitar que
+    | la campana reciba información diferente a la almacenada.
+    |
+    */
+
+    private function datosNotificacion(): array
+    {
         return [
             'titulo' =>
                 'Nuevo aviso de TI',
@@ -75,21 +140,6 @@ class NuevoAvisoTiNotification extends Notification
                     ]
                 ),
         ];
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Compatibilidad
-    |--------------------------------------------------------------------------
-    */
-
-    public function toArray(
-        object $notifiable
-    ): array {
-        return $this->toDatabase(
-            $notifiable
-        );
     }
 
 

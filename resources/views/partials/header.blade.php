@@ -2,7 +2,23 @@
     $enDashboard = request()->routeIs('dashboard');
 
     $tituloHeader = match(true) {
-        request()->routeIs('memorandos.*') => 'Memorandos IT',
+        request()->routeIs('memorandos.*') => 'Pases TI',
+        request()->routeIs('solicitudes.*') => 'Solicitudes TI',
+        request()->routeIs('incidencias.*') => 'Incidencias TI',
+        request()->routeIs('usuarios.*') => 'Usuarios TI',
+        request()->routeIs('avisos.*') => 'Avisos TI',
+        request()->routeIs(
+        'admin.pases',
+        'admin.pases.*'
+        ) => 'Pases TI',
+        request()->routeIs(
+        'admin.solicitudes',
+        'admin.solicitudes.*'
+        ) => 'Solicitudes TI',
+        request()->routeIs(
+        'admin.incidencias',
+        'admin.incidencias.*'
+        ) => 'Incidencias TI',
         default => 'Portal TI'
     };
 
@@ -143,232 +159,280 @@
 
             {{-- Notificaciones --}}
 
-            <div
-                class="relative"
-                x-data="{ notificationOpen: false }">
-
-                <button
-                    type="button"
-                    @click="notificationOpen = !notificationOpen"
-                    class="group/bell relative p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                    aria-label="Abrir notificaciones">
-
-                    <i
-                        data-lucide="bell"
-                        class="w-[18px] h-[18px] transition-transform duration-300 group-hover/bell:rotate-12">
-                    </i>
-
-
-                    @if($notificacionesNoLeidas > 0)
-
-                        <span class="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-primary text-[9px] font-bold leading-none text-white flex items-center justify-center">
-
-                            {{ $notificacionesNoLeidas > 9
-                                ? '9+'
-                                : $notificacionesNoLeidas
-                            }}
-
-                        </span>
-
-                    @endif
-
-                </button>
-
-
-                {{-- Dropdown de notificaciones --}}
-
-                <div
-                    x-show="notificationOpen"
-                    x-cloak
-                    @click.outside="notificationOpen = false"
-                    class="absolute right-0 top-full mt-2 w-[360px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-lg shadow-black/5 overflow-hidden z-50">
-
-                    <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
-
-                        <div>
-
-                            <h3 class="text-sm font-semibold text-foreground">
-                                Notificaciones
-                            </h3>
-
-                            <p class="mt-0.5 text-xs text-muted-foreground">
-
-                                {{ $notificacionesNoLeidas === 1
-                                    ? '1 notificación sin leer'
-                                    : $notificacionesNoLeidas.' notificaciones sin leer'
-                                }}
-
-                            </p>
-
-                        </div>
-
-
-                        @if($notificacionesNoLeidas > 0)
-
-                            <form
-                                method="POST"
-                                action="{{ route('notificaciones.marcar-todas') }}">
-
-                                @csrf
-                                @method('PATCH')
-
-                                <button
-                                    type="submit"
-                                    class="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
-
-                                    Marcar todas
-
-                                </button>
-
-                            </form>
-
-                        @endif
-
-                    </div>
-
-
-                    <div class="max-h-[360px] overflow-y-auto">
-
-                        @forelse($ultimasNotificaciones as $notificacion)
-
-                            @php
-
-                                $datosNotificacion =
-                                    $notificacion->data;
-
-                                $estaSinLeer =
-                                    $notificacion->unread();
-
-                            @endphp
-
-                            <a
-                                href="{{ route(
-                                    'notificaciones.abrir',
-                                    $notificacion->id
-                                ) }}"
-                                @class([
-                                    'flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors duration-200 hover:bg-muted/60',
-                                    'bg-primary/[0.035]' =>
-                                        $estaSinLeer,
-                                ])>
-
-                                <div
-                                    @class([
-                                        'mt-0.5 flex items-center justify-center w-9 h-9 shrink-0 rounded-lg',
-                                        'bg-primary/10 text-primary' =>
-                                            $estaSinLeer,
-                                        'bg-muted text-muted-foreground' =>
-                                            ! $estaSinLeer,
-                                    ])>
-
-                                    <i
-                                        data-lucide="{{ $datosNotificacion['icono'] ?? 'bell' }}"
-                                        stroke-width="1.8"
-                                        class="w-[17px] h-[17px]">
-                                    </i>
-
-                                </div>
-
-
-                                <div class="min-w-0 flex-1">
-
-                                    <div class="flex items-start gap-2">
-
-                                        <p class="min-w-0 flex-1 text-sm font-medium text-foreground leading-snug">
-
-                                            {{ $datosNotificacion['titulo']
-                                                ?? 'Nueva notificación'
-                                            }}
-
-                                        </p>
-
-
-                                        @if($estaSinLeer)
-
-                                            <span class="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-primary"></span>
-
-                                        @endif
-
-                                    </div>
-
-
-                                    <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-
-                                        {{ $datosNotificacion['mensaje']
-                                            ?? 'Tienes una nueva actualización.'
-                                        }}
-
-                                    </p>
-
-
-                                    <p class="mt-1.5 text-[11px] text-muted-foreground">
-
-                                        {{ $notificacion->created_at
-                                            ?->timezone('America/Tegucigalpa')
-                                            ->diffForHumans()
-                                        }}
-
-                                    </p>
-
-                                </div>
-
-                            </a>
-
-                        @empty
-
-                            <div class="px-6 py-10 text-center">
-
-                                <div class="flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-primary/5 text-primary">
-
-                                    <i
-                                        data-lucide="bell-off"
-                                        stroke-width="1.8"
-                                        class="w-5 h-5">
-                                    </i>
-
-                                </div>
-
-                                <p class="mt-3 text-sm font-medium text-foreground">
-                                    No tienes notificaciones
-                                </p>
-
-                                <p class="mt-1 text-xs text-muted-foreground">
-                                    Aquí aparecerán las actualizaciones de tus gestiones.
-                                </p>
-
-                            </div>
-
-                        @endforelse
-
-                    </div>
-
-
-                    <div class="px-4 py-3 border-t border-border bg-muted/20">
-
-                        <a
-                            href="{{ route('notificaciones.index') }}"
-                            class="flex items-center justify-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-
-                            Ver todas las notificaciones
-
-                            <i
-                                data-lucide="arrow-right"
-                                stroke-width="1.8"
-                                class="w-3.5 h-3.5">
-                            </i>
-
-                        </a>
-
-                    </div>
-
-                </div>
+<div
+    id="notificaciones-widget"
+    class="relative"
+    x-data="{ notificationOpen: false }"
+    data-usuario-id="{{ auth()->id() }}"
+    data-no-leidas="{{ $notificacionesNoLeidas }}"
+    data-url-abrir="{{ route(
+        'notificaciones.abrir',
+        ['notification' => '__NOTIFICATION_ID__']
+    ) }}"
+>
+
+    <button
+        id="notificaciones-boton"
+        type="button"
+        @click="notificationOpen = !notificationOpen"
+        class="group/bell relative p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        aria-label="Abrir notificaciones"
+    >
+
+        <i
+            data-lucide="bell"
+            class="w-[18px] h-[18px] transition-transform duration-300 group-hover/bell:rotate-12"
+        ></i>
+
+
+        {{--
+        |--------------------------------------------------------------------------
+        | Contador
+        |--------------------------------------------------------------------------
+        |
+        | Se mantiene siempre en el HTML para que JavaScript pueda mostrarlo
+        | cuando llegue la primera notificación en tiempo real.
+        |
+        --}}
+
+        <span
+            id="notificaciones-contador"
+            @class([
+                'absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-primary text-[9px] font-bold leading-none text-white flex items-center justify-center',
+                'hidden' => $notificacionesNoLeidas === 0,
+            ])
+        >
+            {{ $notificacionesNoLeidas > 9
+                ? '9+'
+                : $notificacionesNoLeidas
+            }}
+        </span>
+
+    </button>
+
+
+    {{-- Dropdown de notificaciones --}}
+
+    <div
+        x-show="notificationOpen"
+        x-cloak
+        @click.outside="notificationOpen = false"
+        class="absolute right-0 top-full mt-2 w-[360px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-lg shadow-black/5 overflow-hidden z-50"
+    >
+
+        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
+
+            <div>
+
+                <h3 class="text-sm font-semibold text-foreground">
+                    Notificaciones
+                </h3>
+
+                <p
+                    id="notificaciones-resumen"
+                    class="mt-0.5 text-xs text-muted-foreground"
+                >
+                    {{ $notificacionesNoLeidas === 1
+                        ? '1 notificación sin leer'
+                        : $notificacionesNoLeidas.' notificaciones sin leer'
+                    }}
+                </p>
 
             </div>
 
 
+            {{--
+            |--------------------------------------------------------------------------
+            | Marcar todas
+            |--------------------------------------------------------------------------
+            |
+            | El formulario siempre existe. Cuando no hay notificaciones sin leer
+            | permanece oculto y JavaScript puede mostrarlo cuando llegue una.
+            |
+            --}}
+
+            <form
+                id="notificaciones-marcar-todas"
+                method="POST"
+                action="{{ route('notificaciones.marcar-todas') }}"
+                @class([
+                    'hidden' => $notificacionesNoLeidas === 0,
+                ])
+            >
+
+                @csrf
+                @method('PATCH')
+
+                <button
+                    type="submit"
+                    class="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                    Marcar todas
+                </button>
+
+            </form>
+
+        </div>
 
 
+        <div
+            id="notificaciones-lista"
+            class="max-h-[360px] overflow-y-auto"
+        >
 
+            @foreach($ultimasNotificaciones as $notificacion)
+
+                @php
+
+                    $datosNotificacion =
+                        $notificacion->data;
+
+                    $estaSinLeer =
+                        $notificacion->unread();
+
+                @endphp
+
+
+                <a
+                    href="{{ route(
+                        'notificaciones.abrir',
+                        $notificacion->id
+                    ) }}"
+                    data-notificacion-item
+                    @class([
+                        'flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors duration-200 hover:bg-muted/60',
+                        'bg-primary/[0.035]' =>
+                            $estaSinLeer,
+                    ])
+                >
+
+                    <div
+                        @class([
+                            'mt-0.5 flex items-center justify-center w-9 h-9 shrink-0 rounded-lg',
+                            'bg-primary/10 text-primary' =>
+                                $estaSinLeer,
+                            'bg-muted text-muted-foreground' =>
+                                ! $estaSinLeer,
+                        ])
+                    >
+
+                        <i
+                            data-lucide="{{ $datosNotificacion['icono'] ?? 'bell' }}"
+                            stroke-width="1.8"
+                            class="w-[17px] h-[17px]"
+                        ></i>
+
+                    </div>
+
+
+                    <div class="min-w-0 flex-1">
+
+                        <div class="flex items-start gap-2">
+
+                            <p class="min-w-0 flex-1 text-sm font-medium text-foreground leading-snug">
+
+                                {{ $datosNotificacion['titulo']
+                                    ?? 'Nueva notificación'
+                                }}
+
+                            </p>
+
+
+                            @if($estaSinLeer)
+
+                                <span
+                                    class="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-primary"
+                                ></span>
+
+                            @endif
+
+                        </div>
+
+
+                        <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
+
+                            {{ $datosNotificacion['mensaje']
+                                ?? 'Tienes una nueva actualización.'
+                            }}
+
+                        </p>
+
+
+                        <p class="mt-1.5 text-[11px] text-muted-foreground">
+
+                            {{ $notificacion->created_at
+                                ?->timezone('America/Tegucigalpa')
+                                ->diffForHumans()
+                            }}
+
+                        </p>
+
+                    </div>
+
+                </a>
+
+            @endforeach
+
+
+            {{--
+            |--------------------------------------------------------------------------
+            | Estado vacío
+            |--------------------------------------------------------------------------
+            --}}
+
+            <div
+                id="notificaciones-vacio"
+                @class([
+                    'px-6 py-10 text-center',
+                    'hidden' => $ultimasNotificaciones->isNotEmpty(),
+                ])
+            >
+
+                <div class="flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-primary/5 text-primary">
+
+                    <i
+                        data-lucide="bell-off"
+                        stroke-width="1.8"
+                        class="w-5 h-5"
+                    ></i>
+
+                </div>
+
+                <p class="mt-3 text-sm font-medium text-foreground">
+                    No tienes notificaciones
+                </p>
+
+                <p class="mt-1 text-xs text-muted-foreground">
+                    Aquí aparecerán las actualizaciones de tus gestiones.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="px-4 py-3 border-t border-border bg-muted/20">
+
+            <a
+                href="{{ route('notificaciones.index') }}"
+                class="flex items-center justify-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+
+                Ver todas las notificaciones
+
+                <i
+                    data-lucide="arrow-right"
+                    stroke-width="1.8"
+                    class="w-3.5 h-3.5"
+                ></i>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
 
             {{-- Usuario --}}
 

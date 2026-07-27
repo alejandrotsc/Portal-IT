@@ -2,17 +2,21 @@
     "$schema": "https://www.schemastore.org/package.json",
     "private": true,
     "type": "module",
-
     "scripts": {
-        "dev": "npx @tailwindcss/cli -i ./resources/css/app.css -o ./public/css/app.css --watch",
-        "build": "npx @tailwindcss/cli -i ./resources/css/app.css -o ./public/css/app.css --minify"
+        "dev": "concurrently \"npm:dev:vite\" \"npm:dev:tailwind\"",
+        "dev:vite": "vite",
+        "dev:tailwind": "npx @tailwindcss/cli -i ./resources/css/app.css -o ./public/css/app.css --watch",
+        "build": "npm run build:tailwind && npm run build:vite",
+        "build:vite": "vite build",
+        "build:tailwind": "npx @tailwindcss/cli -i ./resources/css/app.css -o ./public/css/app.css --minify"
     },
-
     "devDependencies": {
         "@tailwindcss/cli": "^4.3.3",
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^9.0.1",
+        "laravel-echo": "^2.4.0",
         "laravel-vite-plugin": "^3.1",
+        "pusher-js": "^8.6.0",
         "tailwindcss": "^4.3.3",
         "vite": "^8.0.0"
     }

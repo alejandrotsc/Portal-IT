@@ -29,21 +29,6 @@
 
                 </div>
 
-
-                <a
-                    href="{{ route('usuarios.create') }}"
-                    class="group inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
-
-                    <i
-                        data-lucide="user-plus"
-                        stroke-width="1.8"
-                        class="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110">
-                    </i>
-
-                    Nuevo usuario
-
-                </a>
-
             </div>
 
         </section>

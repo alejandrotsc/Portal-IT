@@ -27,6 +27,10 @@ class RegistroRequest extends FormRequest
                 'string',
                 'email:rfc',
                 'max:200',
+
+                // Solo dominios corporativos autorizados
+                'regex:/^[A-Z0-9._%+\-]+@televicentro\.(com|hn)$/i',
+
                 'unique:usuarios,correo',
             ],
         ];
@@ -55,6 +59,9 @@ class RegistroRequest extends FormRequest
 
             'correo.max' =>
                 'El correo no puede superar los 200 caracteres.',
+
+            'correo.regex' =>
+                'Solo se permiten correos con dominio @televicentro.com o @televicentro.hn.',
 
             'correo.unique' =>
                 'El correo electrónico ya está registrado.',

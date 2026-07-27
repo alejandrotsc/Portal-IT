@@ -8,21 +8,19 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    {{-- Necesario para solicitudes POST de Laravel --}}
     <meta
         name="csrf-token"
         content="{{ csrf_token() }}"
     >
 
-    {{-- Endpoint del chatbot con streaming --}}
     <meta
         name="chatbot-stream-endpoint"
         content="{{ route('chatbot.stream') }}"
     >
 
     <meta
-    name="chatbot-warmup-endpoint"
-    content="{{ route('chatbot.warm-up') }}"
+        name="chatbot-warmup-endpoint"
+        content="{{ route('chatbot.warm-up') }}"
     >
 
     <title>
@@ -38,16 +36,19 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
-        <link
-    rel="icon"
-    type="image/x-icon"
-    href="{{ asset('img/logo-it.ico') }}"
+    <link
+        rel="icon"
+        type="image/x-icon"
+        href="{{ asset('img/logo-it.ico') }}"
     >
 
     <link
         rel="stylesheet"
         href="{{ asset('css/app.css') }}"
     >
+
+    {{-- JavaScript compilado con Vite --}}
+    @vite('resources/js/app.js')
 </head>
 
 

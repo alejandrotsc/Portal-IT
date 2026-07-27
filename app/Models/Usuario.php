@@ -13,7 +13,9 @@ class Usuario extends Authenticatable
     use HasFactory;
     use Notifiable;
 
+
     protected $table = 'usuarios';
+
 
     protected $fillable = [
         'nombre',
@@ -23,17 +25,23 @@ class Usuario extends Authenticatable
         'activo',
     ];
 
+
     protected $hidden = [
         'remember_token',
     ];
 
+
     protected function casts(): array
     {
         return [
-            'correo_verificado_at' => 'datetime',
-            'activo' => 'boolean',
+            'correo_verificado_at' =>
+                'datetime',
+
+            'activo' =>
+                'boolean',
         ];
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -43,8 +51,10 @@ class Usuario extends Authenticatable
 
     public function correoEstaVerificado(): bool
     {
-        return $this->correo_verificado_at !== null;
+        return $this->correo_verificado_at
+            !== null;
     }
+
 
     public function marcarCorreoComoVerificado(): bool
     {
@@ -53,14 +63,33 @@ class Usuario extends Authenticatable
         }
 
         return $this->forceFill([
-            'correo_verificado_at' => now(),
+            'correo_verificado_at' =>
+                now(),
         ])->save();
     }
+
 
     public function routeNotificationForMail(): string
     {
         return $this->correo;
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Canal privado de notificaciones
+    |--------------------------------------------------------------------------
+    |
+    | Laravel Reverb enviará las notificaciones del usuario a este canal.
+    | Cada usuario tendrá un canal independiente.
+    |
+    */
+
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'usuarios.'.$this->id;
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -75,6 +104,7 @@ class Usuario extends Authenticatable
             'rol_id'
         );
     }
+
 
     public function tokensAutenticacion(): HasMany
     {
@@ -93,6 +123,7 @@ class Usuario extends Authenticatable
         );
     }
 
+
     public function memorandos(): HasMany
     {
         return $this->hasMany(
@@ -100,6 +131,7 @@ class Usuario extends Authenticatable
             'solicitante_id'
         );
     }
+
 
     public function historial(): HasMany
     {

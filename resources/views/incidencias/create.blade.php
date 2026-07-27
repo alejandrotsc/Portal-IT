@@ -202,9 +202,6 @@
                             id="tiempo_problema"
                             name="tiempo_problema"
                             class="w-full appearance-none border-0 bg-transparent py-2.5 text-sm text-foreground focus:outline-none focus:ring-0">
-                            <option value="">
-                                Seleccione
-                            </option>
 
                             <option
                                 value="hoy"

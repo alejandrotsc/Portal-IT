@@ -15,13 +15,6 @@
 
         </div>
 
-        <button class="text-xs text-primary hover:underline flex items-center gap-1">
-
-            Ver catálogo completo
-            <i data-lucide="chevron-right" class="w-3 h-3"></i>
-
-        </button>
-
     </div>
 
 

@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Memorando;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class EstadoPaseActualizadoNotification extends Notification
@@ -28,6 +29,7 @@ class EstadoPaseActualizadoNotification extends Notification
     ): array {
         return [
             'database',
+            'broadcast',
         ];
     }
 
@@ -41,6 +43,58 @@ class EstadoPaseActualizadoNotification extends Notification
     public function toDatabase(
         object $notifiable
     ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Información enviada en tiempo real
+    |--------------------------------------------------------------------------
+    */
+
+    public function toBroadcast(
+        object $notifiable
+    ): BroadcastMessage {
+        return new BroadcastMessage(
+            $this->datosNotificacion()
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tipo de evento transmitido
+    |--------------------------------------------------------------------------
+    */
+
+    public function broadcastType(): string
+    {
+        return 'estado-pase-actualizado';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compatibilidad con otros canales
+    |--------------------------------------------------------------------------
+    */
+
+    public function toArray(
+        object $notifiable
+    ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos comunes de la notificación
+    |--------------------------------------------------------------------------
+    */
+
+    private function datosNotificacion(): array
+    {
         $codigo = $this->obtenerCodigo();
 
         $estadoTexto = $this->obtenerEstadoTexto();
@@ -67,27 +121,18 @@ class EstadoPaseActualizadoNotification extends Notification
             'codigo' =>
                 $codigo,
 
+            'memorando_id' =>
+                $this->memorando->id,
+
             'url' =>
-                url(
-                    '/mis-pases/'
-                    .$this->memorando->id
+                route(
+                    'memorandos.show-pase',
+                    [
+                        'memorando' =>
+                            $this->memorando->id,
+                    ]
                 ),
         ];
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Compatibilidad con otros canales
-    |--------------------------------------------------------------------------
-    */
-
-    public function toArray(
-        object $notifiable
-    ): array {
-        return $this->toDatabase(
-            $notifiable
-        );
     }
 
 

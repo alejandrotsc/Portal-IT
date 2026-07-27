@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Solicitud;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class EstadoSolicitudActualizadoNotification extends Notification
@@ -28,6 +29,7 @@ class EstadoSolicitudActualizadoNotification extends Notification
     ): array {
         return [
             'database',
+            'broadcast',
         ];
     }
 
@@ -41,6 +43,58 @@ class EstadoSolicitudActualizadoNotification extends Notification
     public function toDatabase(
         object $notifiable
     ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos enviados en tiempo real
+    |--------------------------------------------------------------------------
+    */
+
+    public function toBroadcast(
+        object $notifiable
+    ): BroadcastMessage {
+        return new BroadcastMessage(
+            $this->datosNotificacion()
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tipo de evento broadcast
+    |--------------------------------------------------------------------------
+    */
+
+    public function broadcastType(): string
+    {
+        return 'estado-solicitud-actualizado';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compatibilidad
+    |--------------------------------------------------------------------------
+    */
+
+    public function toArray(
+        object $notifiable
+    ): array {
+        return $this->datosNotificacion();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos comunes
+    |--------------------------------------------------------------------------
+    */
+
+    private function datosNotificacion(): array
+    {
         return [
             'titulo' =>
                 $this->obtenerTitulo(),
@@ -60,24 +114,21 @@ class EstadoSolicitudActualizadoNotification extends Notification
             'gestion_id' =>
                 $this->solicitud->id,
 
+            'solicitud_id' =>
+                $this->solicitud->id,
+
             'codigo' =>
                 $this->solicitud->folio,
 
             'url' =>
-                url(
-                    '/solicitudes/'
-                    .$this->solicitud->id
+                route(
+                    'solicitudes.show',
+                    [
+                        'solicitud' =>
+                            $this->solicitud->id,
+                    ]
                 ),
         ];
-    }
-
-
-    public function toArray(
-        object $notifiable
-    ): array {
-        return $this->toDatabase(
-            $notifiable
-        );
     }
 
 

@@ -141,7 +141,55 @@
         </div>
 
 
+        {{-- Pases por revisar --}}
 
+        <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 motion-safe:hover:-translate-y-1">
+
+            {{-- Decoración --}}
+
+            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-400/10 transition-all duration-500 group-hover:bg-amber-400/20 motion-safe:group-hover:scale-150">
+            </div>
+
+
+            <div class="relative mb-5 flex items-center justify-between">
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:bg-amber-100 motion-safe:group-hover:scale-105">
+
+                    <i
+                        data-lucide="file-check-2"
+                        stroke-width="1.8"
+                        class="h-5 w-5 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
+                    </i>
+
+                </div>
+
+
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700">
+
+                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500">
+                    </span>
+
+                    Pendientes
+
+                </span>
+
+            </div>
+
+
+            <p class="relative text-2xl font-semibold leading-none text-foreground">
+
+                {{ $pasesPorRevisar ?? 0 }}
+
+            </p>
+
+            <p class="relative mt-2 text-sm text-muted-foreground">
+
+                Pases por revisar
+
+            </p>
+
+        </div>
+        
         {{-- Solicitudes pendientes --}}
 
         <div class="group relative overflow-hidden rounded-2xl border border-cyan-200/60 bg-gradient-to-br from-cyan-50 via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:border-cyan-300 hover:shadow-lg hover:shadow-cyan-500/10 motion-safe:hover:-translate-y-1">
@@ -237,57 +285,6 @@
             <p class="relative mt-2 text-sm text-muted-foreground">
 
                 Incidencias por atender
-
-            </p>
-
-        </div>
-
-
-
-        {{-- Pases por revisar --}}
-
-        <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 motion-safe:hover:-translate-y-1">
-
-            {{-- Decoración --}}
-
-            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-400/10 transition-all duration-500 group-hover:bg-amber-400/20 motion-safe:group-hover:scale-150">
-            </div>
-
-
-            <div class="relative mb-5 flex items-center justify-between">
-
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:bg-amber-100 motion-safe:group-hover:scale-105">
-
-                    <i
-                        data-lucide="file-check-2"
-                        stroke-width="1.8"
-                        class="h-5 w-5 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110">
-                    </i>
-
-                </div>
-
-
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700">
-
-                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500">
-                    </span>
-
-                    Pendientes
-
-                </span>
-
-            </div>
-
-
-            <p class="relative text-2xl font-semibold leading-none text-foreground">
-
-                {{ $pasesPorRevisar ?? 0 }}
-
-            </p>
-
-            <p class="relative mt-2 text-sm text-muted-foreground">
-
-                Pases por revisar
 
             </p>
 

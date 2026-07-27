@@ -10,6 +10,7 @@ class Aviso extends Model
 {
     use HasFactory;
 
+
     protected $table = 'avisos';
 
 
@@ -18,6 +19,7 @@ class Aviso extends Model
         'mensaje',
         'fecha_inicio',
         'fecha_fin',
+        'notificacion_enviada_at',
         'activo',
         'creado_por',
     ];
@@ -26,11 +28,17 @@ class Aviso extends Model
     protected function casts(): array
     {
         return [
-            'fecha_inicio' => 'datetime',
+            'fecha_inicio' =>
+                'datetime',
 
-            'fecha_fin' => 'datetime',
+            'fecha_fin' =>
+                'datetime',
 
-            'activo' => 'boolean',
+            'notificacion_enviada_at' =>
+                'datetime',
+
+            'activo' =>
+                'boolean',
         ];
     }
 
@@ -77,12 +85,14 @@ class Aviso extends Model
             return false;
         }
 
+
         if (
             $this->fecha_inicio
             && $this->fecha_inicio->isFuture()
         ) {
             return false;
         }
+
 
         if (
             $this->fecha_fin
@@ -91,6 +101,35 @@ class Aviso extends Model
             return false;
         }
 
+
         return true;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Estado de notificación
+    |--------------------------------------------------------------------------
+    */
+
+    public function fueNotificado(): bool
+    {
+        return $this->notificacion_enviada_at
+            !== null;
+    }
+
+
+    public function pendienteDeNotificar(): bool
+    {
+        return ! $this->fueNotificado();
+    }
+
+
+    public function marcarComoNotificado(): bool
+    {
+        return $this->forceFill([
+            'notificacion_enviada_at' =>
+                now(),
+        ])->save();
     }
 }

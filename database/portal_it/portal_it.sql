@@ -1083,6 +1083,20 @@ CREATE TABLE avisos (
         NULL,
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Control de notificación programada
+    |--------------------------------------------------------------------------
+    |
+    | Permite saber si el aviso ya generó su notificación.
+    | Si está en NULL, todavía no se ha notificado.
+    |
+    */
+
+    notificacion_enviada_at TIMESTAMP
+        NULL,
+
+
     activo BOOLEAN
         NOT NULL
         DEFAULT TRUE,
@@ -1121,6 +1135,7 @@ CREATE TABLE avisos (
 
 );
 
+
 CREATE INDEX avisos_activo_index
     ON avisos(activo);
 
@@ -1137,12 +1152,34 @@ CREATE INDEX avisos_creado_por_index
     ON avisos(creado_por);
 
 
+CREATE INDEX avisos_notificacion_enviada_at_index
+    ON avisos(notificacion_enviada_at);
+
+
 CREATE INDEX avisos_vigencia_index
     ON avisos(
         activo,
         fecha_inicio,
         fecha_fin
     );
+
+
+/*
+|--------------------------------------------------------------------------
+| Índice para procesar avisos programados pendientes
+|--------------------------------------------------------------------------
+|
+| Este índice ayuda al comando programado a localizar rápidamente los
+| avisos activos que todavía no han enviado su notificación.
+|
+*/
+
+CREATE INDEX avisos_notificaciones_pendientes_index
+    ON avisos(
+        fecha_inicio
+    )
+    WHERE activo = TRUE
+    AND notificacion_enviada_at IS NULL;
 
 
 -- ============================================================

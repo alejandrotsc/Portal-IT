@@ -468,7 +468,7 @@ public function warmUp(): bool
 
     $model = (string) config(
         'chatbot.ai.model',
-        'llama3.2:3b'
+        'llama3.2:1b'
     );
 
     try {
