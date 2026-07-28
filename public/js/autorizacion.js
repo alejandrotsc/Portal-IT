@@ -936,6 +936,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         actualizarIndicadorSmtp('success');
+
+        /*
+         * Los iconos fueron insertados dinámicamente con innerHTML.
+         * Lucide debe procesarlos nuevamente para convertirlos en SVG.
+         */
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 
 
@@ -1112,6 +1120,14 @@ const body = [
         }
 
         actualizarIndicadorSmtp('warning');
+
+        /*
+         * Renderizar los iconos insertados dinámicamente en el estado
+         * de advertencia.
+         */
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 
 

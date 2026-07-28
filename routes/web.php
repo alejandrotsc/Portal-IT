@@ -128,6 +128,34 @@ Route::middleware('guest')->group(function () {
         )
         ->name('register.resend');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Estado del correo de autenticación
+    |--------------------------------------------------------------------------
+    |
+    | Ruta pública controlada mediante sesión. El controlador únicamente
+    | permite consultar el delivery_id almacenado para este navegador.
+    |
+    */
+
+    Route::get(
+        '/auth/email-status/{emailDelivery}',
+        [
+            AuthController::class,
+            'emailStatus',
+        ]
+    )
+        ->whereNumber(
+            'emailDelivery'
+        )
+        ->middleware(
+            'throttle:60,1'
+        )
+        ->name(
+            'auth.email-status'
+        );
+
 });
 
 

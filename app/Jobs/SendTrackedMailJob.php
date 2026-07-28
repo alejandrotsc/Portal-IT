@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Mail\AutorizacionMail;
+use App\Mail\CodigoVerificacionMail;
+use App\Mail\EnlaceMagicoMail;
 use App\Mail\IncidenciaMail;
 use App\Mail\PaseTemporalMail;
 use App\Mail\SolicitudMail;
@@ -10,6 +12,7 @@ use App\Models\EmailDelivery;
 use App\Models\Incidencia;
 use App\Models\Memorando;
 use App\Models\Solicitud;
+use App\Models\Usuario;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Mail\Mailable;
@@ -147,19 +150,47 @@ class SendTrackedMailJob implements ShouldQueue
             );
 
         } catch (Throwable $exception) {
+            $intentoActual =
+                max(
+                    1,
+                    $this->attempts()
+                );
+
+            $quedanIntentos =
+                $intentoActual < $this->tries;
+
             $nextRetryAt =
-                $this->calcularSiguienteReintento();
+                $quedanIntentos
+                    ? $this->calcularSiguienteReintento()
+                    : null;
 
-            $delivery->marcarFallido(
-                error:
-                    $exception,
+            if ($quedanIntentos) {
+                $delivery->forceFill([
+                    'status' =>
+                        EmailDelivery::ESTADO_PENDIENTE,
 
-                errorCode:
-                    (string) $exception->getCode(),
+                    'next_retry_at' =>
+                        $nextRetryAt,
 
-                nextRetryAt:
-                    $nextRetryAt
-            );
+                    'last_error' =>
+                        $exception->getMessage(),
+
+                    'last_attempt_at' =>
+                        now(),
+                ])->save();
+
+            } else {
+                $delivery->marcarFallido(
+                    error:
+                        $exception,
+
+                    errorCode:
+                        (string) $exception->getCode(),
+
+                    nextRetryAt:
+                        null
+                );
+            }
 
             Log::error(
                 'Falló un intento de envío de correo registrado.',
@@ -179,8 +210,14 @@ class SendTrackedMailJob implements ShouldQueue
                     'recipient_email' =>
                         $delivery->recipient_email,
 
-                    'attempts' =>
-                        $delivery->fresh()?->attempts,
+                    'attempt' =>
+                        $intentoActual,
+
+                    'tries' =>
+                        $this->tries,
+
+                    'will_retry' =>
+                        $quedanIntentos,
 
                     'next_retry_at' =>
                         $nextRetryAt?->toDateTimeString(),
@@ -190,10 +227,6 @@ class SendTrackedMailJob implements ShouldQueue
                 ]
             );
 
-            /*
-             * Es obligatorio relanzar la excepción para que Laravel
-             * aplique los reintentos configurados en este Job.
-             */
             throw $exception;
         }
     }
@@ -228,6 +261,16 @@ class SendTrackedMailJob implements ShouldQueue
 
             AutorizacionMail::class =>
                 $this->crearAutorizacionMail(
+                    $metadata
+                ),
+
+            EnlaceMagicoMail::class =>
+                $this->crearEnlaceMagicoMail(
+                    $metadata
+                ),
+
+            CodigoVerificacionMail::class =>
+                $this->crearCodigoVerificacionMail(
                     $metadata
                 ),
 
@@ -338,6 +381,92 @@ class SendTrackedMailJob implements ShouldQueue
 
         return new AutorizacionMail(
             $memorando
+        );
+    }
+
+    /**
+     * Reconstruir correo de enlace mágico.
+     */
+    private function crearEnlaceMagicoMail(
+        array $metadata
+    ): EnlaceMagicoMail {
+        $usuarioId =
+            $this->obtenerIdMetadata(
+                $metadata,
+                'usuario_id'
+            );
+
+        $url =
+            $this->obtenerTextoMetadata(
+                $metadata,
+                'url',
+                'URL del enlace mágico'
+            );
+
+        $usuario = Usuario::query()
+            ->findOrFail(
+                $usuarioId
+            );
+
+        return new EnlaceMagicoMail(
+            $usuario,
+            $url
+        );
+    }
+
+    /**
+     * Reconstruir correo de código de verificación.
+     */
+    private function crearCodigoVerificacionMail(
+        array $metadata
+    ): CodigoVerificacionMail {
+        $usuarioId =
+            $this->obtenerIdMetadata(
+                $metadata,
+                'usuario_id'
+            );
+
+        $codigo =
+            $this->obtenerTextoMetadata(
+                $metadata,
+                'codigo',
+                'código de verificación'
+            );
+
+        $usuario = Usuario::query()
+            ->findOrFail(
+                $usuarioId
+            );
+
+        return new CodigoVerificacionMail(
+            $usuario,
+            $codigo
+        );
+    }
+
+    /**
+     * Obtener y validar texto almacenado en metadata.
+     */
+    private function obtenerTextoMetadata(
+        array $metadata,
+        string $key,
+        string $descripcion
+    ): string {
+        $value =
+            $metadata[$key]
+            ?? null;
+
+        if (
+            ! is_string($value)
+            || trim($value) === ''
+        ) {
+            throw new RuntimeException(
+                "La metadata del correo no contiene {$descripcion} válida."
+            );
+        }
+
+        return trim(
+            $value
         );
     }
 

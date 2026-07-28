@@ -366,6 +366,35 @@
                     @endif
 
 
+                    {{-- ESTADO DEL ENVÍO DEL CÓDIGO --}}
+
+                    <div
+                        id="registerEmailStatus"
+                        role="status"
+                        aria-live="polite"
+                        class="mt-7 hidden items-start gap-3 rounded-xl border px-4 py-3.5"
+                    >
+                        <div
+                            id="registerEmailStatusIcon"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                        ></div>
+
+                        <div class="min-w-0">
+
+                            <p
+                                id="registerEmailStatusTitle"
+                                class="text-sm font-semibold"
+                            ></p>
+
+                            <p
+                                id="registerEmailStatusMessage"
+                                class="mt-1 text-xs leading-5"
+                            ></p>
+
+                        </div>
+                    </div>
+
+
                     {{-- Formulario --}}
 
                     <form
@@ -781,55 +810,579 @@
 @push('scripts')
 
 <script>
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const form =
-        document.getElementById('registerForm');
-
-    const button =
-        document.getElementById('registerButton');
-
-    const buttonText =
-        document.getElementById('registerButtonText');
-
-    const arrow =
-        document.getElementById('registerArrow');
-
-    const spinner =
-        document.getElementById('registerSpinner');
+    window.authEmailStatusUrl =
+        @json(
+            url(
+                '/auth/email-status/__DELIVERY_ID__'
+            )
+        );
 
 
-    if (
-        !form ||
-        !button ||
-        !buttonText ||
-        !arrow ||
-        !spinner
-    ) {
-        return;
-    }
+    document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+            const form =
+                document.getElementById(
+                    'registerForm'
+                );
+
+            const button =
+                document.getElementById(
+                    'registerButton'
+                );
+
+            const buttonText =
+                document.getElementById(
+                    'registerButtonText'
+                );
+
+            const arrow =
+                document.getElementById(
+                    'registerArrow'
+                );
+
+            const spinner =
+                document.getElementById(
+                    'registerSpinner'
+                );
+
+            const statusBox =
+                document.getElementById(
+                    'registerEmailStatus'
+                );
+
+            const statusIcon =
+                document.getElementById(
+                    'registerEmailStatusIcon'
+                );
+
+            const statusTitle =
+                document.getElementById(
+                    'registerEmailStatusTitle'
+                );
+
+            const statusMessage =
+                document.getElementById(
+                    'registerEmailStatusMessage'
+                );
 
 
-    form.addEventListener('submit', function () {
+            if (
+                !form
+                || !button
+                || !buttonText
+                || !arrow
+                || !spinner
+            ) {
+                return;
+            }
 
-        if (!form.checkValidity()) {
-            return;
+
+            let enviando =
+                false;
+
+            let seguimientoActual =
+                0;
+
+
+            form.addEventListener(
+                'submit',
+                async event => {
+                    event.preventDefault();
+
+                    if (
+                        enviando
+                        || !form.reportValidity()
+                    ) {
+                        return;
+                    }
+
+                    enviando = true;
+                    bloquearBoton();
+
+                    mostrarEstado(
+                        'queued',
+                        'Creando cuenta',
+                        'Estamos registrando tu información.'
+                    );
+
+                    try {
+                        const response =
+                            await fetch(
+                                form.action,
+                                {
+                                    method:
+                                        'POST',
+
+                                    headers: {
+                                        'Accept':
+                                            'application/json',
+
+                                        'X-Requested-With':
+                                            'XMLHttpRequest',
+                                    },
+
+                                    body:
+                                        new FormData(
+                                            form
+                                        ),
+                                }
+                            );
+
+                        const responseText =
+                            await response.text();
+
+                        let data;
+
+                        try {
+                            data =
+                                JSON.parse(
+                                    responseText
+                                );
+
+                        } catch {
+                            throw new Error(
+                                'El servidor devolvió una respuesta inválida.'
+                            );
+                        }
+
+                        if (
+                            !response.ok
+                            || data.success !== true
+                        ) {
+                            throw new Error(
+                                obtenerMensajeError(
+                                    data
+                                )
+                            );
+                        }
+
+                        const estado =
+                            String(
+                                data.email?.status
+                                ?? ''
+                            ).toLowerCase();
+
+                        if (
+                            data.email?.sent === true
+                            || estado === 'enviado'
+                        ) {
+                            mostrarEstadoEnviado(
+                                data.message
+                            );
+
+                            redirigirVerificacion(
+                                data.redirect
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            data.email?.failed === true
+                            || estado === 'fallido'
+                        ) {
+                            mostrarEstadoFallido(
+                                data.message
+                            );
+
+                            redirigirVerificacion(
+                                data.redirect,
+                                2200
+                            );
+
+                            return;
+                        }
+
+                        mostrarEstadoCola(
+                            data.message
+                        );
+
+                        if (
+                            data.email?.delivery_id
+                        ) {
+                            vigilarEstadoCorreo(
+                                data.email.delivery_id,
+                                data.redirect
+                            );
+
+                        } else {
+                            redirigirVerificacion(
+                                data.redirect
+                            );
+                        }
+
+                    } catch (error) {
+                        mostrarEstado(
+                            'error',
+                            'No se pudo completar el registro',
+                            error?.message
+                                ?? 'Revisa la información e intenta nuevamente.'
+                        );
+
+                    } finally {
+                        enviando = false;
+                        restaurarBoton();
+                    }
+                }
+            );
+
+
+            function bloquearBoton() {
+                button.disabled =
+                    true;
+
+                buttonText.textContent =
+                    'Creando cuenta...';
+
+                arrow.classList.add(
+                    'hidden'
+                );
+
+                spinner.classList.remove(
+                    'hidden'
+                );
+            }
+
+
+            function restaurarBoton() {
+                button.disabled =
+                    false;
+
+                buttonText.textContent =
+                    'Crear cuenta y verificar correo';
+
+                arrow.classList.remove(
+                    'hidden'
+                );
+
+                spinner.classList.add(
+                    'hidden'
+                );
+            }
+
+
+            function mostrarEstadoCola(
+                message
+            ) {
+                mostrarEstado(
+                    'queued',
+                    'Código en procesamiento',
+                    message
+                        ?? 'Tu cuenta fue creada y el código de verificación está siendo enviado.'
+                );
+            }
+
+
+            function mostrarEstadoEnviado(
+                message
+            ) {
+                mostrarEstado(
+                    'success',
+                    'Código enviado',
+                    message
+                        ?? 'Tu cuenta fue creada y el código de verificación fue enviado.'
+                );
+            }
+
+
+            function mostrarEstadoFallido(
+                message
+            ) {
+                mostrarEstado(
+                    'warning',
+                    'Cuenta creada con advertencia',
+                    message
+                        ?? 'La cuenta fue creada, pero no pudimos enviar el código. Podrás solicitar uno nuevo.'
+                );
+            }
+
+
+            async function vigilarEstadoCorreo(
+                deliveryId,
+                redirectUrl
+            ) {
+                if (
+                    !deliveryId
+                    || !window.authEmailStatusUrl
+                ) {
+                    redirigirVerificacion(
+                        redirectUrl
+                    );
+
+                    return;
+                }
+
+                const seguimientoId =
+                    ++seguimientoActual;
+
+                for (
+                    let consulta = 1;
+                    consulta <= 20;
+                    consulta++
+                ) {
+                    await esperar(
+                        1500
+                    );
+
+                    if (
+                        seguimientoId
+                        !== seguimientoActual
+                    ) {
+                        return;
+                    }
+
+                    try {
+                        const url =
+                            window.authEmailStatusUrl.replace(
+                                '__DELIVERY_ID__',
+                                encodeURIComponent(
+                                    deliveryId
+                                )
+                            );
+
+                        const response =
+                            await fetch(
+                                url,
+                                {
+                                    headers: {
+                                        'Accept':
+                                            'application/json',
+
+                                        'X-Requested-With':
+                                            'XMLHttpRequest',
+                                    },
+
+                                    cache:
+                                        'no-store',
+                                }
+                            );
+
+                        if (!response.ok) {
+                            continue;
+                        }
+
+                        const data =
+                            await response.json();
+
+                        const estado =
+                            String(
+                                data.email?.status
+                                ?? ''
+                            ).toLowerCase();
+
+                        if (
+                            data.email?.sent === true
+                            || estado === 'enviado'
+                        ) {
+                            mostrarEstadoEnviado();
+
+                            redirigirVerificacion(
+                                redirectUrl,
+                                900
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            data.email?.failed === true
+                            || estado === 'fallido'
+                        ) {
+                            mostrarEstadoFallido();
+
+                            redirigirVerificacion(
+                                redirectUrl,
+                                1800
+                            );
+
+                            return;
+                        }
+
+                        mostrarEstadoCola(
+                            estado === 'enviando'
+                                ? 'El servidor está enviando tu código de verificación.'
+                                : 'El código continúa esperando en la cola de correo.'
+                        );
+
+                    } catch (error) {
+                        console.warn(
+                            'No se pudo consultar el estado del código:',
+                            error
+                        );
+                    }
+                }
+
+                mostrarEstadoCola(
+                    'El código continúa procesándose en segundo plano.'
+                );
+
+                redirigirVerificacion(
+                    redirectUrl,
+                    1200
+                );
+            }
+
+
+            function redirigirVerificacion(
+                url,
+                delay = 1200
+            ) {
+                if (!url) {
+                    return;
+                }
+
+                window.setTimeout(
+                    () => {
+                        window.location.assign(
+                            url
+                        );
+                    },
+                    delay
+                );
+            }
+
+
+            function mostrarEstado(
+                type,
+                title,
+                message
+            ) {
+                const estilos = {
+                    queued: {
+                        box:
+                            'border-blue-200 bg-blue-50',
+
+                        icon:
+                            'bg-blue-100 text-blue-600',
+
+                        title:
+                            'text-blue-800',
+
+                        message:
+                            'text-blue-700',
+
+                        svg:
+                            '<svg class="h-4 w-4 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
+                    },
+
+                    success: {
+                        box:
+                            'border-emerald-200 bg-emerald-50',
+
+                        icon:
+                            'bg-emerald-100 text-emerald-600',
+
+                        title:
+                            'text-emerald-800',
+
+                        message:
+                            'text-emerald-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>',
+                    },
+
+                    warning: {
+                        box:
+                            'border-amber-200 bg-amber-50',
+
+                        icon:
+                            'bg-amber-100 text-amber-600',
+
+                        title:
+                            'text-amber-800',
+
+                        message:
+                            'text-amber-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"></path></svg>',
+                    },
+
+                    error: {
+                        box:
+                            'border-red-200 bg-red-50',
+
+                        icon:
+                            'bg-red-100 text-red-600',
+
+                        title:
+                            'text-red-800',
+
+                        message:
+                            'text-red-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6M15 9l-6 6"></path></svg>',
+                    },
+                };
+
+                const estilo =
+                    estilos[type]
+                    ?? estilos.error;
+
+                statusBox.className =
+                    `mt-7 flex items-start gap-3 rounded-xl border px-4 py-3.5 ${estilo.box}`;
+
+                statusIcon.className =
+                    `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${estilo.icon}`;
+
+                statusIcon.innerHTML =
+                    estilo.svg;
+
+                statusTitle.className =
+                    `text-sm font-semibold ${estilo.title}`;
+
+                statusTitle.textContent =
+                    title;
+
+                statusMessage.className =
+                    `mt-1 text-xs leading-5 ${estilo.message}`;
+
+                statusMessage.textContent =
+                    message;
+            }
+
+
+            function obtenerMensajeError(
+                data
+            ) {
+                const primerGrupo =
+                    data?.errors
+                        ? Object.values(
+                            data.errors
+                        )[0]
+                        : null;
+
+                if (
+                    Array.isArray(
+                        primerGrupo
+                    )
+                    && primerGrupo[0]
+                ) {
+                    return primerGrupo[0];
+                }
+
+                return data?.message
+                    ?? data?.error
+                    ?? 'No se pudo completar el registro.';
+            }
+
+
+            function esperar(
+                milisegundos
+            ) {
+                return new Promise(
+                    resolve =>
+                        window.setTimeout(
+                            resolve,
+                            milisegundos
+                        )
+                );
+            }
         }
-
-        button.disabled = true;
-
-        buttonText.textContent =
-            'Creando cuenta...';
-
-        arrow.classList.add('hidden');
-
-        spinner.classList.remove('hidden');
-
-    });
-
-});
-
+    );
 </script>
 
 @endpush

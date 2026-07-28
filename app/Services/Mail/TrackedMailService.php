@@ -4,6 +4,8 @@ namespace App\Services\Mail;
 
 use App\Jobs\SendTrackedMailJob;
 use App\Mail\AutorizacionMail;
+use App\Mail\CodigoVerificacionMail;
+use App\Mail\EnlaceMagicoMail;
 use App\Mail\IncidenciaMail;
 use App\Mail\PaseTemporalMail;
 use App\Mail\SolicitudMail;
@@ -19,9 +21,6 @@ class TrackedMailService
 {
     /**
      * Envía un correo de forma síncrona y registra todo el proceso.
-     *
-     * Este método se conserva intacto para compatibilidad con
-     * funcionalidades que todavía necesitan esperar el resultado SMTP.
      */
     public function send(
         Model $emailable,
@@ -120,9 +119,6 @@ class TrackedMailService
 
     /**
      * Registra el correo y lo despacha para enviarse en segundo plano.
-     *
-     * Retorna inmediatamente el EmailDelivery en estado pendiente,
-     * sin esperar la respuesta del servidor SMTP.
      */
     public function sendAsync(
         Model $emailable,
@@ -231,9 +227,6 @@ class TrackedMailService
         return $delivery->fresh();
     }
 
-    /**
-     * Crear el registro común de seguimiento del correo.
-     */
     private function crearDelivery(
         Model $emailable,
         Mailable $mailable,
@@ -280,8 +273,7 @@ class TrackedMailService
     }
 
     /**
-     * Agregar automáticamente a metadata el ID requerido
-     * para reconstruir cada Mailable dentro del Job.
+     * Agregar la metadata necesaria para reconstruir cada Mailable.
      */
     private function prepararMetadata(
         Model $emailable,
@@ -307,6 +299,30 @@ class TrackedMailService
                     $emailable->getKey(),
             ],
 
+            EnlaceMagicoMail::class => [
+                'usuario_id' =>
+                    $emailable->getKey(),
+
+                'url' =>
+                    $this->obtenerTextoMetadata(
+                        $metadata,
+                        'url',
+                        'URL del enlace mágico'
+                    ),
+            ],
+
+            CodigoVerificacionMail::class => [
+                'usuario_id' =>
+                    $emailable->getKey(),
+
+                'codigo' =>
+                    $this->obtenerTextoMetadata(
+                        $metadata,
+                        'codigo',
+                        'código de verificación'
+                    ),
+            ],
+
             default =>
                 throw new RuntimeException(
                     'No existe una configuración de metadata para el Mailable: '
@@ -314,13 +330,28 @@ class TrackedMailService
                 ),
         };
 
-        /*
-         * La metadata automática tiene prioridad para evitar que
-         * accidentalmente se despache un ID incorrecto.
-         */
         return array_merge(
             $metadata,
             $automaticMetadata
         );
+    }
+
+    private function obtenerTextoMetadata(
+        array $metadata,
+        string $key,
+        string $descripcion
+    ): string {
+        $value = $metadata[$key] ?? null;
+
+        if (
+            ! is_string($value)
+            || trim($value) === ''
+        ) {
+            throw new RuntimeException(
+                "No se recibió {$descripcion} en la metadata del correo."
+            );
+        }
+
+        return trim($value);
     }
 }

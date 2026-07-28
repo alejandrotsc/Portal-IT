@@ -449,6 +449,35 @@
                     </form>
 
 
+                    {{-- ESTADO DEL REENVÍO --}}
+
+                    <div
+                        id="resendEmailStatus"
+                        role="status"
+                        aria-live="polite"
+                        class="mt-7 hidden items-start gap-3 rounded-xl border px-4 py-3.5"
+                    >
+                        <div
+                            id="resendEmailStatusIcon"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                        ></div>
+
+                        <div class="min-w-0">
+
+                            <p
+                                id="resendEmailStatusTitle"
+                                class="text-sm font-semibold"
+                            ></p>
+
+                            <p
+                                id="resendEmailStatusMessage"
+                                class="mt-1 text-xs leading-5"
+                            ></p>
+
+                        </div>
+                    </div>
+
+
                     {{-- Reenviar código --}}
 
                     <div class="mt-8 border-t border-slate-200 pt-7">
@@ -654,90 +683,581 @@
 @push('scripts')
 
 <script>
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const codigo =
-        document.getElementById('codigo');
-
-    const verificationForm =
-        document.getElementById('verificationForm');
-
-    const verificationButton =
-        document.getElementById('verificationButton');
-
-    const verificationButtonText =
-        document.getElementById('verificationButtonText');
-
-    const verificationArrow =
-        document.getElementById('verificationArrow');
-
-    const verificationSpinner =
-        document.getElementById('verificationSpinner');
-
-    const resendForm =
-        document.getElementById('resendForm');
-
-    const resendButton =
-        document.getElementById('resendButton');
+    window.authEmailStatusUrl =
+        @json(
+            url(
+                '/auth/email-status/__DELIVERY_ID__'
+            )
+        );
 
 
-    if (codigo) {
+    document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+            const codigo =
+                document.getElementById(
+                    'codigo'
+                );
 
-        codigo.addEventListener('input', function () {
+            const verificationForm =
+                document.getElementById(
+                    'verificationForm'
+                );
 
-            this.value = this.value
-                .replace(/\D/g, '')
-                .slice(0, 6);
+            const verificationButton =
+                document.getElementById(
+                    'verificationButton'
+                );
 
-        });
+            const verificationButtonText =
+                document.getElementById(
+                    'verificationButtonText'
+                );
 
-    }
+            const verificationArrow =
+                document.getElementById(
+                    'verificationArrow'
+                );
+
+            const verificationSpinner =
+                document.getElementById(
+                    'verificationSpinner'
+                );
+
+            const resendForm =
+                document.getElementById(
+                    'resendForm'
+                );
+
+            const resendButton =
+                document.getElementById(
+                    'resendButton'
+                );
+
+            const resendStatus =
+                document.getElementById(
+                    'resendEmailStatus'
+                );
+
+            const resendStatusIcon =
+                document.getElementById(
+                    'resendEmailStatusIcon'
+                );
+
+            const resendStatusTitle =
+                document.getElementById(
+                    'resendEmailStatusTitle'
+                );
+
+            const resendStatusMessage =
+                document.getElementById(
+                    'resendEmailStatusMessage'
+                );
 
 
-    if (
-        verificationForm &&
-        verificationButton &&
-        verificationButtonText &&
-        verificationArrow &&
-        verificationSpinner
-    ) {
+            let reenviando =
+                false;
 
-        verificationForm.addEventListener('submit', function () {
+            let seguimientoActual =
+                0;
 
-            if (!verificationForm.checkValidity()) {
-                return;
+
+            codigo?.addEventListener(
+                'input',
+                function () {
+                    this.value =
+                        this.value
+                            .replace(
+                                /\D/g,
+                                ''
+                            )
+                            .slice(
+                                0,
+                                6
+                            );
+                }
+            );
+
+
+            if (
+                verificationForm
+                && verificationButton
+                && verificationButtonText
+                && verificationArrow
+                && verificationSpinner
+            ) {
+                verificationForm.addEventListener(
+                    'submit',
+                    () => {
+                        if (
+                            !verificationForm.checkValidity()
+                        ) {
+                            return;
+                        }
+
+                        verificationButton.disabled =
+                            true;
+
+                        verificationButtonText.textContent =
+                            'Verificando...';
+
+                        verificationArrow.classList.add(
+                            'hidden'
+                        );
+
+                        verificationSpinner.classList.remove(
+                            'hidden'
+                        );
+                    }
+                );
             }
 
-            verificationButton.disabled = true;
 
-            verificationButtonText.textContent =
-                'Verificando...';
+            resendForm?.addEventListener(
+                'submit',
+                async event => {
+                    event.preventDefault();
 
-            verificationArrow.classList.add('hidden');
+                    if (
+                        reenviando
+                        || !resendForm.reportValidity()
+                    ) {
+                        return;
+                    }
 
-            verificationSpinner.classList.remove('hidden');
+                    reenviando =
+                        true;
 
-        });
+                    bloquearReenvio();
 
-    }
+                    mostrarEstadoReenvio(
+                        'queued',
+                        'Preparando nuevo código',
+                        'Estamos generando un nuevo código de verificación.'
+                    );
+
+                    try {
+                        const response =
+                            await fetch(
+                                resendForm.action,
+                                {
+                                    method:
+                                        'POST',
+
+                                    headers: {
+                                        'Accept':
+                                            'application/json',
+
+                                        'X-Requested-With':
+                                            'XMLHttpRequest',
+                                    },
+
+                                    body:
+                                        new FormData(
+                                            resendForm
+                                        ),
+                                }
+                            );
+
+                        const responseText =
+                            await response.text();
+
+                        let data;
+
+                        try {
+                            data =
+                                JSON.parse(
+                                    responseText
+                                );
+
+                        } catch {
+                            throw new Error(
+                                'El servidor devolvió una respuesta inválida.'
+                            );
+                        }
+
+                        if (
+                            !response.ok
+                            || data.success !== true
+                        ) {
+                            throw new Error(
+                                obtenerMensajeError(
+                                    data
+                                )
+                            );
+                        }
+
+                        const estado =
+                            String(
+                                data.email?.status
+                                ?? ''
+                            ).toLowerCase();
+
+                        if (
+                            data.email?.sent === true
+                            || estado === 'enviado'
+                        ) {
+                            mostrarEstadoReenvio(
+                                'success',
+                                'Código enviado',
+                                data.message
+                                    ?? 'Enviamos un nuevo código de verificación.'
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            data.email?.failed === true
+                            || estado === 'fallido'
+                        ) {
+                            mostrarEstadoReenvio(
+                                'warning',
+                                'No se pudo enviar el código',
+                                data.message
+                                    ?? 'Puedes intentar reenviarlo nuevamente dentro de unos minutos.'
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            !data.email?.delivery_id
+                        ) {
+                            mostrarEstadoReenvio(
+                                'success',
+                                'Solicitud procesada',
+                                data.message
+                                    ?? 'Si la cuenta está pendiente, recibirá un nuevo código.'
+                            );
+
+                            return;
+                        }
+
+                        mostrarEstadoReenvio(
+                            'queued',
+                            'Código en procesamiento',
+                            data.message
+                                ?? 'El nuevo código fue agregado a la cola de correo.'
+                        );
+
+                        vigilarEstadoCorreo(
+                            data.email.delivery_id
+                        );
+
+                    } catch (error) {
+                        mostrarEstadoReenvio(
+                            'error',
+                            'No se pudo reenviar el código',
+                            error?.message
+                                ?? 'Intenta nuevamente dentro de unos minutos.'
+                        );
+
+                    } finally {
+                        reenviando =
+                            false;
+
+                        restaurarReenvio();
+                    }
+                }
+            );
 
 
-    if (resendForm && resendButton) {
+            function bloquearReenvio() {
+                if (!resendButton) {
+                    return;
+                }
 
-        resendForm.addEventListener('submit', function () {
+                resendButton.disabled =
+                    true;
 
-            resendButton.disabled = true;
+                resendButton.textContent =
+                    'Procesando...';
+            }
 
-            resendButton.textContent =
-                'Enviando código...';
 
-        });
+            function restaurarReenvio() {
+                if (!resendButton) {
+                    return;
+                }
 
-    }
+                resendButton.disabled =
+                    false;
 
-});
+                resendButton.textContent =
+                    'Reenviar código';
+            }
 
+
+            async function vigilarEstadoCorreo(
+                deliveryId
+            ) {
+                if (
+                    !deliveryId
+                    || !window.authEmailStatusUrl
+                ) {
+                    return;
+                }
+
+                const seguimientoId =
+                    ++seguimientoActual;
+
+                for (
+                    let consulta = 1;
+                    consulta <= 20;
+                    consulta++
+                ) {
+                    await esperar(
+                        1500
+                    );
+
+                    if (
+                        seguimientoId
+                        !== seguimientoActual
+                    ) {
+                        return;
+                    }
+
+                    try {
+                        const url =
+                            window.authEmailStatusUrl.replace(
+                                '__DELIVERY_ID__',
+                                encodeURIComponent(
+                                    deliveryId
+                                )
+                            );
+
+                        const response =
+                            await fetch(
+                                url,
+                                {
+                                    headers: {
+                                        'Accept':
+                                            'application/json',
+
+                                        'X-Requested-With':
+                                            'XMLHttpRequest',
+                                    },
+
+                                    cache:
+                                        'no-store',
+                                }
+                            );
+
+                        if (!response.ok) {
+                            continue;
+                        }
+
+                        const data =
+                            await response.json();
+
+                        const estado =
+                            String(
+                                data.email?.status
+                                ?? ''
+                            ).toLowerCase();
+
+                        if (
+                            data.email?.sent === true
+                            || estado === 'enviado'
+                        ) {
+                            mostrarEstadoReenvio(
+                                'success',
+                                'Código enviado',
+                                'El nuevo código de verificación fue enviado a tu correo.'
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            data.email?.failed === true
+                            || estado === 'fallido'
+                        ) {
+                            mostrarEstadoReenvio(
+                                'warning',
+                                'No se pudo enviar el código',
+                                'El envío falló después de los intentos configurados. Puedes solicitar otro código.'
+                            );
+
+                            return;
+                        }
+
+                        mostrarEstadoReenvio(
+                            'queued',
+                            estado === 'enviando'
+                                ? 'Enviando nuevo código'
+                                : 'Código en procesamiento',
+                            estado === 'enviando'
+                                ? 'El servidor está enviando el nuevo código.'
+                                : 'El nuevo código continúa esperando en la cola de correo.'
+                        );
+
+                    } catch (error) {
+                        console.warn(
+                            'No se pudo consultar el estado del reenvío:',
+                            error
+                        );
+                    }
+                }
+
+                mostrarEstadoReenvio(
+                    'queued',
+                    'Código todavía en procesamiento',
+                    'El correo continuará procesándose en segundo plano.'
+                );
+            }
+
+
+            function mostrarEstadoReenvio(
+                type,
+                title,
+                message
+            ) {
+                if (
+                    !resendStatus
+                    || !resendStatusIcon
+                    || !resendStatusTitle
+                    || !resendStatusMessage
+                ) {
+                    return;
+                }
+
+                const estilos = {
+                    queued: {
+                        box:
+                            'border-blue-200 bg-blue-50',
+
+                        icon:
+                            'bg-blue-100 text-blue-600',
+
+                        title:
+                            'text-blue-800',
+
+                        message:
+                            'text-blue-700',
+
+                        svg:
+                            '<svg class="h-4 w-4 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
+                    },
+
+                    success: {
+                        box:
+                            'border-emerald-200 bg-emerald-50',
+
+                        icon:
+                            'bg-emerald-100 text-emerald-600',
+
+                        title:
+                            'text-emerald-800',
+
+                        message:
+                            'text-emerald-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>',
+                    },
+
+                    warning: {
+                        box:
+                            'border-amber-200 bg-amber-50',
+
+                        icon:
+                            'bg-amber-100 text-amber-600',
+
+                        title:
+                            'text-amber-800',
+
+                        message:
+                            'text-amber-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"></path></svg>',
+                    },
+
+                    error: {
+                        box:
+                            'border-red-200 bg-red-50',
+
+                        icon:
+                            'bg-red-100 text-red-600',
+
+                        title:
+                            'text-red-800',
+
+                        message:
+                            'text-red-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6M15 9l-6 6"></path></svg>',
+                    },
+                };
+
+                const estilo =
+                    estilos[type]
+                    ?? estilos.error;
+
+                resendStatus.className =
+                    `mt-7 flex items-start gap-3 rounded-xl border px-4 py-3.5 ${estilo.box}`;
+
+                resendStatusIcon.className =
+                    `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${estilo.icon}`;
+
+                resendStatusIcon.innerHTML =
+                    estilo.svg;
+
+                resendStatusTitle.className =
+                    `text-sm font-semibold ${estilo.title}`;
+
+                resendStatusTitle.textContent =
+                    title;
+
+                resendStatusMessage.className =
+                    `mt-1 text-xs leading-5 ${estilo.message}`;
+
+                resendStatusMessage.textContent =
+                    message;
+            }
+
+
+            function obtenerMensajeError(
+                data
+            ) {
+                const primerGrupo =
+                    data?.errors
+                        ? Object.values(
+                            data.errors
+                        )[0]
+                        : null;
+
+                if (
+                    Array.isArray(
+                        primerGrupo
+                    )
+                    && primerGrupo[0]
+                ) {
+                    return primerGrupo[0];
+                }
+
+                return data?.message
+                    ?? data?.error
+                    ?? 'No fue posible reenviar el código.';
+            }
+
+
+            function esperar(
+                milisegundos
+            ) {
+                return new Promise(
+                    resolve =>
+                        window.setTimeout(
+                            resolve,
+                            milisegundos
+                        )
+                );
+            }
+        }
+    );
 </script>
 
 @endpush

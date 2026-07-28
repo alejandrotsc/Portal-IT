@@ -330,6 +330,35 @@
                     @endif
 
 
+                    {{-- ESTADO DEL ENVÍO DEL ENLACE --}}
+
+                    <div
+                        id="loginEmailStatus"
+                        role="status"
+                        aria-live="polite"
+                        class="mt-7 hidden items-start gap-3 rounded-xl border px-4 py-3.5"
+                    >
+                        <div
+                            id="loginEmailStatusIcon"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                        ></div>
+
+                        <div class="min-w-0">
+
+                            <p
+                                id="loginEmailStatusTitle"
+                                class="text-sm font-semibold"
+                            ></p>
+
+                            <p
+                                id="loginEmailStatusMessage"
+                                class="mt-1 text-xs leading-5"
+                            ></p>
+
+                        </div>
+                    </div>
+
+
                     {{-- Formulario --}}
 
                     <form
@@ -499,7 +528,7 @@
                         </div>
 
                         <p class="text-xs leading-5 text-slate-500">
-                            El enlace será válido durante 5 minutos y podrá utilizarse
+                            El enlace será válido durante 10 minutos y podrá utilizarse
                             una sola vez. Nunca solicitaremos tu contraseña.
                         </p>
 
@@ -522,39 +551,571 @@
 
 
 <script>
+    /*
+    |--------------------------------------------------------------------------
+    | Seguimiento público protegido por sesión
+    |--------------------------------------------------------------------------
+    |
+    | El controlador comprobará que el delivery solicitado coincida con el
+    | delivery guardado en la sesión del navegador.
+    |
+    */
 
-document.addEventListener('DOMContentLoaded', function () {
-
-    const form = document.getElementById('loginForm');
-
-    const button = document.getElementById('loginButton');
-
-    const buttonText = document.getElementById('loginButtonText');
-
-    const arrow = document.getElementById('loginArrow');
-
-    const spinner = document.getElementById('loginSpinner');
+    window.authEmailStatusUrl =
+        @json(
+            url(
+                '/auth/email-status/__DELIVERY_ID__'
+            )
+        );
 
 
-    if (!form || !button) {
-        return;
-    }
+    document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+            const form =
+                document.getElementById(
+                    'loginForm'
+                );
+
+            const button =
+                document.getElementById(
+                    'loginButton'
+                );
+
+            const buttonText =
+                document.getElementById(
+                    'loginButtonText'
+                );
+
+            const arrow =
+                document.getElementById(
+                    'loginArrow'
+                );
+
+            const spinner =
+                document.getElementById(
+                    'loginSpinner'
+                );
+
+            const statusBox =
+                document.getElementById(
+                    'loginEmailStatus'
+                );
+
+            const statusIcon =
+                document.getElementById(
+                    'loginEmailStatusIcon'
+                );
+
+            const statusTitle =
+                document.getElementById(
+                    'loginEmailStatusTitle'
+                );
+
+            const statusMessage =
+                document.getElementById(
+                    'loginEmailStatusMessage'
+                );
 
 
-    form.addEventListener('submit', function () {
+            if (
+                !form
+                || !button
+            ) {
+                return;
+            }
 
-        button.disabled = true;
 
-        buttonText.textContent = 'Enviando enlace...';
+            let enviando =
+                false;
 
-        arrow?.classList.add('hidden');
+            let seguimientoActual =
+                0;
 
-        spinner?.classList.remove('hidden');
 
-    });
+            form.addEventListener(
+                'submit',
+                async event => {
+                    event.preventDefault();
 
-});
+                    if (
+                        enviando
+                        || !form.reportValidity()
+                    ) {
+                        return;
+                    }
 
+                    enviando = true;
+                    bloquearBoton();
+
+                    mostrarEstado(
+                        'queued',
+                        'Procesando solicitud',
+                        'Estamos preparando el enlace de acceso.'
+                    );
+
+                    try {
+                        const response =
+                            await fetch(
+                                form.action,
+                                {
+                                    method:
+                                        'POST',
+
+                                    headers: {
+                                        'Accept':
+                                            'application/json',
+
+                                        'X-Requested-With':
+                                            'XMLHttpRequest',
+                                    },
+
+                                    body:
+                                        new FormData(
+                                            form
+                                        ),
+                                }
+                            );
+
+                        const responseText =
+                            await response.text();
+
+                        let data;
+
+                        try {
+                            data =
+                                JSON.parse(
+                                    responseText
+                                );
+
+                        } catch {
+                            throw new Error(
+                                'El servidor devolvió una respuesta inválida.'
+                            );
+                        }
+
+                        if (
+                            !response.ok
+                            || data.success !== true
+                        ) {
+                            throw new Error(
+                                obtenerMensajeError(
+                                    data
+                                )
+                            );
+                        }
+
+                        /*
+                        | Una cuenta pendiente puede necesitar ir directamente
+                        | a la pantalla de verificación.
+                        */
+
+                        if (data.redirect) {
+                            window.location.assign(
+                                data.redirect
+                            );
+
+                            return;
+                        }
+
+                        const estado =
+                            String(
+                                data.email?.status
+                                ?? ''
+                            ).toLowerCase();
+
+                        if (
+                            data.email?.sent === true
+                            || estado === 'enviado'
+                        ) {
+                            mostrarEstadoEnviado(
+                                data.message
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            data.email?.failed === true
+                            || estado === 'fallido'
+                        ) {
+                            mostrarEstadoFallido();
+
+                            return;
+                        }
+
+                        /*
+                        | Para correos inexistentes se conserva la respuesta
+                        | genérica y no se inicia seguimiento.
+                        */
+
+                        if (
+                            !data.email?.delivery_id
+                        ) {
+                            mostrarEstadoGenerico(
+                                data.message
+                            );
+
+                            return;
+                        }
+
+                        mostrarEstadoCola(
+                            data.message
+                        );
+
+                        vigilarEstadoCorreo(
+                            data.email.delivery_id
+                        );
+
+                    } catch (error) {
+                        mostrarEstado(
+                            'error',
+                            'No se pudo procesar la solicitud',
+                            error?.message
+                                ?? 'Intenta nuevamente dentro de unos minutos.'
+                        );
+
+                    } finally {
+                        enviando = false;
+                        restaurarBoton();
+                    }
+                }
+            );
+
+
+            function bloquearBoton() {
+                button.disabled =
+                    true;
+
+                buttonText.textContent =
+                    'Procesando...';
+
+                arrow?.classList.add(
+                    'hidden'
+                );
+
+                spinner?.classList.remove(
+                    'hidden'
+                );
+            }
+
+
+            function restaurarBoton() {
+                button.disabled =
+                    false;
+
+                buttonText.textContent =
+                    'Enviar enlace de acceso';
+
+                arrow?.classList.remove(
+                    'hidden'
+                );
+
+                spinner?.classList.add(
+                    'hidden'
+                );
+            }
+
+
+            function mostrarEstadoCola(
+                message
+            ) {
+                mostrarEstado(
+                    'queued',
+                    'Enlace en procesamiento',
+                    message
+                        ?? 'Si el correo está registrado, recibirá un enlace de acceso en unos momentos.'
+                );
+            }
+
+
+            function mostrarEstadoEnviado(
+                message
+            ) {
+                mostrarEstado(
+                    'success',
+                    'Solicitud procesada',
+                    message
+                        ?? 'Si el correo está registrado, recibirá un enlace para iniciar sesión.'
+                );
+            }
+
+
+            function mostrarEstadoGenerico(
+                message
+            ) {
+                mostrarEstado(
+                    'success',
+                    'Solicitud procesada',
+                    message
+                        ?? 'Si el correo está registrado, recibirá un enlace para iniciar sesión.'
+                );
+            }
+
+
+            function mostrarEstadoFallido() {
+                mostrarEstado(
+                    'warning',
+                    'La solicitud fue recibida',
+                    'No fue posible completar el envío en este momento. Puedes intentarlo nuevamente dentro de unos minutos.'
+                );
+            }
+
+
+            async function vigilarEstadoCorreo(
+                deliveryId
+            ) {
+                const urlBase =
+                    window.authEmailStatusUrl;
+
+                if (
+                    !urlBase
+                    || !deliveryId
+                ) {
+                    return;
+                }
+
+                const seguimientoId =
+                    ++seguimientoActual;
+
+                const maxConsultas =
+                    20;
+
+                for (
+                    let consulta = 1;
+                    consulta <= maxConsultas;
+                    consulta++
+                ) {
+                    await esperar(
+                        1500
+                    );
+
+                    if (
+                        seguimientoId
+                        !== seguimientoActual
+                    ) {
+                        return;
+                    }
+
+                    try {
+                        const url =
+                            urlBase.replace(
+                                '__DELIVERY_ID__',
+                                encodeURIComponent(
+                                    deliveryId
+                                )
+                            );
+
+                        const response =
+                            await fetch(
+                                url,
+                                {
+                                    headers: {
+                                        'Accept':
+                                            'application/json',
+
+                                        'X-Requested-With':
+                                            'XMLHttpRequest',
+                                    },
+
+                                    cache:
+                                        'no-store',
+                                }
+                            );
+
+                        if (!response.ok) {
+                            continue;
+                        }
+
+                        const data =
+                            await response.json();
+
+                        const estado =
+                            String(
+                                data.email?.status
+                                ?? ''
+                            ).toLowerCase();
+
+                        if (
+                            data.email?.sent === true
+                            || estado === 'enviado'
+                        ) {
+                            mostrarEstadoEnviado(
+                                'Si el correo está registrado, recibirás un enlace de acceso en unos momentos.'
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            data.email?.failed === true
+                            || estado === 'fallido'
+                        ) {
+                            mostrarEstadoFallido();
+
+                            return;
+                        }
+
+                        mostrarEstadoCola(
+                            estado === 'enviando'
+                                ? 'El servidor está enviando el enlace de acceso.'
+                                : 'El enlace continúa esperando en la cola de correo.'
+                        );
+
+                    } catch (error) {
+                        console.warn(
+                            'No se pudo consultar el estado del enlace:',
+                            error
+                        );
+                    }
+                }
+
+                mostrarEstadoCola(
+                    'El enlace continúa procesándose en segundo plano.'
+                );
+            }
+
+
+            function mostrarEstado(
+                type,
+                title,
+                message
+            ) {
+                const estilos = {
+                    queued: {
+                        box:
+                            'border-blue-200 bg-blue-50',
+
+                        icon:
+                            'bg-blue-100 text-blue-600',
+
+                        title:
+                            'text-blue-800',
+
+                        message:
+                            'text-blue-700',
+
+                        svg:
+                            '<svg class="h-4 w-4 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
+                    },
+
+                    success: {
+                        box:
+                            'border-emerald-200 bg-emerald-50',
+
+                        icon:
+                            'bg-emerald-100 text-emerald-600',
+
+                        title:
+                            'text-emerald-800',
+
+                        message:
+                            'text-emerald-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>',
+                    },
+
+                    warning: {
+                        box:
+                            'border-amber-200 bg-amber-50',
+
+                        icon:
+                            'bg-amber-100 text-amber-600',
+
+                        title:
+                            'text-amber-800',
+
+                        message:
+                            'text-amber-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"></path></svg>',
+                    },
+
+                    error: {
+                        box:
+                            'border-red-200 bg-red-50',
+
+                        icon:
+                            'bg-red-100 text-red-600',
+
+                        title:
+                            'text-red-800',
+
+                        message:
+                            'text-red-700',
+
+                        svg:
+                            '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6M15 9l-6 6"></path></svg>',
+                    },
+                };
+
+                const estilo =
+                    estilos[type]
+                    ?? estilos.error;
+
+                statusBox.className =
+                    `mt-7 flex items-start gap-3 rounded-xl border px-4 py-3.5 ${estilo.box}`;
+
+                statusIcon.className =
+                    `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${estilo.icon}`;
+
+                statusIcon.innerHTML =
+                    estilo.svg;
+
+                statusTitle.className =
+                    `text-sm font-semibold ${estilo.title}`;
+
+                statusTitle.textContent =
+                    title;
+
+                statusMessage.className =
+                    `mt-1 text-xs leading-5 ${estilo.message}`;
+
+                statusMessage.textContent =
+                    message;
+            }
+
+
+            function obtenerMensajeError(
+                data
+            ) {
+                const primerGrupo =
+                    data?.errors
+                        ? Object.values(
+                            data.errors
+                        )[0]
+                        : null;
+
+                if (
+                    Array.isArray(
+                        primerGrupo
+                    )
+                    && primerGrupo[0]
+                ) {
+                    return primerGrupo[0];
+                }
+
+                return data?.message
+                    ?? data?.error
+                    ?? 'No se pudo procesar la solicitud.';
+            }
+
+
+            function esperar(
+                milisegundos
+            ) {
+                return new Promise(
+                    resolve =>
+                        window.setTimeout(
+                            resolve,
+                            milisegundos
+                        )
+                );
+            }
+        }
+    );
 </script>
 
 @endsection
