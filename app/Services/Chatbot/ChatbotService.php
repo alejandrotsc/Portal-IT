@@ -27,7 +27,8 @@ class ChatbotService
         string $message,
         ?Authenticatable $user = null,
         ?string $action = null,
-        bool $forceAI = false
+        bool $forceAI = false,
+        array $flowContext = []
     ): array {
         return $this->handleStream(
             message: $message,
@@ -40,7 +41,8 @@ class ChatbotService
             },
 
             action: $action,
-            forceAI: $forceAI
+            forceAI: $forceAI,
+            flowContext: $flowContext
         );
     }
 
@@ -55,9 +57,14 @@ class ChatbotService
         ?Authenticatable $user,
         callable $onChunk,
         ?string $action = null,
-        bool $forceAI = false
+        bool $forceAI = false,
+        array $flowContext = []
     ): array {
         $message = trim($message);
+
+        $flowContext = $this->prepareFlowContext(
+            $flowContext
+        );
 
         $action = is_string($action)
             ? trim($action)
@@ -85,9 +92,10 @@ class ChatbotService
 
         if ($action !== null && $action !== '') {
             return $this->handleAction(
-                $action,
-                $userId,
-                $userName
+                action: $action,
+                userId: $userId,
+                userName: $userName,
+                flowContext: $flowContext
             );
         }
 
@@ -127,7 +135,8 @@ class ChatbotService
                 userId: $userId,
                 userName: $userName,
                 onChunk: $onChunk,
-                useLocalFallback: false
+                useLocalFallback: false,
+                flowContext: $flowContext
             );
         }
 
@@ -191,16 +200,19 @@ class ChatbotService
             if ($suggestedFlow !== null) {
                 return $this->flowService->handle(
                     $suggestedFlow,
-                    $userName
+                    $userName,
+                    $flowContext
                 ) ?? $this->flowService->handle(
                     'problema.menu',
-                    $userName
+                    $userName,
+                    $flowContext
                 );
             }
 
             return $this->flowService->handle(
                 'problema.menu',
-                $userName
+                $userName,
+                $flowContext
             ) ?? $this->flowService->menu(
                 $userName
             );
@@ -218,11 +230,15 @@ class ChatbotService
             || $intent->is('autorizacion_memorando')
             || $intent->is('cierre')
         ) {
-            return $this->responseBuilder->build(
+            $fallback = $this->responseBuilder->build(
                 $intent,
                 $userName,
                 $message
             );
+
+            $fallback['flow_context'] = $flowContext;
+
+            return $fallback;
         }
 
         /*
@@ -238,7 +254,8 @@ class ChatbotService
             userId: $userId,
             userName: $userName,
             onChunk: $onChunk,
-            useLocalFallback: true
+            useLocalFallback: true,
+            flowContext: $flowContext
         );
     }
 
@@ -251,7 +268,8 @@ class ChatbotService
     private function handleAction(
         string $action,
         ?int $userId,
-        string $userName
+        string $userName,
+        array $flowContext = []
     ): array {
         /*
          * Acción especial que consulta la base de datos.
@@ -263,9 +281,17 @@ class ChatbotService
             );
         }
 
+        /*
+         * Regresar al menú comienza un recorrido nuevo.
+         */
+        if ($action === 'menu.principal') {
+            $flowContext = [];
+        }
+
         $response = $this->flowService->handle(
             $action,
-            $userName
+            $userName,
+            $flowContext
         );
 
         if ($response !== null) {
@@ -293,6 +319,8 @@ class ChatbotService
 
             'mode' => 'flow',
 
+            'flow_context' => $flowContext,
+
             'intent' => [
                 'name' => 'unknown_action',
                 'score' => 0,
@@ -317,7 +345,8 @@ class ChatbotService
         ?int $userId,
         string $userName,
         callable $onChunk,
-        bool $useLocalFallback
+        bool $useLocalFallback,
+        array $flowContext = []
     ): array {
         $context = $this->buildAIContext(
             $intent,
@@ -352,7 +381,8 @@ class ChatbotService
             $intent,
             $userName,
             $message,
-            $aiResponse
+            $aiResponse,
+            $flowContext
         );
     }
 
@@ -552,7 +582,8 @@ class ChatbotService
         IntentResult $originalIntent,
         string $userName,
         string $message,
-        AIResponse $aiResponse
+        AIResponse $aiResponse,
+        array $flowContext = []
     ): array {
         $response =
             $this->responseBuilder->build(
@@ -578,24 +609,55 @@ class ChatbotService
 
         $response['mode'] = 'ai';
 
+        /*
+         * Recuperar los botones del nodo ai.enable usando
+         * el contexto acumulado del diagnóstico anterior.
+         *
+         * De esta forma, "Reportar incidencia" y
+         * "Contactar a Helpdesk" mantienen los datos
+         * seleccionados antes de entrar al texto libre.
+         */
+        $aiFlowResponse = $this->flowService->handle(
+            'ai.enable',
+            $userName,
+            $flowContext
+        );
+
         $quickActions = is_array(
-            $response['quick_actions']
+            $aiFlowResponse['quick_actions']
             ?? null
         )
-            ? $response['quick_actions']
+            ? $aiFlowResponse['quick_actions']
             : [];
 
         /*
-         * Permitir regresar siempre al asistente interactivo.
+         * Evitar duplicar la acción de volver al menú
+         * si el ResponseBuilder ya la incluyó.
          */
-        $quickActions[] = [
-            'label' => 'Volver al menú',
-            'action' => 'flow',
-            'value' => 'menu.principal',
-        ];
+        $hasMenuAction = false;
 
-        $response['quick_actions'] =
-            $quickActions;
+        foreach ($quickActions as $quickAction) {
+            if (
+                ($quickAction['action'] ?? null) === 'flow'
+                && ($quickAction['value'] ?? null) === 'menu.principal'
+            ) {
+                $hasMenuAction = true;
+                break;
+            }
+        }
+
+        if (! $hasMenuAction) {
+            $quickActions[] = [
+                'label' => 'Volver al menú',
+                'action' => 'flow',
+                'value' => 'menu.principal',
+                'context' => [],
+            ];
+        }
+
+        $response['quick_actions'] = $quickActions;
+
+        $response['flow_context'] = $flowContext;
 
         return $response;
     }
@@ -767,6 +829,75 @@ class ChatbotService
 
             'ai' => null,
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar contexto acumulado del flujo
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareFlowContext(
+        mixed $context
+    ): array {
+        if (! is_array($context)) {
+            return [];
+        }
+
+        $allowedKeys = [
+            'titulo',
+            'descripcion',
+            'tiempo_problema',
+            'afectacion',
+            'equipo',
+            'ubicacion',
+            'categoria',
+            'asunto',
+            'tipo_equipo',
+            'accesorio',
+            'programa',
+            'sistema',
+            'tipo_acceso',
+            'justificacion',
+            'usuario_afectado',
+            'equipo_actual',
+            'motivo_cambio',
+        ];
+
+        $prepared = [];
+
+        foreach ($context as $key => $value) {
+            $key = trim(
+                (string) $key
+            );
+
+            if (
+                ! in_array(
+                    $key,
+                    $allowedKeys,
+                    true
+                )
+                || ! is_scalar($value)
+            ) {
+                continue;
+            }
+
+            $value = trim(
+                (string) $value
+            );
+
+            if ($value === '') {
+                continue;
+            }
+
+            $prepared[$key] = mb_substr(
+                $value,
+                0,
+                1000
+            );
+        }
+
+        return $prepared;
     }
 
     /*

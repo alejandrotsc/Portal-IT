@@ -28,6 +28,11 @@ window.chatbotWidget = function (options = {}) {
 
         messages: [],
 
+        /*
+         * Contexto acumulado del flujo interactivo.
+         */
+        flowContext: {},
+
         historyStorageKey: String(
             options.storageKey
             ?? 'portal-it-chatbot-history'
@@ -181,6 +186,9 @@ window.chatbotWidget = function (options = {}) {
 
                     force_ai:
                         this.aiMode,
+
+                    flow_context:
+                        this.flowContext,
                 },
 
                 normalizedMessage
@@ -196,7 +204,8 @@ window.chatbotWidget = function (options = {}) {
 
         async sendAction(
             actionValue,
-            label = null
+            label = null,
+            actionContext = null
         ) {
             const action = String(
                 actionValue
@@ -224,6 +233,8 @@ window.chatbotWidget = function (options = {}) {
             */
 
             if (action === 'menu.principal') {
+                this.flowContext = {};
+
                 this.showMainMenu(
                     label
                     ?? 'Mostrar menú'
@@ -237,9 +248,17 @@ window.chatbotWidget = function (options = {}) {
                 ?? 'Continuar'
             ).trim();
 
+            this.flowContext = this.mergeFlowContext(
+                this.flowContext,
+                actionContext
+            );
+
             await this.performRequest(
                 {
                     action,
+
+                    flow_context:
+                        this.flowContext,
                 },
 
                 visibleLabel
@@ -260,6 +279,7 @@ window.chatbotWidget = function (options = {}) {
             this.loading = false;
             this.aiMode = false;
             this.streamStarted = false;
+            this.flowContext = {};
 
             const lastMessage =
                 this.messages[
@@ -284,39 +304,48 @@ window.chatbotWidget = function (options = {}) {
             this.addMessage({
                 from: 'bot',
                 kind: 'main_menu',
-                text: '¿En qué puedo ayudarte? Selecciona una opción para continuar.',
+                text: '¿Qué necesitas gestionar hoy?',
                 quick_actions: [
                     {
-                        label: 'Tengo un problema',
-                        description: 'Algo no funciona correctamente',
+                        label: 'Reportar un problema',
+                        description:
+                            'Algo no funciona correctamente',
                         icon: 'triangle-alert',
                         action: 'flow',
                         value: 'problema.menu',
                     },
+
                     {
-                        label: 'Necesito un servicio',
-                        description: 'Equipos, programas o accesos',
+                        label: 'Solicitar un servicio',
+                        description:
+                            'Equipos, programas o accesos',
                         icon: 'clipboard-list',
                         action: 'flow',
                         value: 'solicitud.menu',
                     },
+
                     {
-                        label: 'Necesito un pase',
-                        description: 'Pase menor o mayor a 24 horas',
+                        label: 'Gestionar un pase',
+                        description:
+                            'Pase menor o mayor a 24 horas',
                         icon: 'badge-check',
                         action: 'flow',
                         value: 'pase.menu',
                     },
+
                     {
-                        label: 'Consultar gestiones',
-                        description: 'Revisa estados y seguimientos',
+                        label: 'Consultar mis gestiones',
+                        description:
+                            'Revisa estados y seguimientos',
                         icon: 'history',
                         action: 'status',
                         value: 'gestion.estado',
                     },
+
                     {
-                        label: 'Hacer una pregunta',
-                        description: 'Describe lo que necesitas con tus propias palabras',
+                        label: 'Escribir otra consulta',
+                        description:
+                            'Describe con tus propias palabras lo que necesitas',
                         icon: 'message-square-text',
                         variant: 'ai',
                         action: 'flow',
@@ -347,6 +376,7 @@ window.chatbotWidget = function (options = {}) {
             this.loading = false;
             this.aiMode = false;
             this.streamStarted = false;
+            this.flowContext = {};
             this.messages = [];
 
             this.clearChatHistory();
@@ -414,6 +444,9 @@ window.chatbotWidget = function (options = {}) {
                 ai: null,
 
                 conversation_id: null,
+
+                flow_context:
+                    this.flowContext,
             });
 
             this.requestController =
@@ -777,6 +810,14 @@ window.chatbotWidget = function (options = {}) {
                 data.conversation_id
                 ?? null;
 
+            this.flowContext = this.prepareFlowContext(
+                data.flow_context
+                ?? this.flowContext
+            );
+
+            botMessage.flow_context =
+                this.flowContext;
+
             botMessage.streaming = false;
 
             /*
@@ -857,6 +898,12 @@ window.chatbotWidget = function (options = {}) {
                 conversation_id:
                     message.conversation_id
                     ?? null,
+
+                flow_context:
+                    this.prepareFlowContext(
+                        message.flow_context
+                        ?? {}
+                    ),
             };
 
             this.messages.push(
@@ -908,7 +955,10 @@ window.chatbotWidget = function (options = {}) {
             ) {
                 this.sendAction(
                     action.value,
-                    action.label
+                    action.label,
+                    action.context
+                    ?? message?.flow_context
+                    ?? this.flowContext
                 );
 
                 return;
@@ -942,6 +992,53 @@ window.chatbotWidget = function (options = {}) {
 
                 if (value) {
                     this.send(value);
+                }
+
+                return;
+            }
+
+            /*
+             * Contactar a Helpdesk.
+             *
+             * Outlook Web se abre en una pestaña nueva con
+             * destinatario, asunto y cuerpo ya preparados.
+             * Si el navegador bloquea la pestaña o la URL no
+             * es válida, se utiliza mailto: como respaldo.
+             */
+            if (actionType === 'helpdesk') {
+                const outlookUrl = String(
+                    action.url
+                    ?? action.href
+                    ?? ''
+                ).trim();
+
+                const fallbackUrl = String(
+                    action.fallback_url
+                    ?? ''
+                ).trim();
+
+                let opened = null;
+
+                if (
+                    outlookUrl.startsWith(
+                        'https://outlook.office.com/'
+                    )
+                ) {
+                    opened = window.open(
+                        outlookUrl,
+                        '_blank',
+                        'noopener,noreferrer'
+                    );
+                }
+
+                if (
+                    !opened
+                    && fallbackUrl
+                        .toLowerCase()
+                        .startsWith('mailto:')
+                ) {
+                    window.location.href =
+                        fallbackUrl;
                 }
 
                 return;
@@ -1242,9 +1339,13 @@ window.chatbotWidget = function (options = {}) {
                 window.sessionStorage.setItem(
                     this.historyStorageKey,
                     JSON.stringify({
-                        version: 1,
+                        version: 2,
                         saved_at: Date.now(),
                         ai_mode: Boolean(this.aiMode),
+
+                        flow_context:
+                            this.flowContext,
+
                         messages,
                     })
                 );
@@ -1271,7 +1372,7 @@ window.chatbotWidget = function (options = {}) {
                 const history = JSON.parse(stored);
 
                 if (
-                    history?.version !== 1
+                    ![1, 2].includes(history?.version)
                     || !Array.isArray(history.messages)
                 ) {
                     this.clearChatHistory();
@@ -1308,11 +1409,25 @@ window.chatbotWidget = function (options = {}) {
                             ?? null,
                         conversation_id: message.conversation_id
                             ?? null,
+
+                        flow_context:
+                            this.prepareFlowContext(
+                                message.flow_context
+                                ?? {}
+                            ),
                     }));
 
                 this.aiMode = Boolean(
                     history.ai_mode
                 );
+
+                this.flowContext =
+                    history.version === 2
+                        ? this.prepareFlowContext(
+                            history.flow_context
+                            ?? {}
+                        )
+                        : {};
 
             } catch (error) {
                 this.clearChatHistory();
@@ -1331,6 +1446,90 @@ window.chatbotWidget = function (options = {}) {
                     'No fue posible limpiar el historial temporal del chatbot.'
                 );
             }
+        },
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Preparar contexto del flujo
+        |--------------------------------------------------------------------------
+        */
+
+        prepareFlowContext(context) {
+            if (
+                !context
+                || typeof context !== 'object'
+                || Array.isArray(context)
+            ) {
+                return {};
+            }
+
+            const allowedKeys = [
+                'titulo',
+                'descripcion',
+                'tiempo_problema',
+                'afectacion',
+                'equipo',
+                'ubicacion',
+                'categoria',
+                'asunto',
+                'tipo_equipo',
+                'accesorio',
+                'programa',
+                'sistema',
+                'tipo_acceso',
+                'justificacion',
+                'usuario_afectado',
+                'equipo_actual',
+                'motivo_cambio',
+            ];
+
+            const prepared = {};
+
+            allowedKeys.forEach((key) => {
+                const value = context[key];
+
+                if (
+                    value === null
+                    || value === undefined
+                ) {
+                    return;
+                }
+
+                const normalized = String(
+                    value
+                )
+                    .trim()
+                    .slice(0, 1000);
+
+                if (normalized) {
+                    prepared[key] = normalized;
+                }
+            });
+
+            return prepared;
+        },
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Combinar contexto
+        |--------------------------------------------------------------------------
+        */
+
+        mergeFlowContext(
+            currentContext,
+            newContext
+        ) {
+            return {
+                ...this.prepareFlowContext(
+                    currentContext
+                ),
+
+                ...this.prepareFlowContext(
+                    newContext
+                ),
+            };
         },
 
 

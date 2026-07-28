@@ -14,27 +14,28 @@ class ChatbotFlowService
 
     public function handle(
         string $action,
-        string $userName = 'usuario'
+        string $userName = 'usuario',
+        array $context = []
     ): ?array {
         $action = trim($action);
 
         if (
             $action === ''
-            || !$this->isValidAction($action)
+            || ! $this->isValidAction($action)
         ) {
             return null;
         }
 
         $nodes = config(
-    'chatbot_flows.nodes',
-    []
-);
+            'chatbot_flows.nodes',
+            []
+        );
 
-$node = is_array($nodes)
-    ? ($nodes[$action] ?? null)
-    : null;
+        $node = is_array($nodes)
+            ? ($nodes[$action] ?? null)
+            : null;
 
-        if (!is_array($node)) {
+        if (! is_array($node)) {
             return null;
         }
 
@@ -51,6 +52,26 @@ $node = is_array($nodes)
             $message
         );
 
+        /*
+         * Contexto recibido desde el recorrido anterior.
+         */
+        $currentContext = $this->preparePrefill(
+            $context
+        );
+
+        /*
+         * Datos definidos en el nodo actual.
+         * El nodo actual tiene prioridad.
+         */
+        $nodePrefill = $this->preparePrefill(
+            $node['prefill'] ?? []
+        );
+
+        $currentContext = array_merge(
+            $currentContext,
+            $nodePrefill
+        );
+
         return [
             'message' =>
                 $message !== ''
@@ -59,8 +80,10 @@ $node = is_array($nodes)
 
             'quick_actions' =>
                 $this->prepareActions(
-                    $node['quick_actions']
-                    ?? []
+                    actions: $node['quick_actions'] ?? [],
+                    context: $currentContext,
+                    nodeMessage: $message,
+                    userName: $userName
                 ),
 
             'redirect' => null,
@@ -70,6 +93,12 @@ $node = is_array($nodes)
             'mode' =>
                 $node['mode']
                 ?? 'flow',
+
+            /*
+             * Se devuelve para que el frontend lo conserve
+             * durante todo el recorrido, incluso en ai.enable.
+             */
+            'flow_context' => $currentContext,
 
             'intent' => [
                 'name' => 'flow',
@@ -98,7 +127,8 @@ $node = is_array($nodes)
 
         return $this->handle(
             $start,
-            $userName
+            $userName,
+            []
         ) ?? [
             'message' =>
                 '¿En qué puedo ayudarte?',
@@ -110,6 +140,8 @@ $node = is_array($nodes)
             'items' => [],
 
             'mode' => 'flow',
+
+            'flow_context' => [],
 
             'intent' => [
                 'name' => 'menu',
@@ -130,18 +162,18 @@ $node = is_array($nodes)
     public function exists(
         string $action
     ): bool {
-        if (!$this->isValidAction($action)) {
+        if (! $this->isValidAction($action)) {
             return false;
         }
 
         $nodes = config(
-    'chatbot_flows.nodes',
-    []
-);
+            'chatbot_flows.nodes',
+            []
+        );
 
-return is_array($nodes)
-    && isset($nodes[$action])
-    && is_array($nodes[$action]);
+        return is_array($nodes)
+            && isset($nodes[$action])
+            && is_array($nodes[$action]);
     }
 
     /*
@@ -151,16 +183,19 @@ return is_array($nodes)
     */
 
     private function prepareActions(
-        mixed $actions
+        mixed $actions,
+        array $context = [],
+        string $nodeMessage = '',
+        string $userName = 'usuario'
     ): array {
-        if (!is_array($actions)) {
+        if (! is_array($actions)) {
             return [];
         }
 
         $prepared = [];
 
         foreach ($actions as $action) {
-            if (!is_array($action)) {
+            if (! is_array($action)) {
                 continue;
             }
 
@@ -169,6 +204,11 @@ return is_array($nodes)
                     $action['label']
                     ?? ''
                 )
+            );
+
+            $description = $this->prepareDescription(
+                $action['description']
+                ?? null
             );
 
             $type = trim(
@@ -183,14 +223,28 @@ return is_array($nodes)
             }
 
             /*
-             * Convertir módulos del portal en URLs reales.
+             * Datos específicos del botón.
+             * Tienen prioridad sobre el contexto acumulado.
+             */
+            $actionPrefill = $this->preparePrefill(
+                $action['prefill'] ?? []
+            );
+
+            $actionContext = array_merge(
+                $context,
+                $actionPrefill
+            );
+
+            /*
+             * Redirección a formularios del portal.
              */
             if ($type === 'redirect') {
-                $redirect =
-                    $this->prepareRedirectAction(
-                        $action,
-                        $label
-                    );
+                $redirect = $this->prepareRedirectAction(
+                    action: $action,
+                    label: $label,
+                    description: $description,
+                    context: $actionContext
+                );
 
                 if ($redirect !== null) {
                     $prepared[] = $redirect;
@@ -199,6 +253,29 @@ return is_array($nodes)
                 continue;
             }
 
+            /*
+             * Contactar directamente a Helpdesk.
+             */
+            if ($type === 'helpdesk') {
+                $helpdesk = $this->prepareHelpdeskAction(
+                    action: $action,
+                    label: $label,
+                    description: $description,
+                    context: $actionContext,
+                    nodeMessage: $nodeMessage,
+                    userName: $userName
+                );
+
+                if ($helpdesk !== null) {
+                    $prepared[] = $helpdesk;
+                }
+
+                continue;
+            }
+
+            /*
+             * Acciones normales del flujo.
+             */
             $value = trim(
                 (string) (
                     $action['value']
@@ -210,23 +287,31 @@ return is_array($nodes)
                 continue;
             }
 
-           $prepared[] = [
-    'label' => $label,
+            $prepared[] = [
+                'label' => $label,
 
-    'icon' => $this->prepareIcon(
-        $action['icon']
-        ?? null
-    ),
+                'description' => $description,
 
-    'variant' => $this->prepareVariant(
-        $action['variant']
-        ?? null
-    ),
+                'icon' => $this->prepareIcon(
+                    $action['icon']
+                    ?? null
+                ),
 
-    'action' => $type,
+                'variant' => $this->prepareVariant(
+                    $action['variant']
+                    ?? null
+                ),
 
-    'value' => $value,
-];
+                'action' => $type,
+
+                'value' => $value,
+
+                /*
+                 * El frontend enviará este contexto junto
+                 * con la siguiente acción.
+                 */
+                'context' => $actionContext,
+            ];
         }
 
         return $prepared;
@@ -234,13 +319,15 @@ return is_array($nodes)
 
     /*
     |--------------------------------------------------------------------------
-    | Construir redirección
+    | Construir redirección con prellenado
     |--------------------------------------------------------------------------
     */
 
     private function prepareRedirectAction(
         array $action,
-        string $label
+        string $label,
+        ?string $description = null,
+        array $context = []
     ): ?array {
         $module = trim(
             (string) (
@@ -258,85 +345,429 @@ return is_array($nodes)
         );
 
         if (
-            !is_string($routeName)
+            ! is_string($routeName)
             || $routeName === ''
-            || !Route::has($routeName)
+            || ! Route::has($routeName)
         ) {
             return null;
         }
 
+        $prefill = $this->filterPrefillByModule(
+            $module,
+            $context
+        );
+
+        $url = empty($prefill)
+            ? route($routeName)
+            : route($routeName, $prefill);
+
         return [
-    'label' => $label,
+            'label' => $label,
 
-    'icon' => $this->prepareIcon(
-        $action['icon']
-        ?? null
-    ),
+            'description' => $description,
 
-    'action' => 'redirect',
+            'icon' => $this->prepareIcon(
+                $action['icon']
+                ?? null
+            ),
 
-    'url' => route($routeName),
-];
-    }
+            'variant' => $this->prepareVariant(
+                $action['variant']
+                ?? null
+            ),
 
+            'action' => 'redirect',
 
-    /*
-|--------------------------------------------------------------------------
-| Preparar nombre de icono
-|--------------------------------------------------------------------------
-*/
+            'url' => $url,
 
-private function prepareIcon(
-    mixed $icon
-): ?string {
-    $icon = trim(
-        (string) $icon
-    );
-
-    if ($icon === '') {
-        return null;
+            'context' => $context,
+        ];
     }
 
     /*
-     * Los nombres de Lucide utilizan letras,
-     * números y guiones.
-     */
-    if (
-        preg_match(
-            '/^[a-z0-9-]+$/',
-            $icon
-        ) !== 1
-    ) {
-        return null;
+    |--------------------------------------------------------------------------
+    | Construir botón de Helpdesk
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareHelpdeskAction(
+        array $action,
+        string $label,
+        ?string $description = null,
+        array $context = [],
+        string $nodeMessage = '',
+        string $userName = 'usuario'
+    ): ?array {
+        $helpdeskEmail = trim(
+            (string) config(
+                'chatbot.helpdesk_email',
+                'helpdesk@televicentro.hn'
+            )
+        );
+
+        if (
+            $helpdeskEmail === ''
+            || filter_var(
+                $helpdeskEmail,
+                FILTER_VALIDATE_EMAIL
+            ) === false
+        ) {
+            return null;
+        }
+
+        $customSubject = trim(
+            (string) (
+                $action['subject']
+                ?? ''
+            )
+        );
+
+        $title = trim(
+            (string) (
+                $context['titulo']
+                ?? $context['asunto']
+                ?? 'Problema reportado desde el Asistente TI'
+            )
+        );
+
+        $subject = $customSubject !== ''
+            ? $customSubject
+            : '[Portal TI] Solicitud de ayuda urgente - '.$title;
+
+        $body = $this->buildHelpdeskBody(
+            data: $context,
+            nodeMessage: $nodeMessage,
+            userName: $userName,
+            customBody: $action['body'] ?? null
+        );
+
+        /*
+         * Outlook Web abre directamente el compositor
+         * en una pestaña nueva.
+         */
+        $outlookUrl =
+            'https://outlook.office.com/mail/deeplink/compose'
+            .'?to='.rawurlencode($helpdeskEmail)
+            .'&subject='.rawurlencode($subject)
+            .'&body='.rawurlencode($body);
+
+        /*
+         * Respaldo para equipos que utilicen otro
+         * cliente de correo predeterminado.
+         */
+        $mailtoUrl =
+            'mailto:'.$helpdeskEmail
+            .'?subject='.rawurlencode($subject)
+            .'&body='.rawurlencode($body);
+
+        return [
+            'label' => $label,
+
+            'description' => $description,
+
+            'icon' => $this->prepareIcon(
+                $action['icon']
+                ?? 'headset'
+            ),
+
+            'variant' => 'urgent',
+
+            'action' => 'helpdesk',
+
+            'url' => $outlookUrl,
+
+            'fallback_url' => $mailtoUrl,
+
+            'context' => $context,
+        ];
     }
 
-    return $icon;
-}
+    /*
+    |--------------------------------------------------------------------------
+    | Construir contenido del correo a Helpdesk
+    |--------------------------------------------------------------------------
+    */
 
-/*
-|--------------------------------------------------------------------------
-| Preparar variante visual
-|--------------------------------------------------------------------------
-*/
+    private function buildHelpdeskBody(
+        array $data,
+        string $nodeMessage,
+        string $userName,
+        mixed $customBody = null
+    ): string {
+        $customBody = trim(
+            (string) $customBody
+        );
 
-private function prepareVariant(
-    mixed $variant
-): string {
-    $variant = trim(
-        (string) $variant
-    );
+        if ($customBody !== '') {
+            return str_replace(
+                [
+                    '{usuario}',
+                    '{diagnostico}',
+                ],
+                [
+                    $userName,
+                    $nodeMessage,
+                ],
+                $customBody
+            );
+        }
 
-    return in_array(
-        $variant,
-        [
-            'default',
-            'ai',
-        ],
-        true
-    )
-        ? $variant
-        : 'default';
-}
+        $lines = [
+            'Hola, equipo de Helpdesk:',
+            '',
+            'Necesito apoyo con un problema que no pudo resolverse desde el Asistente TI.',
+            '',
+            'Usuario: '.$userName,
+        ];
+
+        if (! empty($data['titulo'])) {
+            $lines[] =
+                'Problema: '.$data['titulo'];
+        }
+
+        if (! empty($data['asunto'])) {
+            $lines[] =
+                'Asunto: '.$data['asunto'];
+        }
+
+        if (! empty($data['descripcion'])) {
+            $lines[] =
+                'Descripción: '.$data['descripcion'];
+        }
+
+        if (! empty($data['equipo'])) {
+            $lines[] =
+                'Equipo o servicio: '.$data['equipo'];
+        }
+
+        if (! empty($data['ubicacion'])) {
+            $lines[] =
+                'Ubicación: '.$data['ubicacion'];
+        }
+
+        if (! empty($data['afectacion'])) {
+            $lines[] =
+                'Afectación: '.$data['afectacion'];
+        }
+
+        if ($nodeMessage !== '') {
+            $lines[] = '';
+            $lines[] =
+                'Última orientación mostrada por el asistente:';
+
+            $lines[] = $nodeMessage;
+        }
+
+        $lines[] = '';
+        $lines[] =
+            'Por favor, ayúdenme a revisar el caso y elaborar el ticket correspondiente.';
+
+        return implode(
+            PHP_EOL,
+            $lines
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar datos de prellenado
+    |--------------------------------------------------------------------------
+    */
+
+    private function preparePrefill(
+        mixed $prefill
+    ): array {
+        if (! is_array($prefill)) {
+            return [];
+        }
+
+        $allowedKeys = [
+            'titulo',
+            'descripcion',
+            'tiempo_problema',
+            'afectacion',
+            'equipo',
+            'ubicacion',
+            'categoria',
+            'asunto',
+            'tipo_equipo',
+            'accesorio',
+            'programa',
+            'sistema',
+            'tipo_acceso',
+            'justificacion',
+            'usuario_afectado',
+            'equipo_actual',
+            'motivo_cambio',
+        ];
+
+        $prepared = [];
+
+        foreach ($prefill as $key => $value) {
+            $key = trim(
+                (string) $key
+            );
+
+            if (! in_array(
+                $key,
+                $allowedKeys,
+                true
+            )) {
+                continue;
+            }
+
+            if (
+                ! is_string($value)
+                && ! is_numeric($value)
+                && ! is_bool($value)
+            ) {
+                continue;
+            }
+
+            $value = trim(
+                (string) $value
+            );
+
+            if ($value === '') {
+                continue;
+            }
+
+            $prepared[$key] = mb_substr(
+                $value,
+                0,
+                1000
+            );
+        }
+
+        return $prepared;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filtrar campos según el módulo
+    |--------------------------------------------------------------------------
+    */
+
+    private function filterPrefillByModule(
+        string $module,
+        array $prefill
+    ): array {
+        $allowedFields = match ($module) {
+            'incidencia' => [
+                'titulo',
+                'descripcion',
+                'tiempo_problema',
+                'afectacion',
+                'equipo',
+                'ubicacion',
+            ],
+
+            'solicitud' => [
+                'categoria',
+                'asunto',
+                'descripcion',
+                'tipo_equipo',
+                'accesorio',
+                'programa',
+                'sistema',
+                'tipo_acceso',
+                'justificacion',
+                'usuario_afectado',
+                'equipo_actual',
+                'motivo_cambio',
+            ],
+
+            default => [],
+        };
+
+        if (empty($allowedFields)) {
+            return [];
+        }
+
+        return array_intersect_key(
+            $prefill,
+            array_flip($allowedFields)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar descripción del botón
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareDescription(
+        mixed $description
+    ): ?string {
+        $description = trim(
+            (string) $description
+        );
+
+        if ($description === '') {
+            return null;
+        }
+
+        return mb_substr(
+            $description,
+            0,
+            300
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar nombre de icono
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareIcon(
+        mixed $icon
+    ): ?string {
+        $icon = trim(
+            (string) $icon
+        );
+
+        if ($icon === '') {
+            return null;
+        }
+
+        if (
+            preg_match(
+                '/^[a-z0-9-]+$/',
+                $icon
+            ) !== 1
+        ) {
+            return null;
+        }
+
+        return $icon;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar variante visual
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareVariant(
+        mixed $variant
+    ): string {
+        $variant = trim(
+            (string) $variant
+        );
+
+        return in_array(
+            $variant,
+            [
+                'default',
+                'ai',
+                'urgent',
+            ],
+            true
+        )
+            ? $variant
+            : 'default';
+    }
 
     /*
     |--------------------------------------------------------------------------

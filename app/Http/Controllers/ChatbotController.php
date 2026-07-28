@@ -51,29 +51,48 @@ class ChatbotController extends Controller
         $validated = $this->validateChatRequest($request);
         $user = $request->user();
 
-        $message = trim((string) ($validated['message'] ?? ''));
+        $message = trim(
+            (string) (
+                $validated['message']
+                ?? ''
+            )
+        );
 
         $action = isset($validated['action'])
             ? trim((string) $validated['action'])
             : null;
 
-        $forceAI = (bool) ($validated['force_ai'] ?? false);
+        $forceAI = (bool) (
+            $validated['force_ai']
+            ?? false
+        );
+
+        $flowContext = $this->prepareFlowContext(
+            $validated['flow_context']
+            ?? []
+        );
 
         $response = $this->chatbotService->handle(
             message: $message,
             user: $user,
             action: $action,
-            forceAI: $forceAI
+            forceAI: $forceAI,
+            flowContext: $flowContext
         );
 
         $response['conversation_id'] = $this->saveConversation(
             userId: $user?->getAuthIdentifier(),
-            message: $this->buildStoredMessage($message, $action),
+            message: $this->buildStoredMessage(
+                $message,
+                $action
+            ),
             response: $response,
             requestedAction: $action
         );
 
-        return response()->json($response);
+        return response()->json(
+            $response
+        );
     }
 
     /*
@@ -82,22 +101,39 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function stream(Request $request): StreamedResponse
-    {
-        $validated = $this->validateChatRequest($request);
+    public function stream(
+        Request $request
+    ): StreamedResponse {
+        $validated = $this->validateChatRequest(
+            $request
+        );
+
         $user = $request->user();
 
         $userId = $user
             ? (int) $user->getAuthIdentifier()
             : null;
 
-        $message = trim((string) ($validated['message'] ?? ''));
+        $message = trim(
+            (string) (
+                $validated['message']
+                ?? ''
+            )
+        );
 
         $action = isset($validated['action'])
             ? trim((string) $validated['action'])
             : null;
 
-        $forceAI = (bool) ($validated['force_ai'] ?? false);
+        $forceAI = (bool) (
+            $validated['force_ai']
+            ?? false
+        );
+
+        $flowContext = $this->prepareFlowContext(
+            $validated['flow_context']
+            ?? []
+        );
 
         $storedMessage = $this->buildStoredMessage(
             $message,
@@ -109,6 +145,7 @@ class ChatbotController extends Controller
                 $message,
                 $action,
                 $forceAI,
+                $flowContext,
                 $storedMessage,
                 $user,
                 $userId
@@ -116,50 +153,63 @@ class ChatbotController extends Controller
                 $this->prepareStreamingEnvironment();
 
                 /*
-                 * Confirmar inmediatamente que Laravel recibió la solicitud.
+                 * Confirmar inmediatamente que Laravel
+                 * recibió la solicitud.
                  */
                 $this->emitStreamEvent(
                     'start',
                     [
-                        'mode' => $forceAI ? 'ai' : 'flow',
+                        'mode' =>
+                            $forceAI
+                                ? 'ai'
+                                : 'flow',
                     ]
                 );
 
                 /*
-                 * Forzar la salida en FastCGI, proxies y navegadores que
-                 * acumulan varios KB antes de mostrar el stream.
+                 * Forzar la salida en FastCGI, proxies
+                 * y navegadores que acumulan datos.
                  */
-                echo str_repeat(' ', 8192)."\n";
+                echo str_repeat(
+                    ' ',
+                    8192
+                )."\n";
+
                 $this->flushOutput();
 
                 try {
-                    $response = $this->chatbotService->handleStream(
-                        message: $message,
-                        user: $user,
-                        onChunk: function (string $chunk): void {
-                            if ($chunk === '') {
-                                return;
-                            }
+                    $response =
+                        $this->chatbotService->handleStream(
+                            message: $message,
+                            user: $user,
+                            onChunk: function (
+                                string $chunk
+                            ): void {
+                                if ($chunk === '') {
+                                    return;
+                                }
 
-                            $this->emitStreamEvent(
-                                'chunk',
-                                $chunk
-                            );
-                        },
-                        action: $action,
-                        forceAI: $forceAI
-                    );
+                                $this->emitStreamEvent(
+                                    'chunk',
+                                    $chunk
+                                );
+                            },
+                            action: $action,
+                            forceAI: $forceAI,
+                            flowContext: $flowContext
+                        );
 
-                    $response['conversation_id'] = $this->saveConversation(
-                        userId: $userId,
-                        message: $storedMessage,
-                        response: $response,
-                        requestedAction: $action
-                    );
+                    $response['conversation_id'] =
+                        $this->saveConversation(
+                            userId: $userId,
+                            message: $storedMessage,
+                            response: $response,
+                            requestedAction: $action
+                        );
 
                     /*
-                     * El frontend exige este evento para considerar que la
-                     * respuesta terminó correctamente.
+                     * El frontend exige este evento para
+                     * considerar terminada la respuesta.
                      */
                     $this->emitStreamEvent(
                         'complete',
@@ -173,6 +223,7 @@ class ChatbotController extends Controller
                         [
                             'message' =>
                                 'No pude procesar tu solicitud en este momento.',
+
                             'retryable' => true,
                         ]
                     );
@@ -182,10 +233,14 @@ class ChatbotController extends Controller
             [
                 'Content-Type' =>
                     'application/x-ndjson; charset=UTF-8',
+
                 'Cache-Control' =>
                     'no-cache, no-store, must-revalidate, no-transform',
+
                 'Pragma' => 'no-cache',
+
                 'Expires' => '0',
+
                 'X-Accel-Buffering' => 'no',
             ]
         );
@@ -197,24 +252,37 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function estado(Request $request): JsonResponse
-    {
+    public function estado(
+        Request $request
+    ): JsonResponse {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'message' =>
                     'Necesitas iniciar sesión para consultar tus gestiones.',
+
                 'quick_actions' => [
                     [
-                        'label' => 'Volver al menú',
-                        'action' => 'flow',
-                        'value' => 'menu.principal',
+                        'label' =>
+                            'Volver al menú',
+
+                        'action' =>
+                            'flow',
+
+                        'value' =>
+                            'menu.principal',
                     ],
                 ],
+
                 'redirect' => null,
+
                 'items' => [],
+
                 'mode' => 'flow',
+
+                'flow_context' => [],
+
                 'conversation_id' => null,
             ]);
         }
@@ -227,22 +295,44 @@ class ChatbotController extends Controller
             'message' => empty($items)
                 ? 'No encontré gestiones registradas a tu nombre.'
                 : 'Estas son tus gestiones recientes:',
+
             'quick_actions' => [
                 [
-                    'label' => 'Consultar nuevamente',
-                    'action' => 'status',
-                    'value' => 'gestion.estado',
+                    'label' =>
+                        'Consultar nuevamente',
+
+                    'action' =>
+                        'status',
+
+                    'value' =>
+                        'gestion.estado',
                 ],
+
                 [
-                    'label' => 'Volver al menú',
-                    'action' => 'flow',
-                    'value' => 'menu.principal',
+                    'label' =>
+                        'Volver al menú',
+
+                    'action' =>
+                        'flow',
+
+                    'value' =>
+                        'menu.principal',
                 ],
             ],
+
             'redirect' => null,
-            'items' => $items ?: [],
-            'mode' => 'flow',
-            'conversation_id' => null,
+
+            'items' =>
+                $items ?: [],
+
+            'mode' =>
+                'flow',
+
+            'flow_context' =>
+                [],
+
+            'conversation_id' =>
+                null,
         ]);
     }
 
@@ -252,14 +342,16 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function feedback(Request $request): JsonResponse
-    {
+    public function feedback(
+        Request $request
+    ): JsonResponse {
         $validated = $request->validate([
             'conversation_id' => [
                 'required',
                 'integer',
                 'exists:chatbot_conversations,id',
             ],
+
             'was_helpful' => [
                 'required',
                 'boolean',
@@ -268,27 +360,39 @@ class ChatbotController extends Controller
 
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Necesitas iniciar sesión.',
+
+                'message' =>
+                    'Necesitas iniciar sesión.',
             ], 401);
         }
 
-        $conversation = ChatbotConversation::query()
-            ->where('id', $validated['conversation_id'])
-            ->where('usuario_id', $user->getAuthIdentifier())
-            ->first();
+        $conversation =
+            ChatbotConversation::query()
+                ->where(
+                    'id',
+                    $validated['conversation_id']
+                )
+                ->where(
+                    'usuario_id',
+                    $user->getAuthIdentifier()
+                )
+                ->first();
 
-        if (!$conversation) {
+        if (! $conversation) {
             return response()->json([
                 'ok' => false,
-                'message' => 'No se encontró la conversación.',
+
+                'message' =>
+                    'No se encontró la conversación.',
             ], 404);
         }
 
         $conversation->update([
-            'es_util' => $validated['was_helpful'],
+            'es_util' =>
+                $validated['was_helpful'],
         ]);
 
         return response()->json([
@@ -309,10 +413,25 @@ class ChatbotController extends Controller
         }
 
         if (function_exists('ini_set')) {
-            @ini_set('max_execution_time', '0');
-            @ini_set('zlib.output_compression', '0');
-            @ini_set('output_buffering', '0');
-            @ini_set('implicit_flush', '1');
+            @ini_set(
+                'max_execution_time',
+                '0'
+            );
+
+            @ini_set(
+                'zlib.output_compression',
+                '0'
+            );
+
+            @ini_set(
+                'output_buffering',
+                '0'
+            );
+
+            @ini_set(
+                'implicit_flush',
+                '1'
+            );
         }
 
         if (function_exists('ob_implicit_flush')) {
@@ -326,12 +445,13 @@ class ChatbotController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Validar mensaje o acción
+    | Validar mensaje, acción y contexto
     |--------------------------------------------------------------------------
     */
 
-    private function validateChatRequest(Request $request): array
-    {
+    private function validateChatRequest(
+        Request $request
+    ): array {
         return $request->validate([
             'message' => [
                 'nullable',
@@ -339,6 +459,7 @@ class ChatbotController extends Controller
                 'max:500',
                 'required_without:action',
             ],
+
             'action' => [
                 'nullable',
                 'string',
@@ -346,11 +467,96 @@ class ChatbotController extends Controller
                 'regex:/^[a-z0-9_.-]+$/',
                 'required_without:message',
             ],
+
             'force_ai' => [
                 'nullable',
                 'boolean',
             ],
+
+            /*
+             * Contexto acumulado del flujo interactivo.
+             */
+            'flow_context' => [
+                'nullable',
+                'array',
+                'max:20',
+            ],
+
+            'flow_context.*' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Limpiar contexto recibido
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareFlowContext(
+        mixed $context
+    ): array {
+        if (! is_array($context)) {
+            return [];
+        }
+
+        $allowedKeys = [
+            'titulo',
+            'descripcion',
+            'tiempo_problema',
+            'afectacion',
+            'equipo',
+            'ubicacion',
+            'categoria',
+            'asunto',
+            'tipo_equipo',
+            'accesorio',
+            'programa',
+            'sistema',
+            'tipo_acceso',
+            'justificacion',
+            'usuario_afectado',
+            'equipo_actual',
+            'motivo_cambio',
+        ];
+
+        $prepared = [];
+
+        foreach ($context as $key => $value) {
+            $key = trim(
+                (string) $key
+            );
+
+            if (
+                ! in_array(
+                    $key,
+                    $allowedKeys,
+                    true
+                )
+                || ! is_scalar($value)
+            ) {
+                continue;
+            }
+
+            $value = trim(
+                (string) $value
+            );
+
+            if ($value === '') {
+                continue;
+            }
+
+            $prepared[$key] = mb_substr(
+                $value,
+                0,
+                1000
+            );
+        }
+
+        return $prepared;
     }
 
     /*
@@ -367,7 +573,10 @@ class ChatbotController extends Controller
             return $message;
         }
 
-        if (is_string($action) && $action !== '') {
+        if (
+            is_string($action)
+            && $action !== ''
+        ) {
             return "[Acción] {$action}";
         }
 
@@ -399,6 +608,7 @@ class ChatbotController extends Controller
         }
 
         echo $payload."\n";
+
         $this->flushOutput();
     }
 
@@ -431,33 +641,57 @@ class ChatbotController extends Controller
         array $response,
         ?string $requestedAction = null
     ): ?int {
-        if (!$userId) {
+        if (! $userId) {
             return null;
         }
 
         try {
-            $intent = $response['intent'] ?? [];
-            $redirect = $response['redirect'] ?? null;
+            $intent =
+                $response['intent']
+                ?? [];
+
+            $redirect =
+                $response['redirect']
+                ?? null;
 
             $savedAction = is_array($redirect)
-                ? ($redirect['url'] ?? $requestedAction)
+                ? (
+                    $redirect['url']
+                    ?? $requestedAction
+                )
                 : $requestedAction;
 
-            $conversation = ChatbotConversation::create([
-                'usuario_id' => (int) $userId,
-                'mensaje' => $message,
-                'respuesta' => $response['message'] ?? null,
-                'intencion_detectada' => $intent['name'] ?? null,
-                'puntuacion' => $intent['score'] ?? null,
-                'accion' => $savedAction,
-            ]);
+            $conversation =
+                ChatbotConversation::create([
+                    'usuario_id' =>
+                        (int) $userId,
+
+                    'mensaje' =>
+                        $message,
+
+                    'respuesta' =>
+                        $response['message']
+                        ?? null,
+
+                    'intencion_detectada' =>
+                        $intent['name']
+                        ?? null,
+
+                    'puntuacion' =>
+                        $intent['score']
+                        ?? null,
+
+                    'accion' =>
+                        $savedAction,
+                ]);
 
             return (int) $conversation->id;
         } catch (Throwable $e) {
             report($e);
 
             /*
-             * El chatbot debe responder aunque falle el historial.
+             * El chatbot debe responder aunque falle
+             * el almacenamiento del historial.
              */
             return null;
         }

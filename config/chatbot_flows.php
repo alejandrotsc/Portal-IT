@@ -180,6 +180,12 @@ $config = [
                 "Intenta abrir dos sitios diferentes y verifica si otros compañeros tienen el mismo problema. "
                 ."También puedes desconectar y volver a conectar el WiFi.",
 
+            'prefill' => [
+                'titulo' => 'Problema con internet o WiFi',
+                'descripcion' => 'El equipo aparece conectado a la red, pero no tiene acceso a internet.',
+                'equipo' => 'Red / WiFi',
+            ],
+
             'quick_actions' => [
                 [
                     'label' => 'Ya funciona',
@@ -198,6 +204,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -205,6 +218,12 @@ $config = [
             'message' =>
                 "Activa el WiFi del equipo y selecciona la red corporativa disponible. "
                 ."Si utilizas cable, comprueba que esté conectado firmemente en ambos extremos.",
+
+            'prefill' => [
+                'titulo' => 'Equipo sin conexión a internet o WiFi',
+                'descripcion' => 'El equipo no aparece conectado a la red WiFi ni mediante cable de red.',
+                'equipo' => 'Red / WiFi',
+            ],
 
             'quick_actions' => [
                 [
@@ -223,6 +242,13 @@ $config = [
                     'label' => 'Reportar incidencia',
                     'action' => 'redirect',
                     'module' => 'incidencia',
+                ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
                 ],
             ],
         ],
@@ -302,6 +328,12 @@ $config = [
                 "Verifica que tengas internet. Luego cierra Outlook completamente y vuelve a abrirlo. "
                 ."Si aparece un mensaje de error, anótalo o toma una captura.",
 
+            'prefill' => [
+                'titulo' => 'Outlook no abre',
+                'descripcion' => 'Outlook no abre correctamente o muestra un error al iniciar.',
+                'equipo' => 'Outlook / Correo corporativo',
+            ],
+
             'quick_actions' => [
                 [
                     'label' => 'Ya abrió',
@@ -320,6 +352,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -327,6 +366,12 @@ $config = [
             'message' =>
                 "Comprueba que exista conexión a internet y revisa si el mensaje permanece en la bandeja de salida. "
                 ."Verifica también si Outlook muestra algún error.",
+
+            'prefill' => [
+                'titulo' => 'No puedo enviar correos desde Outlook',
+                'descripcion' => 'Los mensajes no se envían y pueden permanecer en la bandeja de salida.',
+                'equipo' => 'Outlook / Correo corporativo',
+            ],
 
             'quick_actions' => [
                 [
@@ -346,6 +391,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -353,6 +405,12 @@ $config = [
             'message' =>
                 "Comprueba la conexión y actualiza la bandeja de entrada. "
                 ."Revisa también las carpetas de correo no deseado y otros buzones configurados.",
+
+            'prefill' => [
+                'titulo' => 'No recibo correos en Outlook',
+                'descripcion' => 'La bandeja de entrada no está recibiendo mensajes nuevos.',
+                'equipo' => 'Outlook / Correo corporativo',
+            ],
 
             'quick_actions' => [
                 [
@@ -372,6 +430,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -386,6 +451,12 @@ $config = [
             'message' =>
                 "Cierra los programas que no estés utilizando y reinicia el equipo. "
                 ."Después verifica si la lentitud ocurre en todo el equipo o solamente en una aplicación.",
+
+            'prefill' => [
+                'titulo' => 'Computadora lenta o congelada',
+                'descripcion' => 'El equipo funciona con lentitud o se congela durante el uso.',
+                'equipo' => 'Computadora',
+            ],
 
             'quick_actions' => [
                 [
@@ -411,6 +482,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -426,6 +504,12 @@ $config = [
                 "Comprueba que el equipo esté conectado a la corriente. "
                 ."Si es una laptop, revisa el cargador y prueba otro tomacorriente seguro. "
                 ."Observa si enciende alguna luz.",
+
+            'prefill' => [
+                'titulo' => 'El equipo no enciende',
+                'descripcion' => 'La computadora no responde al presionar el botón de encendido.',
+                'equipo' => 'Computadora',
+            ],
 
             'quick_actions' => [
                 [
@@ -451,6 +535,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -465,6 +556,12 @@ $config = [
             'message' =>
                 "Verifica que la impresora esté encendida, tenga papel y no muestre errores. "
                 ."Luego confirma que seleccionaste la impresora correcta antes de imprimir.",
+
+            'prefill' => [
+                'titulo' => 'Problema con impresora',
+                'descripcion' => 'La impresora no imprime correctamente o muestra un error.',
+                'equipo' => 'Impresora',
+            ],
 
             'quick_actions' => [
                 [
@@ -490,6 +587,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -504,6 +608,12 @@ $config = [
             'message' =>
                 "Cierra y vuelve a abrir la aplicación. Comprueba si tienes conexión y confirma si otros usuarios "
                 ."pueden entrar al mismo sistema.",
+
+            'prefill' => [
+                'titulo' => 'Problema con sistema o aplicación',
+                'descripcion' => 'Un sistema o aplicación no abre, no responde o muestra un error.',
+                'equipo' => 'Sistema / Aplicación',
+            ],
 
             'quick_actions' => [
                 [
@@ -529,6 +639,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -543,6 +660,12 @@ $config = [
             'message' =>
                 "Desconecta y vuelve a conectar el dispositivo. Si utiliza USB, prueba otro puerto disponible. "
                 ."No fuerces conectores ni desarmes el equipo.",
+
+            'prefill' => [
+                'titulo' => 'Problema con teclado, mouse o monitor',
+                'descripcion' => 'Un periférico del equipo no funciona correctamente.',
+                'equipo' => 'Teclado / Mouse / Monitor',
+            ],
 
             'quick_actions' => [
                 [
@@ -561,6 +684,13 @@ $config = [
                     'label' => 'Reportar incidencia',
                     'action' => 'redirect',
                     'module' => 'incidencia',
+                ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
                 ],
             ],
         ],
@@ -613,43 +743,105 @@ $config = [
 
         'solicitud.menu' => [
             'message' =>
-                'Selecciona el tipo de servicio que necesitas. Después podrás completar la solicitud correspondiente.',
+                "¿Qué necesitas hoy?
+
+"
+                ."Selecciona la categoría que mejor describa tu solicitud.",
 
             'quick_actions' => [
                 [
-                    'label' => 'Equipo o accesorios',
+                    'label' => 'Computadora o accesorios',
+                    'description' =>
+                        'Teclado, mouse, pantalla, audífonos u otro periférico',
                     'action' => 'redirect',
                     'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Computadora o accesorios',
+                        'asunto' => 'Solicitud de computadora o accesorios',
+                    ],
                 ],
 
                 [
                     'label' => 'Instalar un programa',
+                    'description' =>
+                        'Solicitar instalación de una aplicación en tu equipo',
                     'action' => 'redirect',
                     'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Instalar un programa',
+                        'asunto' => 'Solicitud de instalación de programa',
+                    ],
                 ],
 
                 [
-                    'label' => 'Solicitar acceso',
+                    'label' => 'Solicitar un acceso',
+                    'description' =>
+                        'Permisos a sistemas, carpetas o recursos de red',
                     'action' => 'redirect',
                     'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Acceso a un sistema',
+                        'asunto' => 'Solicitud de acceso a un sistema o recurso',
+                    ],
                 ],
 
                 [
-                    'label' => 'VPN o acceso remoto',
+                    'label' => 'VPN / Acceso remoto',
+                    'description' =>
+                        'Configurar o solicitar acceso a la red desde fuera de la oficina',
                     'action' => 'redirect',
                     'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'VPN',
+                        'asunto' => 'Solicitud de VPN o acceso remoto',
+                    ],
+                ],
+
+                [
+                    'label' => 'Impresoras',
+                    'description' =>
+                        'Configurar o conectar impresora',
+                    'action' => 'redirect',
+                    'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Impresora',
+                        'asunto' => 'Solicitud de configuración o conexión de impresora',
+                    ],
                 ],
 
                 [
                     'label' => 'Cuenta o contraseña',
+                    'description' =>
+                        'Restablecer contraseña, desbloquear cuenta o acceso al sistema',
                     'action' => 'redirect',
                     'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Cuenta de correo',
+                        'asunto' => 'Solicitud relacionada con cuenta o contraseña',
+                    ],
+                ],
+
+                [
+                    'label' => 'Cambio o configuración de equipo',
+                    'description' =>
+                        'Reemplazar equipo o cambiar configuración',
+                    'action' => 'redirect',
+                    'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Cambio de equipo',
+                        'asunto' => 'Solicitud de cambio o configuración de equipo',
+                    ],
                 ],
 
                 [
                     'label' => 'Otra solicitud',
+                    'description' =>
+                        'Cualquier otra necesidad de TI no listada',
                     'action' => 'redirect',
                     'module' => 'solicitud',
+                    'prefill' => [
+                        'categoria' => 'Otra solicitud',
+                    ],
                 ],
 
                 [
@@ -749,6 +941,13 @@ $config = [
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
+
+                [
+                    'label' => 'Contactar a Helpdesk',
+                    'icon' => 'headset',
+                    'variant' => 'urgent',
+                    'action' => 'helpdesk',
+                ],
             ],
         ],
 
@@ -810,17 +1009,20 @@ $iconos = [
     'Sigue sin imprimir' => 'printer-x',
     'Nadie puede entrar' => 'users-x',
     'Reportar incidencia' => 'file-warning',
+    'Contactar a Helpdesk' => 'headset',
 
     'Outlook no abre' => 'app-window',
     'No puedo enviar' => 'send-horizontal',
     'No puedo enviar correos' => 'send-horizontal',
     'No recibo correos' => 'mail-x',
 
-    'Equipo o accesorios' => 'monitor-cog',
+    'Computadora o accesorios' => 'monitor-cog',
     'Instalar un programa' => 'package-plus',
-    'Solicitar acceso' => 'key-round',
-    'VPN o acceso remoto' => 'shield-check',
+    'Solicitar un acceso' => 'key-round',
+    'VPN / Acceso remoto' => 'shield-check',
+    'Impresoras' => 'printer',
     'Cuenta o contraseña' => 'user-key',
+    'Cambio o configuración de equipo' => 'refresh-cw',
     'Otra solicitud' => 'clipboard-plus',
 
     'Menos de 24 horas' => 'clock-3',

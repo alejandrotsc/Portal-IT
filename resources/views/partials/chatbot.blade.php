@@ -163,131 +163,120 @@
                     </div>
 
 
-                    {{-- Opciones iniciales compactas --}}
+                    {{-- Menú principal unificado --}}
 
-                    <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div class="mt-3 grid grid-cols-1 items-stretch gap-2.5 sm:grid-cols-2">
 
                         <button
                             type="button"
-                            @click="sendAction('problema.menu', 'Tengo un problema')"
+                            @click="sendAction('problema.menu', 'Reportar un problema')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-rose-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-all duration-300 group-hover:bg-blue-200 motion-safe:group-hover:scale-105"
-                            >
-                                <i data-lucide="triangle-alert" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                                <i data-lucide="triangle-alert" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
-                            <span class="min-w-0 flex-1">
-                                <span class="block text-xs font-semibold text-foreground">
+                            <span class="min-w-0 pt-0.5">
+                                <span class="block text-xs font-semibold leading-5 text-foreground">
                                     Reportar un problema
                                 </span>
-                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+
+                                <span class="mt-0.5 block text-[11px] leading-[1.45] text-muted-foreground">
                                     Algo no funciona correctamente
                                 </span>
                             </span>
-
                         </button>
 
 
                         <button
                             type="button"
-                            @click="sendAction('solicitud.menu', 'Necesito un servicio')"
+                            @click="sendAction('solicitud.menu', 'Solicitar un servicio')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-lg hover:shadow-cyan-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 transition-all duration-300 group-hover:bg-cyan-200 motion-safe:group-hover:scale-105"
-                            >
-                                <i data-lucide="clipboard-list" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                                <i data-lucide="clipboard-list" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
-                            <span class="min-w-0 flex-1">
-                                <span class="block text-xs font-semibold text-foreground">
+                            <span class="min-w-0 pt-0.5">
+                                <span class="block text-xs font-semibold leading-5 text-foreground">
                                     Solicitar un servicio
                                 </span>
-                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+
+                                <span class="mt-0.5 block text-[11px] leading-[1.45] text-muted-foreground">
                                     Equipos, programas o accesos
                                 </span>
                             </span>
-
                         </button>
 
 
                         <button
                             type="button"
-                            @click="sendAction('pase.menu', 'Necesito un pase')"
+                            @click="sendAction('pase.menu', 'Gestionar un pase')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-all duration-300 group-hover:bg-indigo-200 motion-safe:group-hover:scale-105"
-                            >
-                                <i data-lucide="badge-check" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                                <i data-lucide="badge-check" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
-                            <span class="min-w-0 flex-1">
-                                <span class="block text-xs font-semibold text-foreground">
+                            <span class="min-w-0 pt-0.5">
+                                <span class="block text-xs font-semibold leading-5 text-foreground">
                                     Gestionar un pase
                                 </span>
-                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+
+                                <span class="mt-0.5 block text-[11px] leading-[1.45] text-muted-foreground">
                                     Pase menor o mayor a 24 horas
                                 </span>
                             </span>
-
                         </button>
 
 
                         <button
                             type="button"
-                            @click="sendAction('gestion.estado', 'Consultar gestiones')"
+                            @click="sendAction('gestion.estado', 'Consultar mis gestiones')"
                             :disabled="loading"
-                            class="chatbot-card group flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-lg hover:shadow-sky-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span
-                                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-all duration-300 group-hover:bg-sky-200 motion-safe:group-hover:scale-105"
-                            >
-                                <i data-lucide="history" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                                <i data-lucide="history" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
-                            <span class="min-w-0 flex-1">
-                                <span class="block text-xs font-semibold text-foreground">
+                            <span class="min-w-0 pt-0.5">
+                                <span class="block text-xs font-semibold leading-5 text-foreground">
                                     Consultar mis gestiones
                                 </span>
-                                <span class="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+
+                                <span class="mt-0.5 block text-[11px] leading-[1.45] text-muted-foreground">
                                     Revisa estados y seguimientos
                                 </span>
                             </span>
+                        </button>
 
+
+                        <button
+                            type="button"
+                            @click="sendAction('ai.enable', 'Escribir otra consulta')"
+                            :disabled="loading"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
+                        >
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                                <i data-lucide="message-square-text" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
+                            </span>
+
+                            <span class="min-w-0 pt-0.5">
+                                <span class="block text-xs font-semibold leading-5 text-foreground">
+                                    Escribir otra consulta
+                                </span>
+
+                                <span class="mt-0.5 block text-[11px] leading-[1.45] text-muted-foreground">
+                                    Describe con tus propias palabras lo que necesitas
+                                </span>
+                            </span>
                         </button>
 
                     </div>
-
-
-                    <button
-                        type="button"
-                        @click="sendAction('ai.enable', 'Hacer una pregunta')"
-                        :disabled="loading"
-                        class="chatbot-card group mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/10 motion-safe:hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <span
-                            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-all duration-300 group-hover:bg-violet-200 motion-safe:group-hover:scale-105"
-                        >
-                            <i data-lucide="message-square-text" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:scale-110"></i>
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-xs font-semibold text-foreground">
-                                Escribir otra consulta
-                            </span>
-                            <span class="mt-0.5 block text-[11px] text-muted-foreground">
-                                Describe con tus propias palabras lo que necesitas
-                            </span>
-                        </span>
-
-                    </button>
-
                 </div>
 
             </div>

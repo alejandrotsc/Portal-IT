@@ -195,12 +195,86 @@
 
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | PRELLENADO DESDE EL CHATBOT
+    |--------------------------------------------------------------------------
+    */
+
+    $categoriaChatbot = trim(
+        (string) request()->query(
+            'categoria',
+            ''
+        )
+    );
+
+    $categoriasChatbot = [
+        'Computadora o accesorios' => 'computadora',
+        'computadora' => 'computadora',
+
+        'Instalar un programa' => 'programa',
+        'programa' => 'programa',
+
+        'Solicitar un acceso' => 'acceso',
+        'Acceso a un sistema' => 'acceso',
+        'acceso' => 'acceso',
+
+        'VPN / Acceso remoto' => 'vpn',
+        'VPN' => 'vpn',
+        'vpn' => 'vpn',
+
+        'Impresoras' => 'impresora',
+        'Impresora' => 'impresora',
+        'impresora' => 'impresora',
+
+        'Cuenta o contraseña' => 'cuenta',
+        'Cuenta de correo' => 'cuenta',
+        'cuenta' => 'cuenta',
+
+        'Cambio o configuración de equipo' => 'cambio',
+        'Cambio de equipo' => 'cambio',
+        'cambio' => 'cambio',
+
+        'Otra solicitud' => 'otra',
+        'otra' => 'otra',
+    ];
+
+    $categoriaInicial = old(
+        'categoria',
+        $categoriasChatbot[$categoriaChatbot]
+            ?? ''
+    );
+
+    $asuntoInicial = old(
+        'asunto',
+        trim(
+            (string) request()->query(
+                'asunto',
+                ''
+            )
+        )
+    );
+
+    $descripcionInicial = old(
+        'descripcion',
+        trim(
+            (string) request()->query(
+                'descripcion',
+                ''
+            )
+        )
+    );
+
 @endphp
 
 <form
     id="solicitudForm"
     method="POST"
     action="{{ route('solicitudes.store') }}"
+    data-prefill-categoria="{{ $categoriaInicial }}"
+    data-prefill-asunto="{{ $asuntoInicial }}"
+    data-prefill-descripcion="{{ $descripcionInicial }}"
 >
     @csrf
 
@@ -424,6 +498,7 @@
                                     data-id="{{ $categoria['id'] }}"
                                     data-color="{{ $categoria['color'] }}"
                                     data-bg="{{ $categoria['bg'] }}"
+                                    aria-pressed="false"
                                     class="categoria-card group/category relative flex cursor-pointer flex-col items-start gap-3 overflow-hidden rounded-xl border border-border bg-white p-4 text-left shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20 motion-safe:hover:-translate-y-1"
                                 >
 
@@ -512,7 +587,7 @@
                             type="hidden"
                             name="categoria"
                             id="categoria"
-                            value="{{ old('categoria') }}"
+                            value="{{ $categoriaInicial }}"
                         >
 
 
@@ -551,7 +626,7 @@
                                     id="asunto"
                                     type="text"
                                     name="asunto"
-                                    value="{{ old('asunto') }}"
+                                    value="{{ $asuntoInicial }}"
                                     data-required="true"
                                     maxlength="255"
                                     autocomplete="off"
@@ -612,7 +687,7 @@
                                     rows="4"
                                     maxlength="2000"
                                     class="w-full resize-none border-0 bg-transparent py-2.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
-                                    placeholder="Cuéntanos qué necesitas y para qué lo necesitas">{{ old('descripcion') }}</textarea>
+                                    placeholder="Cuéntanos qué necesitas y para qué lo necesitas">{{ $descripcionInicial }}</textarea>
 
                             </div>
 
@@ -872,7 +947,111 @@
 @endif
 
 
-<script src="{{ asset('js/solicitudes.js') }}"></script>
+<script
+    src="{{ asset('js/solicitudes.js') }}?v={{ filemtime(public_path('js/solicitudes.js')) }}"
+></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form =
+            document.getElementById(
+                'solicitudForm'
+            );
+
+        if (!form) {
+            return;
+        }
+
+        const categoria = String(
+            form.dataset.prefillCategoria
+            ?? ''
+        ).trim();
+
+        const asunto = String(
+            form.dataset.prefillAsunto
+            ?? ''
+        ).trim();
+
+        const descripcion = String(
+            form.dataset.prefillDescripcion
+            ?? ''
+        ).trim();
+
+        const asuntoInput =
+            document.getElementById(
+                'asunto'
+            );
+
+        const descripcionInput =
+            document.getElementById(
+                'descripcion'
+            );
+
+        /*
+         * Los valores antiguos de validación ya vienen
+         * colocados desde Blade y tienen prioridad.
+         */
+        if (
+            asuntoInput
+            && !asuntoInput.value.trim()
+            && asunto
+        ) {
+            asuntoInput.value = asunto;
+        }
+
+        if (
+            descripcionInput
+            && !descripcionInput.value.trim()
+            && descripcion
+        ) {
+            descripcionInput.value =
+                descripcion;
+        }
+
+        if (!categoria) {
+            return;
+        }
+
+        const card = Array.from(
+            document.querySelectorAll(
+                '.categoria-card'
+            )
+        ).find((element) => {
+            return String(
+                element.dataset.id
+                ?? ''
+            ).trim() === categoria;
+        });
+
+        if (!card) {
+            return;
+        }
+
+        /*
+         * Utilizar el mismo evento del formulario garantiza
+         * que solicitudes.js cargue los campos dinámicos,
+         * muestre el paso 2 y actualice la selección visual.
+         */
+        card.click();
+
+        card.setAttribute(
+            'aria-pressed',
+            'true'
+        );
+
+        window.requestAnimationFrame(() => {
+            const formulario =
+                document.getElementById(
+                    'formularioSolicitud'
+                );
+
+            formulario?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        });
+    });
+</script>
 
 
 <style>
