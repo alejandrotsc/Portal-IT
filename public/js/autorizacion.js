@@ -161,9 +161,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCerrarError          = document.getElementById('btnCerrarErrorAutorizacion');
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mover modales directamente al body
+    |--------------------------------------------------------------------------
+    |
+    | Evita que contenedores con transform, overflow o z-index limiten el
+    | fondo oscuro y el desenfoque sobre el header.
+    |
+    */
+
+    [
+        modalPreview,
+        modalDescarga,
+        modalError,
+    ].forEach((modal) => {
+        if (
+            modal
+            && modal.parentElement !== document.body
+        ) {
+            document.body.appendChild(
+                modal
+            );
+        }
+    });
+
+
     if (!form) return;
 
     let enviando = false;
+    let seguimientoCorreoActual = 0;
 
 
     /*
@@ -417,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
-                Generando y enviando...
+                Generando documento...
             `;
         }
 
@@ -464,6 +491,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 abrirModal(modalDescarga);
 
+                const estadoEmail =
+                    String(
+                        data.email?.status
+                        ?? ''
+                    ).toLowerCase();
+
+                const correoEnCola =
+                    data.email?.queued === true
+                    || estadoEmail === 'pendiente'
+                    || estadoEmail === 'enviando';
+
+                if (correoEnCola) {
+                    vigilarEstadoCorreo(
+                        data.email?.delivery_id,
+                        data
+                    );
+                }
+
             } else {
                 throw new Error('El documento se registró, pero no se recibió la ruta de descarga.');
             }
@@ -508,14 +553,212 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /*
     |--------------------------------------------------------------------------
+    | SEGUIMIENTO DEL ESTADO DEL CORREO
+    |--------------------------------------------------------------------------
+    */
+
+    async function vigilarEstadoCorreo(
+        deliveryId,
+        datosRegistro
+    ) {
+        if (!deliveryId) {
+            return;
+        }
+
+        const urlBase =
+            window.emailDeliveryStatusUrl;
+
+        if (!urlBase) {
+            console.warn(
+                'No se configuró la URL para consultar el estado del correo.'
+            );
+
+            return;
+        }
+
+        const seguimientoId =
+            ++seguimientoCorreoActual;
+
+        const maxConsultas = 20;
+        const tiempoEspera = 1500;
+
+        for (
+            let consulta = 1;
+            consulta <= maxConsultas;
+            consulta++
+        ) {
+            await esperar(
+                tiempoEspera
+            );
+
+            if (
+                seguimientoId !== seguimientoCorreoActual
+            ) {
+                return;
+            }
+
+            try {
+                const url =
+                    urlBase.replace(
+                        '__DELIVERY_ID__',
+                        encodeURIComponent(
+                            deliveryId
+                        )
+                    );
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method:
+                                'GET',
+
+                            headers: {
+                                'Accept':
+                                    'application/json',
+
+                                'X-Requested-With':
+                                    'XMLHttpRequest',
+                            },
+
+                            cache:
+                                'no-store',
+                        }
+                    );
+
+                if (!response.ok) {
+                    console.warn(
+                        'No se pudo consultar el estado del correo.',
+                        response.status
+                    );
+
+                    continue;
+                }
+
+                const resultado =
+                    await response.json();
+
+                const estado =
+                    String(
+                        resultado.email?.status
+                        ?? ''
+                    ).toLowerCase();
+
+                if (
+                    resultado.email?.sent === true
+                    || estado === 'enviado'
+                ) {
+                    if (modalResultadoMensaje) {
+                        modalResultadoMensaje.textContent =
+                            'El documento fue generado correctamente y la notificación por correo fue enviada.';
+                    }
+
+                    configurarEstadoCorreoExitoso();
+
+                    return;
+                }
+
+                if (
+                    resultado.email?.failed === true
+                    || estado === 'fallido'
+                ) {
+                    configurarEstadoCorreoFallido({
+                        ...datosRegistro,
+
+                        message:
+                            'El documento fue generado correctamente, pero no fue posible enviar la notificación por correo.',
+
+                        email: {
+                            ...datosRegistro?.email,
+                            ...resultado.email,
+                        },
+                    });
+
+                    if (modalResultadoMensaje) {
+                        modalResultadoMensaje.textContent =
+                            'El documento fue generado correctamente, pero no fue posible enviar la notificación por correo.';
+                    }
+
+                    return;
+                }
+
+                if (
+                    resultado.email?.queued === true
+                    || estado === 'pendiente'
+                    || estado === 'enviando'
+                ) {
+                    configurarEstadoCorreoEnCola(
+                        estado,
+                        resultado.email?.attempts
+                    );
+                }
+
+            } catch (error) {
+                console.warn(
+                    'Error consultando el estado del correo:',
+                    error
+                );
+            }
+        }
+
+        if (
+            seguimientoId === seguimientoCorreoActual
+        ) {
+            actualizarIndicadorSmtp(
+                'queued'
+            );
+
+            if (estadoCorreoMensaje) {
+                estadoCorreoMensaje.textContent =
+                    'El correo continúa en cola. El proceso seguirá ejecutándose en segundo plano.';
+            }
+        }
+    }
+
+
+    function esperar(
+        milisegundos
+    ) {
+        return new Promise(
+            resolve =>
+                window.setTimeout(
+                    resolve,
+                    milisegundos
+                )
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | MOSTRAR RESULTADO DEL SMTP
     |--------------------------------------------------------------------------
     */
 
     function configurarResultadoCorreo(data) {
 
-        const email = data.email ?? null;
-        const correoEnviado = email?.sent === true;
+        const email =
+            data.email
+            ?? null;
+
+        const estado =
+            String(
+                email?.status
+                ?? ''
+            ).toLowerCase();
+
+        const correoEnviado =
+            email?.sent === true
+            || estado === 'enviado';
+
+        const correoEnCola =
+            email?.queued === true
+            || estado === 'pendiente'
+            || estado === 'enviando';
+
+        const correoFallido =
+            email?.failed === true
+            || estado === 'fallido';
 
         if (modalResultadoMensaje) {
             modalResultadoMensaje.textContent =
@@ -530,27 +773,127 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (correoEnviado) {
             configurarEstadoCorreoExitoso();
+
+        } else if (correoEnCola) {
+            configurarEstadoCorreoEnCola(
+                estado
+            );
+
+        } else if (correoFallido) {
+            configurarEstadoCorreoFallido(
+                data
+            );
+
         } else {
-            configurarEstadoCorreoFallido(data);
+            configurarEstadoCorreoEnCola(
+                'pendiente'
+            );
         }
 
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    }
+
+
+    function ocultarBotonesReporte() {
+        [
+            btnReportarSmtp,
+            btnReportarPersistente,
+        ].forEach((boton) => {
+            if (!boton) {
+                return;
+            }
+
+            boton.classList.add(
+                'hidden'
+            );
+
+            boton.classList.remove(
+                'inline-flex'
+            );
+
+            delete boton.dataset.outlookUrl;
+        });
+    }
+
+
+    function configurarEstadoCorreoEnCola(
+        estado = 'pendiente',
+        attempts = 0
+    ) {
+        ocultarBotonesReporte();
+
+        if (modalResultadoIcono) {
+            modalResultadoIcono.className =
+                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm';
+
+            modalResultadoIcono.innerHTML =
+                '<i data-lucide="clock-3" stroke-width="1.8" class="h-8 w-8 text-blue-600"></i>';
+        }
+
+        if (modalResultadoTitulo) {
+            modalResultadoTitulo.textContent =
+                'Documento generado';
+        }
+
+        if (estadoCorreo) {
+            estadoCorreo.classList.remove(
+                'hidden'
+            );
+
+            estadoCorreo.className =
+                'rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm';
+        }
+
+        if (estadoCorreoTitulo) {
+            estadoCorreoTitulo.className =
+                'text-sm font-semibold text-blue-800';
+
+            estadoCorreoTitulo.textContent =
+                estado === 'enviando'
+                    ? 'Enviando correo'
+                    : 'Correo en procesamiento';
+        }
+
+        if (estadoCorreoMensaje) {
+            estadoCorreoMensaje.className =
+                'mt-1.5 text-xs leading-relaxed text-blue-700';
+
+            const numeroIntentos =
+                Number(attempts) || 0;
+
+            estadoCorreoMensaje.textContent =
+                estado === 'enviando'
+                    ? (
+                        numeroIntentos > 0
+                            ? `El servidor está procesando el correo. Intento ${numeroIntentos}.`
+                            : 'El servidor está procesando el correo.'
+                    )
+                    : 'La notificación fue agregada a la cola y será enviada en segundo plano.';
+        }
+
+        if (estadoCorreoIcono) {
+            estadoCorreoIcono.className =
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm';
+
+            estadoCorreoIcono.innerHTML =
+                '<i data-lucide="mail" stroke-width="1.8" class="h-5 w-5"></i>';
+        }
+
+        actualizarIndicadorSmtp(
+            'queued'
+        );
+
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 
 
     function configurarEstadoCorreoExitoso() {
 
-        if (btnReportarSmtp) {
-            btnReportarSmtp.classList.add('hidden');
-            btnReportarSmtp.classList.remove('inline-flex');
-            delete btnReportarSmtp.dataset.outlookUrl;
-        }
-
-        if (btnReportarPersistente) {
-            btnReportarPersistente.classList.add('hidden');
-            btnReportarPersistente.classList.remove('inline-flex');
-            delete btnReportarPersistente.dataset.outlookUrl;
-        }
+        ocultarBotonesReporte();
 
         if (modalResultadoIcono) {
             modalResultadoIcono.className =
@@ -592,7 +935,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 '<i data-lucide="mail-check" stroke-width="1.8" class="h-5 w-5"></i>';
         }
 
-        actualizarIndicadorSmtp(true);
+        actualizarIndicadorSmtp('success');
     }
 
 
@@ -660,8 +1003,8 @@ const body = [
 
     '',
 
-    'Intenté registrar una solicitud de pase mayor a 24 horas '
-    + 'en el Portal TI, pero el proceso no pudo completarse.',
+    'La solicitud de pase mayor a 24 horas quedó registrada '
+    + 'en el Portal TI, pero la notificación automática por correo no pudo enviarse.',
 
     '',
 
@@ -699,7 +1042,7 @@ const body = [
 
     '',
 
-    'Por favor, ayúdenme a revisar y registrar esta solicitud.',
+    'Por favor, ayúdenme a dar seguimiento a esta solicitud.',
 
 ].join('\r\n');
 
@@ -768,7 +1111,7 @@ const body = [
                 '<i data-lucide="mail-warning" stroke-width="1.8" class="h-5 w-5"></i>';
         }
 
-        actualizarIndicadorSmtp(false);
+        actualizarIndicadorSmtp('warning');
     }
 
 
@@ -785,17 +1128,57 @@ const body = [
     }
 
 
-    function actualizarIndicadorSmtp(exitoso) {
+    function actualizarIndicadorSmtp(
+        estado
+    ) {
+        if (!smtpEstadoPrevio) {
+            return;
+        }
 
-        if (!smtpEstadoPrevio) return;
+        const configuraciones = {
+            success: {
+                clase:
+                    'inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm',
 
-        smtpEstadoPrevio.className = exitoso
-            ? 'inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm'
-            : 'inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 shadow-sm';
+                punto:
+                    'bg-emerald-500',
 
-        smtpEstadoPrevio.innerHTML = exitoso
-            ? '<span class="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500"></span> Último envío SMTP correcto'
-            : '<span class="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500"></span> Último envío SMTP fallido';
+                texto:
+                    'Último envío SMTP correcto',
+            },
+
+            queued: {
+                clase:
+                    'inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm',
+
+                punto:
+                    'bg-blue-500',
+
+                texto:
+                    'Correo pendiente en la cola',
+            },
+
+            warning: {
+                clase:
+                    'inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 shadow-sm',
+
+                punto:
+                    'bg-amber-500',
+
+                texto:
+                    'Último envío SMTP fallido',
+            },
+        };
+
+        const configuracion =
+            configuraciones[estado]
+            ?? configuraciones.warning;
+
+        smtpEstadoPrevio.className =
+            configuracion.clase;
+
+        smtpEstadoPrevio.innerHTML =
+            `<span class="h-2.5 w-2.5 shrink-0 rounded-full ${configuracion.punto}"></span> ${configuracion.texto}`;
     }
 
 

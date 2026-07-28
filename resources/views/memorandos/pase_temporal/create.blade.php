@@ -248,7 +248,7 @@
 
 <div
     id="modalResultado"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
 >
     <div
         class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20"

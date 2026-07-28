@@ -8,6 +8,7 @@ use App\Models\Usuario;
 use App\Notifications\EstadoSolicitudActualizadoNotification;
 use App\Notifications\NuevaSolicitudNotification;
 use App\Services\Mail\TrackedMailService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +42,7 @@ class SolicitudController extends Controller
     public function store(
         Request $request,
         TrackedMailService $trackedMail
-    ): RedirectResponse {
+    ): JsonResponse|RedirectResponse {
         /*
         |--------------------------------------------------------------------------
         | Validación
@@ -156,7 +157,7 @@ class SolicitudController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $delivery = $trackedMail->send(
+        $delivery = $trackedMail->sendAsync(
             emailable:
                 $solicitud,
 
@@ -190,24 +191,21 @@ class SolicitudController extends Controller
         );
 
 
-        $emailSent =
-            $delivery->fueEnviado();
-
-
         /*
         |--------------------------------------------------------------------------
-        | Guardar estado del correo
+        | Estado inicial del correo
+        |--------------------------------------------------------------------------
+        |
+        | El Job actualizará estos campos cuando SMTP confirme el envío.
         |--------------------------------------------------------------------------
         */
 
         $solicitud->update([
             'correo_enviado' =>
-                $emailSent,
+                false,
 
             'correo_enviado_at' =>
-                $emailSent
-                    ? $delivery->sent_at
-                    : null,
+                null,
         ]);
 
 
@@ -228,15 +226,70 @@ class SolicitudController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $correoPendiente =
+            $delivery->estaPendiente();
+
+        $mensaje =
+            $correoPendiente
+                ? 'La solicitud fue registrada correctamente. La notificación por correo se está procesando.'
+                : 'La solicitud fue registrada correctamente, pero no fue posible colocar la notificación en la cola de correo.';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Respuesta para solicitudes AJAX / fetch
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $request->expectsJson()
+            || $request->ajax()
+        ) {
+            return response()->json([
+                'success' =>
+                    true,
+
+                'message' =>
+                    $mensaje,
+
+                'id' =>
+                    $solicitud->id,
+
+                'folio' =>
+                    $solicitud->folio,
+
+                'email' => [
+                    'sent' =>
+                        false,
+
+                    'queued' =>
+                        $correoPendiente,
+
+                    'failed' =>
+                        $delivery->status === 'fallido',
+
+                    'status' =>
+                        $delivery->status,
+
+                    'delivery_id' =>
+                        $delivery->id,
+                ],
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Respuesta tradicional como respaldo
+        |--------------------------------------------------------------------------
+        */
+
         return redirect()
             ->route(
                 'solicitudes.create'
             )
             ->with(
                 'success',
-                $emailSent
-                    ? 'La solicitud fue registrada correctamente y el equipo TI fue notificado.'
-                    : 'La solicitud fue registrada correctamente, pero no fue posible enviar la notificación por correo.'
+                $mensaje
             )
             ->with(
                 'folio',
@@ -244,7 +297,11 @@ class SolicitudController extends Controller
             )
             ->with(
                 'email_sent',
-                $emailSent
+                false
+            )
+            ->with(
+                'email_queued',
+                $correoPendiente
             )
             ->with(
                 'email_status',

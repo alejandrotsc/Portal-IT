@@ -240,6 +240,25 @@ document.addEventListener(
             'modalResultado'
         );
 
+        /*
+|--------------------------------------------------------------------------
+| Mover modal directamente al body
+|--------------------------------------------------------------------------
+|
+| Evita que un contenedor padre con transform, overflow o z-index limite
+| el fondo del modal y deje el header fuera del desenfoque.
+|
+*/
+
+if (
+    modal
+    && modal.parentElement !== document.body
+) {
+    document.body.appendChild(
+        modal
+    );
+}
+
     const modalIcono =
         document.getElementById(
             'modalIcono'
@@ -311,6 +330,14 @@ document.addEventListener(
 
 
     let enviando = false;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Control del seguimiento del correo
+    |--------------------------------------------------------------------------
+    */
+
+    let seguimientoCorreoActual = 0;
 
 
     /*
@@ -474,18 +501,55 @@ document.addEventListener(
                 |--------------------------------------------------------------------------
                 */
 
+                const estadoCorreoActual =
+                    String(
+                        data.email?.status
+                        ?? ''
+                    ).toLowerCase();
+
                 const correoEnviado =
-                    data.email?.sent === true;
+                    data.email?.sent === true
+                    || estadoCorreoActual === 'enviado';
+
+                const correoEnCola =
+                    data.email?.queued === true
+                    || estadoCorreoActual === 'pendiente'
+                    || estadoCorreoActual === 'enviando';
+
+                const correoFallido =
+                    estadoCorreoActual === 'fallido';
 
                 if (correoEnviado) {
                     mostrarExito(
                         data
                     );
 
-                } else {
+                } else if (correoEnCola) {
+                    mostrarCorreoEnCola(
+                        data
+                    );
+
+                    vigilarEstadoCorreo(
+                        data.email?.delivery_id,
+                        datosFormulario,
+                        data
+                    );
+
+                } else if (correoFallido) {
                     mostrarAdvertenciaSmtp(
                         data,
                         datosFormulario
+                    );
+
+                } else {
+                    mostrarCorreoEnCola(
+                        data
+                    );
+
+                    vigilarEstadoCorreo(
+                        data.email?.delivery_id,
+                        datosFormulario,
+                        data
                     );
                 }
 
@@ -517,6 +581,257 @@ document.addEventListener(
             }
         }
     );
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEGUIMIENTO DEL ESTADO DEL CORREO
+    |--------------------------------------------------------------------------
+    |
+    | Consulta periódicamente el estado del EmailDelivery. El formulario no
+    | espera al servidor SMTP, pero el modal se actualiza cuando el worker
+    | confirma que el correo fue enviado o que terminó fallando.
+    |
+    */
+
+    async function vigilarEstadoCorreo(
+        deliveryId,
+        datosFormulario,
+        datosRegistro
+    ) {
+        if (!deliveryId) {
+            return;
+        }
+
+        const seguimientoId =
+            ++seguimientoCorreoActual;
+
+        const maxConsultas = 20;
+        const tiempoEspera = 1500;
+
+        for (
+            let consulta = 1;
+            consulta <= maxConsultas;
+            consulta++
+        ) {
+            await esperar(
+                tiempoEspera
+            );
+
+            /*
+             * Si comenzó otro envío, detener el seguimiento anterior.
+             */
+            if (
+                seguimientoId !== seguimientoCorreoActual
+            ) {
+                return;
+            }
+
+            try {
+                const response =
+                    await fetch(
+                        `/email-deliveries/${encodeURIComponent(deliveryId)}/status`,
+                        {
+                            method:
+                                'GET',
+
+                            headers: {
+                                'Accept':
+                                    'application/json',
+
+                                'X-Requested-With':
+                                    'XMLHttpRequest',
+                            },
+
+                            cache:
+                                'no-store',
+                        }
+                    );
+
+                if (!response.ok) {
+                    console.warn(
+                        'No se pudo consultar el estado del correo.',
+                        response.status
+                    );
+
+                    continue;
+                }
+
+                const resultado =
+                    await response.json();
+
+                const estado =
+                    String(
+                        resultado.email?.status
+                        ?? ''
+                    ).toLowerCase();
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Correo enviado
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    resultado.email?.sent === true
+                    || estado === 'enviado'
+                ) {
+                    mostrarExito({
+                        ...datosRegistro,
+
+                        message:
+                            'La solicitud fue registrada correctamente y la notificación por correo fue enviada.',
+
+                        email: {
+                            ...datosRegistro?.email,
+                            ...resultado.email,
+                        },
+                    });
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Correo fallido
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    resultado.email?.failed === true
+                    || estado === 'fallido'
+                ) {
+                    mostrarAdvertenciaSmtp(
+                        {
+                            ...datosRegistro,
+
+                            message:
+                                'La solicitud fue registrada correctamente, pero no fue posible enviar la notificación por correo.',
+
+                            email: {
+                                ...datosRegistro?.email,
+                                ...resultado.email,
+                            },
+                        },
+                        datosFormulario
+                    );
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Continúa pendiente o enviándose
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    estado === 'pendiente'
+                    || estado === 'enviando'
+                    || resultado.email?.queued === true
+                ) {
+                    actualizarEstadoCorreoEnProceso(
+                        estado,
+                        resultado.email?.attempts
+                    );
+                }
+
+            } catch (error) {
+                console.warn(
+                    'Error consultando el estado del correo:',
+                    error
+                );
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tiempo máximo de seguimiento alcanzado
+        |--------------------------------------------------------------------------
+        |
+        | No se presenta como fallo porque el worker puede continuar procesando
+        | el correo después de cerrar o dejar abierta esta página.
+        |
+        */
+
+        if (
+            seguimientoId === seguimientoCorreoActual
+        ) {
+            actualizarIndicadorPrincipal(
+                'queued',
+                'El correo continúa en procesamiento'
+            );
+
+            if (estadoCorreoMensaje) {
+                estadoCorreoMensaje.textContent =
+                    'El correo continúa en cola. El proceso seguirá ejecutándose en segundo plano.';
+            }
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar detalle mientras el worker procesa
+    |--------------------------------------------------------------------------
+    */
+
+    function actualizarEstadoCorreoEnProceso(
+        estado,
+        attempts = 0
+    ) {
+        const intentos =
+            Number(attempts) || 0;
+
+        if (estadoCorreoTitulo) {
+            estadoCorreoTitulo.textContent =
+                estado === 'enviando'
+                    ? 'Enviando correo'
+                    : 'Correo en procesamiento';
+        }
+
+        if (estadoCorreoMensaje) {
+            estadoCorreoMensaje.textContent =
+                estado === 'enviando'
+                    ? (
+                        intentos > 0
+                            ? `El servidor está procesando el correo. Intento ${intentos}.`
+                            : 'El servidor está procesando el correo.'
+                    )
+                    : 'La notificación continúa en cola y será procesada por el servidor.';
+        }
+
+        actualizarIndicadorPrincipal(
+            'queued',
+            estado === 'enviando'
+                ? 'Correo SMTP en proceso'
+                : 'Correo pendiente en la cola'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Espera asíncrona
+    |--------------------------------------------------------------------------
+    */
+
+    function esperar(
+        milisegundos
+    ) {
+        return new Promise(
+            resolve =>
+                window.setTimeout(
+                    resolve,
+                    milisegundos
+                )
+        );
+    }
 
 
     /*
@@ -650,6 +965,93 @@ document.addEventListener(
         actualizarIndicadorPrincipal(
             'success',
             'Último envío SMTP correcto'
+        );
+
+        refrescarIconos();
+    }
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESTADO AZUL — CORREO EN COLA
+    |--------------------------------------------------------------------------
+    |
+    | La gestión quedó registrada y el correo será procesado por el worker.
+    |
+    */
+
+    function mostrarCorreoEnCola(data) {
+
+        ocultarBotonesReporte();
+
+        if (modalIcono) {
+            modalIcono.className =
+                'mx-auto flex h-16 w-16 items-center '
+                + 'justify-center rounded-2xl border '
+                + 'border-blue-200 bg-blue-50 shadow-sm';
+
+            modalIcono.innerHTML = `
+                <i
+                    data-lucide="clock-3"
+                    stroke-width="1.8"
+                    class="h-8 w-8 text-blue-600"
+                ></i>
+            `;
+        }
+
+        if (modalTitulo) {
+            modalTitulo.textContent =
+                'Solicitud registrada';
+        }
+
+        if (modalMensaje) {
+            modalMensaje.textContent =
+                data.message
+                ?? 'El pase temporal fue registrado correctamente. La notificación por correo se está procesando.';
+        }
+
+        if (estadoCorreo) {
+            estadoCorreo.className =
+                'rounded-2xl border border-blue-200 '
+                + 'bg-gradient-to-br from-blue-50/80 via-white '
+                + 'to-sky-50/50 p-5 text-left shadow-sm';
+        }
+
+        if (estadoCorreoIcono) {
+            estadoCorreoIcono.className =
+                'flex h-10 w-10 shrink-0 items-center '
+                + 'justify-center rounded-xl border '
+                + 'border-blue-200 bg-white text-blue-600 shadow-sm';
+
+            estadoCorreoIcono.innerHTML = `
+                <i
+                    data-lucide="mail"
+                    stroke-width="1.8"
+                    class="h-5 w-5"
+                ></i>
+            `;
+        }
+
+        if (estadoCorreoTitulo) {
+            estadoCorreoTitulo.className =
+                'text-sm font-semibold text-blue-800';
+
+            estadoCorreoTitulo.textContent =
+                'Correo en procesamiento';
+        }
+
+        if (estadoCorreoMensaje) {
+            estadoCorreoMensaje.className =
+                'mt-1.5 text-xs leading-relaxed text-blue-700';
+
+            estadoCorreoMensaje.textContent =
+                'La notificación fue agregada a la cola y será enviada en segundo plano.';
+        }
+
+        actualizarIndicadorPrincipal(
+            'queued',
+            'Último correo agregado a la cola'
         );
 
         refrescarIconos();
@@ -1143,6 +1545,20 @@ return (
                     'bg-emerald-50',
             },
 
+            queued: {
+                text:
+                    'text-blue-700',
+
+                dot:
+                    'bg-blue-500',
+
+                border:
+                    'border-blue-200',
+
+                background:
+                    'bg-blue-50',
+            },
+
             warning: {
                 text:
                     'text-amber-700',
@@ -1213,7 +1629,7 @@ return (
             ></i>
 
             <span>
-                Enviando...
+                Registrando...
             </span>
         `;
 

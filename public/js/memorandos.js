@@ -59,9 +59,33 @@ function formatoFechaCorta(date) {
 }
 
 function formatoFechaLarga(valor) {
-    if (!valor) return '-';
-    const partes = valor.split('-');
-    return `${partes[2]} de ${meses[Number(partes[1]) - 1]} del ${partes[0]}`;
+    if (!valor) {
+        return '-';
+    }
+
+    const partes = String(valor).split('-');
+
+    if (partes.length !== 3) {
+        return '-';
+    }
+
+    const anio = Number(partes[0]);
+    const mes = Number(partes[1]);
+    const dia = Number(partes[2]);
+
+    if (
+        !Number.isInteger(anio)
+        || !Number.isInteger(mes)
+        || !Number.isInteger(dia)
+        || mes < 1
+        || mes > 12
+        || dia < 1
+        || dia > 31
+    ) {
+        return '-';
+    }
+
+    return `${dia} de ${meses[mes - 1]} de ${anio}`;
 }
 
 if (fecha && !fecha.value) {

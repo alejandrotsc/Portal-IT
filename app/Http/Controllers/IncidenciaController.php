@@ -244,14 +244,13 @@ class IncidenciaController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $delivery = $trackedMail->send(
+        $delivery = $trackedMail->sendAsync(
             emailable:
                 $incidencia,
 
             mailable:
                 new IncidenciaMail(
-                    $incidencia,
-                    $textoOCR
+                    $incidencia
                 ),
 
             recipientEmail:
@@ -283,17 +282,17 @@ class IncidenciaController extends Controller
             ]
         );
 
-        $emailSent =
-            $delivery->fueEnviado();
-
+        /*
+         * El correo todavía no ha sido enviado.
+         * SendTrackedMailJob actualizará estos campos
+         * cuando el servidor SMTP confirme el envío.
+         */
         $incidencia->update([
             'correo_enviado' =>
-                $emailSent,
+                false,
 
             'fecha_envio_correo' =>
-                $emailSent
-                    ? $delivery->sent_at
-                    : null,
+                null,
         ]);
 
         /*
@@ -318,7 +317,10 @@ class IncidenciaController extends Controller
 
             'email' => [
                 'sent' =>
-                    $emailSent,
+                    false,
+
+                'queued' =>
+                    $delivery->estaPendiente(),
 
                 'status' =>
                     $delivery->status,
@@ -328,9 +330,9 @@ class IncidenciaController extends Controller
             ],
 
             'message' =>
-                $emailSent
-                    ? 'El reporte de incidencia fue registrado correctamente y el equipo TI fue notificado.'
-                    : 'El reporte de incidencia fue registrado correctamente, pero no fue posible enviar la notificación por correo. El error quedó registrado para su revisión.',
+                $delivery->estaPendiente()
+                    ? 'El reporte de incidencia fue registrado correctamente. La notificación por correo se está procesando.'
+                    : 'El reporte de incidencia fue registrado correctamente, pero no fue posible colocar la notificación en la cola de correo.',
         ]);
     }
 

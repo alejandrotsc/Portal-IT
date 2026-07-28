@@ -76,6 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let archivosSeleccionados = [];
     let enviando = false;
     let abriendoOutlook = false;
+    let seguimientoCorreoActual = 0;
+
+
+    if (
+        modal
+        && modal.parentElement !== document.body
+    ) {
+        document.body.appendChild(
+            modal
+        );
+    }
 
 
     /*
@@ -460,18 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
 
-            if (data.email?.sent === true) {
-
-                mostrarExito(data);
-
-            } else {
-
-                mostrarAdvertenciaCorreo(
-                    data,
-                    datosFormulario
-                );
-
-            }
+            configurarResultadoInicial(
+                data,
+                datosFormulario
+            );
 
 
             /*
@@ -480,6 +483,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             limpiarFormulario();
             abrirModal();
+
+
+            const estadoEmail =
+                String(
+                    data.email?.status
+                    ?? ''
+                ).toLowerCase();
+
+
+            const correoEnCola =
+                data.email?.queued === true
+                || estadoEmail === 'pendiente'
+                || estadoEmail === 'enviando';
+
+
+            if (correoEnCola) {
+
+                vigilarEstadoCorreo(
+                    data.email?.delivery_id,
+                    data,
+                    datosFormulario
+                );
+
+            }
 
         } catch (error) {
 
@@ -579,9 +606,252 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /*
     |--------------------------------------------------------------------------
+    | SEGUIMIENTO DEL ESTADO DEL CORREO
+    |--------------------------------------------------------------------------
+    */
+
+    async function vigilarEstadoCorreo(
+        deliveryId,
+        data,
+        datosFormulario
+    ) {
+        if (
+            !deliveryId
+            || !window.emailDeliveryStatusUrl
+        ) {
+            return;
+        }
+
+        const seguimientoId =
+            ++seguimientoCorreoActual;
+
+        const maxConsultas =
+            20;
+
+        const esperaMs =
+            1500;
+
+        for (
+            let consulta = 1;
+            consulta <= maxConsultas;
+            consulta++
+        ) {
+            await esperar(
+                esperaMs
+            );
+
+            if (
+                seguimientoId
+                !== seguimientoCorreoActual
+            ) {
+                return;
+            }
+
+            try {
+                const url =
+                    window.emailDeliveryStatusUrl.replace(
+                        '__DELIVERY_ID__',
+                        encodeURIComponent(
+                            deliveryId
+                        )
+                    );
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            headers: {
+                                'Accept':
+                                    'application/json',
+
+                                'X-Requested-With':
+                                    'XMLHttpRequest',
+                            },
+
+                            cache:
+                                'no-store',
+                        }
+                    );
+
+                if (!response.ok) {
+                    continue;
+                }
+
+                const resultado =
+                    await response.json();
+
+                const estado =
+                    String(
+                        resultado.email?.status
+                        ?? ''
+                    ).toLowerCase();
+
+                if (
+                    resultado.email?.sent === true
+                    || estado === 'enviado'
+                ) {
+                    mostrarExito(
+                        data
+                    );
+
+                    return;
+                }
+
+                if (
+                    resultado.email?.failed === true
+                    || estado === 'fallido'
+                ) {
+                    mostrarAdvertenciaCorreo(
+                        {
+                            ...data,
+
+                            email: {
+                                ...data.email,
+                                ...resultado.email,
+                            },
+                        },
+                        datosFormulario
+                    );
+
+                    return;
+                }
+
+                mostrarCorreoEnCola(
+                    data,
+                    estado,
+                    resultado.email?.attempts
+                );
+
+            } catch (error) {
+                console.warn(
+                    'No se pudo consultar el estado del correo:',
+                    error
+                );
+            }
+        }
+
+        if (
+            seguimientoId
+            === seguimientoCorreoActual
+        ) {
+            actualizarIndicador(
+                'queued',
+                'El correo continúa pendiente en la cola'
+            );
+
+            if (estadoCorreoMensaje) {
+                estadoCorreoMensaje.textContent =
+                    'El correo continúa en cola. El proceso seguirá ejecutándose en segundo plano.';
+            }
+        }
+    }
+
+
+    function esperar(
+        milisegundos
+    ) {
+        return new Promise(
+            resolve =>
+                window.setTimeout(
+                    resolve,
+                    milisegundos
+                )
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | ÉXITO: REGISTRADA Y NOTIFICADA
     |--------------------------------------------------------------------------
     */
+
+    function configurarResultadoInicial(
+        data,
+        datosFormulario
+    ) {
+        const email =
+            data.email
+            ?? {};
+
+        const estado =
+            String(
+                email.status
+                ?? ''
+            ).toLowerCase();
+
+        if (
+            email.sent === true
+            || estado === 'enviado'
+        ) {
+            mostrarExito(
+                data
+            );
+
+            return;
+        }
+
+        if (
+            email.failed === true
+            || estado === 'fallido'
+        ) {
+            mostrarAdvertenciaCorreo(
+                data,
+                datosFormulario
+            );
+
+            return;
+        }
+
+        mostrarCorreoEnCola(
+            data,
+            estado,
+            email.attempts
+        );
+    }
+
+
+    function mostrarCorreoEnCola(
+        data,
+        estado = 'pendiente',
+        attempts = 0
+    ) {
+        ocultarBotonesReporte();
+
+        configurarCabecera(
+            'queued',
+            'Incidencia registrada',
+            data.message
+                ?? 'Tu incidencia fue registrada correctamente. '
+                + 'La notificación por correo se está procesando.'
+        );
+
+        configurarEstadoCorreo(
+            'queued',
+            estado === 'enviando'
+                ? 'Enviando notificación'
+                : 'Correo en procesamiento',
+            estado === 'enviando'
+                ? (
+                    Number(attempts) > 0
+                        ? `El servidor está procesando el correo. Intento ${attempts}.`
+                        : 'El servidor está procesando el correo.'
+                )
+                : 'La notificación fue agregada a la cola y será enviada en segundo plano.'
+        );
+
+        mostrarCodigo(
+            data.codigo
+        );
+
+        actualizarIndicador(
+            'queued',
+            'Correo pendiente en la cola'
+        );
+
+        refrescarIconos();
+    }
+
 
     function mostrarExito(data) {
         ocultarBotonesReporte();
@@ -721,6 +991,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ) {
         const estilos = {
 
+            queued: [
+                'bg-blue-50',
+                'border-blue-200',
+                'text-blue-600',
+                'clock-3',
+            ],
+
             success: [
                 'bg-emerald-50',
                 'border-emerald-200',
@@ -779,6 +1056,15 @@ document.addEventListener('DOMContentLoaded', () => {
         mensaje
     ) {
         const estilos = {
+
+            queued: [
+                'border-blue-200',
+                'bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50',
+                'text-blue-800',
+                'text-blue-700',
+                'mail',
+                'text-blue-600',
+            ],
 
             success: [
                 'border-emerald-200',
@@ -1084,6 +1370,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const estilos = {
 
+            queued: [
+                'text-blue-700',
+                'bg-blue-500',
+                'border-blue-200',
+                'bg-blue-50',
+            ],
+
             success: [
                 'text-emerald-700',
                 'bg-emerald-500',
@@ -1134,7 +1427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnEnviar.innerHTML = `
             <span class="spinner-envio"></span>
-            <span>Enviando reporte...</span>
+            <span>Registrando reporte...</span>
         `;
     }
 

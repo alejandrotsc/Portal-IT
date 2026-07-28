@@ -490,7 +490,7 @@
                         <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-slate-400"></span>
                     </span>
 
-                    El correo SMTP se comprobará al enviar
+                    El correo se procesará en segundo plano
                 </div>
 
 
@@ -553,7 +553,7 @@
 
 <div
     id="modalIncidencia"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
 >
     <div
         class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20"
@@ -567,12 +567,12 @@
 
             <div
                 id="modalIcono"
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm"
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm"
             >
                 <i
-                    data-lucide="circle-check-big"
+                    data-lucide="clock-3"
                     stroke-width="1.8"
-                    class="h-8 w-8 text-emerald-600"
+                    class="h-8 w-8 text-blue-600"
                 ></i>
             </div>
 
@@ -590,7 +590,7 @@
                 class="text-sm text-muted-foreground leading-relaxed
                        mt-2 max-w-sm mx-auto"
             >
-                El reporte fue registrado correctamente.
+                El reporte fue registrado correctamente. La notificación por correo se está procesando.
             </p>
 
 
@@ -610,7 +610,7 @@
 
             <div
                 id="estadoCorreoIncidencia"
-                class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm"
+                class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm"
             >
                 <div
                     class="grid grid-cols-[40px_minmax(0,1fr)]
@@ -618,10 +618,10 @@
                 >
                     <div
                         id="estadoCorreoIncidenciaIcono"
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm"
                     >
                         <i
-                            data-lucide="mail-check"
+                            data-lucide="mail"
                             stroke-width="1.8"
                             class="h-5 w-5"
                         ></i>
@@ -632,17 +632,17 @@
 
                         <p
                             id="estadoCorreoIncidenciaTitulo"
-                            class="text-sm font-semibold text-emerald-800"
+                            class="text-sm font-semibold text-blue-800"
                         >
-                            Correo enviado correctamente
+                            Correo en procesamiento
                         </p>
 
 
                         <p
                             id="estadoCorreoIncidenciaMensaje"
-                            class="mt-1.5 text-xs leading-relaxed text-emerald-700"
+                            class="mt-1.5 text-xs leading-relaxed text-blue-700"
                         >
-                            El servidor SMTP aceptó la notificación.
+                            La notificación fue agregada a la cola y será enviada en segundo plano.
                         </p>
 
 
@@ -716,7 +716,28 @@
 </div>
 
 
-<script src="{{ asset('js/incidencias.js') }}"></script>
+<script>
+    /*
+    |--------------------------------------------------------------------------
+    | URL para consultar el estado del correo
+    |--------------------------------------------------------------------------
+    */
+
+    window.emailDeliveryStatusUrl =
+        @json(
+            route(
+                'email-deliveries.status',
+                [
+                    'emailDelivery' =>
+                        '__DELIVERY_ID__',
+                ]
+            )
+        );
+</script>
+
+<script
+    src="{{ asset('js/incidencias.js') }}?v={{ filemtime(public_path('js/incidencias.js')) }}"
+></script>
 
 
 <style>

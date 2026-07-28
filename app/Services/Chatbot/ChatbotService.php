@@ -128,6 +128,25 @@ class ChatbotService
         */
 
         if ($forceAI) {
+            /*
+             * Los diagnósticos conocidos tienen prioridad sobre Ollama.
+             *
+             * Esto evita que un modelo pequeño genere instrucciones
+             * técnicas, repetitivas o inventadas para problemas comunes.
+             * Las consultas que no coincidan continúan normalmente hacia IA.
+             */
+            $diagnostic = $this->detectLocalDiagnostic(
+                $message
+            );
+
+            if ($diagnostic !== null) {
+                return $this->buildLocalDiagnosticResponse(
+                    diagnostic: $diagnostic,
+                    userName: $userName,
+                    flowContext: $flowContext
+                );
+            }
+
             return $this->askAI(
                 message: $message,
                 intent: $intent,
@@ -377,14 +396,535 @@ class ChatbotService
             );
         }
 
-        return $this->buildAIResponse(
+        $response = $this->buildAIResponse(
             $intent,
             $userName,
             $message,
             $aiResponse,
             $flowContext
         );
+
+        /*
+         * Un modelo pequeño puede ignorar parcialmente el prompt.
+         * Antes de mostrar la respuesta, validamos que no incluya
+         * instrucciones avanzadas ni más de cuatro pasos.
+         */
+        if (
+            ! $this->isSafeGeneratedMessage(
+                $response['message']
+                ?? ''
+            )
+        ) {
+            return $this->buildSafeAIFallback(
+                userName: $userName,
+                flowContext: $flowContext
+            );
+        }
+
+        return $response;
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar diagnóstico local
+    |--------------------------------------------------------------------------
+    */
+
+    private function detectLocalDiagnostic(
+        string $message
+    ): ?array {
+        if (! $this->looksLikeDiagnosticRequest($message)) {
+            return null;
+        }
+
+        $diagnostics = config(
+            'chatbot_diagnostics.diagnosticos',
+            []
+        );
+
+        if (! is_array($diagnostics)) {
+            return null;
+        }
+
+        $normalizedMessage = $this->normalizeText(
+            $message
+        );
+
+        $bestDiagnostic = null;
+        $bestScore = 0;
+
+        foreach (
+            $diagnostics as $key => $diagnostic
+        ) {
+            if (! is_array($diagnostic)) {
+                continue;
+            }
+
+            $keywords = $diagnostic['keywords']
+                ?? [];
+
+            if (! is_array($keywords)) {
+                continue;
+            }
+
+            $score = 0;
+            $matched = [];
+
+            foreach (
+                $keywords as $keyword => $weight
+            ) {
+                $normalizedKeyword =
+                    $this->normalizeText(
+                        (string) $keyword
+                    );
+
+                if (
+                    $normalizedKeyword !== ''
+                    && str_contains(
+                        $normalizedMessage,
+                        $normalizedKeyword
+                    )
+                ) {
+                    $score += max(
+                        1,
+                        (int) $weight
+                    );
+
+                    $matched[] =
+                        (string) $keyword;
+                }
+            }
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+
+                $bestDiagnostic = [
+                    'key' => (string) $key,
+                    'message' => trim(
+                        (string) (
+                            $diagnostic['message']
+                            ?? ''
+                        )
+                    ),
+                    'steps' => array_values(
+                        array_filter(
+                            is_array(
+                                $diagnostic['steps']
+                                ?? null
+                            )
+                                ? $diagnostic['steps']
+                                : [],
+                            static fn (mixed $step): bool =>
+                                is_scalar($step)
+                                && trim(
+                                    (string) $step
+                                ) !== ''
+                        )
+                    ),
+                    'matched_keywords' =>
+                        $matched,
+                    'score' => $score,
+                ];
+            }
+        }
+
+        $minimumScore = max(
+            1,
+            (int) config(
+                'chatbot_diagnostics.minimum_score',
+                1
+            )
+        );
+
+        if (
+            $bestDiagnostic === null
+            || $bestScore < $minimumScore
+        ) {
+            return null;
+        }
+
+        return $bestDiagnostic;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Confirmar que el usuario describe una falla
+    |--------------------------------------------------------------------------
+    */
+
+    private function looksLikeDiagnosticRequest(
+        string $message
+    ): bool {
+        $message = $this->normalizeText(
+            $message
+        );
+
+        $signals = [
+            'diagnostico',
+            'diagnosticar',
+            'falla',
+            'fallo',
+            'problema',
+            'no funciona',
+            'no abre',
+            'no conecta',
+            'no enciende',
+            'no prende',
+            'no imprime',
+            'sin internet',
+            'sin conexion',
+            'esta lento',
+            'esta lenta',
+            'se cae',
+            'se desconecta',
+            'se congela',
+            'se traba',
+            'virus',
+            'infectado',
+        ];
+
+        foreach ($signals as $signal) {
+            if (str_contains($message, $signal)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir diagnóstico controlado
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildLocalDiagnosticResponse(
+        array $diagnostic,
+        string $userName,
+        array $flowContext = []
+    ): array {
+        $key = trim(
+            (string) (
+                $diagnostic['key']
+                ?? ''
+            )
+        );
+
+        $message = trim(
+            (string) (
+                $diagnostic['message']
+                ?? 'Parece que hay un problema técnico.'
+            )
+        );
+
+        $steps = array_slice(
+            is_array(
+                $diagnostic['steps']
+                ?? null
+            )
+                ? $diagnostic['steps']
+                : [],
+            0,
+            4
+        );
+
+        if ($steps !== []) {
+            $message .= "\n\n";
+
+            foreach (
+                $steps as $index => $step
+            ) {
+                $message .= (
+                    $index + 1
+                )
+                    .'. '
+                    .rtrim(
+                        trim(
+                            (string) $step
+                        ),
+                        '.'
+                    )
+                    ."\.\n";
+            }
+
+            $message = rtrim($message);
+        }
+
+        $message .=
+            "\n\nSi el problema continúa, registra una incidencia para que el equipo de TI pueda revisarlo.";
+
+        $flowContext = array_merge(
+            $flowContext,
+            $this->diagnosticPrefill(
+                $key
+            )
+        );
+
+        $aiFlowResponse = $this->flowService->handle(
+            'ai.enable',
+            $userName,
+            $flowContext
+        );
+
+        return [
+            'message' => $message,
+
+            'quick_actions' => is_array(
+                $aiFlowResponse['quick_actions']
+                ?? null
+            )
+                ? $aiFlowResponse['quick_actions']
+                : [],
+
+            'redirect' => null,
+
+            'items' => [],
+
+            /*
+             * Se conserva el modo IA para permitir que el usuario
+             * escriba una aclaración sin regresar al menú.
+             */
+            'mode' => 'ai',
+
+            'flow_context' => $flowContext,
+
+            'intent' => [
+                'name' => 'diagnostico_local',
+                'diagnostic' => $key,
+                'score' => (int) (
+                    $diagnostic['score']
+                    ?? 0
+                ),
+                'confidence' => 1,
+                'matched_keywords' =>
+                    $diagnostic['matched_keywords']
+                    ?? [],
+            ],
+
+            'ai' => [
+                'source' => 'local_diagnostic',
+                'confidence' => 1,
+            ],
+        ];
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Datos sugeridos para una incidencia
+    |--------------------------------------------------------------------------
+    */
+
+    private function diagnosticPrefill(
+        string $diagnostic
+    ): array {
+        return match ($diagnostic) {
+            'internet' => [
+                'titulo' =>
+                    'Problema con internet o WiFi',
+                'equipo' =>
+                    'Red / WiFi',
+            ],
+
+            'correo' => [
+                'titulo' =>
+                    'Problema con Outlook o correo',
+                'equipo' =>
+                    'Outlook / Correo corporativo',
+            ],
+
+            'equipo_lento' => [
+                'titulo' =>
+                    'Equipo lento o congelado',
+                'equipo' =>
+                    'Computadora',
+            ],
+
+            'pc_no_enciende' => [
+                'titulo' =>
+                    'Equipo no enciende',
+                'equipo' =>
+                    'Computadora',
+            ],
+
+            'impresora' => [
+                'titulo' =>
+                    'Problema con impresora',
+                'equipo' =>
+                    'Impresora',
+            ],
+
+            'sistema' => [
+                'titulo' =>
+                    'Problema con sistema o aplicación',
+                'equipo' =>
+                    'Sistema / Aplicación',
+            ],
+
+            'perifericos' => [
+                'titulo' =>
+                    'Problema con periférico',
+                'equipo' =>
+                    'Periférico',
+            ],
+
+            'virus' => [
+                'titulo' =>
+                    'Comportamiento sospechoso en el equipo',
+                'equipo' =>
+                    'Computadora',
+            ],
+
+            default => [],
+        };
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar respuesta generada
+    |--------------------------------------------------------------------------
+    */
+
+    private function isSafeGeneratedMessage(
+        mixed $message
+    ): bool {
+        if (! is_string($message)) {
+            return false;
+        }
+
+        $message = trim($message);
+
+        if ($message === '') {
+            return false;
+        }
+
+        $normalized = $this->normalizeText(
+            $message
+        );
+
+        $forbiddenPatterns = [
+            'cmd',
+            'powershell',
+            'regedit',
+            'terminal',
+            'simbolo del sistema',
+            'ejecuta el comando',
+            'ejecutar el comando',
+            'direccion ip',
+            'cambiar dns',
+            'configuracion del router',
+            'configuracion del modem',
+            'configuracion avanzada de red',
+            'reinicia el router',
+            'reiniciar el router',
+            'reinicia el modem',
+            'reiniciar el modem',
+            'desactiva el antivirus',
+            'desactivar el antivirus',
+            'desactiva el firewall',
+            'desactivar el firewall',
+            'registro de windows',
+            'servicios de windows',
+            'como administrador',
+        ];
+
+        foreach (
+            $forbiddenPatterns as $pattern
+        ) {
+            if (
+                str_contains(
+                    $normalized,
+                    $pattern
+                )
+            ) {
+                return false;
+            }
+        }
+
+        preg_match_all(
+            '/(?:^|\R)\s*\d+[\.)]\s+/u',
+            $message,
+            $matches
+        );
+
+        if (
+            count(
+                $matches[0]
+                ?? []
+            ) > 4
+        ) {
+            return false;
+        }
+
+        /*
+         * Los modelos pequeños a veces repiten una segunda lista
+         * completa después de haber dado ya cuatro pasos.
+         */
+        if (
+            preg_match_all(
+                '/\*\*paso\s+\d+/iu',
+                $message
+            ) > 4
+        ) {
+            return false;
+        }
+
+        return mb_strlen($message) <= 1800;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Respuesta segura cuando Ollama no cumple las reglas
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildSafeAIFallback(
+        string $userName,
+        array $flowContext = []
+    ): array {
+        $aiFlowResponse = $this->flowService->handle(
+            'ai.enable',
+            $userName,
+            $flowContext
+        );
+
+        return [
+            'message' =>
+                'No pude generar una recomendación suficientemente clara y segura. Describe brevemente qué está fallando o registra una incidencia para que el equipo de TI pueda revisarlo.',
+
+            'quick_actions' => is_array(
+                $aiFlowResponse['quick_actions']
+                ?? null
+            )
+                ? $aiFlowResponse['quick_actions']
+                : [],
+
+            'redirect' => null,
+
+            'items' => [],
+
+            'mode' => 'ai',
+
+            'flow_context' => $flowContext,
+
+            'intent' => [
+                'name' => 'ai_safe_fallback',
+                'score' => 0,
+                'confidence' => 0,
+            ],
+
+            'ai' => [
+                'source' => 'safe_fallback',
+                'confidence' => 0,
+            ],
+        ];
+    }
+
 
     /*
     |--------------------------------------------------------------------------

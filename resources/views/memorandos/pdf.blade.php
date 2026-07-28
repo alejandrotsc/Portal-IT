@@ -3,732 +3,616 @@
 
 <head>
 
-<meta charset="UTF-8">
-
-
-<style>
-
-
-@page {
-    margin: 45px 55px;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| GENERAL
-|--------------------------------------------------------------------------
-*/
-
-body {
-
-    font-family:"Times New Roman", serif;
-
-    color:#000;
-
-    font-size:14px;
-
-    line-height:1.6;
-
-}
-
-
-.documento-final {
-
-    width:100%;
-
-}
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| HEADER
-|--------------------------------------------------------------------------
-*/
-
-
-.document-header {
-
-    text-align:center;
-
-    border-bottom:2px solid #111;
-
-    padding-bottom:18px;
-
-    margin-bottom:25px;
-
-}
-
-
-
-.logo-documento {
-
-    width:110px;
-
-    display:block;
-
-    margin:0 auto 12px;
-
-}
-
-
-
-.document-header h1 {
-
-    margin:0;
-
-    font-size:22px;
-
-    letter-spacing:2px;
-
-    font-weight:bold;
-
-}
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| DATOS MEMORANDO
-|--------------------------------------------------------------------------
-*/
-
-
-.datos-documento {
-
-    margin-bottom:25px;
-
-}
-
-
-
-.tabla-datos {
-
-    width:100%;
-
-    border-collapse:collapse;
-
-}
-
-
-
-.tabla-datos td {
-
-    padding:5px 0;
-
-    vertical-align:top;
-
-}
-
-
-
-.tabla-datos .label {
-
-    width:85px;
-
-    font-weight:bold;
-
-}
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| CUERPO
-|--------------------------------------------------------------------------
-*/
-
-
-.memo-body-preview {
-
-    margin:25px 0;
-
-    text-align:justify;
-
-    font-size:14px;
-
-    line-height:1.7;
-
-}
-
-
-
-.memo-body-preview p {
-
-    margin-bottom:10px;
-
-}
-
-
-
-.campo-texto {
-
-    min-height:40px;
-
-    border-bottom:1px solid #000;
-
-    padding-bottom:5px;
-
-}
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| TABLA EQUIPOS
-|--------------------------------------------------------------------------
-*/
-
-
-.equipo-output-table {
-
-
-    width:100%;
-
-    border-collapse:collapse;
-
-    margin-top:15px;
-
-
-}
-
-
-
-.equipo-output-table th,
-.equipo-output-table td {
-
-
-    border:1px solid #000;
-
-    padding:5px 6px;
-
-    font-size:10px;
-
-    text-align:center;
-
-
-}
-
-
-
-.equipo-output-table th {
-
-
-    background:#f1f5f9;
-
-    font-size:10px;
-
-    font-weight:bold;
-
-
-}
-
-
-
-.fila-vacia {
-
-
-    text-align:center;
-
-}
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| AGRADECIMIENTO
-|--------------------------------------------------------------------------
-*/
-
-
-.agradecimiento {
-
-    margin-top:30px;
-
-    font-size:14px;
-
-}
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| FIRMA
-|--------------------------------------------------------------------------
-*/
-
-
-.firma {
-
-
-    margin-top:65px;
-
-    width:230px;
-
-    margin-left:auto;
-
-    margin-right:auto;
-
-    text-align:center;
-
-
-}
-
-
-
-.firma div {
-
-
-    border-top:1px solid #000;
-
-    margin-bottom:8px;
-
-
-}
-
-
-
-.firma p {
-
-
-    margin:0;
-
-    font-weight:bold;
-
-    font-size:13px;
-
-
-}
-
-
-
-.firma small {
-
-
-    font-size:10px;
-
-    color:#555;
-
-
-}
-
-
-</style>
-
+    <meta charset="UTF-8">
+
+    <style>
+
+        @page {
+            margin: 42px 48px 48px;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONFIGURACIÓN GENERAL
+        |--------------------------------------------------------------------------
+        */
+
+        body {
+            margin: 0;
+            font-family: "DejaVu Serif", "Times New Roman", serif;
+            color: #111827;
+            font-size: 12.5px;
+            line-height: 1.55;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .documento {
+            width: 100%;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ENCABEZADO
+        |--------------------------------------------------------------------------
+        */
+
+        .encabezado {
+            border-bottom: 1.5px solid #1f2937;
+            padding-bottom: 14px;
+            margin-bottom: 22px;
+        }
+
+        .encabezado-tabla {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .encabezado-logo {
+            width: 22%;
+            vertical-align: middle;
+        }
+
+        .encabezado-titulo {
+            width: 78%;
+            padding-right: 22%;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .logo {
+            width: 104px;
+            display: block;
+        }
+
+        .titulo-principal {
+            margin: 0;
+            color: #111827;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .subtitulo {
+            margin-top: 4px;
+            color: #4b5563;
+            font-size: 9.5px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .codigo-documento {
+            color: #111827;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .codigo-documento span {
+            display: block;
+            margin-top: 3px;
+            color: #6b7280;
+            font-size: 9px;
+            font-weight: normal;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BLOQUE DE DATOS
+        |--------------------------------------------------------------------------
+        */
+
+        .datos {
+            margin-bottom: 24px;
+            border: 1px solid #d1d5db;
+        }
+
+        .tabla-datos {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabla-datos td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        .tabla-datos tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .tabla-datos .etiqueta {
+            width: 92px;
+            background: #f3f4f6;
+            color: #1f2937;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .tabla-datos .valor {
+            color: #111827;
+            font-size: 11.5px;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CUERPO DEL DOCUMENTO
+        |--------------------------------------------------------------------------
+        */
+
+        .cuerpo {
+            margin-top: 4px;
+            text-align: justify;
+        }
+
+        .cuerpo p {
+            margin: 0 0 13px;
+        }
+
+        .cuerpo strong {
+            color: #111827;
+        }
+
+        .bloque-destacado {
+            margin: 10px 0 16px;
+            padding: 11px 13px;
+            border-left: 3px solid #374151;
+            background: #f9fafb;
+        }
+
+        .bloque-destacado p {
+            margin: 0;
+        }
+
+        .seccion-titulo {
+            margin: 20px 0 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #9ca3af;
+            color: #111827;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+        }
+
+        .motivo {
+            min-height: 48px;
+            margin-top: 6px;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            text-align: justify;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TABLA DE EQUIPOS
+        |--------------------------------------------------------------------------
+        */
+
+        .tabla-equipos {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .tabla-equipos th {
+            padding: 7px 5px;
+            border: 1px solid #9ca3af;
+            background: #e5e7eb;
+            color: #111827;
+            font-size: 9px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .tabla-equipos td {
+            padding: 7px 5px;
+            border: 1px solid #cbd5e1;
+            color: #1f2937;
+            font-size: 9.5px;
+            text-align: center;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+
+        .tabla-equipos tbody tr:nth-child(even) td {
+            background: #f9fafb;
+        }
+
+        .sin-registros {
+            padding: 14px 8px !important;
+            color: #6b7280 !important;
+            font-style: italic;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CIERRE Y FIRMA
+        |--------------------------------------------------------------------------
+        */
+
+        .cierre {
+            margin-top: 26px;
+            text-align: justify;
+        }
+
+        .firma {
+            width: 270px;
+            margin: 68px auto 0;
+            text-align: center;
+        }
+
+        .firma-linea {
+            border-top: 1px solid #111827;
+            margin-bottom: 7px;
+        }
+
+        .firma-nombre {
+            margin: 0;
+            color: #111827;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .firma-cargo {
+            margin: 2px 0 0;
+            color: #6b7280;
+            font-size: 9.5px;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PIE DE PÁGINA
+        |--------------------------------------------------------------------------
+        */
+
+        .pie {
+            position: fixed;
+            right: 0;
+            bottom: -25px;
+            left: 0;
+            border-top: 1px solid #d1d5db;
+            padding-top: 6px;
+            color: #6b7280;
+            font-size: 8.5px;
+            text-align: center;
+        }
+
+    </style>
 
 </head>
 
-
-
 <body>
 
+@php
 
-<div class="documento-final">
+    $fechaDocumento = null;
 
+    if ($memorando->fecha_documento) {
+        $fechaDocumento = \Carbon\Carbon::parse(
+            $memorando->fecha_documento
+        )
+            ->locale('es')
+            ->isoFormat(
+                'D [de] MMMM [de] YYYY'
+            );
+    }
 
+@endphp
 
-{{-- HEADER --}}
 
+<div class="documento">
 
-<div class="document-header">
 
+    {{-- Encabezado --}}
 
-    <img
-        src="{{ public_path('img/tvc2.png') }}"
-        class="logo-documento">
+    <div class="encabezado">
 
+        <table class="encabezado-tabla">
 
-    <h1>
-        MEMORÁNDUM
-    </h1>
+            <tr>
 
+                <td class="encabezado-logo">
 
-</div>
+                    <img
+                        src="{{ public_path('img/tvc2.png') }}"
+                        class="logo"
+                        alt="Logo institucional"
+                    >
 
+                </td>
 
+                <td class="encabezado-titulo">
 
+                    <h1 class="titulo-principal">
+                        MEMORÁNDUM
+                    </h1>
 
+                    <div class="subtitulo">
+                        Dirección de Información y Tecnología
+                    </div>
 
+                </td>
 
-{{-- DATOS DEL MEMORANDO --}}
+            </tr>
 
+        </table>
 
-<div class="datos-documento">
+    </div>
 
 
-<table class="tabla-datos">
+    {{-- Datos del memorando --}}
 
+    <div class="datos">
 
-<tr>
+        <table class="tabla-datos">
 
-<td class="label">
-PARA:
-</td>
+            <tr>
 
-<td>
-{{ $memorando->para_nombre ?? '-' }}
-</td>
+                <td class="etiqueta">
+                    PARA:
+                </td>
 
-</tr>
+                <td class="valor">
+                    {{ $memorando->para_nombre ?? '-' }}
+                </td>
 
+            </tr>
 
+            <tr>
 
-<tr>
+                <td class="etiqueta">
+                    CC:
+                </td>
 
-<td class="label">
-CC:
-</td>
+                <td class="valor">
+                    {{ $memorando->cc_nombre ?? '-' }}
+                </td>
 
-<td>
-{{ $memorando->cc_nombre ?? '-' }}
-</td>
+            </tr>
 
-</tr>
+            <tr>
 
+                <td class="etiqueta">
+                    DE:
+                </td>
 
+                <td class="valor">
+                    {{ $memorando->de_nombre ?? '-' }}
+                </td>
 
-<tr>
+            </tr>
 
-<td class="label">
-DE:
-</td>
+            <tr>
 
-<td>
-{{ $memorando->de_nombre ?? '-' }}
-</td>
+                <td class="etiqueta">
+                    FECHA:
+                </td>
 
-</tr>
+                <td class="valor">
+                    {{ $fechaDocumento ?? '-' }}
+                </td>
 
+            </tr>
 
+            <tr>
 
-<tr>
+                <td class="etiqueta">
+                    ASUNTO:
+                </td>
 
-<td class="label">
-FECHA:
-</td>
+                <td class="valor">
+                    {{ $memorando->asunto ?? '-' }}
+                </td>
 
-<td>
+            </tr>
 
-{{ optional($memorando->fecha_documento)->format('d/m/Y') ?? '-' }}
+        </table>
 
-</td>
+    </div>
 
-</tr>
 
+    {{-- Cuerpo --}}
 
+    <div class="cuerpo">
 
-<tr>
+        <p>
+            Por este medio solicito la autorización correspondiente para el
+            ingreso de equipo tecnológico que será utilizado por:
+        </p>
 
-<td class="label">
-ASUNTO:
-</td>
+        <div class="bloque-destacado">
 
-<td>
+            <p>
 
-{{ $memorando->asunto ?? '-' }}
+                <strong>
+                    {{ data_get($memorando->datos_extra, 'colaborador', '-') }}
+                </strong>
 
-</td>
+                quien estará desempeñando actividades dentro de la compañía.
 
-</tr>
+            </p>
 
+        </div>
 
-</table>
+        <p>
 
+            <strong>
+                Área o cargo:
+            </strong>
 
-</div>
+            {{ data_get($memorando->datos_extra, 'cargo_area', '-') }}
 
+        </p>
 
+        <p>
 
+            <strong>
+                Fecha prevista para el ingreso:
+            </strong>
 
+            {{ $fechaDocumento ?? '-' }}
 
+        </p>
 
 
-{{-- CUERPO --}}
+        <div class="seccion-titulo">
+            Motivo de autorización
+        </div>
 
+        <div class="motivo">
 
-<div class="memo-body-preview">
+            {{ data_get(
+                $memorando->datos_extra,
+                'motivo_autorizacion',
+                '-'
+            ) }}
 
+        </div>
 
 
-<p>
+        <div class="seccion-titulo">
+            Detalle del equipo
+        </div>
 
-Por este medio solicito la autorización correspondiente para
-el ingreso de equipo tecnológico que será utilizado por:
+        <p>
+            A continuación se detallan las características del equipo autorizado:
+        </p>
 
+    </div>
 
-</p>
 
+    {{-- Tabla de equipos --}}
 
+    <table class="tabla-equipos">
 
+        <thead>
 
-<p>
+            <tr>
 
+                <th style="width: 24%;">
+                    Equipo
+                </th>
 
-<strong>
+                <th style="width: 18%;">
+                    Marca
+                </th>
 
-{{ data_get($memorando->datos_extra,'colaborador','-') }}
+                <th style="width: 20%;">
+                    Modelo
+                </th>
 
-</strong>
+                <th style="width: 22%;">
+                    Serie
+                </th>
 
+                <th style="width: 16%;">
+                    Color
+                </th>
 
-quien estará desempeñando actividades dentro de la compañía.
+            </tr>
 
+        </thead>
 
-</p>
+        <tbody>
 
+            @forelse(
+                data_get(
+                    $memorando->datos_extra,
+                    'equipos',
+                    []
+                ) as $equipo
+            )
 
+                <tr>
 
+                    <td>
+                        {{ $equipo['descripcion'] ?? '-' }}
+                    </td>
 
-<p>
+                    <td>
+                        {{ $equipo['marca'] ?? '-' }}
+                    </td>
 
+                    <td>
+                        {{ $equipo['modelo'] ?? '-' }}
+                    </td>
 
-Área o cargo:
+                    <td>
+                        {{ $equipo['codigo'] ?? '-' }}
+                    </td>
 
+                    <td>
+                        {{ $equipo['color'] ?? '-' }}
+                    </td>
 
-<strong>
+                </tr>
 
-{{ data_get($memorando->datos_extra,'cargo_area','-') }}
+            @empty
 
-</strong>
+                <tr>
 
+                    <td
+                        colspan="5"
+                        class="sin-registros"
+                    >
+                        Sin equipos registrados
+                    </td>
 
-</p>
+                </tr>
 
+            @endforelse
 
+        </tbody>
 
+    </table>
 
 
-<p>
+    {{-- Cierre --}}
 
+    <div class="cierre">
 
-La fecha prevista para el ingreso del equipo será:
+        <p>
+            Agradezco de antemano la atención y colaboración brindada
+            para la autorización correspondiente.
+        </p>
 
+    </div>
 
-<strong>
 
-{{ optional($memorando->fecha_documento)->format('d/m/Y') ?? '-' }}
+    {{-- Firma --}}
 
-</strong>
+    <div class="firma">
 
+        <div class="firma-linea"></div>
 
-</p>
+        <p class="firma-nombre">
+            Vo. Bo. Jefe Inmediato
+        </p>
 
+        <p class="firma-cargo">
+            Firma y sello
+        </p>
 
-
-
-
-<p>
-
-Motivo de autorización:
-
-</p>
-
-
-
-
-<p class="campo-texto">
-
-
-{{ data_get($memorando->datos_extra,'motivo_autorizacion','-') }}
-
-
-</p>
-
-
-
-
-<p>
-
-A continuación se detallan las características del equipo:
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-{{-- TABLA EQUIPOS --}}
-
-
-
-<table class="equipo-output-table">
-
-
-<thead>
-
-
-<tr>
-
-
-<th>
-EQUIPO
-</th>
-
-
-<th>
-MARCA
-</th>
-
-
-<th>
-MODELO
-</th>
-
-
-<th>
-SERIE
-</th>
-
-
-<th>
-COLOR
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-
-<tbody>
-
-
-
-@forelse(data_get($memorando->datos_extra,'equipos',[]) as $equipo)
-
-
-<tr>
-
-
-<td>
-
-{{ $equipo['descripcion'] ?? '-' }}
-
-</td>
-
-
-
-<td>
-
-{{ $equipo['marca'] ?? '-' }}
-
-</td>
-
-
-
-<td>
-
-{{ $equipo['modelo'] ?? '-' }}
-
-</td>
-
-
-
-<td>
-
-{{ $equipo['codigo'] ?? '-' }}
-
-</td>
-
-
-
-<td>
-
-{{ $equipo['color'] ?? '-' }}
-
-</td>
-
-
-
-</tr>
-
-
-
-@empty
-
-
-<tr>
-
-<td colspan="5" class="fila-vacia">
-
-Sin equipos registrados
-
-</td>
-
-</tr>
-
-
-@endforelse
-
-
-
-</tbody>
-
-
-
-</table>
-
-
-
-
-
-
-
-
-
-<p class="agradecimiento">
-
-Gracias por su colaboración.
-
-</p>
-
-
-
-
-
-
-
-<div class="firma">
-
-
-<div></div>
-
-
-<p>
-Vo.Bo. Jefe Inmediato
-</p>
-
-
-<small>
-Firma y sello
-</small>
-
-
-</div>
-
-
+    </div>
 
 
 </div>
 
 
 </body>
-
 
 </html>

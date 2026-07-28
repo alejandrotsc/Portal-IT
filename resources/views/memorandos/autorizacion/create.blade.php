@@ -202,7 +202,7 @@
                     <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-slate-400"></span>
                 </span>
 
-                El correo SMTP se comprobará al enviar
+                El correo se procesará en segundo plano
             </div>
 
             <button
@@ -222,24 +222,6 @@
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-
-
-        <button
-            type="button"
-            id="btnPreview"
-            class="group/preview inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.04] hover:text-primary hover:shadow-md active:scale-[0.98]">
-
-
-            <i data-lucide="eye"
-               stroke-width="1.8"
-               class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/preview:scale-110">
-            </i>
-
-
-            Ver preview
-
-
-        </button>
 
 
 
@@ -280,7 +262,7 @@
 
 <div
     id="modalPreview"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
+    class="fixed inset-0 z-[9998] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
 
     <div class="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20">
 
@@ -358,7 +340,7 @@
 
 <div
     id="modalDescarga"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
 >
     <div
         class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20"
@@ -386,7 +368,7 @@
                 id="modalResultadoTitulo"
                 class="mt-5 text-lg font-semibold text-foreground"
             >
-                Documento generado y enviado
+                Documento generado
             </h2>
 
 
@@ -394,7 +376,7 @@
                 id="modalResultadoMensaje"
                 class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground"
             >
-                El memorando fue generado correctamente y enviado al equipo responsable.
+                El memorando fue generado correctamente. La notificación por correo se está procesando.
             </p>
 
         </div>
@@ -560,7 +542,7 @@
 
 <div
     id="modalErrorAutorizacion"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
+    class="fixed inset-0 z-[10000] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
 
     <div class="relative w-full max-w-md overflow-hidden rounded-2xl border border-red-200 bg-white p-8 text-center shadow-2xl shadow-slate-950/20">
 
@@ -598,11 +580,33 @@
 
 
 <script>
-    // Pasamos la URL del preview al JS
-    window.autorizacionPreviewUrl = '{{ route('memorandos.preview', 'autorizacion') }}';
+    /*
+    |--------------------------------------------------------------------------
+    | URLs utilizadas por autorizacion.js
+    |--------------------------------------------------------------------------
+    */
+
+    window.autorizacionPreviewUrl =
+        @json(
+            route(
+                'memorandos.preview',
+                'autorizacion'
+            )
+        );
+
+    window.emailDeliveryStatusUrl =
+        @json(
+            route(
+                'email-deliveries.status',
+                [
+                    'emailDelivery' =>
+                        '__DELIVERY_ID__',
+                ]
+            )
+        );
 </script>
 
-<script src="{{ asset('js/autorizacion.js') }}"></script>
+<script src="{{ asset('js/autorizacion.js') }}?v=2"></script>
 
 
 @endsection

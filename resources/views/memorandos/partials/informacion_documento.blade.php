@@ -348,34 +348,31 @@
 
             <div
                 @class([
-                    'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                    'flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-muted/50 px-3.5 transition-all duration-200',
 
-                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                    'border-red-300' =>
                         $errors->has('asunto'),
 
-                    'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                    'border-border' =>
                         ! $errors->has('asunto'),
                 ])>
 
                 <i
                     data-lucide="file-text"
                     stroke-width="1.8"
-                    class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                    class="h-4 w-4 shrink-0 text-muted-foreground">
                 </i>
 
                 <input
-                    type="text"
-                    id="asunto"
-                    name="asunto"
-                    value="{{ old(
-                        'asunto',
-                        'Autorización de ingreso de equipo'
-                    ) }}"
-                    maxlength="255"
-                    placeholder="Asunto del memorando"
-                    required
-                    class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0">
-
+    type="text"
+    id="asunto"
+    name="asunto"
+    value="Autorización de ingreso de equipo"
+    readonly
+    aria-readonly="true"
+    required
+    class="w-full cursor-default border-0 bg-transparent py-2.5 text-sm font-medium text-foreground focus:outline-none focus:ring-0">
+    
             </div>
 
 

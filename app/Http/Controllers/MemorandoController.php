@@ -323,7 +323,7 @@ public function storePaseTemporal(
         |
         */
 
-        $delivery = $trackedMail->send(
+        $delivery = $trackedMail->sendAsync(
             emailable: $memorando,
 
             mailable: new PaseTemporalMail(
@@ -343,9 +343,6 @@ public function storePaseTemporal(
                 'Nuevo pase menor a 24 horas',
 
             metadata: [
-                'memorando_id' =>
-                    $memorando->id,
-
                 'tipo_id' =>
                     $memorando->tipo_id,
 
@@ -356,9 +353,6 @@ public function storePaseTemporal(
                     'pase_temporal',
             ]
         );
-
-        $emailSent =
-            $delivery->fueEnviado();
 
         DB::commit();
 
@@ -379,9 +373,9 @@ public function storePaseTemporal(
 
 
             'message'=>
-                $emailSent
-                    ? 'La solicitud del pase menor a 24 horas fue registrada correctamente y el equipo TI fue notificado.'
-                    : 'La solicitud del pase menor a 24 horas fue registrada correctamente, pero no fue posible enviar la notificación por correo.',
+                $delivery->estaPendiente()
+                    ? 'La solicitud del pase menor a 24 horas fue registrada correctamente. La notificación por correo se está procesando.'
+                    : 'La solicitud del pase menor a 24 horas fue registrada correctamente, pero no fue posible colocar la notificación en la cola de correo.',
 
 
             'id'=>
@@ -389,7 +383,10 @@ public function storePaseTemporal(
 
             'email'=>[
                 'sent'=>
-                    $emailSent,
+                    false,
+
+                'queued'=>
+                    $delivery->estaPendiente(),
 
                 'status'=>
                     $delivery->status,
@@ -765,7 +762,6 @@ $memorando->update([
 */
 
 $delivery = null;
-$emailSent = null;
 
 if ($tipo->formulario === 'autorizacion') {
     /*
@@ -779,7 +775,7 @@ if ($tipo->formulario === 'autorizacion') {
         'solicitante',
     ]);
 
-    $delivery = $trackedMail->send(
+    $delivery = $trackedMail->sendAsync(
         emailable:
             $memorando,
 
@@ -801,9 +797,6 @@ if ($tipo->formulario === 'autorizacion') {
             'Pase mayor a 24 horas pendiente de firma',
 
         metadata: [
-            'memorando_id' =>
-                $memorando->id,
-
             'codigo' =>
                 $memorando->codigo,
 
@@ -820,9 +813,6 @@ if ($tipo->formulario === 'autorizacion') {
                 $memorando->archivo_pdf,
         ]
     );
-
-    $emailSent =
-        $delivery->fueEnviado();
 }
 
 /*
@@ -888,7 +878,10 @@ $response = [
 if ($delivery !== null) {
     $response['email'] = [
         'sent' =>
-            $emailSent,
+            false,
+
+        'queued' =>
+            $delivery->estaPendiente(),
 
         'status' =>
             $delivery->status,
@@ -898,9 +891,9 @@ if ($delivery !== null) {
     ];
 
     $response['message'] =
-        $emailSent
-            ? 'El documento fue generado correctamente y enviado al equipo responsable para su proceso de firma.'
-            : 'El documento fue generado correctamente, pero no fue posible enviar la notificación por correo.';
+        $delivery->estaPendiente()
+            ? 'El documento fue generado correctamente. La notificación para el proceso de firma se está enviando en segundo plano.'
+            : 'El documento fue generado correctamente, pero no fue posible colocar la notificación en la cola de correo.';
 }
 
 return response()->json(

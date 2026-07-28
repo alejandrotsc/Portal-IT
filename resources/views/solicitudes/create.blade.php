@@ -8,196 +8,6 @@
 
     /*
     |--------------------------------------------------------------------------
-    | ESTADO DE LA NOTIFICACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    $emailComprobado = session()->has('email_sent');
-
-    $emailEnviado =
-        session('email_sent') === true;
-
-    $outlookUrl = null;
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | GENERAR CORREO DE RESPALDO
-    |--------------------------------------------------------------------------
-    */
-
-    if ($emailComprobado && ! $emailEnviado) {
-
-        $destinatario =
-            'helpdesk@televicentro.hn';
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CATEGORÍAS LEGIBLES
-        |--------------------------------------------------------------------------
-        */
-
-        $categorias = [
-
-            'computadora' =>
-                'Computadora o accesorios',
-
-            'programa' =>
-                'Instalar un programa',
-
-            'acceso' =>
-                'Solicitar un acceso',
-
-            'vpn' =>
-                'VPN / Acceso remoto',
-
-            'impresora' =>
-                'Impresoras',
-
-            'cuenta' =>
-                'Cuenta o contraseña',
-
-            'cambio' =>
-                'Cambio o configuración de equipo',
-
-            'otra' =>
-                'Otra solicitud',
-
-        ];
-
-
-        $categoriaValor =
-            session('solicitud_categoria');
-
-
-        $categoriaTexto =
-            $categorias[$categoriaValor]
-            ?? $categoriaValor
-            ?? 'No especificada';
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | INFORMACIÓN DE LA SOLICITUD
-        |--------------------------------------------------------------------------
-        */
-
-        $folio =
-            session('folio')
-            ?? 'Sin folio';
-
-
-        $nombreUsuario =
-            auth()->user()->nombre
-            ?? 'No especificado';
-
-
-        $correoUsuario =
-            auth()->user()->correo
-            ?? 'No especificado';
-
-
-        $asuntoSolicitud =
-            session('solicitud_asunto')
-            ?? 'No especificado';
-
-
-        $fechaSolicitud =
-            now()
-                ->timezone('America/Tegucigalpa')
-                ->format('d/m/Y h:i A');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | ASUNTO DE OUTLOOK
-        |--------------------------------------------------------------------------
-        */
-
-        $asuntoOutlook =
-            '[Portal TI] Seguimiento de solicitud '
-            .$folio;
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CUERPO DE OUTLOOK
-        |--------------------------------------------------------------------------
-        */
-
-        $cuerpoOutlook = implode(
-            "\r\n",
-            [
-
-                'Hola, equipo de Helpdesk:',
-
-                '',
-
-                'Registré una solicitud de servicio en el Portal TI, '
-                .'pero el equipo de soporte no recibió la notificación automática.',
-
-                '',
-
-                'Datos del usuario',
-
-                'Nombre: '.$nombreUsuario,
-
-                'Correo: '.$correoUsuario,
-
-                '',
-
-                'Información de la solicitud',
-
-                'Folio: '.$folio,
-
-                'Categoría: '.$categoriaTexto,
-
-                'Asunto: '.$asuntoSolicitud,
-
-                'Fecha de la solicitud: '.$fechaSolicitud,
-
-                '',
-
-                'La solicitud quedó registrada correctamente en el Portal TI.',
-
-                '',
-
-                'Por favor, ayúdenme a darle seguimiento.',
-
-            ]
-        );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | ENLACE DE OUTLOOK 365
-        |--------------------------------------------------------------------------
-        */
-
-        $outlookUrl =
-            'https://outlook.office.com/mail/deeplink/compose?'
-            .http_build_query(
-                [
-                    'to' =>
-                        $destinatario,
-
-                    'subject' =>
-                        $asuntoOutlook,
-
-                    'body' =>
-                        $cuerpoOutlook,
-                ],
-                '',
-                '&',
-                PHP_QUERY_RFC3986
-            );
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
     | PRELLENADO DESDE EL CHATBOT
     |--------------------------------------------------------------------------
     */
@@ -716,46 +526,38 @@
                 </section>
 
 
-                {{-- ÚLTIMO ESTADO SMTP: permanece visible aunque se cierre el modal --}}
+                {{-- ESTADO DEL CORREO: permanece visible aunque se cierre el modal --}}
 
-                @if($emailComprobado)
-
+                <div
+                    id="estadoPersistenteSolicitud"
+                    class="hidden flex-col gap-3 overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-4 shadow-sm sm:flex-row sm:items-center"
+                >
                     <div
-                        @class([
-                            'relative flex flex-col gap-3 overflow-hidden rounded-xl border p-4 shadow-sm sm:flex-row sm:items-center',
+                        id="smtpEstadoSolicitud"
+                        class="inline-flex items-center gap-2 text-xs font-medium text-blue-700"
+                    >
+                        <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-500"></span>
 
-                            'border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50' =>
-                                $emailEnviado,
-
-                            'border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50' =>
-                                ! $emailEnviado,
-                        ])>
-
-                        <div class="inline-flex items-center gap-2 text-xs font-medium {{ $emailEnviado ? 'text-emerald-700' : 'text-amber-700' }}">
-
-                            <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $emailEnviado ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
-
-                            {{ $emailEnviado ? 'Último envío de correo SMTP correcto' : 'Último envío de correo SMTP fallido' }}
-                        </div>
-
-                        @if(! $emailEnviado && $outlookUrl)
-
-                            <a
-                                href="{{ $outlookUrl }}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="group/outlook inline-flex items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
-                            >
-                                <i data-lucide="external-link" stroke-width="1.8" class="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover/outlook:translate-x-0.5 motion-safe:group-hover/outlook:-translate-y-0.5"></i>
-
-                                Reportar por Outlook 365
-                            </a>
-
-                        @endif
-
+                        Correo pendiente en la cola
                     </div>
 
-                @endif
+                    <button
+                        type="button"
+                        id="btnReportarSmtpSolicitudPersistente"
+                        data-recipient="helpdesk@televicentro.hn"
+                        data-user-name="{{ auth()->user()->nombre ?? 'N/A' }}"
+                        data-user-email="{{ auth()->user()->correo ?? 'N/A' }}"
+                        class="group/outlook hidden items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
+                    >
+                        <i
+                            data-lucide="external-link"
+                            stroke-width="1.8"
+                            class="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover/outlook:translate-x-0.5 motion-safe:group-hover/outlook:-translate-y-0.5"
+                        ></i>
+
+                        Reportar por Outlook 365
+                    </button>
+                </div>
 
 
                 {{-- BOTONES --}}
@@ -802,149 +604,180 @@
 
 
 {{-- MODAL RESPUESTA --}}
-@if(session('success'))
 
+<div
+    id="modalSolicitud"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+>
     <div
-        id="modalSolicitud"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20"
     >
+        <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl"></span>
 
-        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20">
+        {{-- Cabecera --}}
 
-            <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl"></span>
+        <div class="relative px-7 pb-6 pt-8 text-center">
 
-            {{-- Cabecera --}}
-
-            <div class="relative px-7 pb-6 pt-8 text-center">
-
-                <div
-                    class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border shadow-sm
-                           {{ $emailEnviado ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200' }}"
-                >
-                    <i
-                        data-lucide="{{ $emailEnviado ? 'circle-check-big' : 'mail-warning' }}"
-                        stroke-width="1.8"
-                        class="h-8 w-8 {{ $emailEnviado ? 'text-emerald-600' : 'text-amber-600' }}"
-                    ></i>
-                </div>
-
-                <h3 class="text-lg font-semibold text-foreground mt-5">
-                    {{ $emailEnviado ? 'Solicitud enviada' : 'Solicitud registrada con advertencia' }}
-                </h3>
-
-                <p class="text-sm text-muted-foreground leading-relaxed mt-2 max-w-sm mx-auto">
-                    {{ session('success') }}
-                </p>
-
-                @if(session('folio'))
-
-                    <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground mt-4">
-                        {{ session('folio') }}
-                    </span>
-
-                @endif
-
+            <div
+                id="modalSolicitudIcono"
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm"
+            >
+                <i
+                    data-lucide="clock-3"
+                    stroke-width="1.8"
+                    class="h-8 w-8 text-blue-600"
+                ></i>
             </div>
 
-            {{-- Estado SMTP --}}
+            <h3
+                id="modalSolicitudTitulo"
+                class="mt-5 text-lg font-semibold text-foreground"
+            >
+                Solicitud registrada
+            </h3>
 
-            <div class="relative px-7 pb-7">
+            <p
+                id="modalSolicitudMensaje"
+                class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground"
+            >
+                La solicitud fue registrada correctamente. La notificación por correo se está procesando.
+            </p>
 
-                <div
-                    class="rounded-2xl border p-5 text-left shadow-sm
-                           {{ $emailEnviado
-                                ? 'border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50'
-                                : 'border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50'
-                           }}"
-                >
-                    <div class="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-4">
+            <span
+                id="modalSolicitudFolio"
+                class="mt-4 hidden items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground"
+            ></span>
 
-                        <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-white shadow-sm
-                                   {{ $emailEnviado ? 'border-emerald-200 text-emerald-600' : 'border-amber-200 text-amber-600' }}"
+        </div>
+
+
+        {{-- Estado del correo --}}
+
+        <div class="relative px-7 pb-7">
+
+            <div
+                id="estadoCorreoSolicitud"
+                class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm"
+            >
+                <div class="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-4">
+
+                    <div
+                        id="estadoCorreoSolicitudIcono"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm"
+                    >
+                        <i
+                            data-lucide="mail"
+                            stroke-width="1.8"
+                            class="h-5 w-5"
+                        ></i>
+                    </div>
+
+                    <div class="min-w-0">
+
+                        <p
+                            id="estadoCorreoSolicitudTitulo"
+                            class="text-sm font-semibold text-blue-800"
+                        >
+                            Correo en procesamiento
+                        </p>
+
+                        <p
+                            id="estadoCorreoSolicitudMensaje"
+                            class="mt-1.5 text-xs leading-relaxed text-blue-700"
+                        >
+                            La notificación fue agregada a la cola y será enviada en segundo plano.
+                        </p>
+
+                        <button
+                            type="button"
+                            id="btnReportarSmtpSolicitud"
+                            data-recipient="helpdesk@televicentro.hn"
+                            data-user-name="{{ auth()->user()->nombre ?? 'N/A' }}"
+                            data-user-email="{{ auth()->user()->correo ?? 'N/A' }}"
+                            class="group/outlook-modal mt-4 hidden w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
                         >
                             <i
-                                data-lucide="{{ $emailEnviado ? 'mail-check' : 'mail-warning' }}"
+                                data-lucide="external-link"
                                 stroke-width="1.8"
-                                class="h-5 w-5"
+                                class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/outlook-modal:translate-x-0.5 motion-safe:group-hover/outlook-modal:-translate-y-0.5"
                             ></i>
-                        </div>
 
-                        <div class="min-w-0">
-
-                            <p class="text-sm font-semibold {{ $emailEnviado ? 'text-emerald-800' : 'text-amber-800' }}">
-                                {{ $emailEnviado ? 'Correo enviado correctamente' : 'No se pudo enviar el correo' }}
-                            </p>
-
-                            <p class="mt-1.5 text-xs leading-relaxed {{ $emailEnviado ? 'text-emerald-700' : 'text-amber-700' }}">
-                                {{ $emailEnviado
-                                    ? 'El servidor SMTP aceptó la notificación para el equipo de soporte TI.'
-                                    : 'La solicitud quedó registrada. Puedes informar la falla mediante Outlook 365.' }}
-                            </p>
-
-                            @if(! $emailEnviado && $outlookUrl)
-
-                                <a
-                                    href="{{ $outlookUrl }}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="group/outlook-modal mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
-                                >
-                                    <i data-lucide="external-link" stroke-width="1.8" class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/outlook-modal:translate-x-0.5 motion-safe:group-hover/outlook-modal:-translate-y-0.5"></i>
-
-                                    Reportar mediante Outlook 365
-                                </a>
-
-                            @endif
-
-                        </div>
+                            Reportar mediante Outlook 365
+                        </button>
 
                     </div>
 
                 </div>
-
-                <div class="mt-5 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
-                    <i data-lucide="info" stroke-width="1.8" class="mt-0.5 h-4 w-4 shrink-0 text-primary"></i>
-
-                    <p class="text-xs text-muted-foreground leading-relaxed">
-                        La solicitud permanecerá disponible en el historial, incluso si la notificación no pudo enviarse.
-                    </p>
-                </div>
-
             </div>
 
-            {{-- Acciones --}}
+            <div class="mt-5 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
+                <i
+                    data-lucide="info"
+                    stroke-width="1.8"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                ></i>
 
-            <div class="border-t border-border bg-muted/20 px-7 py-5">
+                <p class="text-xs leading-relaxed text-muted-foreground">
+                    La solicitud permanecerá disponible en el historial, incluso si la notificación no pudo enviarse.
+                </p>
+            </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        </div>
 
-                    <button
-                        type="button"
-                        id="cerrarModalSolicitud"
-                        class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-md active:scale-[0.98]"
-                    >
-                        Cerrar
-                    </button>
 
-                    <a
-                        href="{{ route('mis-solicitudes') }}"
-                        class="group/history-modal inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-[0.98]"
-                    >
-                        <i data-lucide="history" stroke-width="1.8" class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/history-modal:-rotate-12"></i>
+        {{-- Acciones --}}
 
-                        Mis solicitudes
-                    </a>
+        <div class="border-t border-border bg-muted/20 px-7 py-5">
 
-                </div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+                <button
+                    type="button"
+                    id="cerrarModalSolicitud"
+                    class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-md active:scale-[0.98]"
+                >
+                    Cerrar
+                </button>
+
+                <a
+                    href="{{ route('mis-solicitudes') }}"
+                    class="group/history-modal inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-[0.98]"
+                >
+                    <i
+                        data-lucide="history"
+                        stroke-width="1.8"
+                        class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/history-modal:-rotate-12"
+                    ></i>
+
+                    Mis solicitudes
+                </a>
 
             </div>
 
         </div>
 
     </div>
+</div>
 
-@endif
+
+<script>
+    /*
+    |--------------------------------------------------------------------------
+    | URL para consultar el estado del correo
+    |--------------------------------------------------------------------------
+    */
+
+    window.emailDeliveryStatusUrl =
+        @json(
+            route(
+                'email-deliveries.status',
+                [
+                    'emailDelivery' =>
+                        '__DELIVERY_ID__',
+                ]
+            )
+        );
+</script>
 
 
 <script

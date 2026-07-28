@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvisoController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailDeliveryController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\MemorandoController;
 use App\Http\Controllers\NotificacionController;
@@ -190,6 +191,28 @@ Route::middleware('auth')->group(function () {
         '/notificaciones/marcar-todas/leidas',
         [NotificacionController::class, 'marcarTodasComoLeidas']
     )->name('notificaciones.marcar-todas');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Estado de correos en cola
+    |--------------------------------------------------------------------------
+    |
+    | Permite que el frontend consulte si un correo continúa pendiente,
+    | fue enviado correctamente o terminó fallando.
+    |
+    */
+
+    Route::get(
+        '/email-deliveries/{emailDelivery}/status',
+        [
+            EmailDeliveryController::class,
+            'status',
+        ]
+    )
+        ->whereNumber('emailDelivery')
+        ->name('email-deliveries.status');
+
 
     /*
     |--------------------------------------------------------------------------
