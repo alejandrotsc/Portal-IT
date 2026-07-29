@@ -8,6 +8,7 @@ use App\Services\Chatbot\ChatbotService;
 use App\Services\Chatbot\GestionStatusService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -27,16 +28,71 @@ class ChatbotController extends Controller
 
     public function warmUp(): JsonResponse
     {
-        try {
+        /*
+         * Esta marca dura menos que CHATBOT_AI_KEEP_ALIVE=30m.
+         * Evita nuevas precargas mientras el modelo debería
+         * continuar residente en Ollama.
+         */
+        if (Cache::has('chatbot:ollama:warm')) {
             return response()->json([
-                'ok' => $this->aiService->warmUp(),
+                'ok' => true,
+                'already_warm' => true,
             ]);
+        }
+
+        /*
+         * Impedir que dos pestañas, usuarios o procesos ejecuten
+         * la precarga pesada al mismo tiempo.
+         */
+        $lock = Cache::lock(
+            'chatbot:ollama:warming',
+            240
+        );
+
+        if (! $lock->get()) {
+            return response()->json([
+                'ok' => true,
+                'warming' => true,
+            ]);
+        }
+
+        try {
+            /*
+             * Revisar nuevamente después de obtener el bloqueo,
+             * porque otra solicitud pudo completar la precarga
+             * justo antes de que este proceso adquiriera el lock.
+             */
+            if (Cache::has('chatbot:ollama:warm')) {
+                return response()->json([
+                    'ok' => true,
+                    'already_warm' => true,
+                ]);
+            }
+
+            $ok = $this->aiService->warmUp();
+
+            if ($ok) {
+                Cache::put(
+                    'chatbot:ollama:warm',
+                    true,
+                    now()->addMinutes(25)
+                );
+            }
+
+            return response()->json([
+                'ok' => $ok,
+                'already_warm' => false,
+            ]);
+
         } catch (Throwable $e) {
             report($e);
 
             return response()->json([
                 'ok' => false,
             ]);
+
+        } finally {
+            $lock->release();
         }
     }
 

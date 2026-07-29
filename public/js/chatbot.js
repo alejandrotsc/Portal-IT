@@ -44,6 +44,12 @@ window.chatbotWidget = function (options = {}) {
 
         requestTimeout: null,
 
+        /*
+         * Promesa compartida para impedir que el mismo widget
+         * ejecute más de una precarga simultánea.
+         */
+        warmUpPromise: null,
+
         messageCounter: 0,
 
         scrollFrame: null,
@@ -66,15 +72,6 @@ window.chatbotWidget = function (options = {}) {
                 }
             });
 
-            /*
-             * Precargar Ollama silenciosamente.
-             */
-            window.setTimeout(
-                () => {
-                    this.warmUpModel();
-                },
-                500
-            );
         },
 
 
@@ -85,6 +82,14 @@ window.chatbotWidget = function (options = {}) {
         */
 
         async warmUpModel() {
+            /*
+             * Si este mismo widget ya inició una precarga,
+             * reutilizar la promesa existente.
+             */
+            if (this.warmUpPromise) {
+                return this.warmUpPromise;
+            }
+
             const endpoint = document
                 .querySelector(
                     'meta[name="chatbot-warmup-endpoint"]'
@@ -93,66 +98,120 @@ window.chatbotWidget = function (options = {}) {
                 ?.trim();
 
             if (!endpoint) {
-                return;
+                return false;
             }
 
-            const storageKey =
+            const warmedStorageKey =
                 'portal-it-chatbot-warmed-at';
+
+            const warmingStorageKey =
+                'portal-it-chatbot-warming-at';
+
+            const now = Date.now();
 
             const warmedAt = Number(
                 window.localStorage.getItem(
-                    storageKey
+                    warmedStorageKey
                 )
-                    ?? 0
+                ?? 0
             );
 
-            const twentyMinutes =
+            const warmingAt = Number(
+                window.localStorage.getItem(
+                    warmingStorageKey
+                )
+                ?? 0
+            );
+
+            /*
+             * El backend mantiene el modelo activo durante 30 minutos.
+             * Se usa una ventana menor para evitar confiar en una marca
+             * que esté cerca de vencer.
+             */
+            const warmValidity =
                 20 * 60 * 1000;
+
+            /*
+             * Evita que dos pestañas o dos inicializaciones intenten
+             * cargar el modelo al mismo tiempo.
+             */
+            const warmingValidity =
+                5 * 60 * 1000;
 
             if (
                 warmedAt
-                && Date.now() - warmedAt < twentyMinutes
+                && now - warmedAt < warmValidity
             ) {
-                return;
+                return true;
             }
 
-            try {
-                const response = await fetch(
-                    endpoint,
-                    {
-                        method: 'POST',
+            if (
+                warmingAt
+                && now - warmingAt < warmingValidity
+            ) {
+                return true;
+            }
 
-                        headers: {
-                            'Accept':
-                                'application/json',
+            window.localStorage.setItem(
+                warmingStorageKey,
+                String(now)
+            );
 
-                            'X-Requested-With':
-                                'XMLHttpRequest',
+            this.warmUpPromise = fetch(
+                endpoint,
+                {
+                    method: 'POST',
 
-                            'X-CSRF-TOKEN':
-                                this.getCsrfToken(),
-                        },
+                    headers: {
+                        'Accept':
+                            'application/json',
 
-                        credentials:
-                            'same-origin',
-                    }
-                );
+                        'X-Requested-With':
+                            'XMLHttpRequest',
 
-                if (response.ok) {
-                    window.localStorage.setItem(
-                    storageKey,
-                    String(Date.now())
-                );
+                        'X-CSRF-TOKEN':
+                            this.getCsrfToken(),
+                    },
+
+                    credentials:
+                        'same-origin',
                 }
+            )
+                .then(async (response) => {
+                    if (!response.ok) {
+                        return false;
+                    }
 
-            } catch (error) {
-                /*
-                 * La precarga es opcional.
-                 */
-                console.debug(
-                    'No fue posible precargar Ollama.'
-                );
-            }
+                    const data =
+                        await response.json();
+
+                    if (data?.ok !== true) {
+                        return false;
+                    }
+
+                    window.localStorage.setItem(
+                        warmedStorageKey,
+                        String(Date.now())
+                    );
+
+                    return true;
+                })
+                .catch(() => {
+                    console.debug(
+                        'No fue posible precargar Ollama.'
+                    );
+
+                    return false;
+                })
+                .finally(() => {
+                    window.localStorage.removeItem(
+                        warmingStorageKey
+                    );
+
+                    this.warmUpPromise = null;
+                });
+
+            return this.warmUpPromise;
         },
 
 
@@ -241,6 +300,17 @@ window.chatbotWidget = function (options = {}) {
                 );
 
                 return;
+            }
+
+            /*
+             * Ollama solo se precarga cuando el usuario decide
+             * utilizar la consulta libre con IA.
+             *
+             * No se usa await para que la navegación del flow
+             * continúe sin esperar a que el modelo termine de cargar.
+             */
+            if (action === 'ai.enable') {
+                void this.warmUpModel();
             }
 
             const visibleLabel = String(

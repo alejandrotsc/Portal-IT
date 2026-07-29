@@ -47,9 +47,7 @@ class AuthController extends Controller
     public function authenticate(
         LoginRequest $request
     ): JsonResponse|RedirectResponse {
-        $correo = $request->validated(
-            'correo'
-        );
+        $correo = $request->validated('correo');
 
         $usuario = Usuario::query()
             ->whereRaw(
@@ -59,183 +57,79 @@ class AuthController extends Controller
             ->first();
 
         $mensajeGenerico =
-            'Si el correo está registrado, recibirá un enlace para iniciar sesión.';
+            'Si el correo está registrado, recibirá las instrucciones de acceso correspondientes.';
 
         /*
         |--------------------------------------------------------------------------
-        | No revelar si el correo existe
+        | Respuesta uniforme para evitar enumeración de cuentas
         |--------------------------------------------------------------------------
+        |
+        | La respuesta pública no indica si el correo existe, si la cuenta está
+        | pendiente de verificación ni si el correo fue colocado en la cola.
+        |
         */
 
         if (
             ! $usuario
             || ! $usuario->activo
         ) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' =>
-                        true,
-
-                    'message' =>
-                        $mensajeGenerico,
-
-                    'email' => [
-                        'sent' =>
-                            false,
-
-                        'queued' =>
-                            false,
-
-                        'failed' =>
-                            false,
-
-                        'status' =>
-                            null,
-
-                        'delivery_id' =>
-                            null,
-                    ],
-                ]);
-            }
-
-            return back()->with(
-                'success',
+            return $this->respuestaAutenticacionGenerica(
+                $request,
                 $mensajeGenerico
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Correo todavía no verificado
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            ! $usuario
-                ->correoEstaVerificado()
-        ) {
-            return $this->enviarCodigoPendiente(
-                $usuario,
-                $request
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Generar enlace mágico y colocarlo en cola
-        |--------------------------------------------------------------------------
-        */
-
         try {
-            $token = $this->tokens
-                ->generarTokenLogin(
-                    $usuario
+            if (! $usuario->correoEstaVerificado()) {
+                $this->procesarCodigoPendiente(
+                    $usuario,
+                    $request
+                );
+            } else {
+                $token = $this->tokens
+                    ->generarTokenLogin($usuario);
+
+                $url = route(
+                    'login.magic',
+                    ['token' => $token]
                 );
 
-            $url = route(
-                'login.magic',
-                [
-                    'token' =>
-                        $token,
-                ]
-            );
-
-            $delivery = $this->trackedMail
-                ->sendAsync(
-                    emailable:
+                $this->trackedMail->sendAsync(
+                    emailable: $usuario,
+                    mailable: new EnlaceMagicoMail(
                         $usuario,
-
-                    mailable:
-                        new EnlaceMagicoMail(
-                            $usuario,
-                            $url
-                        ),
-
-                    recipientEmail:
-                        $usuario->correo,
-
-                    mailType:
-                        'enlace_magico_login',
-
-                    recipientName:
-                        $usuario->nombre,
-
-                    subject:
-                        'Acceso al Portal TI',
-
+                        $url
+                    ),
+                    recipientEmail: $usuario->correo,
+                    mailType: 'enlace_magico_login',
+                    recipientName: $usuario->nombre,
+                    subject: 'Acceso al Portal TI',
                     metadata: [
-                        'usuario_id' =>
-                            $usuario->id,
-
-                        'tipo' =>
-                            'login',
-
-                        'url' =>
-                            $url,
+                        'usuario_id' => $usuario->id,
+                        'tipo' => 'login',
+                        'url' => $url,
                     ]
                 );
-
-            $this->guardarDeliveryEnSesion(
-                $request,
-                $delivery
-            );
-
+            }
         } catch (Throwable $exception) {
             Log::error(
-                'No se pudo colocar el enlace mágico en la cola.',
+                'No se pudo procesar la solicitud de acceso.',
                 [
-                    'usuario_id' =>
-                        $usuario->id,
-
-                    'error' =>
-                        $exception->getMessage(),
+                    'usuario_id' => $usuario->id,
+                    'exception' => $exception::class,
+                    'error_code' => $exception->getCode(),
                 ]
             );
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' =>
-                        false,
-
-                    'message' =>
-                        'No fue posible procesar el enlace de acceso. Intenta nuevamente.',
-                ], 500);
-            }
-
-            return back()
-                ->withInput([
-                    'correo' =>
-                        $correo,
-                ])
-                ->withErrors([
-                    'correo' =>
-                        'No fue posible procesar el enlace de acceso. Intenta nuevamente.',
-                ]);
+            /*
+            | No se devuelve el detalle al cliente para impedir que la respuesta
+            | permita distinguir cuentas existentes de cuentas inexistentes.
+            */
         }
 
-        $mensaje =
-            $delivery->estaPendiente()
-                ? 'Si el correo está registrado, el enlace de acceso se está procesando.'
-                : $mensajeGenerico;
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' =>
-                    true,
-
-                'message' =>
-                    $mensaje,
-
-                'email' =>
-                    $this->respuestaEmail(
-                        $delivery
-                    ),
-            ]);
-        }
-
-        return back()->with(
-            'success',
-            $mensaje
+        return $this->respuestaAutenticacionGenerica(
+            $request,
+            $mensajeGenerico
         );
     }
 
@@ -314,7 +208,7 @@ class AuthController extends Controller
                         false,
 
                     'message' =>
-                        'No existe un rol predeterminado para usuarios.',
+                        'No fue posible completar el registro. Intenta nuevamente.',
                 ], 422);
             }
 
@@ -322,7 +216,7 @@ class AuthController extends Controller
                 ->withInput()
                 ->withErrors([
                     'registro' =>
-                        'No existe un rol predeterminado para usuarios.',
+                        'No fue posible completar el registro. Intenta nuevamente.',
                 ]);
         }
 
@@ -792,151 +686,64 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    private function enviarCodigoPendiente(
+    private function procesarCodigoPendiente(
         Usuario $usuario,
         Request $request
-    ): JsonResponse|RedirectResponse {
+    ): void {
         $request->session()->put(
             'correo_verificacion',
             $usuario->correo
         );
 
-        try {
-            $codigo = $this->tokens
-                ->generarCodigoRegistro(
-                    $usuario
-                );
+        $codigo = $this->tokens
+            ->generarCodigoRegistro($usuario);
 
-            $delivery = $this->trackedMail
-                ->sendAsync(
-                    emailable:
-                        $usuario,
+        $this->trackedMail->sendAsync(
+            emailable: $usuario,
+            mailable: new CodigoVerificacionMail(
+                $usuario,
+                $codigo
+            ),
+            recipientEmail: $usuario->correo,
+            mailType: 'codigo_verificacion_pendiente',
+            recipientName: $usuario->nombre,
+            subject: 'Verifica tu correo',
+            metadata: [
+                'usuario_id' => $usuario->id,
+                'tipo' => 'cuenta_pendiente',
+                'codigo' => $codigo,
+            ]
+        );
+    }
 
-                    mailable:
-                        new CodigoVerificacionMail(
-                            $usuario,
-                            $codigo
-                        ),
 
-                    recipientEmail:
-                        $usuario->correo,
+    /*
+    |--------------------------------------------------------------------------
+    | Respuesta pública uniforme del login
+    |--------------------------------------------------------------------------
+    */
 
-                    mailType:
-                        'codigo_verificacion_pendiente',
-
-                    recipientName:
-                        $usuario->nombre,
-
-                    subject:
-                        'Verifica tu correo',
-
-                    metadata: [
-                        'usuario_id' =>
-                            $usuario->id,
-
-                        'tipo' =>
-                            'cuenta_pendiente',
-
-                        'codigo' =>
-                            $codigo,
-                    ]
-                );
-
-            $this->guardarDeliveryEnSesion(
-                $request,
-                $delivery
-            );
-
-        } catch (Throwable $exception) {
-            Log::error(
-                'No se pudo colocar el código pendiente en la cola.',
-                [
-                    'usuario_id' =>
-                        $usuario->id,
-
-                    'error' =>
-                        $exception->getMessage(),
-                ]
-            );
-
-            $mensaje =
-                'No fue posible procesar el código. Intenta reenviarlo.';
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' =>
-                        true,
-
-                    'message' =>
-                        $mensaje,
-
-                    'redirect' =>
-                        route(
-                            'register.verification'
-                        ),
-
-                    'email' => [
-                        'sent' =>
-                            false,
-
-                        'queued' =>
-                            false,
-
-                        'failed' =>
-                            true,
-
-                        'status' =>
-                            'fallido',
-
-                        'delivery_id' =>
-                            null,
-                    ],
-                ]);
-            }
-
-            return redirect()
-                ->route(
-                    'register.verification'
-                )
-                ->withErrors([
-                    'codigo' =>
-                        $mensaje,
-                ]);
-        }
-
-        $mensaje =
-            $delivery->estaPendiente()
-                ? 'Debes verificar tu correo. El nuevo código se está procesando.'
-                : 'Debes verificar tu correo, pero no fue posible colocar el código en la cola.';
-
+    private function respuestaAutenticacionGenerica(
+        Request $request,
+        string $mensaje
+    ): JsonResponse|RedirectResponse {
         if ($request->expectsJson()) {
-            return response()->json([
-                'success' =>
-                    true,
-
-                'message' =>
-                    $mensaje,
-
-                'redirect' =>
-                    route(
-                        'register.verification'
-                    ),
-
-                'email' =>
-                    $this->respuestaEmail(
-                        $delivery
-                    ),
-            ]);
+            return response()
+                ->json([
+                    'success' => true,
+                    'message' => $mensaje,
+                ])
+                ->header(
+                    'Cache-Control',
+                    'no-store, no-cache, must-revalidate, private'
+                )
+                ->header('Pragma', 'no-cache');
         }
 
-        return redirect()
-            ->route(
-                'register.verification'
-            )
-            ->with(
-                'success',
-                $mensaje
-            );
+        return back()->with(
+            'success',
+            $mensaje
+        );
     }
 
 

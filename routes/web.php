@@ -239,6 +239,7 @@ Route::middleware('auth')->group(function () {
         ]
     )
         ->whereNumber('emailDelivery')
+        ->middleware('throttle:60,1')
         ->name('email-deliveries.status');
 
 
@@ -263,7 +264,9 @@ Route::middleware('auth')->group(function () {
             MemorandoController::class,
             'store',
         ]
-    )->name('memorandos.store');
+    )
+        ->middleware('throttle:10,1')
+        ->name('memorandos.store');
 
 
     /*
@@ -287,7 +290,9 @@ Route::middleware('auth')->group(function () {
             MemorandoController::class,
             'storePaseTemporal',
         ]
-    )->name('memorandos.pase_temporal.store');
+    )
+        ->middleware('throttle:10,1')
+        ->name('memorandos.pase_temporal.store');
 
 
     /*
@@ -434,7 +439,9 @@ Route::middleware('auth')->group(function () {
             SolicitudController::class,
             'store',
         ]
-    )->name('solicitudes.store');
+    )
+        ->middleware('throttle:10,1')
+        ->name('solicitudes.store');
 
 
     /*
@@ -483,7 +490,9 @@ Route::middleware('auth')->group(function () {
                     ChatbotController::class,
                     'warmUp',
                 ]
-            )->name('warm-up');
+            )
+                ->middleware('throttle:5,1')
+                ->name('warm-up');
 
 
             Route::post(
@@ -492,7 +501,9 @@ Route::middleware('auth')->group(function () {
                     ChatbotController::class,
                     'message',
                 ]
-            )->name('message');
+            )
+                ->middleware('throttle:20,1')
+                ->name('message');
 
 
             Route::post(
@@ -501,7 +512,9 @@ Route::middleware('auth')->group(function () {
                     ChatbotController::class,
                     'stream',
                 ]
-            )->name('stream');
+            )
+                ->middleware('throttle:10,1')
+                ->name('stream');
 
 
             Route::get(
@@ -510,7 +523,9 @@ Route::middleware('auth')->group(function () {
                     ChatbotController::class,
                     'estado',
                 ]
-            )->name('estado');
+            )
+                ->middleware('throttle:60,1')
+                ->name('estado');
 
 
             Route::post(
@@ -519,7 +534,9 @@ Route::middleware('auth')->group(function () {
                     ChatbotController::class,
                     'feedback',
                 ]
-            )->name('feedback');
+            )
+                ->middleware('throttle:20,1')
+                ->name('feedback');
 
         });
 
@@ -535,9 +552,18 @@ Route::middleware('auth')->group(function () {
         IncidenciaController::class
     )->only([
         'create',
-        'store',
         'show',
     ]);
+
+    Route::post(
+        '/incidencias',
+        [
+            IncidenciaController::class,
+            'store',
+        ]
+    )
+        ->middleware('throttle:10,1')
+        ->name('incidencias.store');
 
 
     /*

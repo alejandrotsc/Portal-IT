@@ -234,7 +234,7 @@
 
             <i id="btnGenerarIcono" data-lucide="send"
                stroke-width="1.8"
-               class="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/send:translate-x-0.5 motion-safe:group-hover/send:-translate-y-0.5">
+               class="h-4 w-4 transition-transform duration-200">
             </i>
 
 

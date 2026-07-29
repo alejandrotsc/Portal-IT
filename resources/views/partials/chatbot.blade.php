@@ -592,7 +592,7 @@
                     class="group/send flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
                     aria-label="Enviar consulta"
                 >
-                    <i data-lucide="send" class="h-3.5 w-3.5 transition-transform duration-200 group-hover/send:translate-x-0.5"></i>
+                    <i data-lucide="send" class="h-3.5 w-3.5 transition-transform duration-200"></i>
                 </button>
 
             </form>

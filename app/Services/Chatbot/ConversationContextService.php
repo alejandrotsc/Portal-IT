@@ -8,18 +8,30 @@ class ConversationContextService
 {
     public function getRecent(
         ?int $userId,
-        int $limit = 6
+        int $limit = 2
     ): array {
-        if(!$userId){
+        if (! $userId) {
             return [];
         }
 
+        /*
+         * El límite representa conversaciones completas,
+         * no mensajes individuales.
+         */
         $limit = max(
-            1,
-            min($limit, 20)
+            0,
+            min($limit, 6)
         );
 
+        if ($limit === 0) {
+            return [];
+        }
+
         return ChatbotConversation::query()
+            ->select([
+                'mensaje',
+                'respuesta',
+            ])
             ->where(
                 'usuario_id',
                 $userId
@@ -27,37 +39,51 @@ class ConversationContextService
             ->whereNotNull(
                 'respuesta'
             )
+            /*
+             * No enviar al modelo acciones internas de los flows.
+             */
+            ->where(
+                'mensaje',
+                'not like',
+                '[Acción]%'
+            )
             ->latest('id')
             ->limit($limit)
             ->get()
             ->reverse()
             ->flatMap(
-                function(
+                static function (
                     ChatbotConversation $conversation
                 ): array {
                     $messages = [];
 
-                    $userMessage =
-                        trim(
-                            (string) $conversation->mensaje
-                        );
+                    $userMessage = trim(
+                        (string) $conversation->mensaje
+                    );
 
-                    $assistantMessage =
-                        trim(
-                            (string) $conversation->respuesta
-                        );
+                    $assistantMessage = trim(
+                        (string) $conversation->respuesta
+                    );
 
-                    if($userMessage !== ''){
+                    if ($userMessage !== '') {
                         $messages[] = [
-                            'role'=>'user',
-                            'content'=>$userMessage,
+                            'role' => 'user',
+                            'content' => mb_substr(
+                                $userMessage,
+                                0,
+                                500
+                            ),
                         ];
                     }
 
-                    if($assistantMessage !== ''){
+                    if ($assistantMessage !== '') {
                         $messages[] = [
-                            'role'=>'assistant',
-                            'content'=>$assistantMessage,
+                            'role' => 'assistant',
+                            'content' => mb_substr(
+                                $assistantMessage,
+                                0,
+                                700
+                            ),
                         ];
                     }
 

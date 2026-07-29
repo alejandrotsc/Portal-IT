@@ -123,7 +123,7 @@ class OllamaAIService implements AIServiceInterface
 
                             'num_predict' => (int) config(
                                 'chatbot.ai.num_predict',
-                                280
+                                360
                             ),
 
                             'repeat_penalty' => (float) config(
@@ -468,7 +468,7 @@ public function warmUp(): bool
 
     $model = (string) config(
         'chatbot.ai.model',
-        'llama3.2:1b'
+        'llama3.2:3b'
     );
 
     try {

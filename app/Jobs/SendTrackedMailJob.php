@@ -13,9 +13,11 @@ use App\Models\Incidencia;
 use App\Models\Memorando;
 use App\Models\Solicitud;
 use App\Models\Usuario;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
@@ -141,9 +143,6 @@ class SendTrackedMailJob implements ShouldQueue
                     'mail_type' =>
                         $delivery->mail_type,
 
-                    'recipient_email' =>
-                        $delivery->recipient_email,
-
                     'provider_message_id' =>
                         $providerMessageId,
                 ]
@@ -173,7 +172,7 @@ class SendTrackedMailJob implements ShouldQueue
                         $nextRetryAt,
 
                     'last_error' =>
-                        $exception->getMessage(),
+                        $this->descripcionSeguraError($exception),
 
                     'last_attempt_at' =>
                         now(),
@@ -182,7 +181,7 @@ class SendTrackedMailJob implements ShouldQueue
             } else {
                 $delivery->marcarFallido(
                     error:
-                        $exception,
+                        $this->descripcionSeguraError($exception),
 
                     errorCode:
                         (string) $exception->getCode(),
@@ -207,9 +206,6 @@ class SendTrackedMailJob implements ShouldQueue
                     'mail_type' =>
                         $delivery->mail_type,
 
-                    'recipient_email' =>
-                        $delivery->recipient_email,
-
                     'attempt' =>
                         $intentoActual,
 
@@ -222,8 +218,11 @@ class SendTrackedMailJob implements ShouldQueue
                     'next_retry_at' =>
                         $nextRetryAt?->toDateTimeString(),
 
-                    'error' =>
-                        $exception->getMessage(),
+                    'exception_class' =>
+                        $exception::class,
+
+                    'error_code' =>
+                        (string) $exception->getCode(),
                 ]
             );
 
@@ -396,12 +395,12 @@ class SendTrackedMailJob implements ShouldQueue
                 'usuario_id'
             );
 
-        $url =
-            $this->obtenerTextoMetadata(
-                $metadata,
-                'url',
-                'URL del enlace mágico'
-            );
+        $url = $this->obtenerSecretoMetadata(
+            metadata: $metadata,
+            encryptedKey: 'url_cifrada',
+            legacyKey: 'url',
+            descripcion: 'URL del enlace mágico'
+        );
 
         $usuario = Usuario::query()
             ->findOrFail(
@@ -426,12 +425,12 @@ class SendTrackedMailJob implements ShouldQueue
                 'usuario_id'
             );
 
-        $codigo =
-            $this->obtenerTextoMetadata(
-                $metadata,
-                'codigo',
-                'código de verificación'
-            );
+        $codigo = $this->obtenerSecretoMetadata(
+            metadata: $metadata,
+            encryptedKey: 'codigo_cifrado',
+            legacyKey: 'codigo',
+            descripcion: 'código de verificación'
+        );
 
         $usuario = Usuario::query()
             ->findOrFail(
@@ -441,6 +440,59 @@ class SendTrackedMailJob implements ShouldQueue
         return new CodigoVerificacionMail(
             $usuario,
             $codigo
+        );
+    }
+
+    /**
+     * Descifrar secretos de autenticación almacenados en metadata.
+     *
+     * La compatibilidad con la clave antigua en texto plano permite procesar
+     * trabajos que ya estaban en cola antes del cambio. Los nuevos registros
+     * deben utilizar exclusivamente las claves cifradas.
+     */
+    private function obtenerSecretoMetadata(
+        array $metadata,
+        string $encryptedKey,
+        string $legacyKey,
+        string $descripcion
+    ): string {
+        $encryptedValue = $metadata[$encryptedKey] ?? null;
+
+        if (is_string($encryptedValue) && trim($encryptedValue) !== '') {
+            try {
+                $value = Crypt::decryptString($encryptedValue);
+            } catch (DecryptException $exception) {
+                throw new RuntimeException(
+                    "No fue posible descifrar {$descripcion}.",
+                    previous: $exception
+                );
+            }
+
+            if (trim($value) === '') {
+                throw new RuntimeException(
+                    "La metadata del correo no contiene {$descripcion} válida."
+                );
+            }
+
+            return trim($value);
+        }
+
+        $legacyValue = $metadata[$legacyKey] ?? null;
+
+        if (is_string($legacyValue) && trim($legacyValue) !== '') {
+            Log::warning(
+                'Se procesó metadata antigua de autenticación sin cifrar.',
+                [
+                    'email_delivery_id' => $this->emailDeliveryId,
+                    'legacy_key' => $legacyKey,
+                ]
+            );
+
+            return trim($legacyValue);
+        }
+
+        throw new RuntimeException(
+            "La metadata del correo no contiene {$descripcion} válida."
         );
     }
 
@@ -557,6 +609,22 @@ class SendTrackedMailJob implements ShouldQueue
     }
 
     /**
+     * Generar una descripción segura para base de datos y logs.
+     */
+    private function descripcionSeguraError(Throwable $exception): string
+    {
+        $codigo = (string) $exception->getCode();
+
+        return sprintf(
+            'Falló el procesamiento del correo (%s%s).',
+            $exception::class,
+            $codigo !== '' && $codigo !== '0'
+                ? ", código {$codigo}"
+                : ''
+        );
+    }
+
+    /**
      * Calcular cuándo ocurrirá el siguiente intento.
      */
     private function calcularSiguienteReintento(): mixed
@@ -599,8 +667,11 @@ class SendTrackedMailJob implements ShouldQueue
                     'email_delivery_id' =>
                         $this->emailDeliveryId,
 
-                    'error' =>
-                        $exception?->getMessage(),
+                    'exception_class' =>
+                        $exception ? $exception::class : null,
+
+                    'error_code' =>
+                        $exception ? (string) $exception->getCode() : null,
                 ]
             );
 
@@ -611,7 +682,8 @@ class SendTrackedMailJob implements ShouldQueue
             $delivery->marcarFallido(
                 error:
                     $exception
-                    ?? 'El trabajo de correo falló definitivamente.',
+                        ? $this->descripcionSeguraError($exception)
+                        : 'El trabajo de correo falló definitivamente.',
 
                 errorCode:
                     $exception
@@ -638,14 +710,14 @@ class SendTrackedMailJob implements ShouldQueue
                 'mail_type' =>
                     $delivery->mail_type,
 
-                'recipient_email' =>
-                    $delivery->recipient_email,
-
                 'attempts' =>
                     $delivery->fresh()?->attempts,
 
-                'error' =>
-                    $exception?->getMessage(),
+                    'exception_class' =>
+                        $exception ? $exception::class : null,
+
+                    'error_code' =>
+                        $exception ? (string) $exception->getCode() : null,
             ]
         );
     }
