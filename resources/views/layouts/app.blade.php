@@ -79,7 +79,7 @@
         </p>
 
         <p class="text-xs text-muted-foreground">
-            v2.4.1 · Lunes a Viernes 08:00–18:00
+            v1.0 · Lunes a Viernes 09:00–18:00
         </p>
 
     </div>

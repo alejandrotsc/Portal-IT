@@ -387,33 +387,45 @@
 
                     <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-200 hover:shadow-md">
 
-                        <div class="flex items-center gap-3 px-6 py-5 border-b border-border">
+                        <div class="flex items-center justify-between gap-4 px-6 py-5 border-b border-border">
 
-                            <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-blue-500/10 text-blue-600 transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center gap-3">
+
+                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-blue-500/10 text-blue-600 transition-transform duration-300 group-hover:scale-105">
+
+                                    <i
+                                        data-lucide="paperclip"
+                                        stroke-width="1.8"
+                                        class="w-[18px] h-[18px]">
+                                    </i>
+
+                                </div>
+
+                                <div>
+
+                                    <h2 class="text-sm font-semibold text-foreground">
+                                        Evidencias adjuntas
+                                    </h2>
+
+                                    <p class="mt-1 text-xs text-muted-foreground">
+                                        Archivos enviados por el usuario y texto identificado mediante OCR.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 shrink-0">
 
                                 <i
-                                    data-lucide="paperclip"
+                                    data-lucide="images"
                                     stroke-width="1.8"
-                                    class="w-[18px] h-[18px]">
+                                    class="w-3.5 h-3.5">
                                 </i>
 
-                            </div>
+                                {{ $incidencia->archivos->count() }}
 
-                            <div>
-
-                                <h2 class="text-sm font-semibold text-foreground">
-
-                                    Evidencias adjuntas
-
-                                </h2>
-
-                                <p class="mt-1 text-xs text-muted-foreground">
-
-                                    Archivos enviados por el usuario junto al reporte.
-
-                                </p>
-
-                            </div>
+                            </span>
 
                         </div>
 
@@ -422,54 +434,105 @@
 
                             @foreach($incidencia->archivos as $archivo)
 
-                                <a
-                                    href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($archivo->ruta) }}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="group/file flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.03] hover:shadow-sm">
+                                <article class="group/file overflow-hidden rounded-xl border border-border bg-muted/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.03] hover:shadow-sm">
 
-                                    <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg bg-primary/10 text-primary transition-transform duration-200 group-hover/file:scale-105">
+                                    <a
+                                        href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($archivo->ruta) }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="flex items-center gap-3 p-4">
+
+                                        <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg bg-primary/10 text-primary transition-transform duration-200 group-hover/file:scale-105">
+
+                                            <i
+                                                data-lucide="image"
+                                                stroke-width="1.8"
+                                                class="w-[18px] h-[18px]">
+                                            </i>
+
+                                        </div>
+
+                                        <div class="min-w-0 flex-1">
+
+                                            <p
+                                                title="{{ $archivo->nombre_original }}"
+                                                class="text-sm font-semibold text-foreground truncate">
+
+                                                {{ $archivo->nombre_original }}
+
+                                            </p>
+
+                                            <p class="mt-1 text-xs text-muted-foreground">
+
+                                                {{ mb_strtoupper($archivo->extension) }}
+
+                                                ·
+
+                                                {{ number_format(
+                                                    $archivo->tamano / 1024,
+                                                    1
+                                                ) }} KB
+
+                                            </p>
+
+                                        </div>
 
                                         <i
-                                            data-lucide="image"
+                                            data-lucide="external-link"
                                             stroke-width="1.8"
-                                            class="w-[18px] h-[18px]">
+                                            class="w-4 h-4 shrink-0 text-muted-foreground transition-colors duration-200 group-hover/file:text-primary">
                                         </i>
 
+                                    </a>
+
+
+                                    <div class="border-t border-border px-4 py-3">
+
+                                        @if(filled($archivo->texto_ocr))
+
+                                            <details class="group/details">
+
+                                                <summary class="flex items-center gap-1.5 cursor-pointer list-none text-xs font-semibold text-primary">
+
+                                                    <i
+                                                        data-lucide="scan-text"
+                                                        stroke-width="1.8"
+                                                        class="w-3.5 h-3.5">
+                                                    </i>
+
+                                                    Texto identificado por OCR
+
+                                                    <i
+                                                        data-lucide="chevron-down"
+                                                        stroke-width="1.8"
+                                                        class="w-3.5 h-3.5 ml-auto transition-transform duration-200 group-open/details:rotate-180">
+                                                    </i>
+
+                                                </summary>
+
+                                                <div class="mt-3 max-h-52 overflow-y-auto rounded-lg border border-border bg-background p-3 text-xs text-foreground leading-relaxed whitespace-pre-line break-words">{{ $archivo->texto_ocr }}</div>
+
+                                            </details>
+
+                                        @else
+
+                                            <div class="flex items-center gap-2 text-xs text-muted-foreground">
+
+                                                <i
+                                                    data-lucide="scan-line"
+                                                    stroke-width="1.8"
+                                                    class="w-3.5 h-3.5 shrink-0">
+                                                </i>
+
+                                                No se identificó texto en esta evidencia.
+
+                                            </div>
+
+                                        @endif
+
                                     </div>
 
-                                    <div class="min-w-0 flex-1">
-
-                                        <p
-                                            title="{{ $archivo->nombre_original }}"
-                                            class="text-sm font-semibold text-foreground truncate">
-
-                                            {{ $archivo->nombre_original }}
-
-                                        </p>
-
-                                        <p class="mt-1 text-xs text-muted-foreground">
-
-                                            {{ mb_strtoupper($archivo->extension) }}
-
-                                            ·
-
-                                            {{ number_format(
-                                                $archivo->tamano / 1024,
-                                                1
-                                            ) }} KB
-
-                                        </p>
-
-                                    </div>
-
-                                    <i
-                                        data-lucide="external-link"
-                                        stroke-width="1.8"
-                                        class="w-4 h-4 shrink-0 text-muted-foreground transition-colors duration-200 group-hover/file:text-primary">
-                                    </i>
-
-                                </a>
+                                </article>
 
                             @endforeach
 

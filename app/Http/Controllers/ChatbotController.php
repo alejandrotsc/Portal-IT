@@ -541,7 +541,13 @@ class ChatbotController extends Controller
             'flow_context.*' => [
                 'nullable',
                 'string',
-                'max:1000',
+
+                /*
+                 * prefill_source puede conservar hasta 3000 caracteres.
+                 * Los demás campos vuelven a limitarse a 1000 dentro de
+                 * prepareFlowContext().
+                 */
+                'max:3000',
             ],
         ]);
     }
@@ -577,6 +583,12 @@ class ChatbotController extends Controller
             'usuario_afectado',
             'equipo_actual',
             'motivo_cambio',
+
+            /*
+             * Texto interno acumulado desde el modo IA. Se utiliza solamente
+             * para extraer datos y nunca se envía como campo del formulario.
+             */
+            'prefill_source',
         ];
 
         $prepared = [];
@@ -608,7 +620,9 @@ class ChatbotController extends Controller
             $prepared[$key] = mb_substr(
                 $value,
                 0,
-                1000
+                $key === 'prefill_source'
+                    ? 3000
+                    : 1000
             );
         }
 

@@ -1552,6 +1552,12 @@ window.chatbotWidget = function (options = {}) {
                 'usuario_afectado',
                 'equipo_actual',
                 'motivo_cambio',
+
+                /*
+                 * Texto interno utilizado por la IA para extraer los datos
+                 * del formulario. No se envía como parámetro al formulario.
+                 */
+                'prefill_source',
             ];
 
             const prepared = {};
@@ -1566,11 +1572,21 @@ window.chatbotWidget = function (options = {}) {
                     return;
                 }
 
+                /*
+                 * La descripción original puede necesitar más espacio para que
+                 * el extractor identifique correctamente todos los campos.
+                 * Los demás valores continúan limitados a 1000 caracteres.
+                 */
+                const maxLength =
+                    key === 'prefill_source'
+                        ? 3000
+                        : 1000;
+
                 const normalized = String(
                     value
                 )
                     .trim()
-                    .slice(0, 1000);
+                    .slice(0, maxLength);
 
                 if (normalized) {
                     prepared[key] = normalized;

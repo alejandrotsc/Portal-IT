@@ -8,6 +8,18 @@ const csrfToken =
         .querySelector('meta[name="csrf-token"]')
         ?.getAttribute('content');
 
+console.log('[Reverb] Configuración efectiva:', {
+    pageProtocol: window.location.protocol,
+    scheme: import.meta.env.VITE_REVERB_SCHEME,
+    host: import.meta.env.VITE_REVERB_HOST,
+    port: import.meta.env.VITE_REVERB_PORT,
+    forceTLS:
+        (
+            import.meta.env.VITE_REVERB_SCHEME
+            ?? 'http'
+        ) === 'https',
+});
+
 window.Echo = new Echo({
     broadcaster: 'reverb',
 

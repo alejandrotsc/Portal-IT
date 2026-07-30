@@ -184,6 +184,7 @@ $config = [
                 'titulo' => 'Problema con internet o WiFi',
                 'descripcion' => 'El equipo aparece conectado a la red, pero no tiene acceso a internet.',
                 'equipo' => 'Red / WiFi',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -223,6 +224,7 @@ $config = [
                 'titulo' => 'Equipo sin conexión a internet o WiFi',
                 'descripcion' => 'El equipo no aparece conectado a la red WiFi ni mediante cable de red.',
                 'equipo' => 'Red / WiFi',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -332,6 +334,7 @@ $config = [
                 'titulo' => 'Outlook no abre',
                 'descripcion' => 'Outlook no abre correctamente o muestra un error al iniciar.',
                 'equipo' => 'Outlook / Correo corporativo',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -371,6 +374,7 @@ $config = [
                 'titulo' => 'No puedo enviar correos desde Outlook',
                 'descripcion' => 'Los mensajes no se envían y pueden permanecer en la bandeja de salida.',
                 'equipo' => 'Outlook / Correo corporativo',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -410,6 +414,7 @@ $config = [
                 'titulo' => 'No recibo correos en Outlook',
                 'descripcion' => 'La bandeja de entrada no está recibiendo mensajes nuevos.',
                 'equipo' => 'Outlook / Correo corporativo',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -456,6 +461,7 @@ $config = [
                 'titulo' => 'Computadora lenta o congelada',
                 'descripcion' => 'El equipo funciona con lentitud o se congela durante el uso.',
                 'equipo' => 'Computadora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -469,12 +475,24 @@ $config = [
                     'label' => 'Todo sigue lento',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'descripcion' =>
+                            'La lentitud afecta a todo el equipo incluso después de cerrar programas y reiniciarlo.',
+                        'prefill_source' =>
+                            'La lentitud afecta a todo el equipo y continúa después de reiniciarlo.',
+                    ],
                 ],
 
                 [
                     'label' => 'Solo una aplicación',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'descripcion' =>
+                            'La lentitud ocurre solamente al utilizar una aplicación específica.',
+                        'prefill_source' =>
+                            'La computadora funciona normalmente, pero una aplicación específica está lenta.',
+                    ],
                 ],
 
                 [
@@ -509,6 +527,7 @@ $config = [
                 'titulo' => 'El equipo no enciende',
                 'descripcion' => 'La computadora no responde al presionar el botón de encendido.',
                 'equipo' => 'Computadora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -522,12 +541,24 @@ $config = [
                     'label' => 'Enciende alguna luz',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'descripcion' =>
+                            'La computadora no inicia, pero enciende alguna luz al presionar el botón de encendido.',
+                        'prefill_source' =>
+                            'La computadora no inicia, pero enciende alguna luz.',
+                    ],
                 ],
 
                 [
                     'label' => 'No hace nada',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'descripcion' =>
+                            'La computadora no responde ni enciende luces al presionar el botón de encendido.',
+                        'prefill_source' =>
+                            'La computadora no responde y no enciende ninguna luz.',
+                    ],
                 ],
 
                 [
@@ -561,6 +592,7 @@ $config = [
                 'titulo' => 'Problema con impresora',
                 'descripcion' => 'La impresora no imprime correctamente o muestra un error.',
                 'equipo' => 'Impresora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -574,12 +606,22 @@ $config = [
                     'label' => 'Muestra un error',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'prefill_source' =>
+                            'La gestión presenta un mensaje de error que el usuario puede describir.',
+                    ],
                 ],
 
                 [
                     'label' => 'Sigue sin imprimir',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'descripcion' =>
+                            'La impresora sigue sin imprimir después de revisar el estado, el papel y la impresora seleccionada.',
+                        'prefill_source' =>
+                            'La impresora continúa sin imprimir después de las verificaciones básicas.',
+                    ],
                 ],
 
                 [
@@ -613,6 +655,7 @@ $config = [
                 'titulo' => 'Problema con sistema o aplicación',
                 'descripcion' => 'Un sistema o aplicación no abre, no responde o muestra un error.',
                 'equipo' => 'Sistema / Aplicación',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -626,12 +669,23 @@ $config = [
                     'label' => 'Muestra un error',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'prefill_source' =>
+                            'La gestión presenta un mensaje de error que el usuario puede describir.',
+                    ],
                 ],
 
                 [
                     'label' => 'Nadie puede entrar',
                     'action' => 'flow',
                     'value' => 'ai.enable',
+                    'prefill' => [
+                        'afectacion' => 'todos',
+                        'descripcion' =>
+                            'Ningún usuario puede ingresar al sistema o aplicación.',
+                        'prefill_source' =>
+                            'El acceso al sistema está fallando para todos los usuarios.',
+                    ],
                 ],
 
                 [
@@ -665,6 +719,7 @@ $config = [
                 'titulo' => 'Problema con teclado, mouse o monitor',
                 'descripcion' => 'Un periférico del equipo no funciona correctamente.',
                 'equipo' => 'Teclado / Mouse / Monitor',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'quick_actions' => [
@@ -743,9 +798,7 @@ $config = [
 
         'solicitud.menu' => [
             'message' =>
-                "¿Qué necesitas hoy?
-
-"
+                "¿Qué necesitas hoy?\n\n"
                 ."Selecciona la categoría que mejor describa tu solicitud.",
 
             'quick_actions' => [
@@ -757,6 +810,7 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Computadora o accesorios',
+                        'tipo_gestion' => 'solicitud',
                         'asunto' => 'Solicitud de computadora o accesorios',
                     ],
                 ],
@@ -769,6 +823,7 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Instalar un programa',
+                        'tipo_gestion' => 'solicitud',
                         'asunto' => 'Solicitud de instalación de programa',
                     ],
                 ],
@@ -781,6 +836,7 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Acceso a un sistema',
+                        'tipo_gestion' => 'solicitud',
                         'asunto' => 'Solicitud de acceso a un sistema o recurso',
                     ],
                 ],
@@ -793,6 +849,7 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'VPN',
+                        'tipo_gestion' => 'solicitud',
                         'asunto' => 'Solicitud de VPN o acceso remoto',
                     ],
                 ],
@@ -805,19 +862,21 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Impresora',
+                        'tipo_gestion' => 'solicitud',
                         'asunto' => 'Solicitud de configuración o conexión de impresora',
                     ],
                 ],
 
                 [
-                    'label' => 'Cuenta o contraseña',
+                    'label' => 'Cuenta de correo',
                     'description' =>
-                        'Restablecer contraseña, desbloquear cuenta o acceso al sistema',
+                        'Solicitar una cuenta, desbloqueo o ayuda relacionada con el correo corporativo',
                     'action' => 'redirect',
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Cuenta de correo',
-                        'asunto' => 'Solicitud relacionada con cuenta o contraseña',
+                        'asunto' => 'Solicitud relacionada con cuenta de correo',
+                        'tipo_gestion' => 'solicitud',
                     ],
                 ],
 
@@ -829,6 +888,7 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Cambio de equipo',
+                        'tipo_gestion' => 'solicitud',
                         'asunto' => 'Solicitud de cambio o configuración de equipo',
                     ],
                 ],
@@ -841,6 +901,7 @@ $config = [
                     'module' => 'solicitud',
                     'prefill' => [
                         'categoria' => 'Otra solicitud',
+                        'tipo_gestion' => 'solicitud',
                     ],
                 ],
 
@@ -925,19 +986,17 @@ $config = [
 
         'ai.enable' => [
             'message' =>
-                'Describe el problema o la pregunta con tus propias palabras. Puedes incluir el mensaje de error y lo que ya intentaste.',
+                'Describe el problema o la solicitud con tus propias palabras. Puedes incluir el mensaje de error, el equipo o sistema involucrado, desde cuándo ocurre y a quiénes afecta.',
 
             'mode' => 'ai',
 
             'quick_actions' => [
-                [
-                    'label' => 'Volver al menú',
-                    'action' => 'flow',
-                    'value' => 'menu.principal',
-                ],
 
                 [
-                    'label' => 'Reportar incidencia',
+                    'label' => 'Reportar incidencia sin prellenado',
+                    'description' =>
+                        'Abrir el formulario vacío para completarlo manualmente',
+                    'icon' => 'file-plus-2',
                     'action' => 'redirect',
                     'module' => 'incidencia',
                 ],
@@ -947,6 +1006,12 @@ $config = [
                     'icon' => 'headset',
                     'variant' => 'urgent',
                     'action' => 'helpdesk',
+                ],
+
+                [
+                    'label' => 'Volver al menú',
+                    'action' => 'flow',
+                    'value' => 'menu.principal',
                 ],
             ],
         ],
@@ -1008,6 +1073,9 @@ $iconos = [
     'Muestra un error' => 'triangle-alert',
     'Sigue sin imprimir' => 'printer-x',
     'Nadie puede entrar' => 'users-x',
+    'Preparar incidencia' => 'file-warning',
+    'Preparar solicitud' => 'clipboard-plus',
+    'Reportar incidencia sin prellenado' => 'file-plus-2',
     'Reportar incidencia' => 'file-warning',
     'Contactar a Helpdesk' => 'headset',
 
@@ -1021,7 +1089,7 @@ $iconos = [
     'Solicitar un acceso' => 'key-round',
     'VPN / Acceso remoto' => 'shield-check',
     'Impresoras' => 'printer',
-    'Cuenta o contraseña' => 'user-key',
+    'Cuenta de correo' => 'mail-plus',
     'Cambio o configuración de equipo' => 'refresh-cw',
     'Otra solicitud' => 'clipboard-plus',
 

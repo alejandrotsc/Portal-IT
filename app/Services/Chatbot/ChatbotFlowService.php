@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Chatbot;
 
 use Illuminate\Support\Facades\Route;
@@ -31,19 +33,22 @@ class ChatbotFlowService
             []
         );
 
-        $node = is_array($nodes)
-            ? ($nodes[$action] ?? null)
-            : null;
+        if (! is_array($nodes)) {
+            return null;
+        }
+
+        $node = $nodes[$action] ?? null;
 
         if (! is_array($node)) {
             return null;
         }
 
-        $message = trim(
-            (string) (
-                $node['message']
-                ?? ''
-            )
+        $userName = $this->prepareUserName(
+            $userName
+        );
+
+        $message = $this->prepareMessage(
+            $node['message'] ?? ''
         );
 
         $message = str_replace(
@@ -53,57 +58,61 @@ class ChatbotFlowService
         );
 
         /*
-         * Contexto recibido desde el recorrido anterior.
-         */
+        |--------------------------------------------------------------------------
+        | Contexto acumulado
+        |--------------------------------------------------------------------------
+        |
+        | Primero se prepara el contexto recibido desde el paso anterior.
+        | Después se agregan los datos definidos por el nodo actual.
+        | Los datos del nodo tienen prioridad.
+        |
+        */
+
         $currentContext = $this->preparePrefill(
             $context
         );
 
-        /*
-         * Datos definidos en el nodo actual.
-         * El nodo actual tiene prioridad.
-         */
         $nodePrefill = $this->preparePrefill(
             $node['prefill'] ?? []
         );
 
-        $currentContext = array_merge(
+        $currentContext = array_replace(
             $currentContext,
             $nodePrefill
         );
 
-        return [
-            'message' =>
-                $message !== ''
-                    ? $message
-                    : 'Selecciona una opción para continuar.',
+        $mode = $this->prepareMode(
+            $node['mode'] ?? 'flow'
+        );
 
-            'quick_actions' =>
-                $this->prepareActions(
-                    actions: $node['quick_actions'] ?? [],
-                    context: $currentContext,
-                    nodeMessage: $message,
-                    userName: $userName
-                ),
+        return [
+            'message' => $message !== ''
+                ? $message
+                : 'Selecciona una opción para continuar.',
+
+            'quick_actions' => $this->prepareActions(
+                actions: $node['quick_actions'] ?? [],
+                context: $currentContext,
+                nodeMessage: $message,
+                userName: $userName
+            ),
 
             'redirect' => null,
 
             'items' => [],
 
-            'mode' =>
-                $node['mode']
-                ?? 'flow',
+            'mode' => $mode,
 
             /*
-             * Se devuelve para que el frontend lo conserve
-             * durante todo el recorrido, incluso en ai.enable.
+             * El frontend debe devolver este contexto en la siguiente
+             * acción para conservar los datos recopilados.
              */
             'flow_context' => $currentContext,
 
             'intent' => [
                 'name' => 'flow',
-                'score' => 1,
-                'confidence' => 1,
+                'score' => 1.0,
+                'confidence' => 1.0,
                 'action' => $action,
             ],
 
@@ -120,37 +129,25 @@ class ChatbotFlowService
     public function menu(
         string $userName = 'usuario'
     ): array {
-        $start = (string) config(
-            'chatbot_flows.start',
-            'menu.principal'
+        $start = trim(
+            (string) config(
+                'chatbot_flows.start',
+                'menu.principal'
+            )
         );
 
+        if (
+            $start === ''
+            || ! $this->isValidAction($start)
+        ) {
+            $start = 'menu.principal';
+        }
+
         return $this->handle(
-            $start,
-            $userName,
-            []
-        ) ?? [
-            'message' =>
-                '¿En qué puedo ayudarte?',
-
-            'quick_actions' => [],
-
-            'redirect' => null,
-
-            'items' => [],
-
-            'mode' => 'flow',
-
-            'flow_context' => [],
-
-            'intent' => [
-                'name' => 'menu',
-                'score' => 1,
-                'confidence' => 1,
-            ],
-
-            'ai' => null,
-        ];
+            action: $start,
+            userName: $userName,
+            context: []
+        ) ?? $this->defaultMenuResponse();
     }
 
     /*
@@ -162,6 +159,8 @@ class ChatbotFlowService
     public function exists(
         string $action
     ): bool {
+        $action = trim($action);
+
         if (! $this->isValidAction($action)) {
             return false;
         }
@@ -199,45 +198,45 @@ class ChatbotFlowService
                 continue;
             }
 
-            $label = trim(
-                (string) (
-                    $action['label']
-                    ?? ''
-                )
-            );
-
-            $description = $this->prepareDescription(
-                $action['description']
-                ?? null
-            );
-
-            $type = trim(
-                (string) (
-                    $action['action']
-                    ?? 'flow'
-                )
+            $label = $this->prepareLabel(
+                $action['label'] ?? ''
             );
 
             if ($label === '') {
                 continue;
             }
 
+            $description = $this->prepareDescription(
+                $action['description'] ?? null
+            );
+
+            $type = $this->prepareActionType(
+                $action['action'] ?? 'flow'
+            );
+
+            if ($type === null) {
+                continue;
+            }
+
             /*
-             * Datos específicos del botón.
-             * Tienen prioridad sobre el contexto acumulado.
+             * Los datos definidos por el botón tienen prioridad sobre
+             * los datos acumulados durante el recorrido.
              */
             $actionPrefill = $this->preparePrefill(
                 $action['prefill'] ?? []
             );
 
-            $actionContext = array_merge(
+            $actionContext = array_replace(
                 $context,
                 $actionPrefill
             );
 
             /*
-             * Redirección a formularios del portal.
-             */
+            |--------------------------------------------------------------------------
+            | Redirección a formulario
+            |--------------------------------------------------------------------------
+            */
+
             if ($type === 'redirect') {
                 $redirect = $this->prepareRedirectAction(
                     action: $action,
@@ -254,8 +253,11 @@ class ChatbotFlowService
             }
 
             /*
-             * Contactar directamente a Helpdesk.
-             */
+            |--------------------------------------------------------------------------
+            | Contactar a Helpdesk
+            |--------------------------------------------------------------------------
+            */
+
             if ($type === 'helpdesk') {
                 $helpdesk = $this->prepareHelpdeskAction(
                     action: $action,
@@ -274,44 +276,59 @@ class ChatbotFlowService
             }
 
             /*
-             * Acciones normales del flujo.
-             */
+            |--------------------------------------------------------------------------
+            | Acciones normales
+            |--------------------------------------------------------------------------
+            */
+
             $value = trim(
-                (string) (
-                    $action['value']
-                    ?? ''
-                )
+                (string) ($action['value'] ?? '')
             );
 
-            if ($value === '') {
+            if (
+                $value === ''
+                || ! $this->isValidActionValue($value, $type)
+            ) {
                 continue;
             }
 
-            $prepared[] = [
+            $preparedAction = [
                 'label' => $label,
 
                 'description' => $description,
 
                 'icon' => $this->prepareIcon(
-                    $action['icon']
-                    ?? null
+                    $action['icon'] ?? null
                 ),
 
                 'variant' => $this->prepareVariant(
-                    $action['variant']
-                    ?? null
+                    $action['variant'] ?? null
                 ),
 
                 'action' => $type,
 
-                'value' => $value,
+                'value' => mb_substr(
+                    $value,
+                    0,
+                    200
+                ),
 
                 /*
-                 * El frontend enviará este contexto junto
-                 * con la siguiente acción.
+                 * El frontend enviará este contexto junto con
+                 * la siguiente acción.
                  */
                 'context' => $actionContext,
             ];
+
+            /*
+             * Permite que una acción normal indique explícitamente
+             * que debe habilitar la entrada libre de IA.
+             */
+            if ($type === 'ai.enable') {
+                $preparedAction['mode'] = 'ai';
+            }
+
+            $prepared[] = $preparedAction;
         }
 
         return $prepared;
@@ -330,13 +347,13 @@ class ChatbotFlowService
         array $context = []
     ): ?array {
         $module = trim(
-            (string) (
-                $action['module']
-                ?? ''
-            )
+            (string) ($action['module'] ?? '')
         );
 
-        if ($module === '') {
+        if (
+            $module === ''
+            || preg_match('/^[a-z0-9_-]+$/', $module) !== 1
+        ) {
             return null;
         }
 
@@ -346,17 +363,21 @@ class ChatbotFlowService
 
         if (
             ! is_string($routeName)
-            || $routeName === ''
+            || trim($routeName) === ''
             || ! Route::has($routeName)
         ) {
             return null;
         }
 
         $prefill = $this->filterPrefillByModule(
-            $module,
-            $context
+            module: $module,
+            prefill: $context
         );
 
+        /*
+         * Los datos se agregan como parámetros de consulta mediante
+         * route(). Los formularios podrán leerlos desde request().
+         */
         $url = empty($prefill)
             ? route($routeName)
             : route($routeName, $prefill);
@@ -367,18 +388,18 @@ class ChatbotFlowService
             'description' => $description,
 
             'icon' => $this->prepareIcon(
-                $action['icon']
-                ?? null
+                $action['icon'] ?? null
             ),
 
             'variant' => $this->prepareVariant(
-                $action['variant']
-                ?? null
+                $action['variant'] ?? null
             ),
 
             'action' => 'redirect',
 
             'url' => $url,
+
+            'module' => $module,
 
             'context' => $context,
         ];
@@ -415,24 +436,23 @@ class ChatbotFlowService
             return null;
         }
 
-        $customSubject = trim(
-            (string) (
-                $action['subject']
-                ?? ''
-            )
+        $customSubject = $this->prepareEmailSubject(
+            $action['subject'] ?? ''
         );
 
-        $title = trim(
-            (string) (
-                $context['titulo']
+        $title = $this->prepareEmailSubject(
+            $context['titulo']
                 ?? $context['asunto']
                 ?? 'Problema reportado desde el Asistente TI'
-            )
         );
+
+        if ($title === '') {
+            $title = 'Problema reportado desde el Asistente TI';
+        }
 
         $subject = $customSubject !== ''
             ? $customSubject
-            : '[Portal TI] Solicitud de ayuda urgente - '.$title;
+            : '[Portal TI] Solicitud de ayuda - '.$title;
 
         $body = $this->buildHelpdeskBody(
             data: $context,
@@ -441,20 +461,12 @@ class ChatbotFlowService
             customBody: $action['body'] ?? null
         );
 
-        /*
-         * Outlook Web abre directamente el compositor
-         * en una pestaña nueva.
-         */
         $outlookUrl =
             'https://outlook.office.com/mail/deeplink/compose'
             .'?to='.rawurlencode($helpdeskEmail)
             .'&subject='.rawurlencode($subject)
             .'&body='.rawurlencode($body);
 
-        /*
-         * Respaldo para equipos que utilicen otro
-         * cliente de correo predeterminado.
-         */
         $mailtoUrl =
             'mailto:'.$helpdeskEmail
             .'?subject='.rawurlencode($subject)
@@ -466,8 +478,7 @@ class ChatbotFlowService
             'description' => $description,
 
             'icon' => $this->prepareIcon(
-                $action['icon']
-                ?? 'headset'
+                $action['icon'] ?? 'headset'
             ),
 
             'variant' => 'urgent',
@@ -477,6 +488,11 @@ class ChatbotFlowService
             'url' => $outlookUrl,
 
             'fallback_url' => $mailtoUrl,
+
+            /*
+             * El frontend debe abrirlo en otra pestaña.
+             */
+            'target' => '_blank',
 
             'context' => $context,
         ];
@@ -494,78 +510,184 @@ class ChatbotFlowService
         string $userName,
         mixed $customBody = null
     ): string {
-        $customBody = trim(
-            (string) $customBody
+        $userName = $this->prepareUserName(
+            $userName
+        );
+
+        $customBody = $this->prepareLongText(
+            $customBody,
+            4000
         );
 
         if ($customBody !== '') {
-            return str_replace(
+            $customBody = str_replace(
                 [
                     '{usuario}',
+                    '{correo}',
                     '{diagnostico}',
+                    '{titulo}',
+                    '{asunto}',
+                    '{descripcion}',
+                    '{equipo}',
+                    '{ubicacion}',
+                    '{afectacion}',
                 ],
                 [
                     $userName,
-                    $nodeMessage,
+                    $this->prepareContextValue(
+                        $data['correo'] ?? 'N/A'
+                    ),
+                    $this->prepareLongText(
+                        $nodeMessage,
+                        1500
+                    ),
+                    $this->prepareContextValue(
+                        $data['titulo'] ?? 'N/A'
+                    ),
+                    $this->prepareContextValue(
+                        $data['asunto'] ?? 'N/A'
+                    ),
+                    $this->prepareContextValue(
+                        $data['descripcion'] ?? 'N/A',
+                        2000
+                    ),
+                    $this->prepareContextValue(
+                        $data['equipo'] ?? 'N/A'
+                    ),
+                    $this->prepareContextValue(
+                        $data['ubicacion'] ?? 'N/A'
+                    ),
+                    $this->prepareContextValue(
+                        $data['afectacion'] ?? 'N/A'
+                    ),
                 ],
                 $customBody
             );
+
+            return trim($customBody);
         }
 
         $lines = [
-            'Hola, equipo de Helpdesk:',
+            'Hola, equipo de soporte TI:',
             '',
             'Necesito apoyo con un problema que no pudo resolverse desde el Asistente TI.',
             '',
             'Usuario: '.$userName,
         ];
 
-        if (! empty($data['titulo'])) {
-            $lines[] =
-                'Problema: '.$data['titulo'];
+        $email = $this->prepareContextValue(
+            $data['correo'] ?? ''
+        );
+
+        if ($email !== '') {
+            $lines[] = 'Correo: '.$email;
         }
 
-        if (! empty($data['asunto'])) {
-            $lines[] =
-                'Asunto: '.$data['asunto'];
-        }
+        $this->appendContextLine(
+            $lines,
+            'Problema',
+            $data['titulo'] ?? null,
+            300
+        );
 
-        if (! empty($data['descripcion'])) {
-            $lines[] =
-                'Descripción: '.$data['descripcion'];
-        }
+        $this->appendContextLine(
+            $lines,
+            'Asunto',
+            $data['asunto'] ?? null,
+            300
+        );
 
-        if (! empty($data['equipo'])) {
-            $lines[] =
-                'Equipo o servicio: '.$data['equipo'];
-        }
+        $this->appendContextLine(
+            $lines,
+            'Descripción',
+            $data['descripcion'] ?? null,
+            2000
+        );
 
-        if (! empty($data['ubicacion'])) {
-            $lines[] =
-                'Ubicación: '.$data['ubicacion'];
-        }
+        $this->appendContextLine(
+            $lines,
+            'Equipo o servicio',
+            $data['equipo'] ?? null,
+            300
+        );
 
-        if (! empty($data['afectacion'])) {
-            $lines[] =
-                'Afectación: '.$data['afectacion'];
-        }
+        $this->appendContextLine(
+            $lines,
+            'Ubicación',
+            $data['ubicacion'] ?? null,
+            300
+        );
+
+        $this->appendContextLine(
+            $lines,
+            'Afectación',
+            $data['afectacion'] ?? null,
+            200
+        );
+
+        $this->appendContextLine(
+            $lines,
+            'Categoría',
+            $data['categoria'] ?? null,
+            300
+        );
+
+        $this->appendContextLine(
+            $lines,
+            'Sistema',
+            $data['sistema'] ?? null,
+            300
+        );
+
+        $this->appendContextLine(
+            $lines,
+            'Programa',
+            $data['programa'] ?? null,
+            300
+        );
+
+        $nodeMessage = $this->prepareLongText(
+            $nodeMessage,
+            1500
+        );
 
         if ($nodeMessage !== '') {
             $lines[] = '';
-            $lines[] =
-                'Última orientación mostrada por el asistente:';
-
+            $lines[] = 'Última orientación mostrada por el asistente:';
             $lines[] = $nodeMessage;
         }
 
         $lines[] = '';
-        $lines[] =
-            'Por favor, ayúdenme a revisar el caso y elaborar el ticket correspondiente.';
+        $lines[] = 'Por favor, ayúdenme a revisar el caso y dar seguimiento a la gestión correspondiente.';
 
         return implode(
             PHP_EOL,
             $lines
         );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Agregar campo al correo
+    |--------------------------------------------------------------------------
+    */
+
+    private function appendContextLine(
+        array &$lines,
+        string $label,
+        mixed $value,
+        int $limit = 500
+    ): void {
+        $value = $this->prepareContextValue(
+            $value,
+            $limit
+        );
+
+        if ($value === '') {
+            return;
+        }
+
+        $lines[] = $label.': '.$value;
     }
 
     /*
@@ -582,12 +704,19 @@ class ChatbotFlowService
         }
 
         $allowedKeys = [
+            /*
+             * Incidencias.
+             */
             'titulo',
             'descripcion',
             'tiempo_problema',
             'afectacion',
             'equipo',
             'ubicacion',
+
+            /*
+             * Solicitudes.
+             */
             'categoria',
             'asunto',
             'tipo_equipo',
@@ -599,6 +728,14 @@ class ChatbotFlowService
             'usuario_afectado',
             'equipo_actual',
             'motivo_cambio',
+
+            /*
+             * Información auxiliar para conversación y Helpdesk.
+             */
+            'prefill_source',
+            'correo',
+            'tipo_gestion',
+            'management_type',
         ];
 
         $prepared = [];
@@ -608,35 +745,38 @@ class ChatbotFlowService
                 (string) $key
             );
 
-            if (! in_array(
-                $key,
-                $allowedKeys,
-                true
-            )) {
-                continue;
-            }
-
             if (
-                ! is_string($value)
-                && ! is_numeric($value)
-                && ! is_bool($value)
+                ! in_array(
+                    $key,
+                    $allowedKeys,
+                    true
+                )
             ) {
                 continue;
             }
 
-            $value = trim(
-                (string) $value
+            if (! is_scalar($value)) {
+                continue;
+            }
+
+            $limit = match ($key) {
+                'prefill_source' => 3000,
+                'descripcion' => 2000,
+                'justificacion',
+                'motivo_cambio' => 1000,
+                default => 500,
+            };
+
+            $value = $this->prepareContextValue(
+                $value,
+                $limit
             );
 
             if ($value === '') {
                 continue;
             }
 
-            $prepared[$key] = mb_substr(
-                $value,
-                0,
-                1000
-            );
+            $prepared[$key] = $value;
         }
 
         return $prepared;
@@ -644,7 +784,7 @@ class ChatbotFlowService
 
     /*
     |--------------------------------------------------------------------------
-    | Filtrar campos según el módulo
+    | Filtrar campos según módulo
     |--------------------------------------------------------------------------
     */
 
@@ -680,7 +820,7 @@ class ChatbotFlowService
             default => [],
         };
 
-        if (empty($allowedFields)) {
+        if ($allowedFields === []) {
             return [];
         }
 
@@ -692,39 +832,249 @@ class ChatbotFlowService
 
     /*
     |--------------------------------------------------------------------------
-    | Preparar descripción del botón
+    | Preparar modo del nodo
     |--------------------------------------------------------------------------
     */
+
+    private function prepareMode(
+        mixed $mode
+    ): string {
+        $mode = strtolower(
+            trim((string) $mode)
+        );
+
+        return in_array(
+            $mode,
+            [
+                'flow',
+                'ai',
+                'menu',
+                'result',
+            ],
+            true
+        )
+            ? $mode
+            : 'flow';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar tipo de acción
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareActionType(
+        mixed $type
+    ): ?string {
+        $type = strtolower(
+            trim((string) $type)
+        );
+
+        return in_array(
+            $type,
+            [
+                'flow',
+                'send',
+                'status',
+                'ai.enable',
+                'redirect',
+                'helpdesk',
+            ],
+            true
+        )
+            ? $type
+            : null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar valor según la acción
+    |--------------------------------------------------------------------------
+    */
+
+    private function isValidActionValue(
+        string $value,
+        string $type
+    ): bool {
+        /*
+         * Las acciones internas utilizan identificadores controlados,
+         * por ejemplo: menu.principal, ai.enable o gestion.estado.
+         */
+        if (
+            $type === 'flow'
+            || $type === 'status'
+            || $type === 'ai.enable'
+        ) {
+            return $this->isValidAction($value);
+        }
+
+        /*
+         * Las acciones send pueden contener una frase que se enviará
+         * como mensaje del usuario.
+         */
+        return $type === 'send'
+            && mb_strlen($value) <= 500;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar textos
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareUserName(
+        mixed $userName
+    ): string {
+        $userName = $this->prepareContextValue(
+            $userName,
+            150
+        );
+
+        return $userName !== ''
+            ? $userName
+            : 'usuario';
+    }
+
+    private function prepareMessage(
+        mixed $message
+    ): string {
+        return $this->prepareLongText(
+            $message,
+            2000
+        );
+    }
+
+    private function prepareLabel(
+        mixed $label
+    ): string {
+        return $this->prepareContextValue(
+            $label,
+            120
+        );
+    }
 
     private function prepareDescription(
         mixed $description
     ): ?string {
-        $description = trim(
-            (string) $description
+        $description = $this->prepareContextValue(
+            $description,
+            300
         );
 
-        if ($description === '') {
-            return null;
+        return $description !== ''
+            ? $description
+            : null;
+    }
+
+    private function prepareEmailSubject(
+        mixed $subject
+    ): string {
+        $subject = $this->prepareContextValue(
+            $subject,
+            180
+        );
+
+        return str_replace(
+            [
+                "\r",
+                "\n",
+            ],
+            ' ',
+            $subject
+        );
+    }
+
+    private function prepareContextValue(
+        mixed $value,
+        int $limit = 500
+    ): string {
+        if (! is_scalar($value)) {
+            return '';
         }
 
+        $value = trim(
+            strip_tags(
+                (string) $value
+            )
+        );
+
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace(
+            '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u',
+            '',
+            $value
+        ) ?? $value;
+
+        $value = preg_replace(
+            '/[ \t]+/u',
+            ' ',
+            $value
+        ) ?? $value;
+
         return mb_substr(
-            $description,
+            trim($value),
             0,
-            300
+            max(1, $limit)
+        );
+    }
+
+    private function prepareLongText(
+        mixed $value,
+        int $limit
+    ): string {
+        if (! is_scalar($value)) {
+            return '';
+        }
+
+        $value = trim(
+            strip_tags(
+                (string) $value
+            )
+        );
+
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace(
+            '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u',
+            '',
+            $value
+        ) ?? $value;
+
+        $value = preg_replace(
+            "/[ \t]+\n/u",
+            "\n",
+            $value
+        ) ?? $value;
+
+        $value = preg_replace(
+            "/\n{3,}/u",
+            PHP_EOL.PHP_EOL,
+            $value
+        ) ?? $value;
+
+        return mb_substr(
+            trim($value),
+            0,
+            max(1, $limit)
         );
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Preparar nombre de icono
+    | Preparar icono
     |--------------------------------------------------------------------------
     */
 
     private function prepareIcon(
         mixed $icon
     ): ?string {
-        $icon = trim(
-            (string) $icon
+        $icon = strtolower(
+            trim((string) $icon)
         );
 
         if ($icon === '') {
@@ -740,7 +1090,11 @@ class ChatbotFlowService
             return null;
         }
 
-        return $icon;
+        return mb_substr(
+            $icon,
+            0,
+            80
+        );
     }
 
     /*
@@ -752,8 +1106,8 @@ class ChatbotFlowService
     private function prepareVariant(
         mixed $variant
     ): string {
-        $variant = trim(
-            (string) $variant
+        $variant = strtolower(
+            trim((string) $variant)
         );
 
         return in_array(
@@ -771,7 +1125,7 @@ class ChatbotFlowService
 
     /*
     |--------------------------------------------------------------------------
-    | Validar identificador
+    | Validar identificador de nodo
     |--------------------------------------------------------------------------
     */
 
@@ -782,5 +1136,37 @@ class ChatbotFlowService
             '/^[a-z0-9_.-]+$/',
             $action
         ) === 1;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Respuesta predeterminada
+    |--------------------------------------------------------------------------
+    */
+
+    private function defaultMenuResponse(): array
+    {
+        return [
+            'message' => '¿En qué puedo ayudarte?',
+
+            'quick_actions' => [],
+
+            'redirect' => null,
+
+            'items' => [],
+
+            'mode' => 'flow',
+
+            'flow_context' => [],
+
+            'intent' => [
+                'name' => 'menu',
+                'score' => 1.0,
+                'confidence' => 1.0,
+                'action' => null,
+            ],
+
+            'ai' => null,
+        ];
     }
 }

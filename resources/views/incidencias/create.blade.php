@@ -52,6 +52,40 @@
     </section>
 
 
+    @if (
+        request()->filled('titulo')
+        || request()->filled('descripcion')
+        || request()->filled('tiempo_problema')
+        || request()->filled('afectacion')
+        || request()->filled('equipo')
+        || request()->filled('ubicacion')
+    )
+        <section
+            class="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/[0.05] px-5 py-4 shadow-sm"
+            role="status"
+        >
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <i
+                    data-lucide="sparkles"
+                    stroke-width="1.8"
+                    class="h-4.5 w-4.5"
+                ></i>
+            </div>
+
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground">
+                    Incidencia preparada por el Asistente TI
+                </p>
+
+                <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Revisa y corrige los datos sugeridos antes de enviar el reporte.
+                    La incidencia no se registrará hasta que presiones “Enviar reporte”.
+                </p>
+            </div>
+        </section>
+    @endif
+
+
     <form
         id="incidenciaForm"
         action="{{ route('incidencias.store') }}"
@@ -205,21 +239,21 @@
 
                             <option
                                 value="hoy"
-                                @selected(old('tiempo_problema') === 'hoy')
+                                @selected(old('tiempo_problema', request('tiempo_problema', 'hoy')) === 'hoy')
                             >
                                 Hoy
                             </option>
 
                             <option
                                 value="ayer"
-                                @selected(old('tiempo_problema') === 'ayer')
+                                @selected(old('tiempo_problema', request('tiempo_problema')) === 'ayer')
                             >
                                 Ayer
                             </option>
 
                             <option
                                 value="varios_dias"
-                                @selected(old('tiempo_problema') === 'varios_dias')
+                                @selected(old('tiempo_problema', request('tiempo_problema')) === 'varios_dias')
                             >
                                 Hace varios días
                             </option>
@@ -252,21 +286,21 @@
                             class="w-full appearance-none border-0 bg-transparent py-2.5 text-sm text-foreground focus:outline-none focus:ring-0">
                             <option
                                 value="solo"
-                                @selected(old('afectacion', 'solo') === 'solo')
+                                @selected(old('afectacion', request('afectacion', 'solo')) === 'solo')
                             >
                                 Solo a mí
                             </option>
 
                             <option
                                 value="varios"
-                                @selected(old('afectacion') === 'varios')
+                                @selected(old('afectacion', request('afectacion')) === 'varios')
                             >
                                 A varias personas
                             </option>
 
                             <option
                                 value="todos"
-                                @selected(old('afectacion') === 'todos')
+                                @selected(old('afectacion', request('afectacion')) === 'todos')
                             >
                                 A toda el área
                             </option>

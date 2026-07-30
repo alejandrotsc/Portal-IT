@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Chatbot;
 
 use App\Services\Chatbot\AI\AIResponse;
 use App\Services\Chatbot\AI\AIServiceInterface;
+use App\Services\Chatbot\AI\FormPrefillExtractorService;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Route;
 
 class ChatbotService
 {
@@ -15,7 +19,9 @@ class ChatbotService
         private readonly AIServiceInterface $aiService,
         private readonly ConversationContextService $contextService,
         private readonly ChatbotFlowService $flowService,
-    ) {}
+        private readonly FormPrefillExtractorService $prefillExtractor,
+    ) {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -33,13 +39,11 @@ class ChatbotService
         return $this->handleStream(
             message: $message,
             user: $user,
-
-            onChunk: static function (
-                string $chunk
-            ): void {
-                // Compatibilidad sin streaming.
+            onChunk: static function (string $chunk): void {
+                /*
+                 * Compatibilidad para solicitudes sin streaming.
+                 */
             },
-
             action: $action,
             forceAI: $forceAI,
             flowContext: $flowContext
@@ -60,7 +64,7 @@ class ChatbotService
         bool $forceAI = false,
         array $flowContext = []
     ): array {
-        $message = trim($message);
+        $message = $this->prepareUserMessage($message);
 
         $flowContext = $this->prepareFlowContext(
             $flowContext
@@ -70,23 +74,26 @@ class ChatbotService
             ? trim($action)
             : null;
 
-        $userName =
-            $user?->nombre
-            ?? config(
-                'chatbot.fallback_name',
-                'usuario'
-            );
+        $userName = $this->prepareUserName(
+            data_get(
+                $user,
+                'nombre',
+                config(
+                    'chatbot.fallback_name',
+                    'usuario'
+                )
+            )
+        );
 
-        $userId = $user
-            ? (int) $user->getAuthIdentifier()
-            : null;
+        $userId = $this->resolveUserId($user);
 
         /*
         |--------------------------------------------------------------------------
         | Acción interactiva
         |--------------------------------------------------------------------------
         |
-        | Las acciones de botones no pasan por keywords ni por Ollama.
+        | Las acciones provenientes de botones no pasan por el reconocedor
+        | de intenciones ni por Ollama.
         |
         */
 
@@ -101,7 +108,7 @@ class ChatbotService
 
         /*
         |--------------------------------------------------------------------------
-        | Mensaje vacío: mostrar menú
+        | Mensaje vacío
         |--------------------------------------------------------------------------
         */
 
@@ -123,17 +130,14 @@ class ChatbotService
 
         /*
         |--------------------------------------------------------------------------
-        | Texto enviado explícitamente a la IA
+        | Mensaje enviado explícitamente a la IA
         |--------------------------------------------------------------------------
         */
 
         if ($forceAI) {
             /*
-             * Los diagnósticos conocidos tienen prioridad sobre Ollama.
-             *
-             * Esto evita que un modelo pequeño genere instrucciones
-             * técnicas, repetitivas o inventadas para problemas comunes.
-             * Las consultas que no coincidan continúan normalmente hacia IA.
+             * Los diagnósticos locales tienen prioridad sobre Ollama.
+             * Esto evita llamadas innecesarias para problemas conocidos.
              */
             $diagnostic = $this->detectLocalDiagnostic(
                 $message
@@ -161,20 +165,20 @@ class ChatbotService
 
         /*
         |--------------------------------------------------------------------------
-        | Consultar gestiones
+        | Consultar estado de gestiones
         |--------------------------------------------------------------------------
         */
 
         if ($intent->is('consultar_estado')) {
             return $this->buildEstadoResponse(
-                $userId,
-                $userName
+                userId: $userId,
+                userName: $userName
             );
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Menú interactivo
+        | Menú y saludo
         |--------------------------------------------------------------------------
         */
 
@@ -191,47 +195,51 @@ class ChatbotService
         |--------------------------------------------------------------------------
         | Problema técnico escrito directamente
         |--------------------------------------------------------------------------
-        |
-        | Si identificamos que existe un problema, guiamos al usuario mediante
-        | botones. Solo una solicitud explícita para registrar incidencia abre
-        | la respuesta local tradicional.
-        |
         */
 
         if ($intent->is('incidencia')) {
-            if (
-                $this->isDirectIncidenceCommand(
-                    $message
-                )
-            ) {
-                return $this->responseBuilder->build(
+            /*
+             * Cuando el usuario pide expresamente registrar una incidencia,
+             * se utiliza la respuesta tradicional del portal.
+             */
+            if ($this->isDirectIncidenceCommand($message)) {
+                $response = $this->responseBuilder->build(
                     $intent,
                     $userName,
                     $message
                 );
+
+                $response['flow_context'] = $flowContext;
+
+                return $response;
             }
 
-            $suggestedFlow =
-                $this->detectProblemFlow(
-                    $message
-                );
+            /*
+             * Si describe un problema conocido, dirigirlo al flujo
+             * interactivo correspondiente.
+             */
+            $suggestedFlow = $this->detectProblemFlow(
+                $message
+            );
 
             if ($suggestedFlow !== null) {
                 return $this->flowService->handle(
-                    $suggestedFlow,
-                    $userName,
-                    $flowContext
+                    action: $suggestedFlow,
+                    userName: $userName,
+                    context: $flowContext
                 ) ?? $this->flowService->handle(
-                    'problema.menu',
-                    $userName,
-                    $flowContext
+                    action: 'problema.menu',
+                    userName: $userName,
+                    context: $flowContext
+                ) ?? $this->flowService->menu(
+                    $userName
                 );
             }
 
             return $this->flowService->handle(
-                'problema.menu',
-                $userName,
-                $flowContext
+                action: 'problema.menu',
+                userName: $userName,
+                context: $flowContext
             ) ?? $this->flowService->menu(
                 $userName
             );
@@ -239,7 +247,7 @@ class ChatbotService
 
         /*
         |--------------------------------------------------------------------------
-        | Acciones conocidas del portal
+        | Acciones conocidas del Portal TI
         |--------------------------------------------------------------------------
         */
 
@@ -249,20 +257,20 @@ class ChatbotService
             || $intent->is('autorizacion_memorando')
             || $intent->is('cierre')
         ) {
-            $fallback = $this->responseBuilder->build(
+            $response = $this->responseBuilder->build(
                 $intent,
                 $userName,
                 $message
             );
 
-            $fallback['flow_context'] = $flowContext;
+            $response['flow_context'] = $flowContext;
 
-            return $fallback;
+            return $response;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Texto libre no reconocido: utilizar Ollama
+        | Texto libre
         |--------------------------------------------------------------------------
         */
 
@@ -290,36 +298,54 @@ class ChatbotService
         string $userName,
         array $flowContext = []
     ): array {
+        $action = trim($action);
+
         /*
-         * Acción especial que consulta la base de datos.
+         * Consultar gestiones en base de datos.
          */
         if ($action === 'gestion.estado') {
             return $this->buildEstadoResponse(
-                $userId,
-                $userName
+                userId: $userId,
+                userName: $userName
             );
         }
 
         /*
-         * Regresar al menú comienza un recorrido nuevo.
+         * Preparar formularios usando la conversación acumulada.
+         */
+        if ($action === 'ai.prefill.incidencia') {
+            return $this->buildFormPrefillResponse(
+                type: 'incidencia',
+                userName: $userName,
+                flowContext: $flowContext
+            );
+        }
+
+        if ($action === 'ai.prefill.solicitud') {
+            return $this->buildFormPrefillResponse(
+                type: 'solicitud',
+                userName: $userName,
+                flowContext: $flowContext
+            );
+        }
+
+        /*
+         * Volver al menú elimina el contexto del recorrido anterior.
          */
         if ($action === 'menu.principal') {
             $flowContext = [];
         }
 
         $response = $this->flowService->handle(
-            $action,
-            $userName,
-            $flowContext
+            action: $action,
+            userName: $userName,
+            context: $flowContext
         );
 
         if ($response !== null) {
             return $response;
         }
 
-        /*
-         * No procesar acciones desconocidas.
-         */
         return [
             'message' =>
                 'No pude identificar esa opción. Selecciona nuevamente lo que necesitas.',
@@ -329,6 +355,7 @@ class ChatbotService
                     'label' => 'Mostrar menú',
                     'action' => 'flow',
                     'value' => 'menu.principal',
+                    'context' => [],
                 ],
             ],
 
@@ -342,8 +369,8 @@ class ChatbotService
 
             'intent' => [
                 'name' => 'unknown_action',
-                'score' => 0,
-                'confidence' => 0,
+                'score' => 0.0,
+                'confidence' => 0.0,
                 'action' => $action,
             ],
 
@@ -368,51 +395,116 @@ class ChatbotService
         array $flowContext = []
     ): array {
         $context = $this->buildAIContext(
-            $intent,
-            $user,
-            $userId,
-            $userName
-        );
-
-        $aiResponse = $this->aiService->stream(
-            $message,
-            $context,
-            $onChunk
+            intent: $intent,
+            user: $user,
+            userId: $userId,
+            userName: $userName,
+            flowContext: $flowContext
         );
 
         /*
-         * Si Ollama falla y existe una intención útil,
-         * podemos utilizar la respuesta local.
-         */
+        |--------------------------------------------------------------------------
+        | Generación controlada
+        |--------------------------------------------------------------------------
+        |
+        | La respuesta se acumula primero para poder validarla antes de
+        | enviarla al navegador. Así evitamos mostrar instrucciones no
+        | permitidas antes de detectarlas.
+        |
+        */
+
+        $aiResponse = $this->aiService->stream(
+            message: $message,
+            context: $context,
+            onChunk: static function (string $chunk): void {
+                /*
+                 * Los fragmentos se acumulan dentro de OllamaAIService.
+                 */
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ollama ocupado
+        |--------------------------------------------------------------------------
+        */
+
+        if ($aiResponse->isBusy()) {
+            return $this->buildSystemAIResponse(
+                aiResponse: $aiResponse,
+                intentName: 'ai_busy',
+                flowContext: $flowContext
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ollama no disponible
+        |--------------------------------------------------------------------------
+        */
+
+        if ($aiResponse->isFallback()) {
+            if (
+                $useLocalFallback
+                && ! $intent->is('desconocido')
+            ) {
+                $fallback = $this->responseBuilder->build(
+                    $intent,
+                    $userName,
+                    $message
+                );
+
+                $fallback['flow_context'] = $flowContext;
+
+                return $fallback;
+            }
+
+            return $this->buildSystemAIResponse(
+                aiResponse: $aiResponse,
+                intentName: 'ai_fallback',
+                flowContext: $flowContext
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Respuesta de baja confianza
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $useLocalFallback
             && $aiResponse->confidence < 0.60
-            && !$intent->is('desconocido')
+            && ! $intent->is('desconocido')
         ) {
-            return $this->responseBuilder->build(
+            $fallback = $this->responseBuilder->build(
                 $intent,
                 $userName,
                 $message
             );
+
+            $fallback['flow_context'] = $flowContext;
+
+            return $fallback;
         }
 
         $response = $this->buildAIResponse(
-            $intent,
-            $userName,
-            $message,
-            $aiResponse,
-            $flowContext
+            originalIntent: $intent,
+            userName: $userName,
+            message: $message,
+            aiResponse: $aiResponse,
+            flowContext: $flowContext
         );
 
         /*
-         * Un modelo pequeño puede ignorar parcialmente el prompt.
-         * Antes de mostrar la respuesta, validamos que no incluya
-         * instrucciones avanzadas ni más de cuatro pasos.
-         */
+        |--------------------------------------------------------------------------
+        | Validar contenido generado
+        |--------------------------------------------------------------------------
+        */
+
         if (
             ! $this->isSafeGeneratedMessage(
-                $response['message']
-                ?? ''
+                $response['message'] ?? ''
             )
         ) {
             return $this->buildSafeAIFallback(
@@ -421,9 +513,89 @@ class ChatbotService
             );
         }
 
+        /*
+         * Se entrega como un único fragmento una vez validada.
+         */
+        $safeMessage = trim(
+            (string) ($response['message'] ?? '')
+        );
+
+        if ($safeMessage !== '') {
+            $onChunk($safeMessage);
+        }
+
         return $response;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Respuesta del sistema para IA ocupada o no disponible
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildSystemAIResponse(
+        AIResponse $aiResponse,
+        string $intentName,
+        array $flowContext = []
+    ): array {
+        $aiFlowResponse = $this->flowService->handle(
+            action: 'ai.enable',
+            userName: 'usuario',
+            context: $flowContext
+        );
+
+        $quickActions = is_array(
+            $aiFlowResponse['quick_actions'] ?? null
+        )
+            ? $aiFlowResponse['quick_actions']
+            : [];
+
+        if ($quickActions === []) {
+            $quickActions = [
+                [
+                    'label' => 'Intentar nuevamente',
+                    'action' => 'flow',
+                    'value' => 'ai.enable',
+                    'context' => $flowContext,
+                ],
+                [
+                    'label' => 'Volver al menú',
+                    'action' => 'flow',
+                    'value' => 'menu.principal',
+                    'context' => [],
+                ],
+            ];
+        }
+
+        return [
+            'message' => $aiResponse->message,
+
+            'quick_actions' => $this->uniqueQuickActions(
+                $quickActions
+            ),
+
+            'redirect' => null,
+
+            'items' => [],
+
+            'mode' => 'ai',
+
+            'flow_context' => $flowContext,
+
+            'intent' => [
+                'name' => $intentName,
+                'score' => 0.0,
+                'confidence' => 0.0,
+            ],
+
+            'ai' => [
+                'source' => $aiResponse->provider() ?? 'system',
+                'confidence' => $aiResponse->confidence,
+                'truncated' => $aiResponse->isTruncated(),
+                'reused' => $aiResponse->isReused(),
+            ],
+        ];
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -454,15 +626,12 @@ class ChatbotService
         $bestDiagnostic = null;
         $bestScore = 0;
 
-        foreach (
-            $diagnostics as $key => $diagnostic
-        ) {
+        foreach ($diagnostics as $key => $diagnostic) {
             if (! is_array($diagnostic)) {
                 continue;
             }
 
-            $keywords = $diagnostic['keywords']
-                ?? [];
+            $keywords = $diagnostic['keywords'] ?? [];
 
             if (! is_array($keywords)) {
                 continue;
@@ -471,13 +640,10 @@ class ChatbotService
             $score = 0;
             $matched = [];
 
-            foreach (
-                $keywords as $keyword => $weight
-            ) {
-                $normalizedKeyword =
-                    $this->normalizeText(
-                        (string) $keyword
-                    );
+            foreach ($keywords as $keyword => $weight) {
+                $normalizedKeyword = $this->normalizeText(
+                    (string) $keyword
+                );
 
                 if (
                     $normalizedKeyword !== ''
@@ -491,42 +657,45 @@ class ChatbotService
                         (int) $weight
                     );
 
-                    $matched[] =
-                        (string) $keyword;
+                    $matched[] = (string) $keyword;
                 }
             }
 
-            if ($score > $bestScore) {
-                $bestScore = $score;
-
-                $bestDiagnostic = [
-                    'key' => (string) $key,
-                    'message' => trim(
-                        (string) (
-                            $diagnostic['message']
-                            ?? ''
-                        )
-                    ),
-                    'steps' => array_values(
-                        array_filter(
-                            is_array(
-                                $diagnostic['steps']
-                                ?? null
-                            )
-                                ? $diagnostic['steps']
-                                : [],
-                            static fn (mixed $step): bool =>
-                                is_scalar($step)
-                                && trim(
-                                    (string) $step
-                                ) !== ''
-                        )
-                    ),
-                    'matched_keywords' =>
-                        $matched,
-                    'score' => $score,
-                ];
+            if ($score <= $bestScore) {
+                continue;
             }
+
+            $steps = is_array(
+                $diagnostic['steps'] ?? null
+            )
+                ? $diagnostic['steps']
+                : [];
+
+            $bestScore = $score;
+
+            $bestDiagnostic = [
+                'key' => (string) $key,
+
+                'message' => trim(
+                    (string) (
+                        $diagnostic['message']
+                        ?? ''
+                    )
+                ),
+
+                'steps' => array_values(
+                    array_filter(
+                        $steps,
+                        static fn (mixed $step): bool =>
+                            is_scalar($step)
+                            && trim((string) $step) !== ''
+                    )
+                ),
+
+                'matched_keywords' => $matched,
+
+                'score' => $score,
+            ];
         }
 
         $minimumScore = max(
@@ -546,7 +715,6 @@ class ChatbotService
 
         return $bestDiagnostic;
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -581,8 +749,10 @@ class ChatbotService
             'se desconecta',
             'se congela',
             'se traba',
+            'pantalla negra',
             'virus',
             'infectado',
+            'sospechoso',
         ];
 
         foreach ($signals as $signal) {
@@ -593,7 +763,6 @@ class ChatbotService
 
         return false;
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -620,61 +789,88 @@ class ChatbotService
             )
         );
 
+        if ($message === '') {
+            $message = 'Parece que hay un problema técnico.';
+        }
+
         $steps = array_slice(
-            is_array(
-                $diagnostic['steps']
-                ?? null
-            )
+            is_array($diagnostic['steps'] ?? null)
                 ? $diagnostic['steps']
                 : [],
             0,
-            4
+            3
         );
 
-        if ($steps !== []) {
-            $message .= "\n\n";
+        $validSteps = [];
 
-            foreach (
-                $steps as $index => $step
-            ) {
-                $message .= (
-                    $index + 1
+        foreach ($steps as $step) {
+            if (! is_scalar($step)) {
+                continue;
+            }
+
+            $cleanStep = trim(
+                strip_tags(
+                    (string) $step
                 )
+            );
+
+            if ($cleanStep === '') {
+                continue;
+            }
+
+            $validSteps[] = mb_substr(
+                $cleanStep,
+                0,
+                400
+            );
+        }
+
+        if ($validSteps !== []) {
+            $message .= PHP_EOL.PHP_EOL;
+
+            foreach ($validSteps as $index => $step) {
+                $message .= ($index + 1)
                     .'. '
                     .rtrim(
-                        trim(
-                            (string) $step
-                        ),
-                        '.'
+                        $step,
+                        ". \t\n\r\0\x0B"
                     )
-                    ."\.\n";
+                    .'.'
+                    .PHP_EOL;
             }
 
             $message = rtrim($message);
         }
 
         $message .=
-            "\n\nSi el problema continúa, registra una incidencia para que el equipo de TI pueda revisarlo.";
+            PHP_EOL
+            .PHP_EOL
+            .'Si el problema continúa, registra una incidencia para que el equipo de TI pueda revisarlo.';
 
-        $flowContext = array_merge(
+        /*
+         * Los datos sugeridos por el diagnóstico actual tienen prioridad.
+         */
+        $flowContext = array_replace(
             $flowContext,
-            $this->diagnosticPrefill(
-                $key
-            )
+            $this->diagnosticPrefill($key)
+        );
+
+        $flowContext = $this->appendPrefillSource(
+            context: $flowContext,
+            message: $message
         );
 
         $aiFlowResponse = $this->flowService->handle(
-            'ai.enable',
-            $userName,
-            $flowContext
+            action: 'ai.enable',
+            userName: $userName,
+            context: $flowContext
         );
 
         return [
             'message' => $message,
 
             'quick_actions' => is_array(
-                $aiFlowResponse['quick_actions']
-                ?? null
+                $aiFlowResponse['quick_actions'] ?? null
             )
                 ? $aiFlowResponse['quick_actions']
                 : [],
@@ -683,10 +879,6 @@ class ChatbotService
 
             'items' => [],
 
-            /*
-             * Se conserva el modo IA para permitir que el usuario
-             * escriba una aclaración sin regresar al menú.
-             */
             'mode' => 'ai',
 
             'flow_context' => $flowContext,
@@ -698,23 +890,26 @@ class ChatbotService
                     $diagnostic['score']
                     ?? 0
                 ),
-                'confidence' => 1,
-                'matched_keywords' =>
-                    $diagnostic['matched_keywords']
-                    ?? [],
+                'confidence' => 1.0,
+                'matched_keywords' => is_array(
+                    $diagnostic['matched_keywords'] ?? null
+                )
+                    ? $diagnostic['matched_keywords']
+                    : [],
             ],
 
             'ai' => [
                 'source' => 'local_diagnostic',
-                'confidence' => 1,
+                'confidence' => 1.0,
+                'truncated' => false,
+                'reused' => false,
             ],
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Datos sugeridos para una incidencia
+    | Datos sugeridos para incidencia
     |--------------------------------------------------------------------------
     */
 
@@ -723,65 +918,57 @@ class ChatbotService
     ): array {
         return match ($diagnostic) {
             'internet' => [
-                'titulo' =>
-                    'Problema con internet o WiFi',
-                'equipo' =>
-                    'Red / WiFi',
+                'titulo' => 'Problema con internet o WiFi',
+                'equipo' => 'Red / WiFi',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'correo' => [
-                'titulo' =>
-                    'Problema con Outlook o correo',
-                'equipo' =>
-                    'Outlook / Correo corporativo',
+                'titulo' => 'Problema con Outlook o correo',
+                'equipo' => 'Outlook / Correo corporativo',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'equipo_lento' => [
-                'titulo' =>
-                    'Equipo lento o congelado',
-                'equipo' =>
-                    'Computadora',
+                'titulo' => 'Equipo lento o congelado',
+                'equipo' => 'Computadora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'pc_no_enciende' => [
-                'titulo' =>
-                    'Equipo no enciende',
-                'equipo' =>
-                    'Computadora',
+                'titulo' => 'Equipo no enciende',
+                'equipo' => 'Computadora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'impresora' => [
-                'titulo' =>
-                    'Problema con impresora',
-                'equipo' =>
-                    'Impresora',
+                'titulo' => 'Problema con impresora',
+                'equipo' => 'Impresora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'sistema' => [
-                'titulo' =>
-                    'Problema con sistema o aplicación',
-                'equipo' =>
-                    'Sistema / Aplicación',
+                'titulo' => 'Problema con sistema o aplicación',
+                'equipo' => 'Sistema / Aplicación',
+                'tipo_gestion' => 'incidencia',
             ],
 
-            'perifericos' => [
-                'titulo' =>
-                    'Problema con periférico',
-                'equipo' =>
-                    'Periférico',
+            'perifericos',
+            'periferico' => [
+                'titulo' => 'Problema con periférico',
+                'equipo' => 'Periférico',
+                'tipo_gestion' => 'incidencia',
             ],
 
             'virus' => [
-                'titulo' =>
-                    'Comportamiento sospechoso en el equipo',
-                'equipo' =>
-                    'Computadora',
+                'titulo' => 'Comportamiento sospechoso en el equipo',
+                'equipo' => 'Computadora',
+                'tipo_gestion' => 'incidencia',
             ],
 
             default => [],
         };
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -802,6 +989,10 @@ class ChatbotService
             return false;
         }
 
+        if (mb_strlen($message) > 1800) {
+            return false;
+        }
+
         $normalized = $this->normalizeText(
             $message
         );
@@ -814,6 +1005,7 @@ class ChatbotService
             'simbolo del sistema',
             'ejecuta el comando',
             'ejecutar el comando',
+            'abre la consola',
             'direccion ip',
             'cambiar dns',
             'configuracion del router',
@@ -825,26 +1017,41 @@ class ChatbotService
             'reiniciar el modem',
             'desactiva el antivirus',
             'desactivar el antivirus',
+            'deshabilita el antivirus',
             'desactiva el firewall',
             'desactivar el firewall',
+            'deshabilita el firewall',
             'registro de windows',
             'servicios de windows',
             'como administrador',
+            'ejecutar como administrador',
+            'formatea el equipo',
+            'formatear el equipo',
+            'reinstala windows',
+            'reinstalar windows',
         ];
 
-        foreach (
-            $forbiddenPatterns as $pattern
-        ) {
-            if (
-                str_contains(
-                    $normalized,
-                    $pattern
-                )
-            ) {
+        foreach ($forbiddenPatterns as $pattern) {
+            if (str_contains($normalized, $pattern)) {
                 return false;
             }
         }
 
+        /*
+         * Bloquear comandos comunes presentados como código.
+         */
+        if (
+            preg_match(
+                '/```|`(?:ipconfig|ping|netsh|sfc|chkdsk|reg|sc|taskkill|shutdown)\b/iu',
+                $message
+            ) === 1
+        ) {
+            return false;
+        }
+
+        /*
+         * Máximo tres pasos numerados.
+         */
         preg_match_all(
             '/(?:^|\R)\s*\d+[\.)]\s+/u',
             $message,
@@ -853,33 +1060,27 @@ class ChatbotService
 
         if (
             count(
-                $matches[0]
-                ?? []
-            ) > 4
+                $matches[0] ?? []
+            ) > 3
         ) {
             return false;
         }
 
-        /*
-         * Los modelos pequeños a veces repiten una segunda lista
-         * completa después de haber dado ya cuatro pasos.
-         */
         if (
             preg_match_all(
                 '/\*\*paso\s+\d+/iu',
                 $message
-            ) > 4
+            ) > 3
         ) {
             return false;
         }
 
-        return mb_strlen($message) <= 1800;
+        return true;
     }
-
 
     /*
     |--------------------------------------------------------------------------
-    | Respuesta segura cuando Ollama no cumple las reglas
+    | Respuesta segura cuando Ollama incumple las reglas
     |--------------------------------------------------------------------------
     */
 
@@ -888,9 +1089,9 @@ class ChatbotService
         array $flowContext = []
     ): array {
         $aiFlowResponse = $this->flowService->handle(
-            'ai.enable',
-            $userName,
-            $flowContext
+            action: 'ai.enable',
+            userName: $userName,
+            context: $flowContext
         );
 
         return [
@@ -898,8 +1099,7 @@ class ChatbotService
                 'No pude generar una recomendación suficientemente clara y segura. Describe brevemente qué está fallando o registra una incidencia para que el equipo de TI pueda revisarlo.',
 
             'quick_actions' => is_array(
-                $aiFlowResponse['quick_actions']
-                ?? null
+                $aiFlowResponse['quick_actions'] ?? null
             )
                 ? $aiFlowResponse['quick_actions']
                 : [],
@@ -914,26 +1114,23 @@ class ChatbotService
 
             'intent' => [
                 'name' => 'ai_safe_fallback',
-                'score' => 0,
-                'confidence' => 0,
+                'score' => 0.0,
+                'confidence' => 0.0,
             ],
 
             'ai' => [
                 'source' => 'safe_fallback',
-                'confidence' => 0,
+                'confidence' => 0.0,
+                'truncated' => false,
+                'reused' => false,
             ],
         ];
     }
-
 
     /*
     |--------------------------------------------------------------------------
     | Detectar flujo técnico
     |--------------------------------------------------------------------------
-    |
-    | Esta detección solo selecciona una categoría. El diagnóstico posterior
-    | utiliza identificadores exactos enviados por botones.
-    |
     */
 
     private function detectProblemFlow(
@@ -1002,19 +1199,14 @@ class ChatbotService
                 'pantalla',
                 'audifonos',
                 'usb',
+                'camara',
+                'microfono',
             ],
         ];
 
-        foreach (
-            $flows as $flow => $keywords
-        ) {
+        foreach ($flows as $flow => $keywords) {
             foreach ($keywords as $keyword) {
-                if (
-                    str_contains(
-                        $message,
-                        $keyword
-                    )
-                ) {
+                if (str_contains($message, $keyword)) {
                     return $flow;
                 }
             }
@@ -1050,12 +1242,7 @@ class ChatbotService
         ];
 
         foreach ($commands as $command) {
-            if (
-                str_contains(
-                    $message,
-                    $command
-                )
-            ) {
+            if (str_contains($message, $command)) {
                 return true;
             }
         }
@@ -1073,42 +1260,68 @@ class ChatbotService
         IntentResult $intent,
         ?Authenticatable $user,
         ?int $userId,
-        string $userName
+        string $userName,
+        array $flowContext = []
     ): array {
-        $history = $this->contextService->getRecent(
-            $userId,
+        $historyLimit = max(
+            0,
             (int) config(
                 'chatbot.ai.history_limit',
                 2
             )
         );
 
+        $history = $this->contextService->getRecent(
+            $userId,
+            $historyLimit
+        );
+
+        $roleName = data_get(
+            $user,
+            'rol.nombre'
+        );
+
+        $roleName = is_scalar($roleName)
+            ? trim((string) $roleName)
+            : '';
+
+        $managementType =
+            $flowContext['management_type']
+            ?? $flowContext['tipo_gestion']
+            ?? null;
+
         return [
-            'intent' =>
-                $intent->intent,
+            'intent' => $intent->intent,
 
-            'usuario' =>
-                $userName,
+            'usuario' => $this->prepareUserName(
+                $userName
+            ),
 
-            'rol' =>
-                $user?->rol?->nombre
-                ?? null,
+            'rol' => $roleName !== ''
+                ? $roleName
+                : null,
 
-            'history' =>
-                $history,
+            'history' => is_array($history)
+                ? $history
+                : [],
 
-            'sistemas' => [
-                'Windows',
-                'Microsoft 365',
-                'Outlook',
-                'Equipos Dell',
-                'Impresoras',
-                'VPN',
-                'Redes',
-                'Active Directory',
-                'Aplicaciones internas',
-                'Portal TI',
-            ],
+            'purpose' => 'chat',
+
+            /*
+             * Delimita la caché de deduplicación por usuario.
+             */
+            'user_id' => $userId,
+
+            /*
+             * Contexto opcional del recorrido actual.
+             */
+            'flow' => $managementType,
+
+            'management_type' => $managementType,
+
+            'tipo_gestion' => $managementType,
+
+            'step' => $flowContext['step'] ?? null,
         ];
     }
 
@@ -1125,63 +1338,60 @@ class ChatbotService
         AIResponse $aiResponse,
         array $flowContext = []
     ): array {
-        $response =
-            $this->responseBuilder->build(
-                new IntentResult(
-                    intent: 'ai',
+        /*
+         * Conservar el texto aportado por el usuario para poder preparar
+         * posteriormente una incidencia o solicitud.
+         */
+        $flowContext = $this->appendPrefillSource(
+            context: $flowContext,
+            message: $message
+        );
 
-                    score:
-                        $originalIntent->score,
+        $response = $this->responseBuilder->build(
+            new IntentResult(
+                intent: 'ai',
 
-                    matchedKeywords:
-                        $originalIntent->matchedKeywords,
+                score: $originalIntent->score,
 
-                    confidence:
-                        $aiResponse->confidence
-                ),
+                matchedKeywords: $originalIntent->matchedKeywords,
 
-                $userName,
+                confidence: $aiResponse->confidence
+            ),
 
-                $message,
+            $userName,
 
-                $aiResponse
-            );
+            $message,
+
+            $aiResponse
+        );
 
         $response['mode'] = 'ai';
 
-        /*
-         * Recuperar los botones del nodo ai.enable usando
-         * el contexto acumulado del diagnóstico anterior.
-         *
-         * De esta forma, "Reportar incidencia" y
-         * "Contactar a Helpdesk" mantienen los datos
-         * seleccionados antes de entrar al texto libre.
-         */
         $aiFlowResponse = $this->flowService->handle(
-            'ai.enable',
-            $userName,
-            $flowContext
+            action: 'ai.enable',
+            userName: $userName,
+            context: $flowContext
         );
 
         $quickActions = is_array(
-            $aiFlowResponse['quick_actions']
-            ?? null
+            $aiFlowResponse['quick_actions'] ?? null
         )
             ? $aiFlowResponse['quick_actions']
             : [];
 
         /*
-         * Evitar duplicar la acción de volver al menú
-         * si el ResponseBuilder ya la incluyó.
+         * Garantizar un botón para regresar al menú.
          */
         $hasMenuAction = false;
 
         foreach ($quickActions as $quickAction) {
             if (
-                ($quickAction['action'] ?? null) === 'flow'
+                is_array($quickAction)
+                && ($quickAction['action'] ?? null) === 'flow'
                 && ($quickAction['value'] ?? null) === 'menu.principal'
             ) {
                 $hasMenuAction = true;
+
                 break;
             }
         }
@@ -1195,11 +1405,807 @@ class ChatbotService
             ];
         }
 
-        $response['quick_actions'] = $quickActions;
+        foreach (
+            $this->buildPrefillActions(
+                originalIntent: $originalIntent,
+                message: $message,
+                flowContext: $flowContext
+            ) as $prefillAction
+        ) {
+            $quickActions[] = $prefillAction;
+        }
+
+        $response['quick_actions'] = $this->uniqueQuickActions(
+            $quickActions
+        );
 
         $response['flow_context'] = $flowContext;
 
+        if (! is_array($response['ai'] ?? null)) {
+            $response['ai'] = [];
+        }
+
+        $response['ai'] = array_merge(
+            $response['ai'],
+            [
+                'source' => $aiResponse->provider() ?? 'ollama',
+                'confidence' => $aiResponse->confidence,
+                'truncated' => $aiResponse->isTruncated(),
+                'reused' => $aiResponse->isReused(),
+            ]
+        );
+
         return $response;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar formulario desde la conversación
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildFormPrefillResponse(
+        string $type,
+        string $userName,
+        array $flowContext = []
+    ): array {
+        $type = $type === 'solicitud'
+            ? 'solicitud'
+            : 'incidencia';
+
+        $source = trim(
+            (string) (
+                $flowContext['prefill_source']
+                ?? ''
+            )
+        );
+
+        if ($source === '') {
+            return $this->buildPrefillFailureResponse(
+                type: $type,
+                userName: $userName,
+                flowContext: $flowContext,
+                message:
+                    'Primero describe brevemente lo que necesitas o el problema que estás teniendo.'
+            );
+        }
+
+        $result = $this->prefillExtractor->extract(
+            message: $source,
+            forcedType: $type,
+            existingContext: $flowContext
+        );
+
+        $fields = is_array(
+            $result['campos'] ?? null
+        )
+            ? $result['campos']
+            : [];
+
+        $reason = is_string(
+            $result['reason'] ?? null
+        )
+            ? $result['reason']
+            : null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fallos específicos del extractor
+        |--------------------------------------------------------------------------
+        */
+
+        if ($reason === 'ollama_busy') {
+            return $this->buildPrefillFailureResponse(
+                type: $type,
+                userName: $userName,
+                flowContext: $flowContext,
+                message:
+                    'El asistente está procesando otra consulta. Espera unos segundos y vuelve a preparar el formulario.'
+            );
+        }
+
+        if ($reason === 'ollama_unavailable') {
+            return $this->buildPrefillFailureResponse(
+                type: $type,
+                userName: $userName,
+                flowContext: $flowContext,
+                message:
+                    'No pude analizar la conversación en este momento. Puedes abrir el formulario y completar los datos manualmente.'
+            );
+        }
+
+        if (
+            $reason === 'truncated_response'
+            || $reason === 'invalid_json_response'
+            || $reason === 'invalid_ollama_payload'
+        ) {
+            return $this->buildPrefillFailureResponse(
+                type: $type,
+                userName: $userName,
+                flowContext: $flowContext,
+                message:
+                    'No pude completar correctamente la preparación automática. Describe el caso de forma más breve y vuelve a intentarlo.'
+            );
+        }
+
+        if (
+            ! ($result['success'] ?? false)
+            || $fields === []
+        ) {
+            return $this->buildPrefillFailureResponse(
+                type: $type,
+                userName: $userName,
+                flowContext: $flowContext,
+                message:
+                    'No pude identificar suficientes datos para preparar el formulario. Describe el caso con un poco más de detalle y vuelve a intentarlo.'
+            );
+        }
+
+        $redirectAction = $this->buildPrefillRedirectAction(
+            type: $type,
+            fields: $fields
+        );
+
+        if ($redirectAction === null) {
+            return $this->buildPrefillFailureResponse(
+                type: $type,
+                userName: $userName,
+                flowContext: $flowContext,
+                message:
+                    'Identifiqué la información, pero no pude construir el acceso al formulario correspondiente.'
+            );
+        }
+
+        /*
+         * Los campos recién extraídos reemplazan sugerencias anteriores.
+         */
+        $cleanContext = array_replace(
+            $flowContext,
+            $fields,
+            [
+                'tipo_gestion' => $type,
+                'management_type' => $type,
+            ]
+        );
+
+        $cleanContext = $this->prepareFlowContext(
+            $cleanContext
+        );
+
+        $isTruncated = (bool) (
+            $result['truncated']
+            ?? false
+        );
+
+        $summaryMessage = $this->buildPrefillSummaryMessage(
+            type: $type,
+            fields: $fields
+        );
+
+        if ($isTruncated) {
+            $summaryMessage .=
+                PHP_EOL
+                .PHP_EOL
+                .'Algunos datos pudieron haberse recortado por longitud. Revisa cada campo con atención antes de continuar.';
+        }
+
+        return [
+            'message' => $summaryMessage,
+
+            'quick_actions' => [
+                $redirectAction,
+
+                [
+                    'label' => 'Seguir conversando',
+                    'action' => 'flow',
+                    'value' => 'ai.enable',
+                    'context' => $cleanContext,
+                ],
+
+                [
+                    'label' => 'Volver al menú',
+                    'action' => 'flow',
+                    'value' => 'menu.principal',
+                    'context' => [],
+                ],
+            ],
+
+            'redirect' => null,
+
+            'items' => [],
+
+            'mode' => 'ai',
+
+            'flow_context' => $cleanContext,
+
+            'intent' => [
+                'name' => 'ai_form_prefill',
+                'type' => $type,
+                'score' => 1.0,
+                'confidence' => (float) (
+                    $result['confidence']
+                    ?? 0
+                ),
+            ],
+
+            'ai' => [
+                'source' =>
+                    $result['source']
+                    ?? 'ollama_form_prefill',
+
+                'confidence' => (float) (
+                    $result['confidence']
+                    ?? 0
+                ),
+
+                'truncated' => $isTruncated,
+
+                'reused' => false,
+            ],
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fallo al preparar formulario
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildPrefillFailureResponse(
+        string $type,
+        string $userName,
+        array $flowContext,
+        string $message
+    ): array {
+        $aiFlowResponse = $this->flowService->handle(
+            action: 'ai.enable',
+            userName: $userName,
+            context: $flowContext
+        );
+
+        $quickActions = is_array(
+            $aiFlowResponse['quick_actions'] ?? null
+        )
+            ? $aiFlowResponse['quick_actions']
+            : [];
+
+        $manualAction = $this->buildManualFormAction(
+            $type
+        );
+
+        if ($manualAction !== null) {
+            $quickActions[] = $manualAction;
+        }
+
+        $quickActions[] = [
+            'label' => 'Volver al menú',
+            'action' => 'flow',
+            'value' => 'menu.principal',
+            'context' => [],
+        ];
+
+        return [
+            'message' => $message,
+
+            'quick_actions' => $this->uniqueQuickActions(
+                $quickActions
+            ),
+
+            'redirect' => null,
+
+            'items' => [],
+
+            'mode' => 'ai',
+
+            'flow_context' => $flowContext,
+
+            'intent' => [
+                'name' => 'ai_form_prefill_failed',
+                'type' => $type,
+                'score' => 0.0,
+                'confidence' => 0.0,
+            ],
+
+            'ai' => [
+                'source' => 'form_prefill_fallback',
+                'confidence' => 0.0,
+                'truncated' => false,
+                'reused' => false,
+            ],
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Botón de formulario preparado
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildPrefillRedirectAction(
+        string $type,
+        array $fields
+    ): ?array {
+        $module = $type === 'solicitud'
+            ? 'solicitud'
+            : 'incidencia';
+
+        $routeName = config(
+            "chatbot.modules.{$module}.create"
+        );
+
+        if (
+            ! is_string($routeName)
+            || trim($routeName) === ''
+            || ! Route::has($routeName)
+        ) {
+            return null;
+        }
+
+        $filteredFields = $this->filterFieldsForModule(
+            module: $module,
+            fields: $fields
+        );
+
+        return [
+            'label' => $module === 'incidencia'
+                ? 'Revisar incidencia'
+                : 'Revisar solicitud',
+
+            'description' =>
+                'Abre el formulario con los datos detectados para que puedas revisarlos antes de enviarlo.',
+
+            'icon' => $module === 'incidencia'
+                ? 'triangle-alert'
+                : 'clipboard-list',
+
+            'variant' => 'ai',
+
+            'action' => 'redirect',
+
+            'url' => empty($filteredFields)
+                ? route($routeName)
+                : route(
+                    $routeName,
+                    $filteredFields
+                ),
+
+            'context' => $filteredFields,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Botón de formulario manual
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildManualFormAction(
+        string $type
+    ): ?array {
+        $module = $type === 'solicitud'
+            ? 'solicitud'
+            : 'incidencia';
+
+        $routeName = config(
+            "chatbot.modules.{$module}.create"
+        );
+
+        if (
+            ! is_string($routeName)
+            || trim($routeName) === ''
+            || ! Route::has($routeName)
+        ) {
+            return null;
+        }
+
+        return [
+            'label' => $module === 'incidencia'
+                ? 'Abrir incidencia'
+                : 'Abrir solicitud',
+
+            'description' =>
+                'Abre el formulario para completar los datos manualmente.',
+
+            'icon' => $module === 'incidencia'
+                ? 'triangle-alert'
+                : 'clipboard-list',
+
+            'variant' => 'default',
+
+            'action' => 'redirect',
+
+            'url' => route($routeName),
+
+            'context' => [],
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filtrar campos por módulo
+    |--------------------------------------------------------------------------
+    */
+
+    private function filterFieldsForModule(
+        string $module,
+        array $fields
+    ): array {
+        $allowedFields = match ($module) {
+            'incidencia' => [
+                'titulo',
+                'descripcion',
+                'tiempo_problema',
+                'afectacion',
+                'equipo',
+                'ubicacion',
+            ],
+
+            'solicitud' => [
+                'categoria',
+                'asunto',
+                'descripcion',
+                'tipo_equipo',
+                'accesorio',
+                'programa',
+                'sistema',
+                'tipo_acceso',
+                'justificacion',
+                'usuario_afectado',
+                'equipo_actual',
+                'motivo_cambio',
+            ],
+
+            default => [],
+        };
+
+        if ($allowedFields === []) {
+            return [];
+        }
+
+        return array_intersect_key(
+            $fields,
+            array_flip($allowedFields)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resumen de datos preparados
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildPrefillSummaryMessage(
+        string $type,
+        array $fields
+    ): string {
+        $managementName = $type === 'solicitud'
+            ? 'solicitud'
+            : 'incidencia';
+
+        $labels = [
+            'titulo' => 'Título',
+            'asunto' => 'Asunto',
+            'descripcion' => 'Descripción',
+            'tiempo_problema' => 'Tiempo del problema',
+            'afectacion' => 'Afectación',
+            'equipo' => 'Equipo o servicio',
+            'ubicacion' => 'Ubicación',
+            'categoria' => 'Categoría',
+            'tipo_equipo' => 'Tipo de equipo',
+            'accesorio' => 'Accesorio',
+            'programa' => 'Programa',
+            'sistema' => 'Sistema',
+            'tipo_acceso' => 'Tipo de acceso',
+            'justificacion' => 'Justificación',
+            'usuario_afectado' => 'Usuario afectado',
+            'equipo_actual' => 'Equipo actual',
+            'motivo_cambio' => 'Motivo del cambio',
+        ];
+
+        $lines = [
+            "Preparé los datos para tu {$managementName}. Revísalos antes de registrar la gestión.",
+        ];
+
+        $shown = 0;
+
+        foreach ($labels as $key => $label) {
+            if ($shown >= 8) {
+                break;
+            }
+
+            if (! array_key_exists($key, $fields)) {
+                continue;
+            }
+
+            if (! is_scalar($fields[$key])) {
+                continue;
+            }
+
+            $value = trim(
+                strip_tags(
+                    (string) $fields[$key]
+                )
+            );
+
+            if ($value === '') {
+                continue;
+            }
+
+            $value = preg_replace(
+                '/\s+/u',
+                ' ',
+                $value
+            ) ?? $value;
+
+            $value = mb_substr(
+                $value,
+                0,
+                300
+            );
+
+            $lines[] = "• {$label}: {$value}";
+
+            $shown++;
+        }
+
+        return implode(
+            PHP_EOL,
+            $lines
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Acumular texto para prellenado
+    |--------------------------------------------------------------------------
+    */
+
+    private function appendPrefillSource(
+        array $context,
+        string $message
+    ): array {
+        $message = trim(
+            strip_tags($message)
+        );
+
+        if ($message === '') {
+            return $context;
+        }
+
+        $message = preg_replace(
+            '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u',
+            '',
+            $message
+        ) ?? $message;
+
+        $message = mb_substr(
+            $message,
+            0,
+            1500
+        );
+
+        $previous = trim(
+            (string) (
+                $context['prefill_source']
+                ?? ''
+            )
+        );
+
+        /*
+         * Evitar agregar exactamente el mismo mensaje dos veces.
+         */
+        if (
+            $previous !== ''
+            && str_ends_with(
+                $previous,
+                $message
+            )
+        ) {
+            return $context;
+        }
+
+        $combined = $previous === ''
+            ? $message
+            : $previous.PHP_EOL.$message;
+
+        $context['prefill_source'] = mb_substr(
+            $combined,
+            -3000
+        );
+
+        return $context;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir acciones de prellenado
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildPrefillActions(
+        IntentResult $originalIntent,
+        string $message,
+        array $flowContext
+    ): array {
+        $types = $this->detectPrefillTypes(
+            originalIntent: $originalIntent,
+            message: $message,
+            flowContext: $flowContext
+        );
+
+        $actions = [];
+
+        if (in_array('incidencia', $types, true)) {
+            $actions[] = [
+                'label' => 'Preparar incidencia',
+
+                'description' =>
+                    'Extrae los datos de la conversación y prepara el formulario para revisión.',
+
+                'icon' => 'wand-sparkles',
+
+                'variant' => 'ai',
+
+                'action' => 'flow',
+
+                'value' => 'ai.prefill.incidencia',
+
+                'context' => $flowContext,
+            ];
+        }
+
+        if (in_array('solicitud', $types, true)) {
+            $actions[] = [
+                'label' => 'Preparar solicitud',
+
+                'description' =>
+                    'Extrae los datos de la conversación y prepara el formulario para revisión.',
+
+                'icon' => 'wand-sparkles',
+
+                'variant' => 'ai',
+
+                'action' => 'flow',
+
+                'value' => 'ai.prefill.solicitud',
+
+                'context' => $flowContext,
+            ];
+        }
+
+        return $actions;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar tipos de prellenado
+    |--------------------------------------------------------------------------
+    */
+
+    private function detectPrefillTypes(
+        IntentResult $originalIntent,
+        string $message,
+        array $flowContext
+    ): array {
+        $types = [];
+
+        if (
+            $originalIntent->is('incidencia')
+            || $this->looksLikeDiagnosticRequest($message)
+            || $this->detectProblemFlow($message) !== null
+            || isset($flowContext['tiempo_problema'])
+            || isset($flowContext['afectacion'])
+            || (
+                $flowContext['tipo_gestion']
+                ?? null
+            ) === 'incidencia'
+        ) {
+            $types[] = 'incidencia';
+        }
+
+        $normalized = $this->normalizeText(
+            $message
+        );
+
+        $requestSignals = [
+            'necesito instalar',
+            'quiero instalar',
+            'solicito',
+            'solicitud',
+            'necesito acceso',
+            'quiero acceso',
+            'crear cuenta',
+            'cuenta de correo',
+            'necesito vpn',
+            'cambio de equipo',
+            'necesito un equipo',
+            'necesito una impresora',
+            'requiero',
+            'quiero solicitar',
+        ];
+
+        if ($originalIntent->is('solicitud')) {
+            $types[] = 'solicitud';
+        } else {
+            foreach ($requestSignals as $signal) {
+                if (str_contains($normalized, $signal)) {
+                    $types[] = 'solicitud';
+
+                    break;
+                }
+            }
+        }
+
+        if (
+            isset($flowContext['categoria'])
+            || isset($flowContext['programa'])
+            || isset($flowContext['sistema'])
+            || isset($flowContext['tipo_acceso'])
+            || (
+                $flowContext['tipo_gestion']
+                ?? null
+            ) === 'solicitud'
+        ) {
+            $types[] = 'solicitud';
+        }
+
+        return array_values(
+            array_unique($types)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Eliminar botones duplicados
+    |--------------------------------------------------------------------------
+    */
+
+    private function uniqueQuickActions(
+        array $actions
+    ): array {
+        $unique = [];
+        $seen = [];
+
+        foreach ($actions as $action) {
+            if (! is_array($action)) {
+                continue;
+            }
+
+            $key = implode(
+                '|',
+                [
+                    (string) (
+                        $action['action']
+                        ?? ''
+                    ),
+
+                    (string) (
+                        $action['value']
+                        ?? ''
+                    ),
+
+                    (string) (
+                        $action['url']
+                        ?? ''
+                    ),
+
+                    (string) (
+                        $action['label']
+                        ?? ''
+                    ),
+                ]
+            );
+
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+
+            $unique[] = $action;
+        }
+
+        return $unique;
     }
 
     /*
@@ -1212,7 +2218,7 @@ class ChatbotService
         ?int $userId,
         string $userName
     ): array {
-        if (!$userId) {
+        if ($userId === null || $userId <= 0) {
             return [
                 'message' =>
                     'Necesitas iniciar sesión para consultar tus gestiones.',
@@ -1222,17 +2228,22 @@ class ChatbotService
                         'label' => 'Volver al menú',
                         'action' => 'flow',
                         'value' => 'menu.principal',
+                        'context' => [],
                     ],
                 ],
 
                 'redirect' => null,
+
                 'items' => [],
+
                 'mode' => 'flow',
+
+                'flow_context' => [],
 
                 'intent' => [
                     'name' => 'consultar_estado',
-                    'score' => 1,
-                    'confidence' => 1,
+                    'score' => 1.0,
+                    'confidence' => 1.0,
                 ],
 
                 'ai' => null,
@@ -1245,30 +2256,41 @@ class ChatbotService
         );
 
         $items = is_array(
-            $summary['items']
-            ?? null
+            $summary['items'] ?? null
         )
             ? $summary['items']
             : [];
 
-        $total = (int) (
-            $summary['total']
-            ?? 0
+        $total = max(
+            0,
+            (int) (
+                $summary['total']
+                ?? 0
+            )
         );
 
-        $abiertas = (int) (
-            $summary['abiertas']
-            ?? 0
+        $abiertas = max(
+            0,
+            (int) (
+                $summary['abiertas']
+                ?? 0
+            )
         );
 
-        $enProceso = (int) (
-            $summary['en_proceso']
-            ?? 0
+        $enProceso = max(
+            0,
+            (int) (
+                $summary['en_proceso']
+                ?? 0
+            )
         );
 
-        $finalizadas = (int) (
-            $summary['finalizadas']
-            ?? 0
+        $finalizadas = max(
+            0,
+            (int) (
+                $summary['finalizadas']
+                ?? 0
+            )
         );
 
         if ($total === 0) {
@@ -1281,29 +2303,36 @@ class ChatbotService
                         'label' => 'Tengo un problema',
                         'action' => 'flow',
                         'value' => 'problema.menu',
+                        'context' => [],
                     ],
 
                     [
                         'label' => 'Crear solicitud',
                         'action' => 'flow',
                         'value' => 'solicitud.menu',
+                        'context' => [],
                     ],
 
                     [
                         'label' => 'Volver al menú',
                         'action' => 'flow',
                         'value' => 'menu.principal',
+                        'context' => [],
                     ],
                 ],
 
                 'redirect' => null,
+
                 'items' => [],
+
                 'mode' => 'flow',
+
+                'flow_context' => [],
 
                 'intent' => [
                     'name' => 'consultar_estado',
-                    'score' => 1,
-                    'confidence' => 1,
+                    'score' => 1.0,
+                    'confidence' => 1.0,
                 ],
 
                 'ai' => null,
@@ -1317,54 +2346,67 @@ class ChatbotService
                 'gestión registrada',
                 'gestiones registradas'
             )
-            .".\n\n";
+            .'.'
+            .PHP_EOL
+            .PHP_EOL;
 
         if ($abiertas > 0) {
             $responseMessage .=
-                "• Abiertas o pendientes: {$abiertas}\n";
+                "• Abiertas o pendientes: {$abiertas}"
+                .PHP_EOL;
         }
 
         if ($enProceso > 0) {
             $responseMessage .=
-                "• En proceso: {$enProceso}\n";
+                "• En proceso: {$enProceso}"
+                .PHP_EOL;
         }
 
         if ($finalizadas > 0) {
             $responseMessage .=
-                "• Finalizadas: {$finalizadas}\n";
+                "• Finalizadas: {$finalizadas}"
+                .PHP_EOL;
         }
 
         if ($items !== []) {
             $responseMessage .=
-                "\nTe muestro las gestiones más recientes.";
+                PHP_EOL
+                .'Te muestro las gestiones más recientes.';
         }
 
         return [
-            'message' =>
-                trim($responseMessage),
+            'message' => trim(
+                $responseMessage
+            ),
 
             'quick_actions' => [
                 [
                     'label' => 'Actualizar',
                     'action' => 'status',
                     'value' => 'gestion.estado',
+                    'context' => [],
                 ],
 
                 [
                     'label' => 'Volver al menú',
                     'action' => 'flow',
                     'value' => 'menu.principal',
+                    'context' => [],
                 ],
             ],
 
             'redirect' => null,
+
             'items' => $items,
+
             'mode' => 'flow',
+
+            'flow_context' => [],
 
             'intent' => [
                 'name' => 'consultar_estado',
-                'score' => 1,
-                'confidence' => 1,
+                'score' => 1.0,
+                'confidence' => 1.0,
             ],
 
             'ai' => null,
@@ -1373,7 +2415,7 @@ class ChatbotService
 
     /*
     |--------------------------------------------------------------------------
-    | Preparar contexto acumulado del flujo
+    | Preparar contexto acumulado
     |--------------------------------------------------------------------------
     */
 
@@ -1391,6 +2433,7 @@ class ChatbotService
             'afectacion',
             'equipo',
             'ubicacion',
+
             'categoria',
             'asunto',
             'tipo_equipo',
@@ -1402,6 +2445,13 @@ class ChatbotService
             'usuario_afectado',
             'equipo_actual',
             'motivo_cambio',
+
+            'prefill_source',
+
+            'correo',
+            'tipo_gestion',
+            'management_type',
+            'step',
         ];
 
         $prepared = [];
@@ -1423,21 +2473,155 @@ class ChatbotService
             }
 
             $value = trim(
-                (string) $value
+                strip_tags(
+                    (string) $value
+                )
             );
 
             if ($value === '') {
                 continue;
             }
 
+            $value = preg_replace(
+                '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u',
+                '',
+                $value
+            ) ?? $value;
+
+            $limit = match ($key) {
+                'prefill_source' => 3000,
+
+                'descripcion' => 2000,
+
+                'justificacion',
+                'motivo_cambio' => 1000,
+
+                default => 500,
+            };
+
             $prepared[$key] = mb_substr(
                 $value,
                 0,
-                1000
+                $limit
             );
         }
 
         return $prepared;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar nombre del usuario
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareUserName(
+        mixed $userName
+    ): string {
+        $fallback = trim(
+            (string) config(
+                'chatbot.fallback_name',
+                'usuario'
+            )
+        );
+
+        if ($fallback === '') {
+            $fallback = 'usuario';
+        }
+
+        if (! is_scalar($userName)) {
+            return $fallback;
+        }
+
+        $userName = trim(
+            strip_tags(
+                (string) $userName
+            )
+        );
+
+        $userName = preg_replace(
+            '/[\x00-\x1F\x7F]/u',
+            ' ',
+            $userName
+        ) ?? $userName;
+
+        $userName = preg_replace(
+            '/\s+/u',
+            ' ',
+            $userName
+        ) ?? $userName;
+
+        $userName = mb_substr(
+            trim($userName),
+            0,
+            150
+        );
+
+        return $userName !== ''
+            ? $userName
+            : $fallback;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar mensaje del usuario
+    |--------------------------------------------------------------------------
+    */
+
+    private function prepareUserMessage(
+        string $message
+    ): string {
+        $message = trim($message);
+
+        if ($message === '') {
+            return '';
+        }
+
+        $message = preg_replace(
+            '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u',
+            '',
+            $message
+        ) ?? $message;
+
+        $maximumLength = max(
+            100,
+            (int) config(
+                'chatbot.message_max_length',
+                500
+            )
+        );
+
+        return mb_substr(
+            trim($message),
+            0,
+            $maximumLength
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener identificador del usuario
+    |--------------------------------------------------------------------------
+    */
+
+    private function resolveUserId(
+        ?Authenticatable $user
+    ): ?int {
+        if ($user === null) {
+            return null;
+        }
+
+        $identifier = $user->getAuthIdentifier();
+
+        if (! is_numeric($identifier)) {
+            return null;
+        }
+
+        $userId = (int) $identifier;
+
+        return $userId > 0
+            ? $userId
+            : null;
     }
 
     /*
@@ -1454,7 +2638,7 @@ class ChatbotService
             'UTF-8'
         );
 
-        return strtr(
+        $text = strtr(
             $text,
             [
                 'á' => 'a',
@@ -1466,6 +2650,12 @@ class ChatbotService
                 'ñ' => 'n',
             ]
         );
+
+        return preg_replace(
+            '/\s+/u',
+            ' ',
+            $text
+        ) ?? $text;
     }
 
     /*

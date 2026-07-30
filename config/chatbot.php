@@ -498,7 +498,7 @@ return [
 
         'model' => env(
             'CHATBOT_AI_MODEL',
-            'llama3.2'
+            'llama3.2:3b'
         ),
 
 
@@ -521,22 +521,23 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Historial
+        | Historial y contexto
         |--------------------------------------------------------------------------
         |
-        | Cuatro mensajes cortos aportan continuidad sin enviar
-        | demasiado texto al modelo.
+        | Se mantienen bajos a propósito: menos historial y menos contexto
+        | significan menos tokens de entrada, menos carga de GPU y respuestas
+        | más rápidas, sin perder continuidad conversacional razonable.
         |
         */
 
         'history_limit' => (int) env(
             'CHATBOT_AI_HISTORY_LIMIT',
-            4
+            2
         ),
 
         'history_message_length' => (int) env(
             'CHATBOT_AI_HISTORY_MESSAGE_LENGTH',
-            400
+            300
         ),
 
 
@@ -545,14 +546,15 @@ return [
         | Modelo cargado en memoria
         |--------------------------------------------------------------------------
         |
-        | -1 solicita mantener el modelo cargado mientras Ollama
-        | continúe en funcionamiento.
+        | Un valor finito (por ejemplo "30m") libera memoria de la GPU cuando
+        | el chatbot lleva un rato sin usarse, en vez de mantenerlo cargado
+        | indefinidamente con "-1".
         |
         */
 
         'keep_alive' => env(
             'CHATBOT_AI_KEEP_ALIVE',
-            '-1'
+            '30m'
         ),
 
 
@@ -572,26 +574,69 @@ return [
             0.85
         ),
 
-        /*
-         * Recomendado para el i7 de sexta generación.
-         */
         'num_ctx' => (int) env(
             'CHATBOT_AI_NUM_CTX',
-            2048
+            1536
         ),
 
         /*
-         * Mantiene las respuestas breves para que terminen rápidamente.
+         * Límite de tokens para respuestas conversacionales normales.
+         * Se mantiene bajo para respuestas breves, pero con margen
+         * suficiente para no cortar la idea a mitad de camino.
          */
         'num_predict' => (int) env(
             'CHATBOT_AI_NUM_PREDICT',
-            360
+            260
+        ),
+
+        /*
+         * Límite de tokens específico para prellenado de formularios
+         * (incidencia/solicitud), que normalmente requiere más texto
+         * estructurado que una respuesta conversacional corta.
+         */
+        'num_predict_prefill' => (int) env(
+            'CHATBOT_AI_NUM_PREDICT_PREFILL',
+            320
         ),
 
         'repeat_penalty' => (float) env(
             'CHATBOT_AI_REPEAT_PENALTY',
-            1.1
+            1.15
         ),
+
+    ],
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Control de solicitudes a Ollama
+    |--------------------------------------------------------------------------
+    |
+    | Garantiza una única solicitud activa hacia Ollama en un momento dado
+    | (evita saturar la GPU con llamadas paralelas), evita llamadas
+    | duplicadas por doble clic o reintentos del frontend, y evita que el
+    | warm-up del modelo compita con una consulta real del usuario.
+    |
+    */
+
+    'request_control' => [
+
+        'lock' => [
+            'enabled' => (bool) env('CHATBOT_AI_LOCK_ENABLED', true),
+            'key' => env('CHATBOT_AI_LOCK_KEY', 'chatbot_ollama_lock'),
+            'ttl' => (int) env('CHATBOT_AI_LOCK_TTL', 200),
+            'wait' => (int) env('CHATBOT_AI_LOCK_WAIT', 0),
+        ],
+
+        'dedup' => [
+            'enabled' => (bool) env('CHATBOT_AI_DEDUP_ENABLED', true),
+            'ttl' => (int) env('CHATBOT_AI_DEDUP_TTL', 10),
+        ],
+
+        'warmup' => [
+            'enabled' => (bool) env('CHATBOT_AI_WARMUP_ENABLED', true),
+            'on_lock_busy' => env('CHATBOT_AI_WARMUP_ON_LOCK_BUSY', 'skip'),
+        ],
 
     ],
 

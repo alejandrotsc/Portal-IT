@@ -257,198 +257,221 @@
 
 
 
-    {{-- Soporte de turno --}}
+    {{-- Atención de TI --}}
 
-    <div>
+<div>
 
-        <div class="mb-4">
+    <div class="mb-4">
 
-            <h2 class="text-sm font-semibold text-foreground uppercase tracking-widest">
+        <h2 class="text-sm font-semibold text-foreground uppercase tracking-widest">
+            Atención de TI
+        </h2>
 
-                Soporte de turno
-
-            </h2>
-
-        </div>
+    </div>
 
 
-        <div class="group/support relative overflow-hidden bg-card rounded-2xl border border-border shadow-sm transition-all duration-300 hover:border-primary/15 hover:shadow-md motion-safe:hover:-translate-y-0.5">
+    <div class="group/support relative overflow-hidden bg-card rounded-2xl border border-border shadow-sm transition-all duration-300 hover:border-primary/15 hover:shadow-md motion-safe:hover:-translate-y-0.5">
 
 
-            {{-- Decoración --}}
+        {{-- Decoración --}}
 
-            <span class="absolute -right-12 -top-14 w-32 h-32 rounded-full bg-primary/5 blur-3xl pointer-events-none transition-all duration-500 group-hover/support:bg-primary/10 motion-safe:group-hover/support:scale-150"></span>
+        <span class="absolute -right-12 -top-14 w-32 h-32 rounded-full bg-primary/5 blur-3xl pointer-events-none transition-all duration-500 group-hover/support:bg-primary/10 motion-safe:group-hover/support:scale-150"></span>
 
 
 
-            {{-- Agente del día --}}
+        {{-- Horario de atención --}}
 
-            <div class="relative px-5 py-4 border-b border-border transition-colors duration-200 hover:bg-blue-50/30">
+        <div class="relative px-5 py-4 border-b border-border transition-colors duration-200 hover:bg-blue-50/30">
 
-                <div class="flex items-center gap-2 mb-3">
+            <div class="flex items-center gap-2 mb-3">
+
+                <i
+                    data-lucide="clock-3"
+                    stroke-width="1.8"
+                    class="w-[13px] h-[13px] shrink-0 text-primary">
+                </i>
+
+                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Horario de atención
+                </span>
+
+            </div>
+
+
+            <div class="flex items-center gap-3">
+
+                <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-blue-100 text-blue-700 transition-all duration-300 group-hover/support:bg-blue-200 motion-safe:group-hover/support:scale-105">
 
                     <i
-                        data-lucide="calendar"
+                        data-lucide="calendar-days"
                         stroke-width="1.8"
-                        class="w-[13px] h-[13px] shrink-0 text-primary">
+                        class="w-[18px] h-[18px]">
                     </i>
 
-                    <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-
-                        Agente del día
-
-                    </span>
-
                 </div>
 
+                <div class="min-w-0">
 
-                <div class="flex items-center gap-3">
+                    <p class="text-sm font-semibold text-foreground">
+                        Lunes a viernes
+                    </p>
 
-                    <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold transition-all duration-300 group-hover/support:bg-blue-200 motion-safe:group-hover/support:scale-105">
-
-                        RC
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <p class="text-sm font-semibold text-foreground">
-
-                            Roberto Castillo
-
-                        </p>
-
-                        <p class="text-xs text-muted-foreground mt-0.5">
-
-                            Soporte Nivel 1 · Turno día
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="flex items-center gap-1.5 mt-3">
-
-                    <span class="relative flex w-2 h-2 shrink-0">
-
-                        <span class="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping"></span>
-
-                        <span class="relative inline-flex w-2 h-2 rounded-full bg-emerald-500"></span>
-
-                    </span>
-
-                    <span class="text-xs text-emerald-600 font-medium">
-
-                        Disponible ahora
-
-                    </span>
-
-                    <span class="text-xs text-muted-foreground ml-auto">
-
-                        08:00 – 17:00
-
-                    </span>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                        Atención regular del equipo de TI
+                    </p>
 
                 </div>
 
             </div>
 
 
+            <div class="flex items-center gap-1.5 mt-3">
 
-            {{-- Fin de semana --}}
+                <span class="relative flex w-2 h-2 shrink-0">
 
-            <div class="relative px-5 py-4 transition-colors duration-200 hover:bg-violet-50/30">
+                    <span class="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping"></span>
 
-                <div class="flex items-center gap-2 mb-3">
+                    <span class="relative inline-flex w-2 h-2 rounded-full bg-emerald-500"></span>
+
+                </span>
+
+                <span class="text-xs text-emerald-600 font-medium">
+                    Disponible en horario laboral
+                </span>
+
+                <span class="text-xs text-muted-foreground ml-auto">
+                    09:00 – 18:00
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        {{-- Canal de contacto --}}
+
+        <div class="relative px-5 py-4 border-b border-border transition-colors duration-200 hover:bg-violet-50/30">
+
+            <div class="flex items-center gap-2 mb-3">
+
+                <i
+                    data-lucide="mail"
+                    stroke-width="1.8"
+                    class="w-[13px] h-[13px] shrink-0 text-violet-500">
+                </i>
+
+                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Canal de contacto
+                </span>
+
+            </div>
+
+
+            <div class="flex items-center gap-3">
+
+                <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-violet-100 text-violet-700 transition-all duration-300 group-hover/support:bg-violet-200 motion-safe:group-hover/support:scale-105">
 
                     <i
                         data-lucide="headphones"
                         stroke-width="1.8"
-                        class="w-[13px] h-[13px] shrink-0 text-violet-500">
+                        class="w-[18px] h-[18px]">
                     </i>
-
-                    <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-
-                        Fin de semana
-
-                    </span>
 
                 </div>
 
+                <div class="min-w-0">
 
-                <div class="flex items-center gap-3">
+                    <p class="text-sm font-semibold text-foreground">
+                        Mesa de ayuda TI
+                    </p>
 
-                    <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-violet-100 text-violet-700 text-sm font-semibold transition-all duration-300 group-hover/support:bg-violet-200 motion-safe:group-hover/support:scale-105">
-
-                        LP
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <p class="text-sm font-semibold text-foreground">
-
-                            Laura Pérez
-
-                        </p>
-
-                        <p class="text-xs text-muted-foreground mt-0.5">
-
-                            Soporte Nivel 2 · Guardia
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="flex items-center gap-1.5 mt-3">
-
-                    <i
-                        data-lucide="wifi-off"
-                        stroke-width="1.8"
-                        class="w-3 h-3 shrink-0 text-muted-foreground">
-                    </i>
-
-                    <span class="text-xs text-muted-foreground">
-
-                        Sáb–Dom · 09:00 – 18:00
-
-                    </span>
+                    <p class="text-xs text-muted-foreground mt-0.5 truncate">
+                        helpdesk@televicentro.hn
+                    </p>
 
                 </div>
 
             </div>
 
 
+            <div class="flex items-start gap-1.5 mt-3">
 
-            {{-- Contactar soporte --}}
+                <i
+                    data-lucide="info"
+                    stroke-width="1.8"
+                    class="w-3 h-3 shrink-0 mt-0.5 text-muted-foreground">
+                </i>
 
-            <div class="relative px-5 py-3 border-t border-border bg-muted/40">
-
-                <button
-                    type="button"
-                    class="group/contact w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-primary font-medium transition-all duration-200 hover:bg-primary/5 hover:text-primary/80 active:scale-[0.98]">
-
-                    <span>
-                        Contactar soporte
-                    </span>
-
-                    <i
-                        data-lucide="chevron-right"
-                        stroke-width="1.8"
-                        class="w-3 h-3 shrink-0 transition-transform duration-200 group-hover/contact:translate-x-0.5">
-                    </i>
-
-                </button>
+                <span class="text-xs text-muted-foreground leading-relaxed">
+                    Fuera del horario de atención, puedes registrar una incidencia desde el portal.
+                </span>
 
             </div>
 
         </div>
 
+
+
+        {{-- Contactar soporte --}}
+
+@php
+    $correoSoporte = 'helpdesk@televicentro.hn';
+
+    $asuntoSoporte = 'Consulta de soporte desde el Portal TI';
+
+    $cuerpoSoporte = implode("\r\n", [
+        'Hola, equipo de soporte TI:',
+        '',
+        'Solicito su apoyo con la siguiente consulta:',
+        '',
+        'DATOS DEL USUARIO',
+        'Nombre: ' . (auth()->user()->nombre ?? 'N/A'),
+        'Correo: ' . (auth()->user()->correo ?? 'N/A'),
+        '',
+        'DETALLE DE LA CONSULTA',
+        'Describa brevemente lo que necesita:',
+        '',
+        '',
+        'Indique si recibió algún mensaje de error:',
+        '',
+        '',
+        'Gracias.',
+    ]);
+
+    $outlookUrl =
+        'https://outlook.office.com/mail/deeplink/compose'
+        . '?to=' . rawurlencode($correoSoporte)
+        . '&subject=' . rawurlencode($asuntoSoporte)
+        . '&body=' . rawurlencode($cuerpoSoporte);
+@endphp
+
+
+        <div class="relative px-5 py-3 bg-muted/40">
+
+            <a
+                href="{{ $outlookUrl }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group/contact w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-primary font-medium transition-all duration-200 hover:bg-primary/5 hover:text-primary/80 active:scale-[0.98]"
+            >
+
+                <span>
+                    Contactar soporte
+                </span>
+
+                <i
+                    data-lucide="external-link"
+                    stroke-width="1.8"
+                    class="w-3 h-3 shrink-0 transition-transform duration-200">
+                </i>
+
+            </a>
+
+        </div>
+
     </div>
+
+</div>
 
 </section>
