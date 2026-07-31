@@ -111,9 +111,22 @@ class UsuarioController extends Controller
             ->withQueryString();
 
 
-        $roles = Rol::query()
-            ->orderBy('nombre')
-            ->get();
+        /*
+        |--------------------------------------------------------------------------
+        | Roles visibles en el filtro
+        |--------------------------------------------------------------------------
+        |
+        | Únicamente se muestran:
+        |
+        | 1 = Usuario
+        | 3 = Administrador
+        |
+        | UsuarioTI permanece en la base de datos, pero no aparece como opción
+        | administrable dentro de este módulo.
+        |
+        */
+
+        $roles = $this->rolesDisponibles();
 
 
         $resumen = [
@@ -162,13 +175,11 @@ class UsuarioController extends Controller
 
     public function create(): View
     {
-        $roles = Rol::query()
-            ->orderBy('nombre')
-            ->get();
-
         return view(
             'usuarios.create',
-            compact('roles')
+            [
+                'roles' => $this->rolesDisponibles(),
+            ]
         );
     }
 
@@ -240,16 +251,14 @@ class UsuarioController extends Controller
     public function edit(
         Usuario $usuario
     ): View {
-        $roles = Rol::query()
-            ->orderBy('nombre')
-            ->get();
-
         return view(
             'usuarios.edit',
-            compact(
-                'usuario',
-                'roles'
-            )
+            [
+                'usuario' => $usuario,
+
+                'roles' =>
+                    $this->rolesDisponibles(),
+            ]
         );
     }
 
@@ -459,6 +468,32 @@ class UsuarioController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Roles disponibles
+    |--------------------------------------------------------------------------
+    |
+    | Se centraliza la consulta para evitar repetirla en index, create y edit.
+    | El rol UsuarioTI no se elimina de la tabla, únicamente deja de aparecer
+    | como una opción seleccionable desde la administración de usuarios.
+    |
+    */
+
+    private function rolesDisponibles()
+    {
+        return Rol::query()
+            ->whereIn(
+                'id',
+                [
+                    1,
+                    3,
+                ]
+            )
+            ->orderBy('nombre')
+            ->get();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Normalizar datos
     |--------------------------------------------------------------------------
     */
@@ -517,10 +552,23 @@ class UsuarioController extends Controller
                 ),
             ],
 
+            /*
+            |--------------------------------------------------------------------------
+            | Roles permitidos
+            |--------------------------------------------------------------------------
+            |
+            | Se valida también en el servidor para impedir que alguien pueda
+            | enviar manualmente rol_id=2 modificando el formulario.
+            |
+            */
+
             'rol_id' => [
                 'required',
                 'integer',
-                'exists:roles,id',
+                Rule::in([
+                    1,
+                    3,
+                ]),
             ],
         ], [
             'nombre.required' =>
@@ -550,7 +598,10 @@ class UsuarioController extends Controller
             'rol_id.required' =>
                 'Debe seleccionar un rol.',
 
-            'rol_id.exists' =>
+            'rol_id.integer' =>
+                'El rol seleccionado no es válido.',
+
+            'rol_id.in' =>
                 'El rol seleccionado no es válido.',
         ]);
     }
