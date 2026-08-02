@@ -213,7 +213,7 @@ class FormPrefillExtractorService
                                 512,
                                 (int) config(
                                     'chatbot.ai.num_ctx',
-                                    1536
+                                    1024
                                 )
                             ),
 
@@ -346,49 +346,19 @@ class FormPrefillExtractorService
     private function systemPrompt(
         ?string $forcedType
     ): string {
-        $typeInstruction = $forcedType !== null
-            ? "El tipo de gestión ya fue confirmado como \"{$forcedType}\"."
-            : 'Determina si corresponde a una incidencia, una solicitud o ninguna.';
+        if ($forcedType === self::TIPO_INCIDENCIA) {
+            return <<<'PROMPT'
+Extrae datos para una incidencia del Portal TI y devuelve únicamente JSON válido.
 
-        return <<<PROMPT
-Eres un extractor de datos del Portal TI.
-
-{$typeInstruction}
-
-Tu única tarea es devolver JSON válido. No expliques nada y no agregues texto fuera del JSON.
-
-REGLAS:
-- Una incidencia representa una falla o problema técnico.
-- Una solicitud representa una petición de acceso, instalación, equipo, correo, VPN, impresora u otro servicio.
-- No inventes datos que el usuario no proporcionó.
-- Si un dato no está presente, usa null.
-- Conserva la descripción del usuario con redacción clara y breve.
-- No incluyas contraseñas, códigos, tokens ni información sensible.
-- tipo_gestion solo puede ser: incidencia, solicitud o null.
-- confidence debe ser un número entre 0 y 1.
-
-CAMPOS DE INCIDENCIA:
-titulo, descripcion, tiempo_problema, afectacion, equipo, ubicacion.
-
-VALORES CERRADOS DE INCIDENCIA:
+Reglas:
+- No inventes información ni incluyas datos sensibles.
+- Usa null cuando un dato no aparezca.
+- Redacta titulo y descripcion de forma clara y breve.
 - tiempo_problema: hoy, ayer, varios_dias o null.
 - afectacion: solo, varios, todos o null.
+- confidence: número entre 0 y 1.
 
-CAMPOS DE SOLICITUD:
-categoria, asunto, descripcion, tipo_equipo, accesorio, programa, sistema,
-tipo_acceso, justificacion, usuario_afectado, equipo_actual, motivo_cambio.
-
-CATEGORIAS DE SOLICITUD:
-- Computadora o accesorios
-- Instalar un programa
-- Acceso a un sistema
-- VPN
-- Impresora
-- Cuenta de correo
-- Cambio de equipo
-- Otra solicitud
-
-FORMATO EXACTO:
+Formato exacto:
 {
   "tipo_gestion": "incidencia",
   "confidence": 0.90,
@@ -398,9 +368,33 @@ FORMATO EXACTO:
     "tiempo_problema": null,
     "afectacion": null,
     "equipo": null,
-    "ubicacion": null,
+    "ubicacion": null
+  }
+}
+PROMPT;
+        }
+
+        if ($forcedType === self::TIPO_SOLICITUD) {
+            return <<<'PROMPT'
+Extrae datos para una solicitud del Portal TI y devuelve únicamente JSON válido.
+
+Reglas:
+- No inventes información ni incluyas datos sensibles.
+- Usa null cuando un dato no aparezca.
+- Redacta asunto, descripcion y justificacion de forma clara y breve.
+- confidence: número entre 0 y 1.
+- categoria debe ser exactamente una de estas opciones o null:
+  Computadora o accesorios; Instalar un programa; Acceso a un sistema; VPN;
+  Impresora; Cuenta de correo; Cambio de equipo; Otra solicitud.
+
+Formato exacto:
+{
+  "tipo_gestion": "solicitud",
+  "confidence": 0.90,
+  "campos": {
     "categoria": null,
     "asunto": null,
+    "descripcion": null,
     "tipo_equipo": null,
     "accesorio": null,
     "programa": null,
@@ -411,6 +405,29 @@ FORMATO EXACTO:
     "equipo_actual": null,
     "motivo_cambio": null
   }
+}
+PROMPT;
+        }
+
+        return <<<'PROMPT'
+Clasifica el texto como incidencia, solicitud o ninguna y devuelve únicamente JSON válido.
+
+Una incidencia es una falla técnica. Una solicitud es una petición de acceso,
+instalación, equipo, correo, VPN, impresora u otro servicio.
+
+No inventes información. Usa null para datos ausentes. No incluyas datos sensibles.
+tipo_gestion: incidencia, solicitud o null. confidence: número entre 0 y 1.
+
+Devuelve "campos" usando solo las propiedades aplicables:
+- Incidencia: titulo, descripcion, tiempo_problema, afectacion, equipo, ubicacion.
+- Solicitud: categoria, asunto, descripcion, tipo_equipo, accesorio, programa,
+  sistema, tipo_acceso, justificacion, usuario_afectado, equipo_actual, motivo_cambio.
+
+Formato:
+{
+  "tipo_gestion": null,
+  "confidence": 0.00,
+  "campos": {}
 }
 PROMPT;
     }

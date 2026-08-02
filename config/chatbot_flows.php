@@ -46,7 +46,7 @@ $config = [
 
         [
             'label' => 'Necesito un pase',
-            'icon' => 'contact',
+            'icon' => 'package-open',
             'action' => 'flow',
             'value' => 'pase.menu',
         ],
@@ -922,7 +922,7 @@ $config = [
 
         'pase.menu' => [
             'message' =>
-                '¿Durante cuánto tiempo necesita acceso la persona?',
+                '¿Durante cuánto tiempo necesita autorizar el ingreso del equipo?',
 
             'quick_actions' => [
                 [
@@ -953,8 +953,9 @@ $config = [
 
         'pase.explicacion' => [
             'message' =>
-                "Utiliza Pase menor a 24 horas si el acceso será únicamente por unas horas o un día. "
-                ."Si durará más de 24 horas, corresponde una autorización mediante Pase mayor a 24 horas.",
+                "Los pases se utilizan únicamente para autorizar el ingreso de equipos. "
+                ."Si el equipo ingresará por menos de 24 horas, corresponde un pase temporal. "
+                ."Si permanecerá más de 24 horas, corresponde una autorización.",
 
             'quick_actions' => [
                 [
@@ -1033,7 +1034,7 @@ $config = [
 $iconos = [
     'Tengo un problema' => 'circle-alert',
     'Necesito un servicio' => 'wrench',
-    'Necesito un pase' => 'contact',
+    'Necesito un pase' => 'package-open',
     'Consultar gestiones' => 'search',
     'Hacer una pregunta' => 'bot-message-square',
 

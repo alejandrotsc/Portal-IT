@@ -305,25 +305,16 @@ return [
             'solicitar pase temporal',
             'pase temporal',
 
+            'pase temporal para equipo',
+            'pase para ingreso de equipo',
+            'ingreso temporal de equipo',
+            'ingresar equipo por hoy',
+            'ingreso de equipo por unas horas',
+
             'pase menor a 24 horas',
             'pase menor de 24 horas',
-            'menos de 24 horas',
-            'menor a 24 horas',
-
-            'acceso temporal',
-            'permiso temporal',
-            'ingreso temporal',
-
-            'visita temporal',
-            'visita de proveedor',
-            'visita',
-            'proveedor',
-            'tecnico externo',
-
-            'solo por hoy',
-            'entrar hoy',
-            'ingresar hoy',
-            'acceso por unas horas',
+            'pase de equipo menor a 24 horas',
+            'equipo menos de 24 horas',
 
             'pase',
         ],
@@ -337,34 +328,20 @@ return [
 
         'autorizacion_memorando' => [
 
-            'crear memorando',
-            'solicitar autorizacion',
-            'crear autorizacion',
-
-            'autorizacion por memorando',
-            'memorando de autorizacion',
-            'memorando',
-
-            'autorizacion',
-            'autorizar',
+            'autorizacion para ingreso de equipo',
+            'autorizar ingreso de equipo',
+            'memorando para ingreso de equipo',
+            'autorizacion de equipo por varios dias',
 
             'pase mayor a 24 horas',
             'pase mayor de 24 horas',
-            'mas de 24 horas',
-            'mayor a 24 horas',
+            'pase de equipo mayor a 24 horas',
+            'equipo mas de 24 horas',
 
-            'varios dias',
-            'por varios dias',
-            'una semana',
-            'varias semanas',
-            'ingreso prolongado',
-            'acceso prolongado',
-            'acceso permanente',
-
-            'prestamo de equipo',
-            'sacar equipo',
-            'retiro de equipo',
             'ingreso de equipo',
+            'ingreso prolongado de equipo',
+            'equipo por varios dias',
+            'equipo por una semana',
         ],
 
 
@@ -515,7 +492,7 @@ return [
 
         'timeout' => (int) env(
             'CHATBOT_AI_TIMEOUT',
-            180
+            60
         ),
 
 
@@ -576,7 +553,7 @@ return [
 
         'num_ctx' => (int) env(
             'CHATBOT_AI_NUM_CTX',
-            1536
+            1024
         ),
 
         /*
@@ -586,7 +563,7 @@ return [
          */
         'num_predict' => (int) env(
             'CHATBOT_AI_NUM_PREDICT',
-            260
+            120
         ),
 
         /*
@@ -612,19 +589,20 @@ return [
     | Control de solicitudes a Ollama
     |--------------------------------------------------------------------------
     |
-    | Garantiza una única solicitud activa hacia Ollama en un momento dado
-    | (evita saturar la GPU con llamadas paralelas), evita llamadas
-    | duplicadas por doble clic o reintentos del frontend, y evita que el
-    | warm-up del modelo compita con una consulta real del usuario.
+    | El bloqueo global es opcional y permanece desactivado para permitir
+    | solicitudes simultáneas. La deduplicación evita llamadas repetidas por
+    | doble clic o reintentos, y el control de warm-up evita precargas dobles.
     |
     */
 
     'request_control' => [
 
         'lock' => [
-            'enabled' => (bool) env('CHATBOT_AI_LOCK_ENABLED', true),
+            // Desactivado por defecto para permitir solicitudes simultáneas.
+            // Ollama administra el paralelismo y la cola según los recursos del servidor.
+            'enabled' => (bool) env('CHATBOT_AI_LOCK_ENABLED', false),
             'key' => env('CHATBOT_AI_LOCK_KEY', 'chatbot_ollama_lock'),
-            'ttl' => (int) env('CHATBOT_AI_LOCK_TTL', 200),
+            'ttl' => (int) env('CHATBOT_AI_LOCK_TTL', 75),
             'wait' => (int) env('CHATBOT_AI_LOCK_WAIT', 0),
         ],
 
@@ -635,7 +613,6 @@ return [
 
         'warmup' => [
             'enabled' => (bool) env('CHATBOT_AI_WARMUP_ENABLED', true),
-            'on_lock_busy' => env('CHATBOT_AI_WARMUP_ON_LOCK_BUSY', 'skip'),
         ],
 
     ],

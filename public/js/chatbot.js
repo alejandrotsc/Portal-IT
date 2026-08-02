@@ -906,8 +906,6 @@ window.chatbotWidget = function (options = {}) {
                         ?.focus();
                 });
             }
-
-            this.afterStreamComplete();
         },
 
 

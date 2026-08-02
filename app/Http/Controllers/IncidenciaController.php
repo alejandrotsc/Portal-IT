@@ -254,7 +254,7 @@ class IncidenciaController extends Controller
                 ),
 
             recipientEmail:
-                'helpdesk@televicentro.hn',
+                'alejandrotsc01@gmail.com',
 
             mailType:
                 'incidencia_creada',

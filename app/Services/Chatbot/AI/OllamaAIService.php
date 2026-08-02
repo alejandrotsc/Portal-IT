@@ -238,7 +238,7 @@ class OllamaAIService implements AIServiceInterface
                                 512,
                                 (int) config(
                                     'chatbot.ai.num_ctx',
-                                    1536
+                                    1024
                                 )
                             ),
 
@@ -650,7 +650,7 @@ class OllamaAIService implements AIServiceInterface
             64,
             (int) config(
                 'chatbot.ai.num_predict',
-                260
+                120
             )
         );
     }
@@ -767,12 +767,6 @@ class OllamaAIService implements AIServiceInterface
         $model = $this->ollamaModel();
 
         try {
-            $systemPrompt = $this->promptBuilder->systemPrompt([
-                'usuario' => 'usuario',
-                'rol' => 'Usuario',
-                'purpose' => 'warmup',
-            ]);
-
             $response = Http::asJson()
                 ->acceptJson()
                 ->connectTimeout(
@@ -797,42 +791,11 @@ class OllamaAIService implements AIServiceInterface
                     $url,
                     [
                         'model' => $model,
-
-                        'messages' => [
-                            [
-                                'role' => 'system',
-                                'content' => $systemPrompt,
-                            ],
-                            [
-                                'role' => 'user',
-                                'content' => 'Listo.',
-                            ],
-                        ],
-
                         'stream' => false,
-
                         'keep_alive' => (string) config(
                             'chatbot.ai.keep_alive',
                             '30m'
                         ),
-
-                        'options' => [
-                            'temperature' => 0,
-
-                            'num_ctx' => max(
-                                512,
-                                (int) config(
-                                    'chatbot.ai.num_ctx',
-                                    1536
-                                )
-                            ),
-
-                            /*
-                             * Solo interesa cargar el modelo y procesar
-                             * el prompt principal.
-                             */
-                            'num_predict' => 1,
-                        ],
                     ]
                 );
 
@@ -854,7 +817,7 @@ class OllamaAIService implements AIServiceInterface
             }
 
             Log::info(
-                'Modelo y prompt de Ollama precargados.',
+                'Modelo de Ollama precargado sin ejecutar inferencia.',
                 [
                     'model' => $model,
                 ]

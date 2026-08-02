@@ -167,7 +167,7 @@ class SolicitudController extends Controller
                 ),
 
             recipientEmail:
-                'helpdesk@televicentro.hn',
+                'alejandrotsc01@gmail.com',
 
             mailType:
                 'solicitud_creada',

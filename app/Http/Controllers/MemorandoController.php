@@ -331,7 +331,7 @@ public function storePaseTemporal(
             ),
 
             recipientEmail:
-                'helpdesk@televicentro.hn',
+                'alejandrotsc01@gmail.com',
 
             mailType:
                 'pase_temporal_creado',
@@ -785,7 +785,7 @@ if ($tipo->formulario === 'autorizacion') {
             ),
 
         recipientEmail:
-            'helpdesk@televicentro.hn',
+            'alejandrotsc01@gmail.com',
 
         mailType:
             'pase_mayor_creado',
