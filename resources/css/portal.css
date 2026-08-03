@@ -1,83 +1,195 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-body {
-    font-family: 'Inter', system-ui, sans-serif;
-}
+/*
+|--------------------------------------------------------------------------
+| Tema claro
+|--------------------------------------------------------------------------
+*/
 
 :root {
-    --background:#f8fafc;
-    --card:#ffffff;
-    --border:#e5e7eb;
-    --foreground:#111827;
-    --muted:#f3f4f6;
-    --muted-foreground:#6b7280;
-    --primary:#2563eb;
+    color-scheme: light;
+
+    --background: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --foreground: #111827;
+    --muted: #f3f4f6;
+    --muted-foreground: #6b7280;
+    --primary: #2563eb;
+    --primary-transparent: rgba(37, 99, 235, 0.1);
 }
 
+/*
+|--------------------------------------------------------------------------
+| Tema oscuro
+|--------------------------------------------------------------------------
+*/
+
+html.dark {
+    color-scheme: dark;
+
+    --background: #0f172a;
+    --card: #111827;
+    --border: #334155;
+    --foreground: #f1f5f9;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --primary: #3b82f6;
+    --primary-transparent: rgba(59, 130, 246, 0.15);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Estilos generales
+|--------------------------------------------------------------------------
+*/
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Colores semánticos
+|--------------------------------------------------------------------------
+*/
+
 .bg-background {
-    background-color:var(--background);
+    background-color: var(--background);
 }
 
 .bg-card {
-    background-color:var(--card);
+    background-color: var(--card);
 }
 
 .border-border {
-    border-color:var(--border);
+    border-color: var(--border);
 }
 
 .text-foreground {
-    color:var(--foreground);
+    color: var(--foreground);
 }
 
 .bg-muted {
-    background-color:var(--muted);
+    background-color: var(--muted);
 }
 
 .text-muted-foreground {
-    color:var(--muted-foreground);
+    color: var(--muted-foreground);
 }
 
 .bg-primary {
-    background-color:var(--primary);
+    background-color: var(--primary);
 }
 
 .text-primary {
-    color:var(--primary);
+    color: var(--primary);
 }
 
 .border-primary {
-    border-color:var(--primary);
+    border-color: var(--primary);
 }
 
-/* Transparencia compatible con clases bg-primary/10 */
 .bg-primary\/10 {
-    background-color:rgba(37,99,235,.1);
+    background-color: var(--primary-transparent);
 }
 
-/* Hover azul */
+/*
+|--------------------------------------------------------------------------
+| Estados hover
+|--------------------------------------------------------------------------
+*/
+
+.hover\:bg-muted:hover {
+    background-color: var(--muted);
+}
+
 .hover\:bg-blue-700:hover {
-    background-color:#1d4ed8;
+    background-color: #1d4ed8;
 }
 
-/* Ocultar elementos Alpine antes de cargar */
+/*
+|--------------------------------------------------------------------------
+| Elementos de formulario
+|--------------------------------------------------------------------------
+*/
+
+input,
+textarea,
+select {
+    color: var(--foreground);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--muted-foreground);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Opciones de los selects
+|--------------------------------------------------------------------------
+*/
+
+select {
+    color-scheme: light;
+}
+
+select option,
+select optgroup {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+html.dark select {
+    color-scheme: dark;
+}
+
+html.dark select option,
+html.dark select optgroup {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+html.dark select option:checked {
+    color: #ffffff;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Alpine
+|--------------------------------------------------------------------------
+*/
+
 [x-cloak] {
-    display:none !important;
+    display: none !important;
 }
 
-.ticker{
-    animation:ticker 38s linear infinite;
-    will-change:transform;
+/*
+|--------------------------------------------------------------------------
+| Ticker
+|--------------------------------------------------------------------------
+*/
+
+.ticker {
+    animation: ticker 38s linear infinite;
+    will-change: transform;
 }
 
-@keyframes ticker{
-
-    0%{
-        transform:translateX(0);
+@keyframes ticker {
+    0% {
+        transform: translateX(0);
     }
 
-    100%{
-        transform:translateX(-50%);
+    100% {
+        transform: translateX(-50%);
     }
-
 }

@@ -236,6 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 + 'border border-border bg-white shadow-sm '
                 + 'transition-all duration-300 hover:border-primary/20 '
                 + 'hover:shadow-lg hover:shadow-primary/10 '
+                + 'dark:border-slate-700/70 dark:bg-slate-900 '
+                + 'dark:hover:border-blue-700/60 dark:hover:shadow-black/20 '
                 + 'motion-safe:hover:-translate-y-1';
 
 
@@ -992,30 +994,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const estilos = {
 
             queued: [
-                'bg-blue-50',
-                'border-blue-200',
-                'text-blue-600',
+                'bg-blue-50 dark:bg-blue-950/45',
+                'border-blue-200 dark:border-blue-800',
+                'text-blue-600 dark:text-blue-400',
                 'clock-3',
             ],
 
             success: [
-                'bg-emerald-50',
-                'border-emerald-200',
-                'text-emerald-600',
+                'bg-emerald-50 dark:bg-emerald-950/45',
+                'border-emerald-200 dark:border-emerald-800',
+                'text-emerald-600 dark:text-emerald-400',
                 'circle-check-big',
             ],
 
             warning: [
-                'bg-amber-50',
-                'border-amber-200',
-                'text-amber-600',
+                'bg-amber-50 dark:bg-amber-950/45',
+                'border-amber-200 dark:border-amber-800',
+                'text-amber-600 dark:text-amber-400',
                 'mail-warning',
             ],
 
             error: [
-                'bg-red-50',
-                'border-red-200',
-                'text-red-600',
+                'bg-red-50 dark:bg-red-950/45',
+                'border-red-200 dark:border-red-800',
+                'text-red-600 dark:text-red-400',
                 'circle-x',
             ],
 
@@ -1058,39 +1060,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const estilos = {
 
             queued: [
-                'border-blue-200',
-                'bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50',
-                'text-blue-800',
-                'text-blue-700',
+                'border-blue-200 dark:border-blue-800',
+                'bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 dark:from-blue-950/45 dark:via-slate-900 dark:to-sky-950/30',
+                'text-blue-800 dark:text-blue-300',
+                'text-blue-700 dark:text-blue-400',
                 'mail',
-                'text-blue-600',
+                'text-blue-600 dark:text-blue-400',
             ],
 
             success: [
-                'border-emerald-200',
-                'bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50',
-                'text-emerald-800',
-                'text-emerald-700',
+                'border-emerald-200 dark:border-emerald-800',
+                'bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 dark:from-emerald-950/45 dark:via-slate-900 dark:to-teal-950/30',
+                'text-emerald-800 dark:text-emerald-300',
+                'text-emerald-700 dark:text-emerald-400',
                 'mail-check',
-                'text-emerald-600',
+                'text-emerald-600 dark:text-emerald-400',
             ],
 
             warning: [
-                'border-amber-200',
-                'bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50',
-                'text-amber-800',
-                'text-amber-700',
+                'border-amber-200 dark:border-amber-800',
+                'bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 dark:from-amber-950/45 dark:via-slate-900 dark:to-orange-950/30',
+                'text-amber-800 dark:text-amber-300',
+                'text-amber-700 dark:text-amber-400',
                 'mail-warning',
-                'text-amber-600',
+                'text-amber-600 dark:text-amber-400',
             ],
 
             error: [
-                'border-red-200',
-                'bg-gradient-to-br from-red-50/80 via-white to-rose-50/50',
-                'text-red-800',
-                'text-red-700',
+                'border-red-200 dark:border-red-800',
+                'bg-gradient-to-br from-red-50/80 via-white to-rose-50/50 dark:from-red-950/45 dark:via-slate-900 dark:to-rose-950/30',
+                'text-red-800 dark:text-red-300',
+                'text-red-700 dark:text-red-400',
                 'triangle-alert',
-                'text-red-600',
+                'text-red-600 dark:text-red-400',
             ],
 
         };
@@ -1112,7 +1114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             estadoCorreoIcono.className =
                 `flex h-10 w-10 shrink-0 items-center justify-center `
-                + `rounded-xl border ${estilo[0]} bg-white `
+                + `rounded-xl border ${estilo[0]} bg-white dark:bg-slate-900 `
                 + `${estilo[5]} shadow-sm`;
 
             estadoCorreoIcono.innerHTML =
@@ -1310,7 +1312,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'bg-amber-50',
                     'text-amber-800',
                     'hover:bg-amber-100',
-                    'hover:border-amber-400'
+                    'hover:border-amber-400',
+                    'dark:border-amber-800',
+                    'dark:bg-amber-950/30',
+                    'dark:text-amber-300',
+                    'dark:hover:border-amber-700',
+                    'dark:hover:bg-amber-900/45'
                 );
 
                 boton.classList.add(
@@ -1318,7 +1325,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'bg-red-50',
                     'text-red-800',
                     'hover:bg-red-100',
-                    'hover:border-red-400'
+                    'hover:border-red-400',
+                    'dark:border-red-800',
+                    'dark:bg-red-950/30',
+                    'dark:text-red-300',
+                    'dark:hover:border-red-700',
+                    'dark:hover:bg-red-900/45'
                 );
 
             } else {
@@ -1328,7 +1340,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'bg-red-50',
                     'text-red-800',
                     'hover:bg-red-100',
-                    'hover:border-red-400'
+                    'hover:border-red-400',
+                    'dark:border-red-800',
+                    'dark:bg-red-950/30',
+                    'dark:text-red-300',
+                    'dark:hover:border-red-700',
+                    'dark:hover:bg-red-900/45'
                 );
 
                 boton.classList.add(
@@ -1336,7 +1353,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'bg-amber-50',
                     'text-amber-800',
                     'hover:bg-amber-100',
-                    'hover:border-amber-400'
+                    'hover:border-amber-400',
+                    'dark:border-amber-800',
+                    'dark:bg-amber-950/30',
+                    'dark:text-amber-300',
+                    'dark:hover:border-amber-700',
+                    'dark:hover:bg-amber-900/45'
                 );
 
             }
@@ -1371,31 +1393,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const estilos = {
 
             queued: [
-                'text-blue-700',
+                'text-blue-700 dark:text-blue-300',
                 'bg-blue-500',
-                'border-blue-200',
-                'bg-blue-50',
+                'border-blue-200 dark:border-blue-800',
+                'bg-blue-50 dark:bg-blue-950/35',
             ],
 
             success: [
-                'text-emerald-700',
+                'text-emerald-700 dark:text-emerald-300',
                 'bg-emerald-500',
-                'border-emerald-200',
-                'bg-emerald-50',
+                'border-emerald-200 dark:border-emerald-800',
+                'bg-emerald-50 dark:bg-emerald-950/35',
             ],
 
             warning: [
-                'text-amber-700',
+                'text-amber-700 dark:text-amber-300',
                 'bg-amber-500',
-                'border-amber-200',
-                'bg-amber-50',
+                'border-amber-200 dark:border-amber-800',
+                'bg-amber-50 dark:bg-amber-950/35',
             ],
 
             error: [
-                'text-red-700',
+                'text-red-700 dark:text-red-300',
                 'bg-red-500',
-                'border-red-200',
-                'bg-red-50',
+                'border-red-200 dark:border-red-800',
+                'bg-red-50 dark:bg-red-950/35',
             ],
 
         };

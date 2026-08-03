@@ -895,13 +895,14 @@ if (
             modalIcono.className =
                 'mx-auto flex h-16 w-16 items-center '
                 + 'justify-center rounded-2xl border '
-                + 'border-emerald-200 bg-emerald-50 shadow-sm';
+                + 'border-emerald-200 bg-emerald-50 shadow-sm '
+                + 'dark:border-emerald-800 dark:bg-emerald-950/45';
 
             modalIcono.innerHTML = `
                 <i
                     data-lucide="circle-check-big"
                     stroke-width="1.8"
-                    class="h-8 w-8 text-emerald-600"
+                    class="h-8 w-8 text-emerald-600 dark:text-emerald-400"
                 ></i>
             `;
         }
@@ -924,7 +925,9 @@ if (
             estadoCorreo.className =
                 'rounded-2xl border border-emerald-200 '
                 + 'bg-gradient-to-br from-emerald-50/80 via-white '
-                + 'to-teal-50/50 p-5 text-left shadow-sm';
+                + 'to-teal-50/50 p-5 text-left shadow-sm '
+                + 'dark:border-emerald-800 dark:from-emerald-950/45 '
+                + 'dark:via-slate-900 dark:to-teal-950/30';
         }
 
 
@@ -932,7 +935,9 @@ if (
             estadoCorreoIcono.className =
                 'flex h-10 w-10 shrink-0 items-center '
                 + 'justify-center rounded-xl border '
-                + 'border-emerald-200 bg-white text-emerald-600 shadow-sm';
+                + 'border-emerald-200 bg-white text-emerald-600 shadow-sm '
+                + 'dark:border-emerald-800 dark:bg-slate-900 '
+                + 'dark:text-emerald-400';
 
             estadoCorreoIcono.innerHTML = `
                 <i
@@ -946,7 +951,7 @@ if (
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-emerald-800';
+                'text-sm font-semibold text-emerald-800 dark:text-emerald-300';
 
             estadoCorreoTitulo.textContent =
                 'Correo enviado correctamente';
@@ -955,7 +960,7 @@ if (
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-emerald-700';
+                'mt-1.5 text-xs leading-relaxed text-emerald-700 dark:text-emerald-400';
 
             estadoCorreoMensaje.textContent =
                 'El servidor SMTP aceptó la notificación para Helpdesk.';
@@ -989,13 +994,14 @@ if (
             modalIcono.className =
                 'mx-auto flex h-16 w-16 items-center '
                 + 'justify-center rounded-2xl border '
-                + 'border-blue-200 bg-blue-50 shadow-sm';
+                + 'border-blue-200 bg-blue-50 shadow-sm '
+                + 'dark:border-blue-800 dark:bg-blue-950/45';
 
             modalIcono.innerHTML = `
                 <i
                     data-lucide="clock-3"
                     stroke-width="1.8"
-                    class="h-8 w-8 text-blue-600"
+                    class="h-8 w-8 text-blue-600 dark:text-blue-400"
                 ></i>
             `;
         }
@@ -1015,14 +1021,17 @@ if (
             estadoCorreo.className =
                 'rounded-2xl border border-blue-200 '
                 + 'bg-gradient-to-br from-blue-50/80 via-white '
-                + 'to-sky-50/50 p-5 text-left shadow-sm';
+                + 'to-sky-50/50 p-5 text-left shadow-sm '
+                + 'dark:border-blue-800 dark:from-blue-950/45 '
+                + 'dark:via-slate-900 dark:to-sky-950/30';
         }
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
                 'flex h-10 w-10 shrink-0 items-center '
                 + 'justify-center rounded-xl border '
-                + 'border-blue-200 bg-white text-blue-600 shadow-sm';
+                + 'border-blue-200 bg-white text-blue-600 shadow-sm '
+                + 'dark:border-blue-800 dark:bg-slate-900 dark:text-blue-400';
 
             estadoCorreoIcono.innerHTML = `
                 <i
@@ -1035,7 +1044,7 @@ if (
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-blue-800';
+                'text-sm font-semibold text-blue-800 dark:text-blue-300';
 
             estadoCorreoTitulo.textContent =
                 'Correo en procesamiento';
@@ -1043,7 +1052,7 @@ if (
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-blue-700';
+                'mt-1.5 text-xs leading-relaxed text-blue-700 dark:text-blue-400';
 
             estadoCorreoMensaje.textContent =
                 'La notificación fue agregada a la cola y será enviada en segundo plano.';
@@ -1075,13 +1084,14 @@ if (
             modalIcono.className =
                 'mx-auto flex h-16 w-16 items-center '
                 + 'justify-center rounded-2xl border '
-                + 'border-amber-200 bg-amber-50 shadow-sm';
+                + 'border-amber-200 bg-amber-50 shadow-sm '
+                + 'dark:border-amber-800 dark:bg-amber-950/45';
 
             modalIcono.innerHTML = `
                 <i
                     data-lucide="mail-warning"
                     stroke-width="1.8"
-                    class="h-8 w-8 text-amber-600"
+                    class="h-8 w-8 text-amber-600 dark:text-amber-400"
                 ></i>
             `;
         }
@@ -1104,7 +1114,9 @@ if (
             estadoCorreo.className =
                 'rounded-2xl border border-amber-200 '
                 + 'bg-gradient-to-br from-amber-50/80 via-white '
-                + 'to-orange-50/50 p-5 text-left shadow-sm';
+                + 'to-orange-50/50 p-5 text-left shadow-sm '
+                + 'dark:border-amber-800 dark:from-amber-950/45 '
+                + 'dark:via-slate-900 dark:to-orange-950/30';
         }
 
 
@@ -1112,7 +1124,8 @@ if (
             estadoCorreoIcono.className =
                 'flex h-10 w-10 shrink-0 items-center '
                 + 'justify-center rounded-xl border '
-                + 'border-amber-200 bg-white text-amber-600 shadow-sm';
+                + 'border-amber-200 bg-white text-amber-600 shadow-sm '
+                + 'dark:border-amber-800 dark:bg-slate-900 dark:text-amber-400';
 
             estadoCorreoIcono.innerHTML = `
                 <i
@@ -1126,7 +1139,7 @@ if (
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-amber-800';
+                'text-sm font-semibold text-amber-800 dark:text-amber-300';
 
             estadoCorreoTitulo.textContent =
                 'No se pudo enviar el correo';
@@ -1135,7 +1148,7 @@ if (
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-amber-700';
+                'mt-1.5 text-xs leading-relaxed text-amber-700 dark:text-amber-400';
 
             estadoCorreoMensaje.textContent =
                 'La gestión sí quedó registrada. Puedes reportar la falla mediante Outlook 365.';
@@ -1181,13 +1194,14 @@ if (
             modalIcono.className =
                 'mx-auto flex h-16 w-16 items-center '
                 + 'justify-center rounded-2xl border '
-                + 'border-red-200 bg-red-50 shadow-sm';
+                + 'border-red-200 bg-red-50 shadow-sm '
+                + 'dark:border-red-800 dark:bg-red-950/45';
 
             modalIcono.innerHTML = `
                 <i
                     data-lucide="circle-x"
                     stroke-width="1.8"
-                    class="h-8 w-8 text-red-600"
+                    class="h-8 w-8 text-red-600 dark:text-red-400"
                 ></i>
             `;
         }
@@ -1210,7 +1224,9 @@ if (
             estadoCorreo.className =
                 'rounded-2xl border border-red-200 '
                 + 'bg-gradient-to-br from-red-50/80 via-white '
-                + 'to-rose-50/50 p-5 text-left shadow-sm';
+                + 'to-rose-50/50 p-5 text-left shadow-sm '
+                + 'dark:border-red-800 dark:from-red-950/45 '
+                + 'dark:via-slate-900 dark:to-rose-950/30';
         }
 
 
@@ -1218,7 +1234,8 @@ if (
             estadoCorreoIcono.className =
                 'flex h-10 w-10 shrink-0 items-center '
                 + 'justify-center rounded-xl border '
-                + 'border-red-200 bg-white text-red-600 shadow-sm';
+                + 'border-red-200 bg-white text-red-600 shadow-sm '
+                + 'dark:border-red-800 dark:bg-slate-900 dark:text-red-400';
 
             estadoCorreoIcono.innerHTML = `
                 <i
@@ -1232,7 +1249,7 @@ if (
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-red-800';
+                'text-sm font-semibold text-red-800 dark:text-red-300';
 
             estadoCorreoTitulo.textContent =
                 'La gestión no pudo completarse';
@@ -1241,7 +1258,7 @@ if (
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-red-700';
+                'mt-1.5 text-xs leading-relaxed text-red-700 dark:text-red-400';
 
             estadoCorreoMensaje.textContent =
                 'Puedes informar el problema al equipo de Helpdesk mediante Outlook 365.';
@@ -1462,7 +1479,12 @@ return (
                     'bg-amber-50',
                     'text-amber-800',
                     'hover:bg-amber-100',
-                    'hover:border-amber-400'
+                    'hover:border-amber-400',
+                    'dark:border-amber-800',
+                    'dark:bg-slate-900',
+                    'dark:text-amber-300',
+                    'dark:hover:border-amber-700',
+                    'dark:hover:bg-amber-900/55'
                 );
 
                 boton.classList.add(
@@ -1470,7 +1492,12 @@ return (
                     'bg-red-50',
                     'text-red-800',
                     'hover:bg-red-100',
-                    'hover:border-red-400'
+                    'hover:border-red-400',
+                    'dark:border-red-800',
+                    'dark:bg-slate-900',
+                    'dark:text-red-300',
+                    'dark:hover:border-red-700',
+                    'dark:hover:bg-red-900/55'
                 );
 
             } else {
@@ -1479,7 +1506,11 @@ return (
                     'bg-red-50',
                     'text-red-800',
                     'hover:bg-red-100',
-                    'hover:border-red-400'
+                    'hover:border-red-400',
+                    'dark:border-red-800',
+                    'dark:text-red-300',
+                    'dark:hover:border-red-700',
+                    'dark:hover:bg-red-900/55'
                 );
 
                 boton.classList.add(
@@ -1487,7 +1518,12 @@ return (
                     'bg-amber-50',
                     'text-amber-800',
                     'hover:bg-amber-100',
-                    'hover:border-amber-400'
+                    'hover:border-amber-400',
+                    'dark:border-amber-800',
+                    'dark:bg-slate-900',
+                    'dark:text-amber-300',
+                    'dark:hover:border-amber-700',
+                    'dark:hover:bg-amber-900/55'
                 );
             }
         });
@@ -1533,58 +1569,58 @@ return (
         const colores = {
             success: {
                 text:
-                    'text-emerald-700',
+                    'text-emerald-700 dark:text-emerald-300',
 
                 dot:
                     'bg-emerald-500',
 
                 border:
-                    'border-emerald-200',
+                    'border-emerald-200 dark:border-emerald-800',
 
                 background:
-                    'bg-emerald-50',
+                    'bg-emerald-50 dark:bg-emerald-950/45',
             },
 
             queued: {
                 text:
-                    'text-blue-700',
+                    'text-blue-700 dark:text-blue-300',
 
                 dot:
                     'bg-blue-500',
 
                 border:
-                    'border-blue-200',
+                    'border-blue-200 dark:border-blue-800',
 
                 background:
-                    'bg-blue-50',
+                    'bg-blue-50 dark:bg-blue-950/45',
             },
 
             warning: {
                 text:
-                    'text-amber-700',
+                    'text-amber-700 dark:text-amber-300',
 
                 dot:
                     'bg-amber-500',
 
                 border:
-                    'border-amber-200',
+                    'border-amber-200 dark:border-amber-800',
 
                 background:
-                    'bg-amber-50',
+                    'bg-amber-50 dark:bg-amber-950/45',
             },
 
             error: {
                 text:
-                    'text-red-700',
+                    'text-red-700 dark:text-red-300',
 
                 dot:
                     'bg-red-500',
 
                 border:
-                    'border-red-200',
+                    'border-red-200 dark:border-red-800',
 
                 background:
-                    'bg-red-50',
+                    'bg-red-50 dark:bg-red-950/45',
             },
         };
 

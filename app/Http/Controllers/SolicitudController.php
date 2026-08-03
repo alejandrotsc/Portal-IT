@@ -526,6 +526,18 @@ class SolicitudController extends Controller
         Request $request
     ): View {
         $validated = $request->validate([
+            'mes' => [
+                'nullable',
+                'integer',
+                'between:1,12',
+            ],
+
+            'anio' => [
+                'nullable',
+                'integer',
+                'between:2020,'.now()->year,
+            ],
+
             'buscar' => [
                 'nullable',
                 'string',
@@ -550,6 +562,17 @@ class SolicitudController extends Controller
         ]);
 
 
+        $mes = (int) (
+            $validated['mes']
+            ?? now()->month
+        );
+
+        $anio = (int) (
+            $validated['anio']
+            ?? now()->year
+        );
+
+
         $busqueda = trim(
             (string) (
                 $validated['buscar']
@@ -568,11 +591,58 @@ class SolicitudController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Consulta base y años disponibles
+        |--------------------------------------------------------------------------
+        */
+
+        $consultaBase = Solicitud::query();
+
+        $aniosDisponibles = (clone $consultaBase)
+            ->whereNotNull(
+                'created_at'
+            )
+            ->selectRaw(
+                'EXTRACT(YEAR FROM created_at)::int AS anio'
+            )
+            ->distinct()
+            ->orderByDesc('anio')
+            ->pluck('anio')
+            ->map(
+                static fn ($valor): int =>
+                    (int) $valor
+            )
+            ->push(
+                now()->year
+            )
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consulta del periodo seleccionado
+        |--------------------------------------------------------------------------
+        */
+
+        $consultaPeriodo = (clone $consultaBase)
+            ->whereMonth(
+                'created_at',
+                $mes
+            )
+            ->whereYear(
+                'created_at',
+                $anio
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Consulta del listado
         |--------------------------------------------------------------------------
         */
 
-        $solicitudes = Solicitud::query()
+        $solicitudes = (clone $consultaPeriodo)
             ->with('usuario')
 
             ->when(
@@ -659,25 +729,32 @@ class SolicitudController extends Controller
 
         $resumen = [
             'total' =>
-                Solicitud::count(),
+                (clone $consultaPeriodo)
+                    ->count(),
 
             'pendientes' =>
-                Solicitud::where(
-                    'estado',
-                    Solicitud::ESTADO_PENDIENTE
-                )->count(),
+                (clone $consultaPeriodo)
+                    ->where(
+                        'estado',
+                        Solicitud::ESTADO_PENDIENTE
+                    )
+                    ->count(),
 
             'finalizadas' =>
-                Solicitud::where(
-                    'estado',
-                    Solicitud::ESTADO_FINALIZADA
-                )->count(),
+                (clone $consultaPeriodo)
+                    ->where(
+                        'estado',
+                        Solicitud::ESTADO_FINALIZADA
+                    )
+                    ->count(),
 
             'canceladas' =>
-                Solicitud::where(
-                    'estado',
-                    Solicitud::ESTADO_CANCELADA
-                )->count(),
+                (clone $consultaPeriodo)
+                    ->where(
+                        'estado',
+                        Solicitud::ESTADO_CANCELADA
+                    )
+                    ->count(),
         ];
 
 
@@ -689,7 +766,10 @@ class SolicitudController extends Controller
                 'resumen',
                 'busqueda',
                 'estadoSeleccionado',
-                'categoriaSeleccionada'
+                'categoriaSeleccionada',
+                'mes',
+                'anio',
+                'aniosDisponibles'
             )
         );
     }

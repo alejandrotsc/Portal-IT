@@ -55,7 +55,7 @@
     <div
         x-data="chatbotWidget({ storageKey: 'portal-it-chatbot-history-{{ auth()->id() ?? 'guest' }}' })"
         x-init="init()"
-        class="group/chatbot relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/15 hover:shadow-lg hover:shadow-blue-500/5"
+        class="group/chatbot relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/15 hover:shadow-lg hover:shadow-blue-500/5 dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20"
     >
 
         {{-- ==================================================
@@ -63,7 +63,7 @@
         =================================================== --}}
 
         <header
-            class="relative flex flex-col gap-3 overflow-hidden border-b border-border bg-gradient-to-r from-primary/[0.055] via-white to-blue-50/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            class="relative flex flex-col gap-3 overflow-hidden border-b border-border bg-gradient-to-r from-primary/[0.055] via-white to-blue-50/40 px-5 py-4 dark:border-slate-700/70 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900 sm:flex-row sm:items-center sm:justify-between"
         >
 
             <span class="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-primary/10 blur-3xl pointer-events-none transition-all duration-500 group-hover/chatbot:bg-primary/20 motion-safe:group-hover/chatbot:scale-125"></span>
@@ -71,7 +71,7 @@
             <div class="relative z-10 flex items-center gap-3">
 
                 <div
-                    class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 shadow-sm transition-all duration-300 group-hover/chatbot:border-blue-300 group-hover/chatbot:bg-blue-100 motion-safe:group-hover/chatbot:scale-105"
+                    class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-400 shadow-sm transition-all duration-300 group-hover/chatbot:border-blue-300 group-hover/chatbot:bg-blue-100 dark:group-hover/chatbot:border-blue-700 dark:group-hover/chatbot:bg-blue-900/60 motion-safe:group-hover/chatbot:scale-105"
                 >
                     <i
                         data-lucide="bot-message-square"
@@ -85,7 +85,7 @@
 
                     <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
                         <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping"></span>
-                        <span class="relative inline-flex h-3 w-3 rounded-full border-2 border-white bg-emerald-500"></span>
+                        <span class="relative inline-flex h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-900"></span>
                     </span>
                 </div>
 
@@ -108,7 +108,7 @@
 
 
             <div
-                class="relative z-10 inline-flex w-fit items-center gap-1.5 rounded-lg border border-border bg-white/80 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur"
+                class="relative z-10 inline-flex w-fit items-center gap-1.5 rounded-lg border border-border bg-white/80 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300"
             >
                 <i
                     :data-lucide="aiMode ? 'message-square-text' : 'git-branch'"
@@ -130,7 +130,7 @@
         <div
             id="chatbot-messages"
             x-ref="messages"
-            class="chatbot-scrollbar min-h-[430px] max-h-[560px] space-y-5 overflow-y-auto bg-muted/30 px-5 py-5 sm:px-6"
+            class="chatbot-scrollbar min-h-[430px] max-h-[560px] space-y-5 overflow-y-auto bg-muted/30 dark:bg-slate-950/35 px-5 py-5 sm:px-6"
             aria-live="polite"
         >
 
@@ -142,7 +142,7 @@
             >
 
                 <div
-                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-sm"
+                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-400 shadow-sm"
                 >
                     <i
                         data-lucide="bot"
@@ -154,7 +154,7 @@
                 <div class="w-full max-w-2xl">
 
                     <div
-                        class="rounded-2xl rounded-tl-md border border-border bg-card px-4 py-3 shadow-sm"
+                        class="rounded-2xl rounded-tl-md border border-border bg-card px-4 py-3 shadow-sm dark:border-slate-700/70 dark:bg-slate-900"
                     >
                         <p class="text-sm leading-relaxed text-foreground">
                             Hola{{ auth()->check() ? ', '.explode(' ', trim(auth()->user()->nombre))[0] : '' }}.
@@ -171,9 +171,9 @@
                             type="button"
                             @click="sendAction('problema.menu', 'Reportar un problema')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-rose-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-rose-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-rose-800 dark:hover:bg-rose-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="triangle-alert" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
@@ -193,9 +193,9 @@
                             type="button"
                             @click="sendAction('solicitud.menu', 'Solicitar un servicio')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-cyan-800 dark:hover:bg-cyan-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-950/45 dark:text-cyan-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="clipboard-list" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
@@ -215,9 +215,9 @@
                             type="button"
                             @click="sendAction('pase.menu', 'Gestionar un pase')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="badge-check" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
@@ -237,9 +237,9 @@
                             type="button"
                             @click="sendAction('gestion.estado', 'Consultar mis gestiones')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-sky-800 dark:hover:bg-sky-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="history" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
@@ -259,9 +259,9 @@
                             type="button"
                             @click="sendAction('ai.enable', 'Escribir otra consulta')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
+                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-violet-800 dark:hover:bg-violet-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
                         >
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-all duration-300 motion-safe:group-hover/action:scale-105">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-950/45 dark:text-violet-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="message-square-text" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
                             </span>
 
@@ -306,7 +306,7 @@
                         :class="
                             msg.from === 'user'
                                 ? 'border-blue-600 bg-blue-600 text-white'
-                                : 'border-blue-200 bg-blue-50 text-blue-600'
+                                : 'border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-400'
                         "
                     >
                         <i
@@ -328,7 +328,7 @@
                             :class="
                                 msg.from === 'user'
                                     ? 'rounded-tr-md border-primary bg-primary text-white'
-                                    : 'rounded-tl-md border-border bg-card text-foreground'
+                                    : 'rounded-tl-md border-border bg-card text-foreground dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-200'
                             "
                         >
 
@@ -365,7 +365,7 @@
                                     >
                                         <a
                                             :href="item.url"
-                                            class="group/item block rounded-xl border border-border bg-muted/30 p-3 shadow-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/[0.03] hover:shadow-md motion-safe:hover:-translate-y-0.5"
+                                            class="group/item block rounded-xl border border-border bg-muted/30 p-3 shadow-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/[0.03] hover:shadow-md dark:border-slate-700/70 dark:bg-slate-950/30 dark:hover:border-blue-700/60 dark:hover:bg-blue-950/20 motion-safe:hover:-translate-y-0.5"
                                         >
                                             <div class="flex items-start justify-between gap-3">
 
@@ -383,7 +383,7 @@
 
                                                 <div class="flex flex-shrink-0 items-center gap-2">
                                                     <span
-                                                        class="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                                                        class="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-medium text-muted-foreground dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                                         x-text="item.status ?? item.estado ?? ''"
                                                     ></span>
 
@@ -422,7 +422,7 @@
                                 x-if="msg.ai && !msg.streaming"
                             >
                                 <div
-                                    class="mt-3 flex items-start gap-1.5 border-t border-border/70 pt-2 text-[10px] leading-relaxed text-muted-foreground"
+                                    class="mt-3 flex items-start gap-1.5 border-t border-border/70 pt-2 text-[10px] leading-relaxed text-muted-foreground dark:border-slate-700/70 dark:text-slate-400"
                                 >
                                     <i data-lucide="info" class="mt-0.5 h-3 w-3 flex-shrink-0"></i>
                                     <span>
@@ -470,7 +470,7 @@
                                         type="button"
                                         @click="executeAction(action, msg)"
                                         :disabled="loading"
-                                        class="chatbot-card group/action flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                                        class="chatbot-card group/action flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:shadow-md dark:bg-slate-900 dark:hover:bg-slate-800/70 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                                         :class="chatbotActionAppearance(action).buttonClass"
                                     >
                                         <span
@@ -515,7 +515,7 @@
             COMPOSITOR
         =================================================== --}}
 
-        <footer class="border-t border-border bg-card px-5 py-4 sm:px-6">
+        <footer class="border-t border-border bg-card px-5 py-4 dark:border-slate-700/70 dark:bg-slate-900/90 sm:px-6">
 
             <div class="mb-2 flex items-center justify-between gap-3">
 
@@ -556,44 +556,72 @@
 
 
             <form
-                @submit.prevent="if (aiMode) { send() }"
-                class="group/composer flex items-center gap-3 rounded-2xl border px-3.5 py-3 shadow-sm transition-all duration-300"
-                :class="
-                    aiMode
-                        ? 'border-primary/40 bg-card focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10'
-                        : 'border-border bg-muted/40'
-                "
-            >
+    @submit.prevent="if (aiMode) { send() }"
+    class="group/composer flex items-center gap-3 rounded-2xl border
+           px-3.5 py-3 shadow-sm transition-all duration-300
+           dark:!border-slate-700 dark:!bg-slate-900
+           dark:focus-within:!border-blue-500
+           dark:focus-within:!ring-4
+           dark:focus-within:!ring-blue-500/15"
+    :class="
+        aiMode
+            ? 'border-primary/40 bg-card
+               focus-within:border-primary
+               focus-within:ring-4 focus-within:ring-primary/10'
+            : 'border-border bg-muted/40'
+    "
+>
+    <i
+        data-lucide="message-circle"
+        class="h-4 w-4 flex-shrink-0 transition-all duration-200
+               group-focus-within/composer:text-blue-600
+               dark:group-focus-within/composer:text-blue-400
+               motion-safe:group-focus-within/composer:scale-110"
+        :class="
+            aiMode
+                ? 'text-primary dark:text-blue-400'
+                : 'text-muted-foreground'
+        "
+    ></i>
 
-                <i
-                    data-lucide="message-circle"
-                    class="h-4 w-4 flex-shrink-0 transition-all duration-200 group-focus-within/composer:text-primary motion-safe:group-focus-within/composer:scale-110"
-                    :class="aiMode ? 'text-primary' : 'text-muted-foreground'"
-                ></i>
+    <input
+        x-ref="input"
+        x-model="draft"
+        type="text"
+        maxlength="500"
+        autocomplete="off"
+        :disabled="loading || !aiMode"
+        :placeholder="
+            aiMode
+                ? 'Escribe aquí tu consulta...'
+                : 'Activa la consulta libre para escribir un mensaje'
+        "
+        class="min-w-0 flex-1 border-0 bg-transparent text-sm
+               text-foreground outline-none
+               placeholder:text-muted-foreground
+               focus:outline-none focus:ring-0
+               dark:text-slate-200 dark:placeholder:text-slate-500
+               disabled:cursor-not-allowed disabled:opacity-60"
+    >
 
-                <input
-                    x-ref="input"
-                    x-model="draft"
-                    type="text"
-                    maxlength="500"
-                    autocomplete="off"
-                    :disabled="loading || !aiMode"
-                    :placeholder="
-                        aiMode
-                            ? 'Escribe aquí tu consulta...'
-                            : 'Activa la consulta libre para escribir un mensaje'
-                    "
-                    class="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
-                >
-
-                <button
-                    type="submit"
-                    :disabled="loading || !aiMode || !draft.trim()"
-                    class="group/send flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
-                    aria-label="Enviar consulta"
-                >
-                    <i data-lucide="send" class="h-3.5 w-3.5 transition-transform duration-200"></i>
-                </button>
+    <button
+        type="submit"
+        :disabled="loading || !aiMode || !draft.trim()"
+        class="group/send flex h-9 w-9 flex-shrink-0 items-center
+               justify-center rounded-xl bg-primary text-white shadow-sm
+               transition-all duration-200 hover:bg-primary/90
+               hover:shadow-md motion-safe:hover:-translate-y-0.5
+               active:translate-y-0 active:scale-[0.95]
+               disabled:cursor-not-allowed disabled:opacity-40
+               disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+        aria-label="Enviar consulta"
+    >
+        <i
+            data-lucide="send"
+            class="h-3.5 w-3.5 transition-transform duration-200"
+        ></i>
+    </button>
+</form>
 
             </form>
 
@@ -692,8 +720,8 @@
         if (label.includes('ya encendio')) {
     return appearance(
         'circle-check',
-        'border-border hover:border-emerald-200',
-        'bg-emerald-100 text-emerald-600'
+        'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+        'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
     );
 }
 
@@ -706,16 +734,16 @@
 if (label.includes('ya imprime')) {
     return appearance(
         'circle-check',
-        'border-border hover:border-emerald-200',
-        'bg-emerald-100 text-emerald-600'
+        'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+        'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
     );
 }
 
 if (label.includes('sigue sin imprimir')) {
     return appearance(
         'printer-x',
-        'border-border hover:border-rose-200',
-        'bg-rose-100 text-rose-600'
+        'border-border hover:border-rose-200 dark:hover:border-rose-800',
+        'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
     );
 }
 
@@ -732,8 +760,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'layout-grid',
-                'border-border hover:border-blue-200',
-                'bg-blue-100 text-blue-600'
+                'border-border hover:border-blue-200 dark:hover:border-blue-800',
+                'bg-blue-100 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300'
             );
         }
 
@@ -745,8 +773,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'undo-2',
-                'border-border hover:border-slate-300',
-                'bg-slate-100 text-slate-600'
+                'border-border hover:border-slate-300 dark:hover:border-slate-600',
+                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             );
         }
 
@@ -758,8 +786,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'circle-help',
-                'border-border hover:border-amber-200',
-                'bg-amber-100 text-amber-700'
+                'border-border hover:border-amber-200 dark:hover:border-amber-800',
+                'bg-amber-100 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300'
             );
         }
 
@@ -771,8 +799,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'wifi-off',
-                'border-border hover:border-rose-200',
-                'bg-rose-100 text-rose-600'
+                'border-border hover:border-rose-200 dark:hover:border-rose-800',
+                'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
             );
         }
 
@@ -783,8 +811,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'circle-check',
-                'border-border hover:border-emerald-200',
-                'bg-emerald-100 text-emerald-600'
+                'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+                'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
             );
         }
 
@@ -794,8 +822,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'cable',
-                'border-border hover:border-blue-200',
-                'bg-blue-100 text-blue-600'
+                'border-border hover:border-blue-200 dark:hover:border-blue-800',
+                'bg-blue-100 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300'
             );
         }
 
@@ -805,8 +833,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'lightbulb',
-                'border-border hover:border-amber-200',
-                'bg-amber-100 text-amber-700'
+                'border-border hover:border-amber-200 dark:hover:border-amber-800',
+                'bg-amber-100 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300'
             );
         }
 
@@ -817,8 +845,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'volume-2',
-                'border-border hover:border-violet-200',
-                'bg-violet-100 text-violet-600'
+                'border-border hover:border-violet-200 dark:hover:border-violet-800',
+                'bg-violet-100 text-violet-600 dark:bg-violet-950/45 dark:text-violet-300'
             );
         }
 
@@ -828,8 +856,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'file-x-2',
-                'border-border hover:border-orange-200',
-                'bg-orange-100 text-orange-600'
+                'border-border hover:border-orange-200 dark:hover:border-orange-800',
+                'bg-orange-100 text-orange-600 dark:bg-orange-950/45 dark:text-orange-300'
             );
         }
 
@@ -840,8 +868,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'badge-check',
-                'border-border hover:border-emerald-200',
-                'bg-emerald-100 text-emerald-600'
+                'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+                'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
             );
         }
 
@@ -858,8 +886,8 @@ if (label.includes('sigue sin imprimir')) {
         if (label.includes('outlook no abre')) {
             return appearance(
                 'app-window',
-                'border-border hover:border-indigo-200',
-                'bg-indigo-100 text-indigo-600'
+                'border-border hover:border-indigo-200 dark:hover:border-indigo-800',
+                'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300'
             );
         }
 
@@ -869,8 +897,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'send-horizontal',
-                'border-border hover:border-sky-200',
-                'bg-sky-100 text-sky-600'
+                'border-border hover:border-sky-200 dark:hover:border-sky-800',
+                'bg-sky-100 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300'
             );
         }
 
@@ -880,32 +908,32 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'mail-x',
-                'border-border hover:border-rose-200',
-                'bg-rose-100 text-rose-600'
+                'border-border hover:border-rose-200 dark:hover:border-rose-800',
+                'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
             );
         }
 
         if (label.includes('ya abrio')) {
             return appearance(
                 'badge-check',
-                'border-border hover:border-emerald-200',
-                'bg-emerald-100 text-emerald-600'
+                'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+                'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
             );
         }
 
         if (label.includes('sigue sin abrir')) {
             return appearance(
                 'circle-x',
-                'border-border hover:border-rose-200',
-                'bg-rose-100 text-rose-600'
+                'border-border hover:border-rose-200 dark:hover:border-rose-800',
+                'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
             );
         }
 
         if (label.includes('ya puedo enviar')) {
             return appearance(
                 'send',
-                'border-border hover:border-emerald-200',
-                'bg-emerald-100 text-emerald-600'
+                'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+                'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
             );
         }
 
@@ -915,16 +943,16 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'triangle-alert',
-                'border-border hover:border-amber-200',
-                'bg-amber-100 text-amber-700'
+                'border-border hover:border-amber-200 dark:hover:border-amber-800',
+                'bg-amber-100 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300'
             );
         }
 
         if (label.includes('reportar incidencia')) {
             return appearance(
                 'file-warning',
-                'border-border hover:border-rose-200',
-                'bg-rose-100 text-rose-600'
+                'border-border hover:border-rose-200 dark:hover:border-rose-800',
+                'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
             );
         }
 
@@ -946,8 +974,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'wifi',
-                'border-border hover:border-sky-200',
-                'bg-sky-100 text-sky-600'
+                'border-border hover:border-sky-200 dark:hover:border-sky-800',
+                'bg-sky-100 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300'
             );
         }
 
@@ -958,8 +986,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'mail',
-                'border-border hover:border-blue-200',
-                'bg-blue-100 text-blue-600'
+                'border-border hover:border-blue-200 dark:hover:border-blue-800',
+                'bg-blue-100 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300'
             );
         }
 
@@ -972,8 +1000,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'gauge',
-                'border-border hover:border-amber-200',
-                'bg-amber-100 text-amber-700'
+                'border-border hover:border-amber-200 dark:hover:border-amber-800',
+                'bg-amber-100 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300'
             );
         }
 
@@ -985,8 +1013,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'power',
-                'border-border hover:border-rose-200',
-                'bg-rose-100 text-rose-600'
+                'border-border hover:border-rose-200 dark:hover:border-rose-800',
+                'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
             );
         }
 
@@ -996,8 +1024,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'printer',
-                'border-border hover:border-orange-200',
-                'bg-orange-100 text-orange-600'
+                'border-border hover:border-orange-200 dark:hover:border-orange-800',
+                'bg-orange-100 text-orange-600 dark:bg-orange-950/45 dark:text-orange-300'
             );
         }
 
@@ -1007,8 +1035,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'app-window',
-                'border-border hover:border-indigo-200',
-                'bg-indigo-100 text-indigo-600'
+                'border-border hover:border-indigo-200 dark:hover:border-indigo-800',
+                'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300'
             );
         }
 
@@ -1019,8 +1047,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'keyboard',
-                'border-border hover:border-cyan-200',
-                'bg-cyan-100 text-cyan-700'
+                'border-border hover:border-cyan-200 dark:hover:border-cyan-800',
+                'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/45 dark:text-cyan-300'
             );
         }
 
@@ -1030,8 +1058,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'circle-help',
-                'border-border hover:border-slate-300',
-                'bg-slate-100 text-slate-600'
+                'border-border hover:border-slate-300 dark:hover:border-slate-600',
+                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             );
         }
 
@@ -1043,8 +1071,8 @@ if (label.includes('sigue sin imprimir')) {
             ) {
             return appearance(
                 'circle-check',
-                'border-border hover:border-emerald-200',
-                'bg-emerald-100 text-emerald-600'
+                'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+                'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
             );
         }
 
@@ -1056,8 +1084,8 @@ if (label.includes('sigue sin imprimir')) {
             ) {
             return appearance(
                 'circle-x',
-                'border-border hover:border-slate-300',
-                'bg-slate-100 text-slate-600'
+                'border-border hover:border-slate-300 dark:hover:border-slate-600',
+                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             );
         }
 
@@ -1075,8 +1103,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'triangle-alert',
-                'border-border hover:border-rose-200',
-                'bg-rose-100 text-rose-600'
+                'border-border hover:border-rose-200 dark:hover:border-rose-800',
+                'bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300'
             );
         }
 
@@ -1087,8 +1115,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'clipboard-list',
-                'border-border hover:border-emerald-200',
-                'bg-emerald-100 text-emerald-600'
+                'border-border hover:border-emerald-200 dark:hover:border-emerald-800',
+                'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300'
             );
         }
 
@@ -1099,8 +1127,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'file-check-2',
-                'border-border hover:border-indigo-200',
-                'bg-indigo-100 text-indigo-600'
+                'border-border hover:border-indigo-200 dark:hover:border-indigo-800',
+                'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300'
             );
         }
 
@@ -1110,16 +1138,16 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'clock-3',
-                'border-border hover:border-blue-200',
-                'bg-blue-100 text-blue-600'
+                'border-border hover:border-blue-200 dark:hover:border-blue-800',
+                'bg-blue-100 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300'
             );
         }
 
         if (source.includes('pase')) {
             return appearance(
                 'badge-check',
-                'border-border hover:border-blue-200',
-                'bg-blue-100 text-blue-600'
+                'border-border hover:border-blue-200 dark:hover:border-blue-800',
+                'bg-blue-100 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300'
             );
         }
 
@@ -1131,8 +1159,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'history',
-                'border-border hover:border-amber-200',
-                'bg-amber-100 text-amber-700'
+                'border-border hover:border-amber-200 dark:hover:border-amber-800',
+                'bg-amber-100 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300'
             );
         }
 
@@ -1150,8 +1178,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'monitor',
-                'border-border hover:border-sky-200',
-                'bg-sky-100 text-sky-600'
+                'border-border hover:border-sky-200 dark:hover:border-sky-800',
+                'bg-sky-100 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300'
             );
         }
 
@@ -1164,8 +1192,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'package-plus',
-                'border-border hover:border-cyan-200',
-                'bg-cyan-100 text-cyan-700'
+                'border-border hover:border-cyan-200 dark:hover:border-cyan-800',
+                'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/45 dark:text-cyan-300'
             );
         }
 
@@ -1176,8 +1204,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'key-round',
-                'border-border hover:border-indigo-200',
-                'bg-indigo-100 text-indigo-600'
+                'border-border hover:border-indigo-200 dark:hover:border-indigo-800',
+                'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300'
             );
         }
 
@@ -1190,8 +1218,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'wifi',
-                'border-border hover:border-sky-200',
-                'bg-sky-100 text-sky-600'
+                'border-border hover:border-sky-200 dark:hover:border-sky-800',
+                'bg-sky-100 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300'
             );
         }
 
@@ -1201,8 +1229,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'printer',
-                'border-border hover:border-orange-200',
-                'bg-orange-100 text-orange-600'
+                'border-border hover:border-orange-200 dark:hover:border-orange-800',
+                'bg-orange-100 text-orange-600 dark:bg-orange-950/45 dark:text-orange-300'
             );
         }
 
@@ -1213,8 +1241,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'mail',
-                'border-border hover:border-blue-200',
-                'bg-blue-100 text-blue-600'
+                'border-border hover:border-blue-200 dark:hover:border-blue-800',
+                'bg-blue-100 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300'
             );
         }
 
@@ -1225,8 +1253,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'circle-user-round',
-                'border-border hover:border-violet-200',
-                'bg-violet-100 text-violet-600'
+                'border-border hover:border-violet-200 dark:hover:border-violet-800',
+                'bg-violet-100 text-violet-600 dark:bg-violet-950/45 dark:text-violet-300'
             );
         }
 
@@ -1237,8 +1265,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'settings-2',
-                'border-border hover:border-slate-300',
-                'bg-slate-100 text-slate-600'
+                'border-border hover:border-slate-300 dark:hover:border-slate-600',
+                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             );
         }
 
@@ -1257,8 +1285,8 @@ if (label.includes('sigue sin imprimir')) {
         ) {
             return appearance(
                 'message-square-text',
-                'border-border hover:border-violet-200',
-                'bg-violet-100 text-violet-600'
+                'border-border hover:border-violet-200 dark:hover:border-violet-800',
+                'bg-violet-100 text-violet-600 dark:bg-violet-950/45 dark:text-violet-300'
             );
         }
 

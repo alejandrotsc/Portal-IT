@@ -35,7 +35,7 @@
 
         <a
             href="{{ route('mis-solicitudes') }}"
-            class="group inline-flex items-center gap-2 mb-6 px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 text-sm font-medium text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
+            class="group inline-flex items-center gap-2 mb-6 px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 text-sm font-medium text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:shadow-sm dark:border-slate-700 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/15 active:translate-y-0">
 
             <i
                 data-lucide="arrow-left"
@@ -59,7 +59,7 @@
 
                 <div class="flex items-start gap-4 min-w-0">
 
-                    <div class="group flex items-center justify-center w-12 h-12 shrink-0 rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/15 hover:shadow-md">
+                    <div class="group flex items-center justify-center w-12 h-12 shrink-0 rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/15 hover:shadow-md dark:border-blue-800/70 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:border-blue-700 dark:hover:bg-blue-900/50">
 
                         <i
                             data-lucide="file-text"
@@ -92,7 +92,7 @@
                                 )
                             )
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-300">
 
                                     <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500"></span>
 
@@ -114,7 +114,7 @@
                                 )
                             )
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-700 dark:bg-red-950/45 dark:text-red-300">
 
                                     <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-500"></span>
 
@@ -127,7 +127,7 @@
 
                             @elseif($solicitud->estado === 'en_proceso')
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-xs font-medium text-blue-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-xs font-medium text-blue-700 dark:bg-blue-950/45 dark:text-blue-300">
 
                                     <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -143,7 +143,7 @@
 
                             @else
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700 dark:bg-amber-950/45 dark:text-amber-300">
 
                                     <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -205,7 +205,7 @@
 
                 {{-- Información general --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20">
 
                     <div class="flex items-center gap-3 px-6 py-5 border-b border-border">
 
@@ -246,7 +246,7 @@
 
                             <div class="mt-2">
 
-                                <span class="inline-flex items-center gap-1.5 max-w-full px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 hover:border-blue-300 hover:bg-blue-100">
+                                <span class="inline-flex items-center gap-1.5 max-w-full px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 hover:border-blue-300 hover:bg-blue-100 dark:border-blue-800/70 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:border-blue-700 dark:hover:bg-blue-900/45">
 
                                     <i
                                         data-lucide="tag"
@@ -315,7 +315,7 @@
 
                             @if($solicitud->correo_enviado)
 
-                                <p class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+                                <p class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
 
                                     <i
                                         data-lucide="mail-check"
@@ -329,7 +329,7 @@
 
                             @else
 
-                                <p class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-red-700">
+                                <p class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-red-700 dark:text-red-300">
 
                                     <i
                                         data-lucide="mail-x"
@@ -353,7 +353,7 @@
 
                 {{-- Descripción --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20">
 
                     <div class="flex items-center gap-3 px-6 py-5 border-b border-border">
 
@@ -384,7 +384,7 @@
 
                     <div class="p-6">
 
-                        <div class="rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02]">
+                        <div class="rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02] dark:border-slate-700/70 dark:bg-slate-950/25 dark:hover:border-blue-800/70 dark:hover:bg-blue-950/15">
 
                             <p class="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{{ $solicitud->descripcion }}</p>
 
@@ -403,7 +403,7 @@
                     && count($solicitud->datos_extra) > 0
                 )
 
-                    <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md">
+                    <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20">
 
                         <div class="flex items-center gap-3 px-6 py-5 border-b border-border">
 
@@ -482,7 +482,7 @@
                                 @endphp
 
 
-                                <div class="px-6 py-5 border-b border-border transition-colors duration-200 hover:bg-primary/[0.025] odd:sm:border-r sm:[&:nth-last-child(-n+2)]:border-b-0">
+                                <div class="px-6 py-5 border-b border-border transition-colors duration-200 hover:bg-primary/[0.025] odd:sm:border-r sm:[&:nth-last-child(-n+2)]:border-b-0 dark:border-slate-700/70 dark:hover:bg-blue-950/20">
 
                                     <dt class="text-xs font-medium text-muted-foreground">
                                         {{ $nombreCampo }}
@@ -516,7 +516,7 @@
 
                 {{-- Solicitante --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20">
 
                     <div class="px-5 py-4 border-b border-border">
 
@@ -531,7 +531,7 @@
 
                         <div class="flex items-center gap-3">
 
-                            <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-full bg-primary/10 text-sm font-semibold text-primary transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/15">
+                            <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-full bg-primary/10 text-sm font-semibold text-primary transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/15 dark:bg-blue-950/45 dark:text-blue-400 dark:group-hover:bg-blue-900/55">
 
                                 {{ $solicitud->usuario?->nombre
                                     ? mb_strtoupper(
@@ -568,7 +568,7 @@
 
                 {{-- Registro --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20">
 
                     <div class="px-5 py-4 border-b border-border">
 
@@ -663,13 +663,13 @@
                     )
                 )
 
-                    <section class="group relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-white to-teal-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                    <section class="group relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-white to-teal-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10 dark:border-emerald-900/70 dark:from-emerald-950/45 dark:via-slate-900 dark:to-teal-950/30 dark:hover:border-emerald-700 dark:hover:shadow-black/20">
 
                         <div class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-emerald-400/10 transition-transform duration-500 group-hover:scale-150"></div>
 
                         <div class="relative">
 
-                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-700 ring-4 ring-emerald-500/5 transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-700 ring-4 ring-emerald-500/5 transition-transform duration-300 group-hover:scale-105 dark:bg-emerald-900/50 dark:text-emerald-300">
 
                                 <i
                                     data-lucide="circle-check-big"
@@ -681,11 +681,11 @@
 
                             <div class="mt-4 flex items-center gap-2">
 
-                                <h2 class="text-sm font-semibold text-emerald-900">
+                                <h2 class="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
                                     Solicitud finalizada
                                 </h2>
 
-                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
 
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 
@@ -695,7 +695,7 @@
 
                             </div>
 
-                            <p class="mt-2 text-xs text-emerald-800/80 leading-relaxed">
+                            <p class="mt-2 text-xs text-emerald-800/80 leading-relaxed dark:text-emerald-300/80">
                                 La solicitud fue atendida correctamente y su seguimiento se encuentra completado.
                             </p>
 
@@ -714,13 +714,13 @@
                     )
                 )
 
-                    <section class="group relative overflow-hidden rounded-2xl border border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-red-300 hover:shadow-lg hover:shadow-red-500/10">
+                    <section class="group relative overflow-hidden rounded-2xl border border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-red-300 hover:shadow-lg hover:shadow-red-500/10 dark:border-red-900/70 dark:from-red-950/45 dark:via-slate-900 dark:to-rose-950/30 dark:hover:border-red-700 dark:hover:shadow-black/20">
 
                         <div class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-red-400/10 transition-transform duration-500 group-hover:scale-150"></div>
 
                         <div class="relative">
 
-                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-red-500/10 text-red-700 ring-4 ring-red-500/5 transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-red-500/10 text-red-700 ring-4 ring-red-500/5 transition-transform duration-300 group-hover:scale-105 dark:bg-red-900/50 dark:text-red-300">
 
                                 <i
                                     data-lucide="circle-x"
@@ -732,7 +732,7 @@
 
                             <div class="mt-4 flex items-center gap-2">
 
-                                <h2 class="text-sm font-semibold text-red-900">
+                                <h2 class="text-sm font-semibold text-red-900 dark:text-red-200">
 
                                     {{ $solicitud->estado === 'rechazada'
                                         ? 'Solicitud rechazada'
@@ -741,7 +741,7 @@
 
                                 </h2>
 
-                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 text-[10px] font-semibold uppercase tracking-wide text-red-700">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-950/60 dark:text-red-300">
 
                                     <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
 
@@ -751,7 +751,7 @@
 
                             </div>
 
-                            <p class="mt-2 text-xs text-red-800/80 leading-relaxed">
+                            <p class="mt-2 text-xs text-red-800/80 leading-relaxed dark:text-red-300/80">
                                 Esta solicitud fue cerrada y ya no tiene acciones de seguimiento pendientes.
                             </p>
 
@@ -761,13 +761,13 @@
 
                 @elseif($solicitud->estado === 'en_proceso')
 
-                    <section class="group relative overflow-hidden rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10">
+                    <section class="group relative overflow-hidden rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 dark:border-blue-900/70 dark:from-blue-950/45 dark:via-slate-900 dark:to-cyan-950/30 dark:hover:border-blue-700 dark:hover:shadow-black/20">
 
                         <div class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-blue-400/10 transition-transform duration-500 group-hover:scale-150"></div>
 
                         <div class="relative">
 
-                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-500/10 text-blue-700 ring-4 ring-blue-500/5 transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-500/10 text-blue-700 ring-4 ring-blue-500/5 transition-transform duration-300 group-hover:scale-105 dark:bg-blue-900/50 dark:text-blue-300">
 
                                 <i
                                     data-lucide="loader-circle"
@@ -779,11 +779,11 @@
 
                             <div class="mt-4 flex items-center gap-2">
 
-                                <h2 class="text-sm font-semibold text-blue-900">
+                                <h2 class="text-sm font-semibold text-blue-900 dark:text-blue-200">
                                     Solicitud en proceso
                                 </h2>
 
-                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
 
                                     <span class="relative flex w-1.5 h-1.5">
 
@@ -799,7 +799,7 @@
 
                             </div>
 
-                            <p class="mt-2 text-xs text-blue-800/80 leading-relaxed">
+                            <p class="mt-2 text-xs text-blue-800/80 leading-relaxed dark:text-blue-300/80">
                                 El equipo TI se encuentra trabajando actualmente en esta solicitud.
                             </p>
 
@@ -809,13 +809,13 @@
 
                 @else
 
-                    <section class="group relative overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-white to-orange-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10">
+                    <section class="group relative overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-white to-orange-50/70 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 dark:border-amber-900/70 dark:from-amber-950/45 dark:via-slate-900 dark:to-orange-950/30 dark:hover:border-amber-700 dark:hover:shadow-black/20">
 
                         <div class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-amber-400/10 transition-transform duration-500 group-hover:scale-150"></div>
 
                         <div class="relative">
 
-                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-amber-500/10 text-amber-700 ring-4 ring-amber-500/5 transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-amber-500/10 text-amber-700 ring-4 ring-amber-500/5 transition-transform duration-300 group-hover:scale-105 dark:bg-amber-900/50 dark:text-amber-300">
 
                                 <i
                                     data-lucide="clock-3"
@@ -827,11 +827,11 @@
 
                             <div class="mt-4 flex items-center gap-2">
 
-                                <h2 class="text-sm font-semibold text-amber-900">
+                                <h2 class="text-sm font-semibold text-amber-900 dark:text-amber-200">
                                     Solicitud pendiente
                                 </h2>
 
-                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
 
                                     <span class="relative flex w-1.5 h-1.5">
 
@@ -847,7 +847,7 @@
 
                             </div>
 
-                            <p class="mt-2 text-xs text-amber-800/80 leading-relaxed">
+                            <p class="mt-2 text-xs text-amber-800/80 leading-relaxed dark:text-amber-300/80">
                                 La solicitud fue recibida y se encuentra pendiente de revisión por el equipo TI.
                             </p>
 
@@ -863,7 +863,7 @@
 
                 <a
                     href="{{ route('solicitudes.create') }}"
-                    class="group/new flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.025] hover:shadow-md">
+                    class="group/new flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.025] hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:bg-blue-950/20 dark:hover:shadow-black/20">
 
                     <div>
 

@@ -8,51 +8,72 @@
 
     /*
     |--------------------------------------------------------------------------
-    | PRELLENADO DESDE EL CHATBOT
+    | Prellenado desde el chatbot
     |--------------------------------------------------------------------------
     */
 
-    $categoriaChatbot = trim(
-        (string) request()->query(
-            'categoria',
-            ''
+    $categoriaRecibida = trim(
+        (string) request()->query('categoria', '')
+    );
+
+    $categoriaNormalizada = strtolower(
+        \Illuminate\Support\Str::ascii(
+            $categoriaRecibida
+        )
+    );
+
+    $categoriaNormalizada = trim(
+        preg_replace(
+            '/[^a-z0-9]+/',
+            ' ',
+            $categoriaNormalizada
         )
     );
 
     $categoriasChatbot = [
-        'Computadora o accesorios' => 'computadora',
         'computadora' => 'computadora',
+        'computadoras' => 'computadora',
+        'computadora o accesorios' => 'computadora',
+        'equipo' => 'computadora',
+        'equipo de computo' => 'computadora',
 
-        'Instalar un programa' => 'programa',
         'programa' => 'programa',
+        'programas' => 'programa',
+        'instalar un programa' => 'programa',
+        'instalacion de programa' => 'programa',
+        'software' => 'programa',
 
-        'Solicitar un acceso' => 'acceso',
-        'Acceso a un sistema' => 'acceso',
         'acceso' => 'acceso',
+        'solicitar un acceso' => 'acceso',
+        'acceso a un sistema' => 'acceso',
+        'permisos' => 'acceso',
 
-        'VPN / Acceso remoto' => 'vpn',
-        'VPN' => 'vpn',
         'vpn' => 'vpn',
+        'acceso remoto' => 'vpn',
+        'vpn acceso remoto' => 'vpn',
 
-        'Impresoras' => 'impresora',
-        'Impresora' => 'impresora',
         'impresora' => 'impresora',
+        'impresoras' => 'impresora',
+        'solicitud impresora' => 'impresora',
 
-        'Cuenta o contraseña' => 'cuenta',
-        'Cuenta de correo' => 'cuenta',
         'cuenta' => 'cuenta',
+        'cuenta o contrasena' => 'cuenta',
+        'cuenta de correo' => 'cuenta',
+        'contrasena' => 'cuenta',
 
-        'Cambio o configuración de equipo' => 'cambio',
-        'Cambio de equipo' => 'cambio',
         'cambio' => 'cambio',
+        'cambio de equipo' => 'cambio',
+        'configuracion de equipo' => 'cambio',
+        'cambio o configuracion de equipo' => 'cambio',
 
-        'Otra solicitud' => 'otra',
         'otra' => 'otra',
+        'otra solicitud' => 'otra',
+        'general' => 'otra',
     ];
 
     $categoriaInicial = old(
         'categoria',
-        $categoriasChatbot[$categoriaChatbot]
+        $categoriasChatbot[$categoriaNormalizada]
             ?? ''
     );
 
@@ -100,7 +121,7 @@
 
                     <div class="flex items-center gap-4">
 
-                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:bg-primary/15 motion-safe:hover:scale-105">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:bg-primary/15 dark:border-blue-800/60 dark:bg-blue-950/45 dark:text-blue-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-900/50 motion-safe:hover:scale-105">
 
                             <i
                                 data-lucide="clipboard-plus"
@@ -127,7 +148,7 @@
 
                     <a
                         href="{{ route('mis-solicitudes') }}"
-                        class="group/history inline-flex items-center justify-center gap-2 rounded-xl border border-primary/10 bg-primary/[0.06] px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 hover:shadow-md active:scale-[0.98]">
+                        class="group/history inline-flex items-center justify-center gap-2 rounded-xl border border-primary/10 bg-primary/[0.06] px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 hover:shadow-md dark:border-blue-800/60 dark:bg-blue-950/35 dark:text-blue-300 dark:hover:border-blue-700/80 dark:hover:bg-blue-900/50 dark:hover:text-blue-200 active:scale-[0.98]">
 
                         <i
                             data-lucide="history"
@@ -147,13 +168,13 @@
             {{-- ERRORES DE VALIDACIÓN --}}
             @if($errors->any())
 
-                <div class="relative mb-6 overflow-hidden rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 via-white to-rose-50/50 p-4 shadow-sm">
+                <div class="relative mb-6 overflow-hidden rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 via-white to-rose-50/50 p-4 shadow-sm dark:border-red-900/70 dark:from-red-950/40 dark:via-slate-900 dark:to-rose-950/25">
 
                     <span class="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-red-500/10 blur-2xl"></span>
 
                     <div class="relative flex items-start gap-3">
 
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400">
 
                             <i
                                 data-lucide="circle-alert"
@@ -165,11 +186,11 @@
 
                         <div>
 
-                            <p class="text-sm font-semibold text-red-700">
+                            <p class="text-sm font-semibold text-red-700 dark:text-red-300">
                                 Revisa la información ingresada
                             </p>
 
-                            <ul class="mt-2 list-inside list-disc space-y-1 text-xs text-red-600">
+                            <ul class="mt-2 list-inside list-disc space-y-1 text-xs text-red-600 dark:text-red-400">
 
                                 @foreach($errors->all() as $error)
 
@@ -193,11 +214,11 @@
             <div class="space-y-8">
 
                 {{-- PASO 1 --}}
-                <section class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
+                <section class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-slate-700/70 dark:hover:border-blue-700/70 dark:hover:shadow-black/20">
 
                     <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
 
-                    <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
+                    <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4 dark:border-slate-700/70 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900">
 
                         <span
                             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
@@ -219,8 +240,9 @@
 
                         <span
                             id="cambiarCategoria"
-                            class="ml-auto hidden cursor-pointer rounded-lg border border-primary/10 bg-primary/[0.05] px-3 py-1.5 text-xs font-medium text-primary transition-all duration-200 hover:border-primary/20 hover:bg-primary/10"
-                        >
+
+                            class="ml-auto hidden cursor-pointer rounded-lg border border-primary/10 bg-primary/[0.05] px-3 py-1.5 text-xs font-medium text-primary transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 dark:border-slate-700 dark:bg-blue-500/10 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/15"                        
+                            >
                             Cambiar selección
                         </span>
 
@@ -309,7 +331,7 @@
                                     data-color="{{ $categoria['color'] }}"
                                     data-bg="{{ $categoria['bg'] }}"
                                     aria-pressed="false"
-                                    class="categoria-card group/category relative flex cursor-pointer flex-col items-start gap-3 overflow-hidden rounded-xl border border-border bg-white p-4 text-left shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20 motion-safe:hover:-translate-y-1"
+                                    class="categoria-card group/category relative flex cursor-pointer flex-col items-start gap-3 overflow-hidden rounded-xl border border-border bg-white p-4 text-left shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700/70 dark:bg-slate-900/80 dark:hover:border-blue-700/70 dark:hover:shadow-black/20 dark:focus:ring-blue-500/20 motion-safe:hover:-translate-y-1"
                                 >
 
                                     <span
@@ -320,7 +342,7 @@
 
 
                                     <div
-                                        class="icon-container flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 motion-safe:group-hover/category:scale-110"
+                                        class="icon-container flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 dark:!bg-slate-800 motion-safe:group-hover/category:scale-110"
                                         style="background-color: {{ $categoria['bg'] }}"
                                     >
                                         <i
@@ -358,12 +380,12 @@
                 {{-- PASO 2 --}}
                 <section
                     id="formularioSolicitud"
-                    class="group relative hidden overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md"
+                    class="group relative hidden overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-slate-700/70 dark:hover:border-blue-700/70 dark:hover:shadow-black/20"
                 >
 
                     <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 motion-safe:group-hover:scale-125"></span>
 
-                    <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
+                    <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4 dark:border-slate-700/70 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900">
 
                         <span
                             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105"
@@ -417,19 +439,19 @@
 
                             <div
                                 @class([
-                                    'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                                    'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2 dark:bg-slate-900/80',
 
-                                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-800 dark:focus-within:border-red-500 dark:focus-within:ring-red-500/20' =>
                                         $errors->has('asunto'),
 
-                                    'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                                    'border-border focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700/70 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                                         ! $errors->has('asunto'),
                                 ])>
 
                                 <i
                                     data-lucide="text"
                                     stroke-width="1.8"
-                                    class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                                    class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400 motion-safe:group-focus-within/field:scale-110">
                                 </i>
 
                                 <input
@@ -440,14 +462,14 @@
                                     data-required="true"
                                     maxlength="255"
                                     autocomplete="off"
-                                    class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                                    class="w-full border-0 bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 dark:text-slate-200 dark:placeholder:text-slate-500"
                                     placeholder="Describe brevemente tu solicitud">
 
                             </div>
 
                             @error('asunto')
 
-                                <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                                <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
 
                                     <i data-lucide="circle-alert" stroke-width="1.8" class="h-3.5 w-3.5 shrink-0"></i>
 
@@ -475,19 +497,19 @@
 
                             <div
                                 @class([
-                                    'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                                    'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2 dark:bg-slate-900/80',
 
-                                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                                    'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-800 dark:focus-within:border-red-500 dark:focus-within:ring-red-500/20' =>
                                         $errors->has('descripcion'),
 
-                                    'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                                    'border-border focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700/70 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                                         ! $errors->has('descripcion'),
                                 ])>
 
                                 <i
                                     data-lucide="align-left"
                                     stroke-width="1.8"
-                                    class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                                    class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400 motion-safe:group-focus-within/field:scale-110">
                                 </i>
 
                                 <textarea
@@ -496,14 +518,14 @@
                                     data-required="true"
                                     rows="4"
                                     maxlength="2000"
-                                    class="w-full resize-none border-0 bg-transparent py-2.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                                    class="w-full resize-none border-0 bg-transparent py-2.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 dark:text-slate-200 dark:placeholder:text-slate-500"
                                     placeholder="Cuéntanos qué necesitas y para qué lo necesitas">{{ $descripcionInicial }}</textarea>
 
                             </div>
 
                             @error('descripcion')
 
-                                <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                                <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
 
                                     <i data-lucide="circle-alert" stroke-width="1.8" class="h-3.5 w-3.5 shrink-0"></i>
 
@@ -530,11 +552,11 @@
 
                 <div
                     id="estadoPersistenteSolicitud"
-                    class="hidden flex-col gap-3 overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-4 shadow-sm sm:flex-row sm:items-center"
+                    class="hidden flex-col gap-3 overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-4 shadow-sm dark:border-blue-800 dark:from-blue-950/45 dark:via-slate-900 dark:to-sky-950/30 sm:flex-row sm:items-center"
                 >
                     <div
                         id="smtpEstadoSolicitud"
-                        class="inline-flex items-center gap-2 text-xs font-medium text-blue-700"
+                        class="inline-flex items-center gap-2 text-xs font-medium text-blue-700 dark:text-blue-300"
                     >
                         <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-500"></span>
 
@@ -547,7 +569,7 @@
                         data-recipient="helpdesk@televicentro.hn"
                         data-user-name="{{ auth()->user()->nombre ?? 'N/A' }}"
                         data-user-email="{{ auth()->user()->correo ?? 'N/A' }}"
-                        class="group/outlook hidden items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
+                        class="group/outlook hidden items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md dark:border-amber-800 dark:bg-slate-900 dark:text-amber-300 dark:hover:border-amber-700 dark:hover:bg-amber-900/55 active:scale-[0.98]"
                     >
                         <i
                             data-lucide="external-link"
@@ -569,7 +591,7 @@
     <button
         type="button"
         id="btnCancelar"
-        class="inline-flex items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground hover:shadow-md active:scale-[0.98]"
+        class="inline-flex items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground hover:shadow-md dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100 active:scale-[0.98]"
     >
         Cancelar
     </button>
@@ -607,10 +629,14 @@
 
 <div
     id="modalSolicitud"
-    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalSolicitudTitulo"
+    aria-describedby="modalSolicitudMensaje"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm dark:bg-black/70"
 >
     <div
-        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20"
+        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-700/70 dark:bg-slate-900 dark:shadow-black/50"
     >
         <span class="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-3xl"></span>
 
@@ -620,25 +646,25 @@
 
             <div
                 id="modalSolicitudIcono"
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm"
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm dark:border-blue-800 dark:bg-blue-950/45"
             >
                 <i
                     data-lucide="clock-3"
                     stroke-width="1.8"
-                    class="h-8 w-8 text-blue-600"
+                    class="h-8 w-8 text-blue-600 dark:text-blue-400"
                 ></i>
             </div>
 
             <h3
                 id="modalSolicitudTitulo"
-                class="mt-5 text-lg font-semibold text-foreground"
+                class="mt-5 text-lg font-semibold text-foreground dark:text-slate-100"
             >
                 Solicitud registrada
             </h3>
 
             <p
                 id="modalSolicitudMensaje"
-                class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground"
+                class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground dark:text-slate-400"
             >
                 La solicitud fue registrada correctamente. La notificación por correo se está procesando.
             </p>
@@ -657,13 +683,13 @@
 
             <div
                 id="estadoCorreoSolicitud"
-                class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm"
+                class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm dark:border-blue-800 dark:from-blue-950/45 dark:via-slate-900 dark:to-sky-950/30"
             >
                 <div class="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-4">
 
                     <div
                         id="estadoCorreoSolicitudIcono"
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm dark:border-blue-800 dark:bg-slate-900 dark:text-blue-400"
                     >
                         <i
                             data-lucide="mail"
@@ -676,14 +702,14 @@
 
                         <p
                             id="estadoCorreoSolicitudTitulo"
-                            class="text-sm font-semibold text-blue-800"
+                            class="text-sm font-semibold text-blue-800 dark:text-blue-300"
                         >
                             Correo en procesamiento
                         </p>
 
                         <p
                             id="estadoCorreoSolicitudMensaje"
-                            class="mt-1.5 text-xs leading-relaxed text-blue-700"
+                            class="mt-1.5 text-xs leading-relaxed text-blue-700 dark:text-blue-400"
                         >
                             La notificación fue agregada a la cola y será enviada en segundo plano.
                         </p>
@@ -694,7 +720,7 @@
                             data-recipient="helpdesk@televicentro.hn"
                             data-user-name="{{ auth()->user()->nombre ?? 'N/A' }}"
                             data-user-email="{{ auth()->user()->correo ?? 'N/A' }}"
-                            class="group/outlook-modal mt-4 hidden w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]"
+                            class="group/outlook-modal mt-4 hidden w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md dark:border-amber-800 dark:bg-slate-900 dark:text-amber-300 dark:hover:border-amber-700 dark:hover:bg-amber-900/55 active:scale-[0.98]"
                         >
                             <i
                                 data-lucide="external-link"
@@ -710,14 +736,14 @@
                 </div>
             </div>
 
-            <div class="mt-5 flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.04] p-4">
+            <div class="mt-5 flex items-start gap-3 rounded-xl border border-blue-200/70 bg-blue-50/60 p-4 dark:border-blue-800/60 dark:bg-blue-950/25">
                 <i
                     data-lucide="info"
                     stroke-width="1.8"
-                    class="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400"
                 ></i>
 
-                <p class="text-xs leading-relaxed text-muted-foreground">
+                <p class="text-xs leading-relaxed text-muted-foreground dark:text-slate-400">
                     La solicitud permanecerá disponible en el historial, incluso si la notificación no pudo enviarse.
                 </p>
             </div>
@@ -727,14 +753,14 @@
 
         {{-- Acciones --}}
 
-        <div class="border-t border-border bg-muted/20 px-7 py-5">
+        <div class="border-t border-border bg-muted/20 px-7 py-5 dark:border-slate-700/70 dark:bg-slate-950/30">
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
                 <button
                     type="button"
                     id="cerrarModalSolicitud"
-                    class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-md active:scale-[0.98]"
+                    class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-md dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 active:scale-[0.98]"
                 >
                     Cerrar
                 </button>

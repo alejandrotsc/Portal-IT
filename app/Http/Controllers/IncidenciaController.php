@@ -499,6 +499,19 @@ class IncidenciaController extends Controller
         Request $request
     ): View {
         $validated = $request->validate([
+            'mes' => [
+                'nullable',
+                'integer',
+                'between:1,12',
+            ],
+
+            'anio' => [
+                'nullable',
+                'integer',
+                'min:2020',
+                'max:'.now()->year,
+            ],
+
             'buscar' => [
                 'nullable',
                 'string',
@@ -520,6 +533,16 @@ class IncidenciaController extends Controller
             ],
         ]);
 
+        $mes = (int) (
+            $validated['mes']
+            ?? now()->month
+        );
+
+        $anio = (int) (
+            $validated['anio']
+            ?? now()->year
+        );
+
         $busqueda = trim(
             (string) (
                 $validated['buscar']
@@ -535,7 +558,51 @@ class IncidenciaController extends Controller
             $validated['prioridad']
             ?? null;
 
-        $incidencias = Incidencia::query()
+        /*
+        |--------------------------------------------------------------------------
+        | Consulta base y años disponibles
+        |--------------------------------------------------------------------------
+        */
+
+        $consultaBase = Incidencia::query();
+
+        $aniosDisponibles = (clone $consultaBase)
+            ->whereNotNull(
+                'created_at'
+            )
+            ->selectRaw(
+                'DISTINCT EXTRACT(YEAR FROM created_at)::integer AS anio'
+            )
+            ->orderByDesc('anio')
+            ->pluck('anio')
+            ->map(
+                static fn ($valor): int =>
+                    (int) $valor
+            )
+            ->push(
+                now()->year
+            )
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consulta del periodo seleccionado
+        |--------------------------------------------------------------------------
+        */
+
+        $consultaPeriodo = (clone $consultaBase)
+            ->whereYear(
+                'created_at',
+                $anio
+            )
+            ->whereMonth(
+                'created_at',
+                $mes
+            );
+
+        $incidencias = (clone $consultaPeriodo)
             ->with([
                 'usuario',
                 'archivos',
@@ -596,37 +663,47 @@ class IncidenciaController extends Controller
 
         $resumen = [
             'total' =>
-                Incidencia::count(),
+                (clone $consultaPeriodo)
+                    ->count(),
 
             'abiertas' =>
-                Incidencia::where(
-                    'estado',
-                    Incidencia::ESTADO_ABIERTA
-                )->count(),
+                (clone $consultaPeriodo)
+                    ->where(
+                        'estado',
+                        Incidencia::ESTADO_ABIERTA
+                    )
+                    ->count(),
 
             'en_proceso' =>
-                Incidencia::where(
-                    'estado',
-                    Incidencia::ESTADO_EN_PROCESO
-                )->count(),
+                (clone $consultaPeriodo)
+                    ->where(
+                        'estado',
+                        Incidencia::ESTADO_EN_PROCESO
+                    )
+                    ->count(),
 
             'resueltas' =>
-                Incidencia::where(
-                    'estado',
-                    Incidencia::ESTADO_RESUELTA
-                )->count(),
+                (clone $consultaPeriodo)
+                    ->where(
+                        'estado',
+                        Incidencia::ESTADO_RESUELTA
+                    )
+                    ->count(),
         ];
 
         return view(
-    'administracion.incidencias.index',
-    compact(
-        'incidencias',
-        'resumen',
-        'busqueda',
-        'estadoSeleccionado',
-        'prioridadSeleccionada'
-    )
-);
+            'administracion.incidencias.index',
+            compact(
+                'incidencias',
+                'resumen',
+                'busqueda',
+                'estadoSeleccionado',
+                'prioridadSeleccionada',
+                'mes',
+                'anio',
+                'aniosDisponibles'
+            )
+        );
     }
 
     /*

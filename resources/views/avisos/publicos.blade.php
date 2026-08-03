@@ -17,7 +17,7 @@
 
                 <div>
 
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/[0.06] text-primary text-xs font-semibold">
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/[0.06] text-primary text-xs font-semibold dark:border-blue-800/70 dark:bg-blue-950/35 dark:text-blue-400">
 
                         <i
                             data-lucide="megaphone"
@@ -55,7 +55,7 @@
 
                     <a
                         href="{{ route('avisos.index') }}"
-                        class="group/admin inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-primary/10 bg-primary/[0.06] text-primary text-sm font-semibold shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
+                        class="group/admin inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-primary/10 bg-primary/[0.06] text-primary text-sm font-semibold shadow-sm transition-all duration-200 hover:border-primary/20 hover:bg-primary/10 hover:shadow-md dark:border-slate-700 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
 
                         <i
                             data-lucide="settings-2"
@@ -81,7 +81,7 @@
 
         <section class="mb-6">
 
-            <div class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/10 bg-primary/[0.04] text-xs text-muted-foreground">
+            <div class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/10 bg-primary/[0.04] text-xs text-muted-foreground dark:border-blue-800/60 dark:bg-blue-950/25 dark:text-slate-400">
 
                 <i
                     data-lucide="info"
@@ -128,16 +128,16 @@
                     @class([
                         'group relative overflow-hidden rounded-2xl border border-l-4 bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-lg motion-safe:hover:-translate-y-1',
 
-                        'border-blue-200/70 border-l-blue-500 bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30 hover:border-blue-300 hover:shadow-blue-500/10' =>
+                        'border-blue-200/70 border-l-blue-500 bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30 hover:border-blue-300 hover:shadow-blue-500/10 dark:border-blue-900/70 dark:border-l-blue-500 dark:from-blue-950/40 dark:via-slate-900 dark:to-indigo-950/25 dark:hover:border-blue-700 dark:hover:border-l-blue-400 dark:hover:shadow-black/20' =>
                             $posicionAviso === 0,
 
-                        'border-amber-200/70 border-l-amber-500 bg-gradient-to-r from-amber-50/50 via-white to-orange-50/30 hover:border-amber-300 hover:shadow-amber-500/10' =>
+                        'border-amber-200/70 border-l-amber-500 bg-gradient-to-r from-amber-50/50 via-white to-orange-50/30 hover:border-amber-300 hover:shadow-amber-500/10 dark:border-amber-900/70 dark:border-l-amber-500 dark:from-amber-950/40 dark:via-slate-900 dark:to-orange-950/25 dark:hover:border-amber-700 dark:hover:border-l-amber-400 dark:hover:shadow-black/20' =>
                             $posicionAviso === 1,
 
-                        'border-emerald-200/70 border-l-emerald-500 bg-gradient-to-r from-emerald-50/50 via-white to-teal-50/30 hover:border-emerald-300 hover:shadow-emerald-500/10' =>
+                        'border-emerald-200/70 border-l-emerald-500 bg-gradient-to-r from-emerald-50/50 via-white to-teal-50/30 hover:border-emerald-300 hover:shadow-emerald-500/10 dark:border-emerald-900/70 dark:border-l-emerald-500 dark:from-emerald-950/40 dark:via-slate-900 dark:to-teal-950/25 dark:hover:border-emerald-700 dark:hover:border-l-emerald-400 dark:hover:shadow-black/20' =>
                             $posicionAviso === 2,
 
-                        'border-violet-200/70 border-l-violet-500 bg-gradient-to-r from-violet-50/50 via-white to-purple-50/30 hover:border-violet-300 hover:shadow-violet-500/10' =>
+                        'border-violet-200/70 border-l-violet-500 bg-gradient-to-r from-violet-50/50 via-white to-purple-50/30 hover:border-violet-300 hover:shadow-violet-500/10 dark:border-violet-900/70 dark:border-l-violet-500 dark:from-violet-950/40 dark:via-slate-900 dark:to-purple-950/25 dark:hover:border-violet-700 dark:hover:border-l-violet-400 dark:hover:shadow-black/20' =>
                             $posicionAviso === 3,
                     ])>
 
@@ -172,16 +172,16 @@
                             @class([
                                 'flex items-center justify-center w-11 h-11 shrink-0 rounded-xl transition-all duration-300 motion-safe:group-hover:scale-105',
 
-                                'bg-blue-500/10 text-blue-600 group-hover:bg-blue-100' =>
+                                'bg-blue-500/10 text-blue-600 group-hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:group-hover:bg-blue-900/70' =>
                                     $posicionAviso === 0,
 
-                                'bg-amber-500/10 text-amber-600 group-hover:bg-amber-100' =>
+                                'bg-amber-500/10 text-amber-600 group-hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-400 dark:group-hover:bg-amber-900/70' =>
                                     $posicionAviso === 1,
 
-                                'bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-100' =>
+                                'bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:group-hover:bg-emerald-900/70' =>
                                     $posicionAviso === 2,
 
-                                'bg-violet-500/10 text-violet-600 group-hover:bg-violet-100' =>
+                                'bg-violet-500/10 text-violet-600 group-hover:bg-violet-100 dark:bg-violet-950/60 dark:text-violet-400 dark:group-hover:bg-violet-900/70' =>
                                     $posicionAviso === 3,
                             ])>
 
@@ -206,16 +206,16 @@
                                 @class([
                                     'text-sm font-semibold text-foreground leading-relaxed transition-colors duration-200',
 
-                                    'group-hover:text-blue-800' =>
+                                    'group-hover:text-blue-800 dark:group-hover:text-blue-300' =>
                                         $posicionAviso === 0,
 
-                                    'group-hover:text-amber-800' =>
+                                    'group-hover:text-amber-800 dark:group-hover:text-amber-300' =>
                                         $posicionAviso === 1,
 
-                                    'group-hover:text-emerald-800' =>
+                                    'group-hover:text-emerald-800 dark:group-hover:text-emerald-300' =>
                                         $posicionAviso === 2,
 
-                                    'group-hover:text-violet-800' =>
+                                    'group-hover:text-violet-800 dark:group-hover:text-violet-300' =>
                                         $posicionAviso === 3,
                                 ])>
 
@@ -264,16 +264,16 @@
                                     @class([
                                         'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium transition-colors duration-200',
 
-                                        'bg-blue-500/10 text-blue-700 group-hover:bg-blue-100' =>
+                                        'bg-blue-500/10 text-blue-700 group-hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:group-hover:bg-blue-900/60' =>
                                             $posicionAviso === 0,
 
-                                        'bg-amber-500/10 text-amber-700 group-hover:bg-amber-100' =>
+                                        'bg-amber-500/10 text-amber-700 group-hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-300 dark:group-hover:bg-amber-900/60' =>
                                             $posicionAviso === 1,
 
-                                        'bg-emerald-500/10 text-emerald-700 group-hover:bg-emerald-100' =>
+                                        'bg-emerald-500/10 text-emerald-700 group-hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:group-hover:bg-emerald-900/60' =>
                                             $posicionAviso === 2,
 
-                                        'bg-violet-500/10 text-violet-700 group-hover:bg-violet-100' =>
+                                        'bg-violet-500/10 text-violet-700 group-hover:bg-violet-100 dark:bg-violet-950/50 dark:text-violet-300 dark:group-hover:bg-violet-900/60' =>
                                             $posicionAviso === 3,
                                     ])>
 
@@ -299,7 +299,7 @@
 
                 {{-- Estado vacío --}}
 
-                <div class="group/empty relative overflow-hidden rounded-2xl border border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.035] via-white to-blue-50/40 px-6 py-16 text-center shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+                <div class="group/empty relative overflow-hidden rounded-2xl border border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.035] via-white to-blue-50/40 px-6 py-16 text-center shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:border-blue-800/70 dark:from-blue-950/25 dark:via-slate-900 dark:to-slate-900 dark:hover:border-blue-600 dark:hover:shadow-black/20">
 
                     <span class="absolute -right-12 -top-14 w-36 h-36 rounded-full bg-primary/5 blur-3xl pointer-events-none transition-all duration-500 motion-safe:group-hover/empty:scale-150 group-hover/empty:bg-primary/10"></span>
 
@@ -378,7 +378,7 @@
             @endphp
 
 
-            <div class="flex flex-col gap-4 mt-6 px-5 py-4 rounded-2xl border border-border bg-blue-50/20 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-col gap-4 mt-6 px-5 py-4 rounded-2xl border border-border bg-blue-50/20 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-slate-700/70 dark:bg-slate-900/70 dark:shadow-black/20">
 
 
                 {{-- Información --}}
@@ -422,7 +422,7 @@
 
                         <span
                             aria-disabled="true"
-                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-600">
 
                             <i
                                 data-lucide="chevron-left"
@@ -438,7 +438,7 @@
                             href="{{ $avisos->previousPageUrl() }}"
                             rel="prev"
                             aria-label="Página anterior"
-                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-700 dark:hover:bg-blue-950/35 dark:hover:text-blue-400 motion-safe:hover:-translate-y-0.5">
 
                             <i
                                 data-lucide="chevron-left"
@@ -458,7 +458,7 @@
 
                         <a
                             href="{{ $avisos->url(1) }}"
-                            class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                            class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-700 dark:hover:bg-blue-950/35 dark:hover:text-blue-400 motion-safe:hover:-translate-y-0.5">
 
                             1
 
@@ -498,7 +498,7 @@
 
                             <a
                                 href="{{ $avisos->url($pagina) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-700 dark:hover:bg-blue-950/35 dark:hover:text-blue-400 motion-safe:hover:-translate-y-0.5">
 
                                 {{ $pagina }}
 
@@ -529,7 +529,7 @@
 
                         <a
                             href="{{ $avisos->url($ultimaPagina) }}"
-                            class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                            class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-700 dark:hover:bg-blue-950/35 dark:hover:text-blue-400 motion-safe:hover:-translate-y-0.5">
 
                             {{ $ultimaPagina }}
 
@@ -547,7 +547,7 @@
                             href="{{ $avisos->nextPageUrl() }}"
                             rel="next"
                             aria-label="Página siguiente"
-                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-700 dark:hover:bg-blue-950/35 dark:hover:text-blue-400 motion-safe:hover:-translate-y-0.5">
 
                             <i
                                 data-lucide="chevron-right"
@@ -561,7 +561,7 @@
 
                         <span
                             aria-disabled="true"
-                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-600">
 
                             <i
                                 data-lucide="chevron-right"

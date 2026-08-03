@@ -516,41 +516,59 @@
                     <div class="py-1">
 
 
-
                         <button
-                            class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                        >
+    type="button"
+    id="theme-toggle"
+    class="flex w-full items-center gap-2.5 px-4 py-2
+           text-sm text-foreground transition-colors
+           hover:bg-muted"
+    aria-label="Activar modo oscuro"
+    aria-pressed="false"
+>
+    {{-- Sol --}}
+    <span
+        id="theme-sun-icon"
+        class="inline-flex h-4 w-4 shrink-0
+               items-center justify-center"
+    >
+        <i
+            data-lucide="sun"
+            class="h-3.5 w-3.5 text-amber-500"
+        ></i>
+    </span>
 
-                            <i 
-                                data-lucide="user"
-                                class="w-3.5 h-3.5 text-muted-foreground">
-                            </i>
+    {{-- Luna --}}
+    <span
+        id="theme-moon-icon"
+        class="hidden h-4 w-4 shrink-0
+               items-center justify-center"
+    >
+        <i
+            data-lucide="moon"
+            class="h-3.5 w-3.5 text-blue-500"
+        ></i>
+    </span>
 
+    <span class="flex-1 text-left">
+        Modo oscuro
+    </span>
 
-                            Mi perfil
-
-
-                        </button>
-
-
-
-
-
-                        <button
-                            class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                        >
-
-
-                            <i 
-                                data-lucide="settings"
-                                class="w-3.5 h-3.5 text-muted-foreground">
-                            </i>
-
-
-                            Configuración
-
-
-                        </button>
+    {{-- Switch --}}
+    <span
+        id="theme-switch-track"
+        class="relative block h-5 w-10 shrink-0
+               overflow-hidden rounded-full bg-slate-300
+               transition-colors duration-200"
+        aria-hidden="true"
+    >
+        <span
+            id="theme-switch-thumb"
+            class="absolute left-0.5 top-0.5 block
+                   h-4 w-4 rounded-full bg-white
+                   shadow-sm transition-transform duration-200"
+        ></span>
+    </span>
+</button>
 
 
 
@@ -618,52 +636,56 @@
 {{-- Cinta de avisos TI --}}
 
 @php
-
     $avisosDisponibles =
         $avisosTicker
         ?? collect();
-
 @endphp
 
 
 @if($avisosDisponibles->isNotEmpty())
 
-    <div class="bg-primary/5 border-b border-primary/10 overflow-hidden">
-
+    <div
+        class="overflow-hidden border-b border-primary/10 bg-primary/5
+               dark:border-slate-700/70 dark:bg-slate-900/80"
+    >
         <div class="flex items-center">
 
-
             {{-- Etiqueta fija --}}
+            <div
+                class="relative z-10 flex shrink-0 items-center gap-2
+                       bg-primary px-4 py-2 shadow-sm
+                       dark:bg-blue-600"
+            >
+                <span class="relative flex h-2 w-2 shrink-0">
+                    <span
+                        class="absolute inline-flex h-full w-full
+                               rounded-full bg-white/70
+                               motion-safe:animate-ping"
+                    ></span>
 
-            <div class="flex shrink-0 items-center gap-2 px-4 py-2 bg-primary">
-
-                <span class="w-2 h-2 shrink-0 rounded-full bg-white animate-pulse"></span>
-
-                <span class="text-white text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
-
-                    Avisos TI
-
+                    <span
+                        class="relative inline-flex h-2 w-2
+                               rounded-full bg-white"
+                    ></span>
                 </span>
 
+                <span
+                    class="whitespace-nowrap text-[11px] font-bold
+                           uppercase tracking-widest text-white"
+                >
+                    Avisos TI
+                </span>
             </div>
 
 
-
             {{-- Banda animada --}}
-
-            <div class="flex-1 overflow-hidden">
+            <div class="min-w-0 flex-1 overflow-hidden">
 
                 <div
-                    class="ticker flex items-center w-max"
+                    class="ticker flex w-max items-center"
                     onmouseenter="this.style.animationPlayState='paused'"
-                    onmouseleave="this.style.animationPlayState='running'">
-
-
-                    {{--
-                        Se repite dos veces para mantener
-                        el desplazamiento continuo.
-                    --}}
-
+                    onmouseleave="this.style.animationPlayState='running'"
+                >
                     @for(
                         $repeticion = 0;
                         $repeticion < 2;
@@ -671,114 +693,102 @@
                     )
 
                         <div
-                            class="flex items-center shrink-0"
+                            class="flex shrink-0 items-center"
                             @if($repeticion === 1)
                                 aria-hidden="true"
-                            @endif>
-
-
+                            @endif
+                        >
                             @foreach($avisosDisponibles as $aviso)
 
                                 @php
-
                                     $colorAviso =
                                         $loop->index % 4;
-
                                 @endphp
 
-
                                 {{-- Aviso --}}
-
                                 <div
                                     @class([
-                                        'flex items-center gap-2 px-8 py-1 text-[12px] whitespace-nowrap rounded-md transition-colors duration-200',
+                                        'flex items-center gap-2 rounded-md px-8 py-1 text-[12px] whitespace-nowrap transition-colors duration-200',
 
-                                        'hover:bg-blue-500/[0.06]' =>
+                                        'hover:bg-blue-500/[0.06] dark:hover:bg-blue-500/10' =>
                                             $colorAviso === 0,
 
-                                        'hover:bg-amber-500/[0.06]' =>
+                                        'hover:bg-amber-500/[0.06] dark:hover:bg-amber-500/10' =>
                                             $colorAviso === 1,
 
-                                        'hover:bg-emerald-500/[0.06]' =>
+                                        'hover:bg-emerald-500/[0.06] dark:hover:bg-emerald-500/10' =>
                                             $colorAviso === 2,
 
-                                        'hover:bg-violet-500/[0.06]' =>
+                                        'hover:bg-violet-500/[0.06] dark:hover:bg-violet-500/10' =>
                                             $colorAviso === 3,
-                                    ])>
-
-
-                                    {{-- Indicador de color --}}
-
+                                    ])
+                                >
+                                    {{-- Indicador --}}
                                     <span
                                         @class([
-                                            'w-2 h-2 shrink-0 rounded-full',
+                                            'h-2 w-2 shrink-0 rounded-full',
 
-                                            'bg-blue-500' =>
+                                            'bg-blue-500 dark:bg-blue-400' =>
                                                 $colorAviso === 0,
 
-                                            'bg-amber-500' =>
+                                            'bg-amber-500 dark:bg-amber-400' =>
                                                 $colorAviso === 1,
 
-                                            'bg-emerald-500' =>
+                                            'bg-emerald-500 dark:bg-emerald-400' =>
                                                 $colorAviso === 2,
 
-                                            'bg-violet-500' =>
+                                            'bg-violet-500 dark:bg-violet-400' =>
                                                 $colorAviso === 3,
-                                        ])>
-                                    </span>
-
+                                        ])
+                                    ></span>
 
                                     {{-- Título --}}
-
                                     <strong
                                         @class([
                                             'font-semibold',
 
-                                            'text-blue-700' =>
+                                            'text-blue-700 dark:text-blue-300' =>
                                                 $colorAviso === 0,
 
-                                            'text-amber-700' =>
+                                            'text-amber-700 dark:text-amber-300' =>
                                                 $colorAviso === 1,
 
-                                            'text-emerald-700' =>
+                                            'text-emerald-700 dark:text-emerald-300' =>
                                                 $colorAviso === 2,
 
-                                            'text-violet-700' =>
+                                            'text-violet-700 dark:text-violet-300' =>
                                                 $colorAviso === 3,
-                                        ])>
-
+                                        ])
+                                    >
                                         {{ $aviso->titulo }}:
-
                                     </strong>
 
-
                                     {{-- Mensaje --}}
-
-                                    <span class="text-muted-foreground">
-
+                                    <span
+                                        class="text-muted-foreground
+                                               dark:text-slate-300"
+                                    >
                                         {{ $aviso->mensaje }}
-
                                     </span>
-
                                 </div>
 
-
                                 {{-- Separador --}}
-
-                                <div class="w-px h-4 shrink-0 bg-border"></div>
+                                <div
+                                    class="h-4 w-px shrink-0 bg-border
+                                           dark:bg-slate-700"
+                                ></div>
 
                             @endforeach
-
                         </div>
 
                     @endfor
-
                 </div>
 
             </div>
 
         </div>
-
     </div>
+
+    <script src="{{ asset('js/switch.js') }}?v=2"></script>
 
 @endif

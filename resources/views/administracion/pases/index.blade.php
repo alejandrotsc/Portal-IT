@@ -4,6 +4,25 @@
 
 @section('content')
 
+@php
+
+    $meses = [
+        1 => 'Enero',
+        2 => 'Febrero',
+        3 => 'Marzo',
+        4 => 'Abril',
+        5 => 'Mayo',
+        6 => 'Junio',
+        7 => 'Julio',
+        8 => 'Agosto',
+        9 => 'Septiembre',
+        10 => 'Octubre',
+        11 => 'Noviembre',
+        12 => 'Diciembre',
+    ];
+
+@endphp
+
 <div class="min-h-screen bg-background">
 
     <main class="max-w-7xl mx-auto px-6 py-10">
@@ -221,7 +240,7 @@
                 <form
                     method="GET"
                     action="{{ route('admin.pases') }}"
-                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_190px_210px_auto] gap-3">
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_170px_160px_130px_190px_auto] gap-3 xl:items-center">
 
 
                     {{-- Búsqueda --}}
@@ -346,6 +365,91 @@
 
 
 
+                    {{-- Mes --}}
+
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i
+                            data-lucide="calendar-days"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                        <select
+                            id="mes"
+                            name="mes"
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+
+                            @foreach($meses as $numero => $nombre)
+
+                                <option
+                                    value="{{ $numero }}"
+                                    @selected(
+                                        (int) $mes
+                                        ===
+                                        (int) $numero
+                                    )>
+
+                                    {{ $nombre }}
+
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                        <i
+                            data-lucide="chevron-down"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                    </div>
+
+
+                    {{-- Año --}}
+
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+
+                        <i
+                            data-lucide="calendar-range"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                        <select
+                            id="anio"
+                            name="anio"
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+
+                            @foreach($aniosDisponibles as $anioDisponible)
+
+                                <option
+                                    value="{{ $anioDisponible }}"
+                                    @selected(
+                                        (int) $anio
+                                        ===
+                                        (int) $anioDisponible
+                                    )>
+
+                                    {{ $anioDisponible }}
+
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                        <i
+                            data-lucide="chevron-down"
+                            stroke-width="1.8"
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                        </i>
+
+                    </div>
+
+
+
                     {{-- Acciones --}}
 
                     <div class="flex items-center gap-2">
@@ -369,6 +473,8 @@
                             $busqueda !== ''
                             || filled($estadoSeleccionado)
                             || filled($tipoSeleccionado)
+                            || (int) $mes !== now()->month
+                            || (int) $anio !== now()->year
                         )
 
                             <a
@@ -694,6 +800,8 @@
                                         $busqueda !== ''
                                         || filled($estadoSeleccionado)
                                         || filled($tipoSeleccionado)
+                                        || (int) $mes !== now()->month
+                                        || (int) $anio !== now()->year
                                     )
 
                                         <a
@@ -727,6 +835,12 @@
 
 
             {{-- Paginación --}}
+
+            @php
+                $memorandos->appends(
+                    request()->except('page')
+                );
+            @endphp
 
             @if($memorandos->hasPages())
 

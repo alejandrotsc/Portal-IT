@@ -22,7 +22,7 @@
             margin: 0;
             font-family: "DejaVu Serif", "Times New Roman", serif;
             color: #111827;
-            font-size: 12.5px;
+            font-size: 11.5px;
             line-height: 1.55;
         }
 
@@ -72,7 +72,7 @@
         .titulo-principal {
             margin: 0;
             color: #111827;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             letter-spacing: 2px;
         }
@@ -80,14 +80,14 @@
         .subtitulo {
             margin-top: 4px;
             color: #4b5563;
-            font-size: 9.5px;
+            font-size: 8.5px;
             letter-spacing: 0.8px;
             text-transform: uppercase;
         }
 
         .codigo-documento {
             color: #111827;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
         }
 
@@ -95,7 +95,7 @@
             display: block;
             margin-top: 3px;
             color: #6b7280;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: normal;
         }
 
@@ -130,14 +130,14 @@
             width: 92px;
             background: #f3f4f6;
             color: #1f2937;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
             letter-spacing: 0.4px;
         }
 
         .tabla-datos .valor {
             color: #111827;
-            font-size: 11.5px;
+            font-size: 10.5px;
         }
 
 
@@ -176,7 +176,7 @@
             padding-bottom: 5px;
             border-bottom: 1px solid #9ca3af;
             color: #111827;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             letter-spacing: 0.7px;
             text-transform: uppercase;
@@ -210,7 +210,7 @@
             border: 1px solid #9ca3af;
             background: #e5e7eb;
             color: #111827;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
             text-align: center;
             text-transform: uppercase;
@@ -220,7 +220,7 @@
             padding: 7px 5px;
             border: 1px solid #cbd5e1;
             color: #1f2937;
-            font-size: 9.5px;
+            font-size: 8.5px;
             text-align: center;
             vertical-align: middle;
             word-wrap: break-word;
@@ -262,14 +262,14 @@
         .firma-nombre {
             margin: 0;
             color: #111827;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
         }
 
         .firma-cargo {
             margin: 2px 0 0;
             color: #6b7280;
-            font-size: 9.5px;
+            font-size: 8.5px;
         }
 
 
@@ -287,7 +287,7 @@
             border-top: 1px solid #d1d5db;
             padding-top: 6px;
             color: #6b7280;
-            font-size: 8.5px;
+            font-size: 8px;
             text-align: center;
         }
 

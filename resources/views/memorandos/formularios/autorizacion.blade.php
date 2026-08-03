@@ -5,7 +5,7 @@
 
     {{-- Información de autorización --}}
 
-    <div class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
+    <div class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-slate-700/70 dark:hover:border-blue-700/70 dark:hover:shadow-black/20">
 
 
         {{-- Decoración --}}
@@ -16,7 +16,7 @@
 
         {{-- Encabezado --}}
 
-        <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
+        <div class="relative flex items-center gap-3 border-b border-border dark:border-slate-700/70 bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900 px-6 py-4">
 
             <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105">
 
@@ -69,19 +69,19 @@
 
                     <div
                         @class([
-                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white dark:bg-slate-900/80 px-3.5 transition-all duration-200 focus-within:ring-2',
 
-                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-800 dark:focus-within:border-red-500 dark:focus-within:ring-red-500/20' =>
                                 $errors->has('colaborador'),
 
-                            'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                            'border-border focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700/70 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                                 ! $errors->has('colaborador'),
                         ])>
 
                         <i
                             data-lucide="user-round"
                             stroke-width="1.8"
-                            class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                            class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400 motion-safe:group-focus-within/field:scale-110">
                         </i>
 
                         <input
@@ -100,7 +100,7 @@
 
                     @error('colaborador')
 
-                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
 
                             <i
                                 data-lucide="circle-alert"
@@ -135,19 +135,19 @@
 
                     <div
                         @class([
-                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                            'group/field flex min-h-11 w-full items-center gap-2.5 rounded-lg border bg-white dark:bg-slate-900/80 px-3.5 transition-all duration-200 focus-within:ring-2',
 
-                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-800 dark:focus-within:border-red-500 dark:focus-within:ring-red-500/20' =>
                                 $errors->has('cargo_area'),
 
-                            'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                            'border-border focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700/70 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                                 ! $errors->has('cargo_area'),
                         ])>
 
                         <i
                             data-lucide="briefcase-business"
                             stroke-width="1.8"
-                            class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                            class="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400 motion-safe:group-focus-within/field:scale-110">
                         </i>
 
                         <input
@@ -166,7 +166,7 @@
 
                     @error('cargo_area')
 
-                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
 
                             <i
                                 data-lucide="circle-alert"
@@ -203,19 +203,19 @@
 
                 <div
                     @class([
-                        'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white px-3.5 transition-all duration-200 focus-within:ring-2',
+                        'group/field flex w-full items-start gap-2.5 rounded-lg border bg-white dark:bg-slate-900/80 px-3.5 transition-all duration-200 focus-within:ring-2',
 
-                        'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                        'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-800 dark:focus-within:border-red-500 dark:focus-within:ring-red-500/20' =>
                             $errors->has('motivo_autorizacion'),
 
-                        'border-border focus-within:border-primary focus-within:ring-primary/10' =>
+                        'border-border focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700/70 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                             ! $errors->has('motivo_autorizacion'),
                     ])>
 
                     <i
                         data-lucide="notebook-pen"
                         stroke-width="1.8"
-                        class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-primary motion-safe:group-focus-within/field:scale-110">
+                        class="mt-3 h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400 motion-safe:group-focus-within/field:scale-110">
                     </i>
 
                     <textarea
@@ -232,7 +232,7 @@
 
                 @error('motivo_autorizacion')
 
-                    <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                    <p class="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
 
                         <i
                             data-lucide="circle-alert"
@@ -256,7 +256,7 @@
 
     {{-- Información del equipo --}}
 
-    <div class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
+    <div class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-slate-700/70 dark:hover:border-blue-700/70 dark:hover:shadow-black/20">
 
 
         {{-- Decoración --}}
@@ -267,7 +267,7 @@
 
         {{-- Encabezado --}}
 
-        <div class="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 px-6 py-4">
+        <div class="relative flex items-center gap-3 border-b border-border dark:border-slate-700/70 bg-gradient-to-r from-primary/[0.06] via-white to-blue-50/40 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900 px-6 py-4">
 
             <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105">
 
@@ -302,7 +302,7 @@
 
             {{-- Tabla de equipos --}}
 
-            <div class="overflow-hidden rounded-xl border border-border bg-white">
+            <div class="overflow-hidden rounded-xl border border-border bg-white dark:border-slate-700/70 dark:bg-slate-900/70">
 
                 <div class="overflow-x-auto">
 
@@ -310,7 +310,7 @@
 
                         <thead>
 
-                            <tr class="border-b border-border bg-muted/50">
+                            <tr class="border-b border-border bg-muted/50 dark:border-slate-700/70 dark:bg-slate-800/70">
 
                                 <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 
@@ -344,7 +344,7 @@
                                             onclick="abrirAyudaSerie()"
                                             title="¿Dónde encontrar el número de serie?"
                                             aria-label="Mostrar ayuda para encontrar el número de serie"
-                                            class="group/help inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-primary/10 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                            class="group/help inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-primary/10 hover:text-primary dark:text-slate-400 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-primary/20">
 
                                             <i
                                                 data-lucide="circle-help"
@@ -379,9 +379,9 @@
 
                         <tbody
                             id="equipoFilas"
-                            class="divide-y divide-border">
+                            class="divide-y divide-border dark:divide-slate-700/70">
 
-                            <tr class="fila-equipo transition-colors duration-200 hover:bg-primary/[0.02]">
+                            <tr class="fila-equipo">
 
                                 <td class="px-2 py-2.5">
 
@@ -392,7 +392,7 @@
                                         placeholder="Laptop"
                                         maxlength="100"
                                         required
-                                        class="input-equipo w-full min-w-[120px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                                        class="input-equipo w-full min-w-[120px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
                                 </td>
 
@@ -405,7 +405,7 @@
                                         placeholder="Dell"
                                         maxlength="100"
                                         required
-                                        class="input-equipo w-full min-w-[110px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                                        class="input-equipo w-full min-w-[110px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
                                 </td>
 
@@ -418,7 +418,7 @@
                                         placeholder="Latitude 5420"
                                         maxlength="100"
                                         required
-                                        class="input-equipo w-full min-w-[130px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                                        class="input-equipo w-full min-w-[130px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
                                 </td>
 
@@ -431,7 +431,7 @@
                                         placeholder="SN123456"
                                         maxlength="100"
                                         required
-                                        class="input-equipo w-full min-w-[125px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                                        class="input-equipo w-full min-w-[125px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
                                 </td>
 
@@ -444,7 +444,7 @@
                                         placeholder="Negro"
                                         maxlength="50"
                                         required
-                                        class="input-equipo w-full min-w-[100px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                                        class="input-equipo w-full min-w-[100px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
                                 </td>
 
@@ -454,7 +454,7 @@
                                         type="button"
                                         title="Eliminar equipo"
                                         aria-label="Eliminar equipo"
-                                        class="btn-remove-fila group/remove inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/10 disabled:cursor-not-allowed disabled:opacity-40">
+                                        class="btn-remove-fila group/remove inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-800 dark:hover:bg-red-950/45 dark:hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/10 disabled:cursor-not-allowed disabled:opacity-40">
 
                                         <i
                                             data-lucide="trash-2"
@@ -482,7 +482,7 @@
 
             @error('equipos')
 
-                <p class="mt-3 flex items-center gap-1.5 text-xs text-red-600">
+                <p class="mt-3 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
 
                     <i
                         data-lucide="circle-alert"
@@ -503,7 +503,7 @@
             <button
                 type="button"
                 id="agregarFila"
-                class="group/add mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/30 bg-primary/[0.04] px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/50 hover:bg-primary/[0.08] hover:shadow-md active:scale-[0.98]">
+                class="group/add mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-solid border-blue-500/30 bg-blue-50/60 px-4 py-2.5 text-sm font-medium text-blue-600 shadow-sm transition-all duration-200 hover:border-blue-500/60 hover:bg-blue-100/70 hover:shadow-md dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:border-blue-400/70 dark:hover:bg-blue-500/15 active:scale-[0.98]">
 
                 <i
                     data-lucide="plus"
@@ -527,7 +527,7 @@
 
 <template id="templateEquipo">
 
-    <tr class="fila-equipo transition-colors duration-200 hover:bg-primary/[0.02]">
+    <tr class="fila-equipo">
 
         <td class="px-2 py-2.5">
 
@@ -537,7 +537,7 @@
                 placeholder="Laptop"
                 maxlength="100"
                 required
-                class="input-equipo w-full min-w-[120px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                class="input-equipo w-full min-w-[120px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
         </td>
 
@@ -549,7 +549,7 @@
                 placeholder="Dell"
                 maxlength="100"
                 required
-                class="input-equipo w-full min-w-[110px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                class="input-equipo w-full min-w-[110px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
         </td>
 
@@ -561,7 +561,7 @@
                 placeholder="Latitude 5420"
                 maxlength="100"
                 required
-                class="input-equipo w-full min-w-[130px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                class="input-equipo w-full min-w-[130px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
         </td>
 
@@ -573,7 +573,7 @@
                 placeholder="SN123456"
                 maxlength="100"
                 required
-                class="input-equipo w-full min-w-[125px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                class="input-equipo w-full min-w-[125px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
         </td>
 
@@ -585,7 +585,7 @@
                 placeholder="Negro"
                 maxlength="50"
                 required
-                class="input-equipo w-full min-w-[100px] rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10">
+                class="input-equipo w-full min-w-[100px] rounded-lg border border-border bg-white px-3 py-2 dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200 dark:placeholder:text-slate-500 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/15">
 
         </td>
 
@@ -595,7 +595,7 @@
                 type="button"
                 title="Eliminar equipo"
                 aria-label="Eliminar equipo"
-                class="btn-remove-fila group/remove inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/10">
+                class="btn-remove-fila group/remove inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-800 dark:hover:bg-red-950/45 dark:hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/10">
 
                 <i
                     data-lucide="trash-2"
@@ -625,7 +625,7 @@
 
     {{-- Contenido del modal --}}
 
-    <div class="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-border bg-white shadow-2xl shadow-slate-950/20">
+    <div class="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-border bg-white shadow-2xl dark:border-slate-700/70 dark:bg-slate-900 dark:shadow-black/50 shadow-slate-950/20">
 
 
         {{-- Decoración --}}
@@ -636,7 +636,7 @@
 
         {{-- Encabezado --}}
 
-        <div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-white/95 px-6 py-4 backdrop-blur">
+        <div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-white/95 dark:border-slate-700/70 dark:bg-slate-900/95 px-6 py-4 backdrop-blur">
 
             <div class="flex min-w-0 items-center gap-3">
 
@@ -676,7 +676,7 @@
                 onclick="cerrarAyudaSerie()"
                 title="Cerrar ayuda"
                 aria-label="Cerrar ayuda"
-                class="group/close inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/10">
+                class="group/close inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-800 dark:hover:bg-red-950/45 dark:hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/10">
 
                 <i
                     data-lucide="x"
@@ -698,7 +698,7 @@
                 controls
                 preload="metadata"
                 poster="{{ asset('img/snhelp.avif') }}"
-                class="mx-auto max-h-[60vh] w-auto max-w-full rounded-xl border border-border bg-slate-950 shadow-sm">
+                class="mx-auto max-h-[60vh] w-auto max-w-full rounded-xl border border-border bg-slate-950 dark:border-slate-700/70 shadow-sm">
 
                 <source
                     src="{{ asset('videos/snhelp_fixed.mp4') }}"

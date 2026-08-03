@@ -174,80 +174,131 @@ const fileInput =
 
 
 cards.forEach(card=>{
+
+card.setAttribute('role','button');
+card.setAttribute('tabindex','0');
+card.setAttribute('aria-pressed','false');
+
 card.addEventListener('click',()=>{
-selectedCategory=card.dataset.id;
+seleccionarCategoria(card,true);
+});
+
+card.addEventListener('keydown',(event)=>{
+
+if(event.key==='Enter'||event.key===' '){
+event.preventDefault();
+seleccionarCategoria(card,true);
+}
+
+});
+
+});
+
+
+function seleccionarCategoria(card,debeDesplazar=false){
+
+const category=card?.dataset.id;
+
+if(
+!category
+||!Object.prototype.hasOwnProperty.call(FIELDS,category)
+||!PLACEHOLDERS[category]
+){
+return;
+}
+
+selectedCategory=category;
 
 if(categoriaInput)
-categoriaInput.value=selectedCategory;
+categoriaInput.value=category;
 
 actualizarTarjetas();
-mostrarFormulario(selectedCategory);
+mostrarFormulario(category);
 mostrarBadge(card);
-actualizarPlaceholders(selectedCategory);
+actualizarPlaceholders(category);
 
-formularioSolicitud.classList.remove('hidden');
+formularioSolicitud?.classList.remove('hidden');
+accionesSolicitud?.classList.remove('hidden');
+cambiarCategoria?.classList.remove('hidden');
 
-if(accionesSolicitud)
-    accionesSolicitud.classList.remove('hidden');
-
-if(cambiarCategoria)
-    cambiarCategoria.classList.remove('hidden');
-
+if(debeDesplazar){
 setTimeout(()=>{
-formularioSolicitud.scrollIntoView({behavior:'smooth',block:'start'});
+formularioSolicitud?.scrollIntoView({
+behavior:'smooth',
+block:'start'
+});
 },100);
+}
 
-});
-});
+}
 
 
 /*
 |--------------------------------------------------------------------------
-| RESTAURAR CATEGORÍA DESPUÉS DE UNA VALIDACIÓN
+| RESTAURAR CATEGORÍA Y PRELLENADO DEL CHATBOT
 |--------------------------------------------------------------------------
 */
 
-const categoriaAnterior =
-    categoriaInput?.value;
+function aplicarPrellenadoChatbot() {
 
-if (
-    categoriaAnterior
-    && PLACEHOLDERS[categoriaAnterior]
-) {
-    const tarjetaAnterior =
+    const categoriaFormulario = String(
+        solicitudForm?.dataset.prefillCategoria
+        || categoriaInput?.value
+        || ''
+    ).trim();
+
+    const asuntoFormulario = String(
+        solicitudForm?.dataset.prefillAsunto
+        || ''
+    ).trim();
+
+    const descripcionFormulario = String(
+        solicitudForm?.dataset.prefillDescripcion
+        || ''
+    ).trim();
+
+    if (
+        asunto
+        && !asunto.value.trim()
+        && asuntoFormulario
+    ) {
+        asunto.value = asuntoFormulario;
+    }
+
+    if (
+        descripcion
+        && !descripcion.value.trim()
+        && descripcionFormulario
+    ) {
+        descripcion.value =
+            descripcionFormulario;
+    }
+
+    if (
+        !categoriaFormulario
+        || !PLACEHOLDERS[categoriaFormulario]
+    ) {
+        return;
+    }
+
+    const tarjetaCategoria =
         Array.from(cards).find(
             card =>
-                card.dataset.id === categoriaAnterior
+                card.dataset.id ===
+                categoriaFormulario
         );
 
-    if (tarjetaAnterior) {
-        selectedCategory =
-            categoriaAnterior;
-
-        actualizarTarjetas();
-        mostrarFormulario(
-            categoriaAnterior
-        );
-        mostrarBadge(
-            tarjetaAnterior
-        );
-        actualizarPlaceholders(
-            categoriaAnterior
-        );
-
-        formularioSolicitud?.classList.remove(
-            'hidden'
-        );
-
-        accionesSolicitud?.classList.remove(
-            'hidden'
-        );
-
-        cambiarCategoria?.classList.remove(
-            'hidden'
-        );
+    if (!tarjetaCategoria) {
+        return;
     }
+
+    seleccionarCategoria(
+        tarjetaCategoria,
+        true
+    );
 }
+
+aplicarPrellenadoChatbot();
 
 
 function actualizarPlaceholders(category){
@@ -264,6 +315,9 @@ descripcion.placeholder=PLACEHOLDERS[category].descripcion;
 
 function actualizarTarjetas(){
 
+const modoOscuro=
+document.documentElement.classList.contains('dark');
+
 cards.forEach(card=>{
 
 const seleccionado=card.dataset.id===selectedCategory;
@@ -273,6 +327,16 @@ const bg=card.dataset.bg;
 const iconBox=card.querySelector('.icon-container');
 const icon=card.querySelector('.icon-container svg,.icon-container i');
 const check=card.querySelector('.check-categoria');
+
+card.setAttribute(
+'aria-pressed',
+seleccionado?'true':'false'
+);
+
+card.classList.toggle(
+'categoria-card-seleccionada',
+seleccionado
+);
 
 if(seleccionado){
 
@@ -286,10 +350,19 @@ card.style.boxShadow='';
 
 }
 
-card.style.backgroundColor=seleccionado?bg:'white';
+card.style.backgroundColor=seleccionado
+    ? (modoOscuro ? `${color}26` : bg)
+    : (modoOscuro ? '#0f172a' : 'white');
 
-if(iconBox)
-iconBox.style.backgroundColor=seleccionado?color:bg;
+if(iconBox){
+    iconBox.style.setProperty(
+        'background-color',
+        seleccionado
+            ? color
+            : (modoOscuro ? '#1e293b' : bg),
+        'important'
+    );
+}
 
 if(icon)
 icon.style.color=seleccionado?'#ffffff':color;
@@ -311,15 +384,42 @@ function mostrarBadge(card){
 if(!categoriaSeleccionada)return;
 
 const titulo=card.querySelector('p.text-xs')?.textContent.trim()??'';
+const modoOscuro=
+document.documentElement.classList.contains('dark');
 
 categoriaSeleccionada.textContent=titulo;
-categoriaSeleccionada.style.color=card.dataset.color;
-categoriaSeleccionada.style.backgroundColor=card.dataset.bg;
+categoriaSeleccionada.style.color=modoOscuro
+    ? card.dataset.color
+    : card.dataset.color;
+categoriaSeleccionada.style.backgroundColor=modoOscuro
+    ? `${card.dataset.color}26`
+    : card.dataset.bg;
 categoriaSeleccionada.style.borderColor=card.dataset.color;
 
 categoriaSeleccionada.classList.remove('hidden');
 
 }
+
+
+const observadorTema=new MutationObserver(()=>{
+    actualizarTarjetas();
+
+    const tarjetaSeleccionada=Array.from(cards).find(
+        card=>card.dataset.id===selectedCategory
+    );
+
+    if(tarjetaSeleccionada){
+        mostrarBadge(tarjetaSeleccionada);
+    }
+});
+
+observadorTema.observe(
+    document.documentElement,
+    {
+        attributes:true,
+        attributeFilter:['class'],
+    }
+);
 
 
 
@@ -402,7 +502,9 @@ inputContainer.className=
     'group/field flex min-h-11 w-full items-center gap-2.5 '
     + 'rounded-lg border border-border bg-white px-3.5 '
     + 'transition-all duration-200 focus-within:border-primary '
-    + 'focus-within:ring-2 focus-within:ring-primary/10';
+    + 'focus-within:ring-2 focus-within:ring-primary/10 '
+    + 'dark:border-slate-700/70 dark:bg-slate-900/80 '
+    + 'dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15';
 
 
 const icono=
@@ -423,7 +525,8 @@ icono.setAttribute(
 icono.className=
     'h-4 w-4 shrink-0 text-muted-foreground '
     + 'transition-all duration-200 '
-    + 'group-focus-within/field:text-primary '
+    + 'group-focus-within/field:text-blue-600 '
+    + 'dark:text-slate-400 dark:group-focus-within/field:text-blue-400 '
     + 'motion-safe:group-focus-within/field:scale-110';
 
 if(field.type==='textarea'){
@@ -444,7 +547,8 @@ if(field.type==='textarea'){
 input.className=
     'w-full border-0 bg-transparent py-2.5 text-sm '
     + 'text-foreground placeholder:text-muted-foreground '
-    + 'focus:outline-none focus:ring-0 '
+    + 'focus:outline-none focus:ring-0 dark:text-slate-200 '
+    + 'dark:placeholder:text-slate-500 '
     + (
         field.type==='select'
             ? 'appearance-none'
@@ -484,7 +588,8 @@ if(field.type==='select'){
         'h-4 w-4 shrink-0 text-muted-foreground '
         + 'transition-transform duration-200 '
         + 'group-focus-within/field:rotate-180 '
-        + 'group-focus-within/field:text-primary';
+        + 'group-focus-within/field:text-blue-600 '
+        + 'dark:text-slate-400 dark:group-focus-within/field:text-blue-400';
 
     inputContainer.appendChild(
         chevron
@@ -550,7 +655,8 @@ div.className=
     'group flex items-center gap-3 rounded-xl border '
     + 'border-border bg-white px-3 py-2.5 shadow-sm '
     + 'transition-all duration-200 hover:border-primary/20 '
-    + 'hover:shadow-md';
+    + 'hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900/80 '
+    + 'dark:hover:border-blue-700/70 dark:hover:shadow-black/20';
 
 
 div.innerHTML=`
@@ -564,7 +670,7 @@ ${iconoArchivo(file.name)}
 <p class="text-[10px] text-muted-foreground">${formatearPeso(file.size)}</p>
 </div>
 
-<button type="button" class="eliminar-archivo inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-all duration-200 hover:bg-red-50 hover:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 group-hover:opacity-100" data-id="${item.id}" aria-label="Eliminar archivo">
+<button type="button" class="eliminar-archivo inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-all duration-200 hover:bg-red-50 hover:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-red-950/45 dark:hover:text-red-400" data-id="${item.id}" aria-label="Eliminar archivo">
 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 <path d="M18 6L6 18M6 6l12 12"/>
 </svg>
@@ -817,9 +923,9 @@ function configurarCorreoEnCola(estado = 'pendiente', attempts = 0) {
 
     if (modalSolicitudIcono) {
         modalSolicitudIcono.className =
-            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm';
+            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm dark:border-blue-800 dark:bg-blue-950/45';
         modalSolicitudIcono.innerHTML =
-            '<i data-lucide="clock-3" stroke-width="1.8" class="h-8 w-8 text-blue-600"></i>';
+            '<i data-lucide="clock-3" stroke-width="1.8" class="h-8 w-8 text-blue-600 dark:text-blue-400"></i>';
     }
 
     if (modalSolicitudTitulo) {
@@ -828,26 +934,26 @@ function configurarCorreoEnCola(estado = 'pendiente', attempts = 0) {
 
     if (estadoCorreoSolicitud) {
         estadoCorreoSolicitud.className =
-            'rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm';
+            'rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm dark:border-blue-800 dark:from-blue-950/45 dark:via-slate-900 dark:to-sky-950/30';
     }
 
     if (estadoCorreoSolicitudIcono) {
         estadoCorreoSolicitudIcono.className =
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm';
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm dark:border-blue-800 dark:bg-slate-900 dark:text-blue-400';
         estadoCorreoSolicitudIcono.innerHTML =
             '<i data-lucide="mail" stroke-width="1.8" class="h-5 w-5"></i>';
     }
 
     if (estadoCorreoSolicitudTitulo) {
         estadoCorreoSolicitudTitulo.className =
-            'text-sm font-semibold text-blue-800';
+            'text-sm font-semibold text-blue-800 dark:text-blue-300';
         estadoCorreoSolicitudTitulo.textContent =
             estado === 'enviando' ? 'Enviando correo' : 'Correo en procesamiento';
     }
 
     if (estadoCorreoSolicitudMensaje) {
         estadoCorreoSolicitudMensaje.className =
-            'mt-1.5 text-xs leading-relaxed text-blue-700';
+            'mt-1.5 text-xs leading-relaxed text-blue-700 dark:text-blue-400';
 
         estadoCorreoSolicitudMensaje.textContent =
             estado === 'enviando' && Number(attempts) > 0
@@ -866,9 +972,9 @@ function configurarCorreoExitoso() {
 
     if (modalSolicitudIcono) {
         modalSolicitudIcono.className =
-            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm';
+            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/45';
         modalSolicitudIcono.innerHTML =
-            '<i data-lucide="circle-check-big" stroke-width="1.8" class="h-8 w-8 text-emerald-600"></i>';
+            '<i data-lucide="circle-check-big" stroke-width="1.8" class="h-8 w-8 text-emerald-600 dark:text-emerald-400"></i>';
     }
 
     if (modalSolicitudTitulo) {
@@ -882,26 +988,26 @@ function configurarCorreoExitoso() {
 
     if (estadoCorreoSolicitud) {
         estadoCorreoSolicitud.className =
-            'rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm';
+            'rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm dark:border-emerald-800 dark:from-emerald-950/45 dark:via-slate-900 dark:to-teal-950/30';
     }
 
     if (estadoCorreoSolicitudIcono) {
         estadoCorreoSolicitudIcono.className =
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm';
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-400';
         estadoCorreoSolicitudIcono.innerHTML =
             '<i data-lucide="mail-check" stroke-width="1.8" class="h-5 w-5"></i>';
     }
 
     if (estadoCorreoSolicitudTitulo) {
         estadoCorreoSolicitudTitulo.className =
-            'text-sm font-semibold text-emerald-800';
+            'text-sm font-semibold text-emerald-800 dark:text-emerald-300';
         estadoCorreoSolicitudTitulo.textContent =
             'Correo enviado correctamente';
     }
 
     if (estadoCorreoSolicitudMensaje) {
         estadoCorreoSolicitudMensaje.className =
-            'mt-1.5 text-xs leading-relaxed text-emerald-700';
+            'mt-1.5 text-xs leading-relaxed text-emerald-700 dark:text-emerald-400';
         estadoCorreoSolicitudMensaje.textContent =
             'El servidor SMTP aceptó la notificación para el equipo de soporte TI.';
     }
@@ -918,9 +1024,9 @@ function configurarCorreoFallido(data) {
 
     if (modalSolicitudIcono) {
         modalSolicitudIcono.className =
-            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm';
+            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm dark:border-amber-800 dark:bg-amber-950/45';
         modalSolicitudIcono.innerHTML =
-            '<i data-lucide="mail-warning" stroke-width="1.8" class="h-8 w-8 text-amber-600"></i>';
+            '<i data-lucide="mail-warning" stroke-width="1.8" class="h-8 w-8 text-amber-600 dark:text-amber-400"></i>';
     }
 
     if (modalSolicitudTitulo) {
@@ -935,26 +1041,26 @@ function configurarCorreoFallido(data) {
 
     if (estadoCorreoSolicitud) {
         estadoCorreoSolicitud.className =
-            'rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 p-5 text-left shadow-sm';
+            'rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 p-5 text-left shadow-sm dark:border-amber-800 dark:from-amber-950/45 dark:via-slate-900 dark:to-orange-950/30';
     }
 
     if (estadoCorreoSolicitudIcono) {
         estadoCorreoSolicitudIcono.className =
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-white text-amber-600 shadow-sm';
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-white text-amber-600 shadow-sm dark:border-amber-800 dark:bg-slate-900 dark:text-amber-400';
         estadoCorreoSolicitudIcono.innerHTML =
             '<i data-lucide="mail-warning" stroke-width="1.8" class="h-5 w-5"></i>';
     }
 
     if (estadoCorreoSolicitudTitulo) {
         estadoCorreoSolicitudTitulo.className =
-            'text-sm font-semibold text-amber-800';
+            'text-sm font-semibold text-amber-800 dark:text-amber-300';
         estadoCorreoSolicitudTitulo.textContent =
             'No se pudo enviar el correo';
     }
 
     if (estadoCorreoSolicitudMensaje) {
         estadoCorreoSolicitudMensaje.className =
-            'mt-1.5 text-xs leading-relaxed text-amber-700';
+            'mt-1.5 text-xs leading-relaxed text-amber-700 dark:text-amber-400';
         estadoCorreoSolicitudMensaje.textContent =
             'La solicitud quedó registrada. Puedes informar la falla mediante Outlook 365.';
     }
@@ -1114,20 +1220,20 @@ function actualizarEstadoPersistente(estado) {
 
     const opciones = {
         queued: [
-            'border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50',
-            'text-blue-700',
+            'border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 dark:border-blue-800 dark:from-blue-950/45 dark:via-slate-900 dark:to-sky-950/30',
+            'text-blue-700 dark:text-blue-300',
             'bg-blue-500',
             'Correo pendiente en la cola',
         ],
         success: [
-            'border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50',
-            'text-emerald-700',
+            'border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 dark:border-emerald-800 dark:from-emerald-950/45 dark:via-slate-900 dark:to-teal-950/30',
+            'text-emerald-700 dark:text-emerald-300',
             'bg-emerald-500',
             'Último envío de correo SMTP correcto',
         ],
         warning: [
-            'border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50',
-            'text-amber-700',
+            'border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 dark:border-amber-800 dark:from-amber-950/45 dark:via-slate-900 dark:to-orange-950/30',
+            'text-amber-700 dark:text-amber-300',
             'bg-amber-500',
             'Último envío de correo SMTP fallido',
         ],
@@ -1169,9 +1275,9 @@ function mostrarErrorSolicitud(error) {
 
     if (modalSolicitudIcono) {
         modalSolicitudIcono.className =
-            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-red-200 bg-red-50 shadow-sm';
+            'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-red-200 bg-red-50 shadow-sm dark:border-red-800 dark:bg-red-950/45';
         modalSolicitudIcono.innerHTML =
-            '<i data-lucide="circle-x" stroke-width="1.8" class="h-8 w-8 text-red-600"></i>';
+            '<i data-lucide="circle-x" stroke-width="1.8" class="h-8 w-8 text-red-600 dark:text-red-400"></i>';
     }
 
     if (modalSolicitudTitulo) {
@@ -1186,19 +1292,26 @@ function mostrarErrorSolicitud(error) {
 
     if (estadoCorreoSolicitud) {
         estadoCorreoSolicitud.className =
-            'rounded-2xl border border-red-200 bg-gradient-to-br from-red-50/80 via-white to-rose-50/50 p-5 text-left shadow-sm';
+            'rounded-2xl border border-red-200 bg-gradient-to-br from-red-50/80 via-white to-rose-50/50 p-5 text-left shadow-sm dark:border-red-800 dark:from-red-950/45 dark:via-slate-900 dark:to-rose-950/30';
+    }
+
+    if (estadoCorreoSolicitudIcono) {
+        estadoCorreoSolicitudIcono.className =
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white text-red-600 shadow-sm dark:border-red-800 dark:bg-slate-900 dark:text-red-400';
+        estadoCorreoSolicitudIcono.innerHTML =
+            '<i data-lucide="triangle-alert" stroke-width="1.8" class="h-5 w-5"></i>';
     }
 
     if (estadoCorreoSolicitudTitulo) {
         estadoCorreoSolicitudTitulo.className =
-            'text-sm font-semibold text-red-800';
+            'text-sm font-semibold text-red-800 dark:text-red-300';
         estadoCorreoSolicitudTitulo.textContent =
             'La gestión no fue registrada';
     }
 
     if (estadoCorreoSolicitudMensaje) {
         estadoCorreoSolicitudMensaje.className =
-            'mt-1.5 text-xs leading-relaxed text-red-700';
+            'mt-1.5 text-xs leading-relaxed text-red-700 dark:text-red-400';
         estadoCorreoSolicitudMensaje.textContent =
             'Revisa la información e intenta nuevamente.';
     }

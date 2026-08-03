@@ -1366,6 +1366,18 @@ public function showPase(
         Request $request
     ): View {
         $validated = $request->validate([
+            'mes' => [
+                'nullable',
+                'integer',
+                'between:1,12',
+            ],
+
+            'anio' => [
+                'nullable',
+                'integer',
+                'between:2020,'.now()->year,
+            ],
+
             'buscar' => [
                 'nullable',
                 'string',
@@ -1387,6 +1399,16 @@ public function showPase(
                 ]),
             ],
         ]);
+
+        $mes = (int) (
+            $validated['mes']
+            ?? now()->month
+        );
+
+        $anio = (int) (
+            $validated['anio']
+            ?? now()->year
+        );
 
         $busqueda = trim(
             (string) (
@@ -1429,7 +1451,54 @@ public function showPase(
                 }
             );
 
-        $memorandos = (clone $consultaBase)
+        /*
+        |--------------------------------------------------------------------------
+        | Años disponibles
+        |--------------------------------------------------------------------------
+        |
+        | Solo se muestran años que tienen pases registrados. El año actual se
+        | conserva para que el periodo predeterminado siempre esté disponible.
+        |
+        */
+
+        $aniosDisponibles = (clone $consultaBase)
+            ->whereNotNull(
+                'created_at'
+            )
+            ->selectRaw(
+                'EXTRACT(YEAR FROM created_at)::int AS anio'
+            )
+            ->distinct()
+            ->orderByDesc('anio')
+            ->pluck('anio')
+            ->map(
+                static fn ($valor): int =>
+                    (int) $valor
+            )
+            ->push(
+                now()->year
+            )
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consulta del periodo seleccionado
+        |--------------------------------------------------------------------------
+        */
+
+        $consultaPeriodo = (clone $consultaBase)
+            ->whereMonth(
+                'created_at',
+                $mes
+            )
+            ->whereYear(
+                'created_at',
+                $anio
+            );
+
+        $memorandos = (clone $consultaPeriodo)
             ->with([
                 'tipo',
                 'solicitante',
@@ -1536,11 +1605,11 @@ public function showPase(
 
         $resumen = [
             'total' =>
-                (clone $consultaBase)
+                (clone $consultaPeriodo)
                     ->count(),
 
             'generados' =>
-                (clone $consultaBase)
+                (clone $consultaPeriodo)
                     ->where(
                         'estado',
                         Memorando::ESTADO_GENERADO
@@ -1548,7 +1617,7 @@ public function showPase(
                     ->count(),
 
             'aprobados' =>
-                (clone $consultaBase)
+                (clone $consultaPeriodo)
                     ->where(
                         'estado',
                         Memorando::ESTADO_APROBADO
@@ -1556,7 +1625,7 @@ public function showPase(
                     ->count(),
 
             'rechazados' =>
-                (clone $consultaBase)
+                (clone $consultaPeriodo)
                     ->where(
                         'estado',
                         Memorando::ESTADO_RECHAZADO
@@ -1571,7 +1640,10 @@ public function showPase(
                 'resumen',
                 'busqueda',
                 'estadoSeleccionado',
-                'tipoSeleccionado'
+                'tipoSeleccionado',
+                'mes',
+                'anio',
+                'aniosDisponibles'
             )
         );
     }

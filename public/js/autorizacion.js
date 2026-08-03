@@ -254,8 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mostrar spinner
         contenidoPreview.innerHTML = `
             <div class="flex items-center justify-center py-12">
-                <div class="flex flex-col items-center gap-3 text-muted-foreground">
-                    <svg class="h-6 w-6 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
+                <div class="flex flex-col items-center gap-3 text-muted-foreground dark:text-slate-400">
+                    <svg class="h-6 w-6 animate-spin text-primary dark:text-blue-400" viewBox="0 0 24 24" fill="none">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
@@ -286,14 +286,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
 
             contenidoPreview.innerHTML = `
-                <div class="mx-auto max-w-md rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-center">
-                    <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                <div class="mx-auto max-w-md rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-center dark:border-red-800 dark:bg-red-950/40">
+                    <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/70 dark:text-red-400">
                         <i data-lucide="circle-alert" class="h-5 w-5"></i>
                     </div>
-                    <p class="mt-3 text-sm font-semibold text-red-800">
+                    <p class="mt-3 text-sm font-semibold text-red-800 dark:text-red-300">
                         No se pudo cargar la vista previa
                     </p>
-                    <p class="mt-1 text-xs leading-relaxed text-red-700">
+                    <p class="mt-1 text-xs leading-relaxed text-red-700 dark:text-red-400">
                         ${escaparHtml(err.message)}
                     </p>
                 </div>
@@ -826,10 +826,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (modalResultadoIcono) {
             modalResultadoIcono.className =
-                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm';
+                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 shadow-sm dark:border-blue-800 dark:bg-blue-950/45';
 
             modalResultadoIcono.innerHTML =
-                '<i data-lucide="clock-3" stroke-width="1.8" class="h-8 w-8 text-blue-600"></i>';
+                '<i data-lucide="clock-3" stroke-width="1.8" class="h-8 w-8 text-blue-600 dark:text-blue-400"></i>';
         }
 
         if (modalResultadoTitulo) {
@@ -843,12 +843,12 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             estadoCorreo.className =
-                'rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm';
+                'rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 p-5 text-left shadow-sm dark:border-blue-800 dark:from-blue-950/45 dark:via-slate-900 dark:to-sky-950/30';
         }
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-blue-800';
+                'text-sm font-semibold text-blue-800 dark:text-blue-300';
 
             estadoCorreoTitulo.textContent =
                 estado === 'enviando'
@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-blue-700';
+                'mt-1.5 text-xs leading-relaxed text-blue-700 dark:text-blue-400';
 
             const numeroIntentos =
                 Number(attempts) || 0;
@@ -875,7 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm';
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 shadow-sm dark:border-blue-800 dark:bg-slate-900 dark:text-blue-400';
 
             estadoCorreoIcono.innerHTML =
                 '<i data-lucide="mail" stroke-width="1.8" class="h-5 w-5"></i>';
@@ -897,10 +897,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (modalResultadoIcono) {
             modalResultadoIcono.className =
-                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm';
+                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/45';
 
             modalResultadoIcono.innerHTML =
-                '<i data-lucide="circle-check-big" stroke-width="1.8" class="h-8 w-8 text-emerald-600"></i>';
+                '<i data-lucide="circle-check-big" stroke-width="1.8" class="h-8 w-8 text-emerald-600 dark:text-emerald-400"></i>';
         }
 
         if (modalResultadoTitulo) {
@@ -910,26 +910,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (estadoCorreo) {
             estadoCorreo.className =
-                'rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm';
+                'rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 p-5 text-left shadow-sm dark:border-emerald-800 dark:from-emerald-950/45 dark:via-slate-900 dark:to-teal-950/30';
         }
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-emerald-800';
+                'text-sm font-semibold text-emerald-800 dark:text-emerald-300';
             estadoCorreoTitulo.textContent =
                 'Correo enviado correctamente';
         }
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-emerald-700';
+                'mt-1.5 text-xs leading-relaxed text-emerald-700 dark:text-emerald-400';
             estadoCorreoMensaje.textContent =
                 'El servidor SMTP aceptó la notificación.';
         }
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm';
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-600 shadow-sm dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-400';
 
             estadoCorreoIcono.innerHTML =
                 '<i data-lucide="mail-check" stroke-width="1.8" class="h-5 w-5"></i>';
@@ -1075,16 +1075,16 @@ const body = [
                     outlookComposeUrl;
 
                 btnReportarPersistente.className =
-                    'group/report inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md active:scale-[0.98]';
+                    'group/report inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 shadow-sm transition-all duration-200 hover:border-amber-400 hover:bg-amber-100 hover:shadow-md dark:border-amber-800 dark:bg-amber-950/45 dark:text-amber-300 dark:hover:border-amber-700 dark:hover:bg-amber-900/55 active:scale-[0.98]';
             }
         }
 
         if (modalResultadoIcono) {
             modalResultadoIcono.className =
-                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm';
+                'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 shadow-sm dark:border-amber-800 dark:bg-amber-950/45';
 
             modalResultadoIcono.innerHTML =
-                '<i data-lucide="mail-warning" stroke-width="1.8" class="h-8 w-8 text-amber-600"></i>';
+                '<i data-lucide="mail-warning" stroke-width="1.8" class="h-8 w-8 text-amber-600 dark:text-amber-400"></i>';
         }
 
         if (modalResultadoTitulo) {
@@ -1094,26 +1094,26 @@ const body = [
 
         if (estadoCorreo) {
             estadoCorreo.className =
-                'rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 p-5 text-left shadow-sm';
+                'rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 p-5 text-left shadow-sm dark:border-amber-800 dark:from-amber-950/45 dark:via-slate-900 dark:to-orange-950/30';
         }
 
         if (estadoCorreoTitulo) {
             estadoCorreoTitulo.className =
-                'text-sm font-semibold text-amber-800';
+                'text-sm font-semibold text-amber-800 dark:text-amber-300';
             estadoCorreoTitulo.textContent =
                 'No se pudo enviar el correo';
         }
 
         if (estadoCorreoMensaje) {
             estadoCorreoMensaje.className =
-                'mt-1.5 text-xs leading-relaxed text-amber-700';
+                'mt-1.5 text-xs leading-relaxed text-amber-700 dark:text-amber-400';
             estadoCorreoMensaje.textContent =
                 'El documento quedó registrado y puede descargarse. El fallo SMTP fue guardado para revisión.';
         }
 
         if (estadoCorreoIcono) {
             estadoCorreoIcono.className =
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-white text-amber-600 shadow-sm';
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-white text-amber-600 shadow-sm dark:border-amber-800 dark:bg-slate-900 dark:text-amber-400';
 
             estadoCorreoIcono.innerHTML =
                 '<i data-lucide="mail-warning" stroke-width="1.8" class="h-5 w-5"></i>';
@@ -1154,7 +1154,7 @@ const body = [
         const configuraciones = {
             success: {
                 clase:
-                    'inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm',
+                    'inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/45 dark:text-emerald-300',
 
                 punto:
                     'bg-emerald-500',
@@ -1165,7 +1165,7 @@ const body = [
 
             queued: {
                 clase:
-                    'inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm',
+                    'inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm dark:border-blue-800 dark:bg-blue-950/45 dark:text-blue-300',
 
                 punto:
                     'bg-blue-500',
@@ -1176,7 +1176,7 @@ const body = [
 
             warning: {
                 clase:
-                    'inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 shadow-sm',
+                    'inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 shadow-sm dark:border-amber-800 dark:bg-amber-950/45 dark:text-amber-300',
 
                 punto:
                     'bg-amber-500',
@@ -1202,7 +1202,7 @@ const body = [
 
         if (smtpEstadoPrevio) {
             smtpEstadoPrevio.className =
-                'inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 shadow-sm';
+                'inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 shadow-sm dark:border-red-800 dark:bg-red-950/45 dark:text-red-300';
 
             smtpEstadoPrevio.innerHTML =
                 '<span class="h-2.5 w-2.5 shrink-0 rounded-full bg-red-500"></span> No se pudo generar ni notificar la gestión';
@@ -1324,7 +1324,7 @@ const body = [
             outlookUrl;
 
         btnReportarPersistente.className =
-            'group/report inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-800 shadow-sm transition-all duration-200 hover:border-red-400 hover:bg-red-100 hover:shadow-md active:scale-[0.98]';
+            'group/report inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-800 shadow-sm transition-all duration-200 hover:border-red-400 hover:bg-red-100 hover:shadow-md dark:border-red-800 dark:bg-red-950/45 dark:text-red-300 dark:hover:border-red-700 dark:hover:bg-red-900/55 active:scale-[0.98]';
 
         if (window.lucide) lucide.createIcons();
     }

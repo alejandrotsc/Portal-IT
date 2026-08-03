@@ -28,9 +28,9 @@
 
         @if(session('success'))
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800 shadow-sm dark:!border-emerald-800/70 dark:!bg-emerald-950/35 dark:!text-emerald-200 dark:shadow-black/20">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/60 dark:text-emerald-300">
 
                     <i
                         data-lucide="circle-check"
@@ -58,7 +58,7 @@
 
                 <div class="flex items-start gap-4">
 
-                    <div class="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-primary/10 text-primary">
+                    <div class="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm dark:!border-blue-800/70 dark:!bg-blue-950/45 dark:!text-blue-400 dark:shadow-black/20">
 
                         <i
                             data-lucide="bell"
@@ -80,7 +80,7 @@
 
                             @if($totalNoLeidas > 0)
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/10 bg-primary/10 text-xs font-semibold text-primary dark:!border-blue-800/60 dark:!bg-blue-950/45 dark:!text-blue-300">
 
                                     <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
 
@@ -120,7 +120,7 @@
 
                         <button
                             type="submit"
-                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-primary/20 bg-primary/5 text-sm font-semibold text-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-primary/20 bg-primary/5 text-sm font-semibold text-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:shadow-md active:translate-y-0 dark:!border-blue-800/70 dark:!bg-blue-950/30 dark:!text-blue-300 dark:hover:!border-blue-600/70 dark:hover:!bg-blue-950/55 dark:hover:shadow-black/20">
 
                             <i
                                 data-lucide="check-check"
@@ -144,10 +144,10 @@
 
         {{-- Listado --}}
 
-        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <section class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:!border-slate-700/70 dark:!bg-slate-900/70 dark:shadow-black/25">
 
 
-            <div class="flex items-center justify-between gap-4 px-6 py-5 border-b border-border">
+            <div class="flex items-center justify-between gap-4 border-b border-border bg-white/60 px-6 py-5 dark:!border-slate-700/70 dark:!bg-slate-900/90">
 
                 <div>
 
@@ -183,7 +183,7 @@
 
 
 
-            <div class="divide-y divide-border">
+            <div class="divide-y divide-border dark:!divide-slate-700/70">
 
                 @forelse($notificaciones as $notificacion)
 
@@ -201,19 +201,19 @@
 
                         $clasesIcono = match($tipo) {
                             'pase' =>
-                                'bg-blue-500/10 text-blue-600',
+                                'bg-blue-500/10 text-blue-600 dark:bg-blue-950/55 dark:text-blue-300',
 
                             'incidencia' =>
-                                'bg-amber-500/10 text-amber-600',
+                                'bg-amber-500/10 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300',
 
                             'solicitud' =>
-                                'bg-emerald-500/10 text-emerald-600',
+                                'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300',
 
                             'aviso' =>
-                                'bg-violet-500/10 text-violet-600',
+                                'bg-violet-500/10 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300',
 
                             default =>
-                                'bg-primary/10 text-primary',
+                                'bg-primary/10 text-primary dark:bg-blue-950/50 dark:text-blue-300',
                         };
 
                     @endphp
@@ -225,8 +225,8 @@
                             $notificacion->id
                         ) }}"
                         @class([
-                            'group flex items-start gap-4 px-6 py-5 transition-colors duration-200 hover:bg-primary/[0.025]',
-                            'bg-primary/[0.035]' =>
+                            'group flex items-start gap-4 px-6 py-5 transition-colors duration-200 hover:bg-primary/[0.025] dark:hover:!bg-slate-800/55',
+                            'bg-primary/[0.035] dark:!bg-blue-950/20' =>
                                 $estaSinLeer,
                         ])>
 
@@ -299,19 +299,19 @@
                                 <span
                                     @class([
                                         'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium',
-                                        'bg-blue-500/10 text-blue-700' =>
+                                        'bg-blue-500/10 text-blue-700 dark:bg-blue-950/55 dark:text-blue-300' =>
                                             $tipo === 'pase',
 
-                                        'bg-amber-500/10 text-amber-700' =>
+                                        'bg-amber-500/10 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' =>
                                             $tipo === 'incidencia',
 
-                                        'bg-emerald-500/10 text-emerald-700' =>
+                                        'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' =>
                                             $tipo === 'solicitud',
 
-                                        'bg-violet-500/10 text-violet-700' =>
+                                        'bg-violet-500/10 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300' =>
                                             $tipo === 'aviso',
 
-                                        'bg-primary/10 text-primary' =>
+                                        'bg-primary/10 text-primary dark:bg-blue-950/50 dark:text-blue-300' =>
                                             ! in_array(
                                                 $tipo,
                                                 [
@@ -364,9 +364,9 @@
 
                 @empty
 
-                    <div class="px-6 py-16 text-center">
+                    <div class="bg-white/30 px-6 py-16 text-center dark:!bg-slate-900/40">
 
-                        <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-2xl bg-primary/5 text-primary">
+                        <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-2xl border border-primary/10 bg-primary/5 text-primary dark:!border-blue-800/60 dark:!bg-blue-950/35 dark:!text-blue-400">
 
                             <i
                                 data-lucide="bell-off"
@@ -398,7 +398,7 @@
 
             @if($notificaciones->hasPages())
 
-                <div class="px-6 py-4 border-t border-border bg-muted/20">
+                <div class="border-t border-border bg-muted/20 px-6 py-4 dark:!border-slate-700/70 dark:!bg-slate-950/30 [&_a]:dark:!border-slate-700 [&_a]:dark:!bg-slate-900 [&_a]:dark:!text-slate-300 [&_a:hover]:dark:!bg-slate-800 [&_span]:dark:!border-slate-700 [&_span]:dark:!text-slate-400 [&_span[aria-current='page']_span]:dark:!border-blue-600 [&_span[aria-current='page']_span]:dark:!bg-blue-600 [&_span[aria-current='page']_span]:dark:!text-white">
 
                     {{ $notificaciones->links() }}
 

@@ -69,7 +69,7 @@
 
                 <div>
 
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary dark:border-blue-800/60 dark:bg-blue-950/35 dark:text-blue-300">
 
                         <i
                             data-lucide="clipboard-check"
@@ -96,7 +96,7 @@
 
                     <a
                         href="{{ route('memorandos.pase_temporal') }}"
-                        class="group/menor inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-primary/20 bg-primary/5 text-primary text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md active:translate-y-0">
+                        class="group/menor inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-primary/20 bg-primary/5 text-primary text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md dark:border-blue-800/60 dark:bg-blue-950/35 dark:text-blue-300 dark:hover:border-blue-700/80 dark:hover:bg-blue-900/50 active:translate-y-0">
 
                         <i
                             data-lucide="clock-3"
@@ -140,13 +140,13 @@
 
                 {{-- Total --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 dark:border-blue-900/70 dark:from-blue-950/45 dark:via-slate-900 dark:to-indigo-950/30 dark:hover:border-blue-700/70 dark:hover:shadow-black/20">
 
                     <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-400 dark:group-hover:bg-blue-900/55">
 
                             <i
                                 data-lucide="files"
@@ -175,13 +175,13 @@
 
                 {{-- Menores --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-cyan-200/60 bg-gradient-to-br from-cyan-50 via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg hover:shadow-cyan-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-cyan-200/60 bg-gradient-to-br from-cyan-50 via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg hover:shadow-cyan-500/10 dark:border-cyan-900/70 dark:from-cyan-950/40 dark:via-slate-900 dark:to-blue-950/30 dark:hover:border-cyan-700/70 dark:hover:shadow-black/20">
 
                     <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-cyan-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-cyan-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-cyan-500/10 text-cyan-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-cyan-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-cyan-500/10 text-cyan-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-cyan-100 dark:bg-cyan-500/15 dark:text-cyan-400 dark:group-hover:bg-cyan-900/55">
 
                             <i
                                 data-lucide="clock-3"
@@ -210,13 +210,13 @@
 
                 {{-- Mayores --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-violet-200/60 bg-gradient-to-br from-violet-50 via-white to-purple-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-violet-200/60 bg-gradient-to-br from-violet-50 via-white to-purple-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/10 dark:border-violet-900/70 dark:from-violet-950/40 dark:via-slate-900 dark:to-purple-950/30 dark:hover:border-violet-700/70 dark:hover:shadow-black/20">
 
                     <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-violet-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-violet-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-violet-500/10 text-violet-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-violet-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-violet-500/10 text-violet-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-violet-100 dark:bg-violet-500/15 dark:text-violet-400 dark:group-hover:bg-violet-900/55">
 
                             <i
                                 data-lucide="file-check-2"
@@ -250,12 +250,12 @@
 
         {{-- Listado --}}
 
-        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md">
+        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md dark:border-slate-700/70 dark:hover:shadow-black/20">
 
 
             {{-- Cabecera y filtros --}}
 
-            <div class="px-5 py-5 border-b border-border">
+            <div class="px-5 py-5 border-b border-border dark:border-slate-700/70">
 
                 <div class="mb-5">
 
@@ -278,18 +278,18 @@
 
                     {{-- Mes --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="group/field flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700/70 dark:bg-slate-900/80 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="calendar-days"
                             stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none transition-colors group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400">
                         </i>
 
                         <select
                             id="mes"
                             name="mes"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 dark:text-slate-200">
 
                             @foreach($meses as $numero => $nombre)
 
@@ -312,7 +312,7 @@
                         <i
                             data-lucide="chevron-down"
                             stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none transition-colors group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400">
                         </i>
 
                     </div>
@@ -320,18 +320,18 @@
 
                     {{-- Año --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="group/field flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700/70 dark:bg-slate-900/80 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="calendar-range"
                             stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none transition-colors group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400">
                         </i>
 
                         <select
                             id="anio"
                             name="anio"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 dark:text-slate-200">
 
                             @foreach($aniosDisponibles as $anioDisponible)
 
@@ -354,7 +354,7 @@
                         <i
                             data-lucide="chevron-down"
                             stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none transition-colors group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400">
                         </i>
 
                     </div>
@@ -362,18 +362,18 @@
 
                     {{-- Tipo --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="group/field flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700/70 dark:bg-slate-900/80 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="list-filter"
                             stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none transition-colors group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400">
                         </i>
 
                         <select
                             id="tipo"
                             name="tipo"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 dark:text-slate-200">
 
                             <option
                                 value="todos"
@@ -398,7 +398,7 @@
                         <i
                             data-lucide="chevron-down"
                             stroke-width="1.8"
-                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none">
+                            class="w-4 h-4 shrink-0 text-muted-foreground pointer-events-none transition-colors group-focus-within/field:text-blue-600 dark:text-slate-400 dark:group-focus-within/field:text-blue-400">
                         </i>
 
                     </div>
@@ -432,7 +432,7 @@
                             <a
                                 href="{{ route('memorandos.mis-pases') }}"
                                 title="Limpiar filtros"
-                                class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary active:translate-y-0">
+                                class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 active:translate-y-0">
 
                                 <i
                                     data-lucide="rotate-ccw"
@@ -457,7 +457,7 @@
 
                 <table class="w-full min-w-[1050px]">
 
-                    <thead class="border-b border-border bg-muted/40">
+                    <thead class="border-b border-border bg-muted/40 dark:border-slate-700/70 dark:bg-slate-800/45">
 
                         <tr class="text-left">
 
@@ -490,7 +490,7 @@
                     </thead>
 
 
-                    <tbody class="divide-y divide-border">
+                    <tbody class="divide-y divide-border dark:divide-slate-700/70">
 
                         @forelse($memorandos as $memorando)
 
@@ -518,7 +518,7 @@
                             @endphp
 
 
-                            <tr class="group transition-colors duration-200 hover:bg-primary/[0.025]">
+                            <tr class="group transition-colors duration-200 hover:bg-primary/[0.025] dark:hover:bg-blue-950/20">
 
 
                                 {{-- Pase --}}
@@ -576,10 +576,10 @@
                                         @class([
                                             'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium',
 
-                                            'border-sky-200 bg-sky-50 text-sky-700' =>
+                                            'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950/45 dark:text-sky-300' =>
                                                 $esTemporal,
 
-                                            'border-indigo-200 bg-indigo-50 text-indigo-700' =>
+                                            'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/45 dark:text-indigo-300' =>
                                                 ! $esTemporal,
                                         ])>
 
@@ -641,7 +641,7 @@
 
                                         @case('APROBADO')
 
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
 
                                                 <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500"></span>
 
@@ -654,7 +654,7 @@
 
                                         @case('RECHAZADO')
 
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-600">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-600 dark:bg-red-500/15 dark:text-red-300">
 
                                                 <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-500"></span>
 
@@ -667,7 +667,7 @@
 
                                         @case('ARCHIVADO')
 
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-xs font-medium text-slate-600">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-xs font-medium text-slate-600 dark:bg-slate-500/20 dark:text-slate-300">
 
                                                 <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-slate-400"></span>
 
@@ -680,7 +680,7 @@
 
                                         @case('EN_FIRMA')
 
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-xs font-medium text-blue-700">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
 
                                                 <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -699,7 +699,7 @@
 
                                         @case('ENVIADO_EMAIL')
 
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300">
 
                                                 <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-cyan-500"></span>
 
@@ -712,7 +712,7 @@
 
                                         @default
 
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
 
                                                 <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -765,7 +765,7 @@
                                                 'memorandos.show-pase',
                                                 $memorando
                                             ) }}"
-                                            class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-white text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                            class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-white text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 active:translate-y-0">
 
                                             Ver detalle
 
@@ -890,7 +890,7 @@
                 @endphp
 
 
-                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 dark:border-slate-700/70 dark:bg-slate-950/30 sm:flex-row sm:items-center sm:justify-between">
 
                     <p class="text-xs text-muted-foreground">
 
@@ -926,7 +926,7 @@
 
                             <span
                                 aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-600">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -942,7 +942,7 @@
                                 href="{{ $memorandos->previousPageUrl() }}"
                                 rel="prev"
                                 aria-label="Página anterior"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 active:translate-y-0">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -959,7 +959,7 @@
 
                             <a
                                 href="{{ $memorandos->url(1) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400">
 
                                 1
 
@@ -996,7 +996,7 @@
 
                                 <a
                                     href="{{ $memorandos->url($pagina) }}"
-                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 active:translate-y-0">
 
                                     {{ $pagina }}
 
@@ -1019,7 +1019,7 @@
 
                             <a
                                 href="{{ $memorandos->url($ultimaPagina) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 active:translate-y-0">
 
                                 {{ $ultimaPagina }}
 
@@ -1034,7 +1034,7 @@
                                 href="{{ $memorandos->nextPageUrl() }}"
                                 rel="next"
                                 aria-label="Página siguiente"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700/70 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-700/70 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 active:translate-y-0">
 
                                 <i
                                     data-lucide="chevron-right"
@@ -1048,7 +1048,7 @@
 
                             <span
                                 aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-600">
 
                                 <i
                                     data-lucide="chevron-right"

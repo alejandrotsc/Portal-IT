@@ -1,4 +1,14 @@
 {{-- Servicios frecuentes --}}
+
+<style>
+    .service-card-gradient {
+        background: var(--service-gradient-light);
+    }
+
+    .dark .service-card-gradient {
+        background: var(--service-gradient-dark);
+    }
+</style>
 <section>
 
     <div class="flex items-center justify-between mb-4">
@@ -32,21 +42,27 @@
                bg-card rounded-2xl border border-border p-5
                transition-all duration-300
                hover:-translate-y-1
-               hover:shadow-lg
-               hover:border-blue-200"
+               hover:shadow-lg dark:hover:shadow-black/20
+               hover:border-blue-200 dark:hover:border-blue-800"
     >
 
         {{-- Fondo degradado azul --}}
         <div
-            class="absolute inset-0 pointer-events-none
+            class="service-card-gradient absolute inset-0 pointer-events-none
                    opacity-40 group-hover:opacity-100
                    transition-opacity duration-300"
             style="
-                background: linear-gradient(
+                --service-gradient-light: linear-gradient(
                     135deg,
                     rgba(239, 246, 255, 0.95) 0%,
                     rgba(255, 255, 255, 0.20) 55%,
                     rgba(236, 254, 255, 0.90) 100%
+                );
+                --service-gradient-dark: linear-gradient(
+                    135deg,
+                    rgba(30, 58, 138, 0.30) 0%,
+                    rgba(17, 24, 39, 0.12) 55%,
+                    rgba(8, 47, 73, 0.26) 100%
                 );
             "
         ></div>
@@ -59,20 +75,20 @@
 
                 <div
                     class="w-11 h-11 rounded-xl
-                           bg-blue-100
+                           bg-blue-100 dark:bg-blue-950/50
                            flex items-center justify-center
                            transition-transform duration-300
                            group-hover:scale-105"
                 >
                     <i
                         data-lucide="clock"
-                        class="w-5 h-5 text-blue-600"
+                        class="w-5 h-5 text-blue-600 dark:text-blue-400"
                     ></i>
                 </div>
 
                 <i
                     data-lucide="arrow-right"
-                    class="w-4 h-4 text-blue-500
+                    class="w-4 h-4 text-blue-500 dark:text-blue-400
                            opacity-0 -translate-x-1
                            transition-all duration-300
                            group-hover:opacity-100
@@ -96,8 +112,8 @@
 
                 <span
                     class="inline-flex items-center rounded-full
-                           bg-blue-100 px-2.5 py-1
-                           text-[11px] font-medium text-blue-700"
+                           bg-blue-100 dark:bg-blue-950/50 px-2.5 py-1
+                           text-[11px] font-medium text-blue-700 dark:text-blue-300"
                 >
                     Acceso
                 </span>
@@ -121,21 +137,27 @@
                bg-card rounded-2xl border border-border p-5
                transition-all duration-300
                hover:-translate-y-1
-               hover:shadow-lg
-               hover:border-indigo-200"
+               hover:shadow-lg dark:hover:shadow-black/20
+               hover:border-indigo-200 dark:hover:border-indigo-800"
     >
 
         {{-- Fondo degradado índigo --}}
         <div
-            class="absolute inset-0 pointer-events-none
+            class="service-card-gradient absolute inset-0 pointer-events-none
                    opacity-40 group-hover:opacity-100
                    transition-opacity duration-300"
             style="
-                background: linear-gradient(
+                --service-gradient-light: linear-gradient(
                     135deg,
                     rgba(238, 242, 255, 0.95) 0%,
                     rgba(255, 255, 255, 0.20) 55%,
                     rgba(245, 243, 255, 0.90) 100%
+                );
+                --service-gradient-dark: linear-gradient(
+                    135deg,
+                    rgba(49, 46, 129, 0.30) 0%,
+                    rgba(17, 24, 39, 0.12) 55%,
+                    rgba(76, 29, 149, 0.24) 100%
                 );
             "
         ></div>
@@ -148,20 +170,20 @@
 
                 <div
                     class="w-11 h-11 rounded-xl
-                           bg-indigo-100
+                           bg-indigo-100 dark:bg-indigo-950/50
                            flex items-center justify-center
                            transition-transform duration-300
                            group-hover:scale-105"
                 >
                     <i
                         data-lucide="file-check"
-                        class="w-5 h-5 text-indigo-600"
+                        class="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                     ></i>
                 </div>
 
                 <i
                     data-lucide="arrow-right"
-                    class="w-4 h-4 text-indigo-500
+                    class="w-4 h-4 text-indigo-500 dark:text-indigo-400
                            opacity-0 -translate-x-1
                            transition-all duration-300
                            group-hover:opacity-100
@@ -185,8 +207,8 @@
 
                 <span
                     class="inline-flex items-center rounded-full
-                           bg-indigo-100 px-2.5 py-1
-                           text-[11px] font-medium text-indigo-700"
+                           bg-indigo-100 dark:bg-indigo-950/50 px-2.5 py-1
+                           text-[11px] font-medium text-indigo-700 dark:text-indigo-300"
                 >
                     Acceso extendido
                 </span>
@@ -210,21 +232,27 @@
                bg-card rounded-2xl border border-border p-5
                transition-all duration-300
                hover:-translate-y-1
-               hover:shadow-lg
-               hover:border-emerald-200"
+               hover:shadow-lg dark:hover:shadow-black/20
+               hover:border-emerald-200 dark:hover:border-emerald-800"
     >
 
         {{-- Fondo degradado verde --}}
         <div
-            class="absolute inset-0 pointer-events-none
+            class="service-card-gradient absolute inset-0 pointer-events-none
                    opacity-40 group-hover:opacity-100
                    transition-opacity duration-300"
             style="
-                background: linear-gradient(
+                --service-gradient-light: linear-gradient(
                     135deg,
                     rgba(236, 253, 245, 0.95) 0%,
                     rgba(255, 255, 255, 0.20) 55%,
                     rgba(240, 253, 250, 0.90) 100%
+                );
+                --service-gradient-dark: linear-gradient(
+                    135deg,
+                    rgba(6, 78, 59, 0.30) 0%,
+                    rgba(17, 24, 39, 0.12) 55%,
+                    rgba(19, 78, 74, 0.24) 100%
                 );
             "
         ></div>
@@ -237,20 +265,20 @@
 
                 <div
                     class="w-11 h-11 rounded-xl
-                           bg-emerald-100
+                           bg-emerald-100 dark:bg-emerald-950/50
                            flex items-center justify-center
                            transition-transform duration-300
                            group-hover:scale-105"
                 >
                     <i
                         data-lucide="clipboard-list"
-                        class="w-5 h-5 text-emerald-600"
+                        class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
                     ></i>
                 </div>
 
                 <i
                     data-lucide="arrow-right"
-                    class="w-4 h-4 text-emerald-500
+                    class="w-4 h-4 text-emerald-500 dark:text-emerald-400
                            opacity-0 -translate-x-1
                            transition-all duration-300
                            group-hover:opacity-100
@@ -274,8 +302,8 @@
 
                 <span
                     class="inline-flex items-center rounded-full
-                           bg-emerald-100 px-2.5 py-1
-                           text-[11px] font-medium text-emerald-700"
+                           bg-emerald-100 dark:bg-emerald-950/50 px-2.5 py-1
+                           text-[11px] font-medium text-emerald-700 dark:text-emerald-300"
                 >
                     Gestión
                 </span>
@@ -299,21 +327,27 @@
                bg-card rounded-2xl border border-border p-5
                transition-all duration-300
                hover:-translate-y-1
-               hover:shadow-lg
-               hover:border-orange-200"
+               hover:shadow-lg dark:hover:shadow-black/20
+               hover:border-orange-200 dark:hover:border-orange-800"
     >
 
         {{-- Fondo degradado naranja --}}
         <div
-            class="absolute inset-0 pointer-events-none
+            class="service-card-gradient absolute inset-0 pointer-events-none
                    opacity-40 group-hover:opacity-100
                    transition-opacity duration-300"
             style="
-                background: linear-gradient(
+                --service-gradient-light: linear-gradient(
                     135deg,
                     rgba(255, 247, 237, 0.95) 0%,
                     rgba(255, 255, 255, 0.20) 55%,
                     rgba(254, 242, 242, 0.90) 100%
+                );
+                --service-gradient-dark: linear-gradient(
+                    135deg,
+                    rgba(124, 45, 18, 0.30) 0%,
+                    rgba(17, 24, 39, 0.12) 55%,
+                    rgba(127, 29, 29, 0.22) 100%
                 );
             "
         ></div>
@@ -326,20 +360,20 @@
 
                 <div
                     class="w-11 h-11 rounded-xl
-                           bg-orange-100
+                           bg-orange-100 dark:bg-orange-950/50
                            flex items-center justify-center
                            transition-transform duration-300
                            group-hover:scale-105"
                 >
                     <i
                         data-lucide="circle-alert"
-                        class="w-5 h-5 text-orange-600"
+                        class="w-5 h-5 text-orange-600 dark:text-orange-400"
                     ></i>
                 </div>
 
                 <i
                     data-lucide="arrow-right"
-                    class="w-4 h-4 text-orange-500
+                    class="w-4 h-4 text-orange-500 dark:text-orange-400
                            opacity-0 -translate-x-1
                            transition-all duration-300
                            group-hover:opacity-100
@@ -363,8 +397,8 @@
 
                 <span
                     class="inline-flex items-center rounded-full
-                           bg-orange-100 px-2.5 py-1
-                           text-[11px] font-medium text-orange-700"
+                           bg-orange-100 dark:bg-orange-950/50 px-2.5 py-1
+                           text-[11px] font-medium text-orange-700 dark:text-orange-300"
                 >
                     Soporte
                 </span>

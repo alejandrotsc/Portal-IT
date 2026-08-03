@@ -563,7 +563,7 @@ return [
          */
         'num_predict' => (int) env(
             'CHATBOT_AI_NUM_PREDICT',
-            120
+            256
         ),
 
         /*
