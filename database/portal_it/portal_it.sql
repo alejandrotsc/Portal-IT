@@ -690,6 +690,93 @@ ON email_deliveries (
     recipient_email
 );
 
+
+CREATE TABLE guardias_soporte (
+    id BIGSERIAL PRIMARY KEY,
+
+    -- UsuarioTI asignado a la guardia
+    usuario_id BIGINT NOT NULL,
+
+    -- Administrador que realizó la asignación
+    creado_por BIGINT,
+
+    fecha DATE NOT NULL,
+    hora_inicio TIME WITHOUT TIME ZONE NOT NULL,
+    hora_fin TIME WITHOUT TIME ZONE NOT NULL,
+
+    ubicacion VARCHAR(10) NOT NULL,
+
+    observacion VARCHAR(500),
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP WITHOUT TIME ZONE
+        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP WITHOUT TIME ZONE
+        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restricciones
+    |--------------------------------------------------------------------------
+    */
+
+    CONSTRAINT guardias_soporte_fecha_unique
+        UNIQUE (fecha),
+
+    CONSTRAINT guardias_soporte_fecha_fin_semana_check
+        CHECK (
+            EXTRACT(ISODOW FROM fecha) IN (6, 7)
+        ),
+
+    CONSTRAINT guardias_soporte_horario_check
+        CHECK (
+            hora_fin > hora_inicio
+        ),
+
+    CONSTRAINT guardias_soporte_ubicacion_check
+        CHECK (
+            ubicacion IN ('TVC', 'CNT')
+        ),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones
+    |--------------------------------------------------------------------------
+    */
+
+    CONSTRAINT guardias_soporte_usuario_foreign
+        FOREIGN KEY (usuario_id)
+        REFERENCES public.usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT guardias_soporte_creado_por_foreign
+        FOREIGN KEY (creado_por)
+        REFERENCES public.usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+);
+
+CREATE INDEX guardias_soporte_usuario_fecha_index
+    ON public.guardias_soporte (
+        usuario_id,
+        fecha
+    );
+
+CREATE INDEX guardias_soporte_activo_fecha_index
+    ON public.guardias_soporte (
+        activo,
+        fecha
+    );
+
+CREATE INDEX guardias_soporte_ubicacion_index
+    ON public.guardias_soporte (
+        ubicacion
+    );
+
+
 -- ============================================================
 -- TIPOS DE MEMORANDO
 -- ============================================================

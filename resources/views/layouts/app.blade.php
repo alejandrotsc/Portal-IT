@@ -36,16 +36,28 @@
 
     {{--
         Aplica el tema guardado antes de cargar los estilos.
-        Esto evita que aparezca primero el light mode.
+        Esto evita que aparezca primero el modo claro.
     --}}
     <script>
         (() => {
-            const savedTheme = localStorage.getItem('theme');
+            try {
+                const savedTheme =
+                    localStorage.getItem(
+                        'theme'
+                    );
 
-            document.documentElement.classList.toggle(
-                'dark',
-                savedTheme === 'dark'
-            );
+                document.documentElement
+                    .classList
+                    .toggle(
+                        'dark',
+                        savedTheme === 'dark'
+                    );
+            } catch (error) {
+                console.warn(
+                    '[Tema] No fue posible recuperar el tema guardado.',
+                    error
+                );
+            }
         })();
     </script>
 
@@ -55,15 +67,25 @@
     {{-- Permite controlar dark mode mediante la clase .dark --}}
     <script>
         tailwind.config = {
-            darkMode: 'class'
+            darkMode: 'class',
         };
     </script>
 
-    {{-- Estilos compilados del portal --}}
+    {{-- Estilos compilados y personalizados del portal --}}
     <link
         rel="stylesheet"
         href="{{ asset('css/app.css') }}"
     >
+
+    {{--
+        Lucide se carga antes de Alpine para que los iconos estén
+        disponibles cuando Alpine inicialice el componente principal.
+        defer evita que la descarga detenga el procesamiento del HTML.
+    --}}
+    <script
+        defer
+        src="https://unpkg.com/lucide@latest"
+    ></script>
 
     {{-- Alpine --}}
     <script
@@ -71,11 +93,11 @@
         src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
     ></script>
 
-    {{-- Lucide --}}
-    <script src="https://unpkg.com/lucide@latest"></script>
+    {{-- JavaScript compilado mediante Vite --}}
+     @vite('resources/js/app.js')
 
-    {{-- JavaScript compilado con Vite --}}
-    @vite('resources/js/app.js')
+    {{-- Estilos específicos agregados por las vistas --}}
+    @stack('styles')
 </head>
 
 <body
@@ -109,6 +131,13 @@
         </div>
     </footer>
 
+    {{--
+        Define portalApp() desde el archivo público actual.
+        Se conserva esta ubicación para no cambiar su funcionamiento.
+    --}}
     <script src="{{ asset('js/portal.js') }}"></script>
+
+    {{-- Scripts específicos agregados por las vistas --}}
+    @stack('scripts')
 </body>
 </html>

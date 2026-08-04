@@ -1841,64 +1841,45 @@ public function showPase(
 
 
     /*
-    |--------------------------------------------------------------------------
-    | Notificar nuevo pase a los administradores
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Notificar nuevo pase al equipo administrativo
+|--------------------------------------------------------------------------
+|
+| La notificación se envía a administradores y usuarios TI activos.
+|
+*/
 
-    private function notificarNuevoPase(
-        Memorando $memorando
-    ): void {
-        try {
-            $memorando->loadMissing([
-                'tipo',
-                'solicitante',
-            ]);
+private function notificarNuevoPase(
+    Memorando $memorando
+): void {
+    try {
+        $memorando->loadMissing([
+            'tipo',
+            'solicitante',
+        ]);
 
-            $administradores =
-                Usuario::query()
-                    ->where(
-                        'activo',
-                        true
-                    )
-                    ->whereHas(
-                        'rol',
-                        function ($query) {
-                            $query->where(
-                                'nombre',
-                                'Administrador'
-                            );
-                        }
-                    )
-                    ->get();
+        $equipoAdministrativo = Usuario::query()
+            ->where(
+                'activo',
+                true
+            )
+            ->whereHas(
+                'rol',
+                function ($query) {
+                    $query->whereIn(
+                        'nombre',
+                        [
+                            'Administrador',
+                            'UsuarioTI',
+                        ]
+                    );
+                }
+            )
+            ->get();
 
-            if ($administradores->isEmpty()) {
-                Log::warning(
-                    'No existen administradores activos para recibir la notificación del nuevo pase.',
-                    [
-                        'memorando_id' =>
-                            $memorando->id,
-
-                        'tipo' =>
-                            $memorando->tipo?->slug,
-
-                        'solicitante_id' =>
-                            $memorando->solicitante_id,
-                    ]
-                );
-
-                return;
-            }
-
-            Notification::send(
-                $administradores,
-                new NuevoPaseNotification(
-                    $memorando
-                )
-            );
-        } catch (\Throwable $exception) {
-            Log::error(
-                'No se pudo enviar la notificación del nuevo pase a los administradores.',
+        if ($equipoAdministrativo->isEmpty()) {
+            Log::warning(
+                'No existen administradores o usuarios TI activos para recibir la notificación del nuevo pase.',
                 [
                     'memorando_id' =>
                         $memorando->id,
@@ -1908,13 +1889,37 @@ public function showPase(
 
                     'solicitante_id' =>
                         $memorando->solicitante_id,
-
-                    'error' =>
-                        $exception->getMessage(),
                 ]
             );
+
+            return;
         }
+
+        Notification::send(
+            $equipoAdministrativo,
+            new NuevoPaseNotification(
+                $memorando
+            )
+        );
+    } catch (\Throwable $exception) {
+        Log::error(
+            'No se pudo enviar la notificación del nuevo pase al equipo administrativo.',
+            [
+                'memorando_id' =>
+                    $memorando->id,
+
+                'tipo' =>
+                    $memorando->tipo?->slug,
+
+                'solicitante_id' =>
+                    $memorando->solicitante_id,
+
+                'error' =>
+                    $exception->getMessage(),
+            ]
+        );
     }
+}
 
 
     /*

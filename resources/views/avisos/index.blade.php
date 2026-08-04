@@ -17,7 +17,7 @@
 
                 <div>
 
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/[0.06] text-primary text-xs font-semibold">
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/[0.06] text-primary text-xs font-semibold dark:border-blue-700/40">
 
                         <i
                             data-lucide="megaphone"
@@ -68,9 +68,9 @@
 
         @if(session('success'))
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300">
 
                     <i
                         data-lucide="circle-check"
@@ -93,9 +93,9 @@
 
         @if(session('warning'))
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-amber-100 text-amber-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-300">
 
                     <i
                         data-lucide="triangle-alert"
@@ -118,9 +118,9 @@
 
         @if($errors->any())
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-300">
 
                     <i
                         data-lucide="circle-alert"
@@ -150,20 +150,25 @@
 
         {{-- Resumen --}}
 
-        <section class="mb-8">
+        <section class="mb-10">
+
+            <div class="mb-5">
+                <h2 class="text-base font-semibold text-foreground">Resumen de avisos</h2>
+                <p class="mt-1 text-sm text-muted-foreground">Estado actual de las comunicaciones publicadas en el portal.</p>
+            </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
 
                 {{-- Total --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 motion-safe:hover:-translate-y-1">
+                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 motion-safe:hover:-translate-y-1 dark:border-blue-900/60 dark:from-blue-950/30 dark:via-slate-900 dark:to-indigo-950/20">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:bg-blue-400/20 motion-safe:group-hover:scale-150"></div>
+                    <div class="pointer-events-none absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:bg-blue-400/20 motion-safe:group-hover:scale-150"></div>
 
-                    <div class="relative flex items-center gap-4">
+                    <div class="relative flex flex-wrap items-center justify-between gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:bg-blue-100 motion-safe:group-hover:scale-105">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:bg-blue-100 motion-safe:group-hover:scale-105 dark:text-blue-400 dark:group-hover:bg-blue-950/70">
 
                             <i
                                 data-lucide="files"
@@ -173,7 +178,12 @@
 
                         </div>
 
-                        <div>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-400">
+                            <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                            Total
+                        </span>
+
+                        <div class="mt-1 w-full min-w-0">
 
                             <p class="text-2xl font-semibold text-foreground leading-none">
 
@@ -197,13 +207,13 @@
 
                 {{-- Visibles --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10 motion-safe:hover:-translate-y-1">
+                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10 motion-safe:hover:-translate-y-1 dark:border-emerald-900/60 dark:from-emerald-950/30 dark:via-slate-900 dark:to-teal-950/20">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 transition-all duration-500 group-hover:bg-emerald-400/20 motion-safe:group-hover:scale-150"></div>
+                    <div class="pointer-events-none absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 transition-all duration-500 group-hover:bg-emerald-400/20 motion-safe:group-hover:scale-150"></div>
 
-                    <div class="relative flex items-center gap-4">
+                    <div class="relative flex flex-wrap items-center justify-between gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:bg-emerald-100 motion-safe:group-hover:scale-105">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:bg-emerald-100 motion-safe:group-hover:scale-105 dark:text-emerald-400 dark:group-hover:bg-emerald-950/70">
 
                             <i
                                 data-lucide="eye"
@@ -213,7 +223,12 @@
 
                         </div>
 
-                        <div>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            Visibles
+                        </span>
+
+                        <div class="mt-1 w-full min-w-0">
 
                             <p class="text-2xl font-semibold text-foreground leading-none">
 
@@ -237,13 +252,13 @@
 
                 {{-- Programados --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 motion-safe:hover:-translate-y-1">
+                <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 motion-safe:hover:-translate-y-1 dark:border-amber-900/60 dark:from-amber-950/30 dark:via-slate-900 dark:to-orange-950/20">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-amber-400/10 transition-all duration-500 group-hover:bg-amber-400/20 motion-safe:group-hover:scale-150"></div>
+                    <div class="pointer-events-none absolute -right-8 -top-8 w-24 h-24 rounded-full bg-amber-400/10 transition-all duration-500 group-hover:bg-amber-400/20 motion-safe:group-hover:scale-150"></div>
 
-                    <div class="relative flex items-center gap-4">
+                    <div class="relative flex flex-wrap items-center justify-between gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:bg-amber-100 motion-safe:group-hover:scale-105">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:bg-amber-100 motion-safe:group-hover:scale-105 dark:text-amber-400 dark:group-hover:bg-amber-950/70">
 
                             <i
                                 data-lucide="calendar-clock"
@@ -253,7 +268,12 @@
 
                         </div>
 
-                        <div>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+                            <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                            Programados
+                        </span>
+
+                        <div class="mt-1 w-full min-w-0">
 
                             <p class="text-2xl font-semibold text-foreground leading-none">
 
@@ -277,13 +297,13 @@
 
                 {{-- Inactivos --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100/60 p-5 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-500/10 motion-safe:hover:-translate-y-1">
+                <div class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100/60 p-5 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-500/10 motion-safe:hover:-translate-y-1 dark:border-slate-700 dark:from-slate-800/70 dark:via-slate-900 dark:to-slate-800/40">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-slate-400/10 transition-all duration-500 group-hover:bg-slate-400/20 motion-safe:group-hover:scale-150"></div>
+                    <div class="pointer-events-none absolute -right-8 -top-8 w-24 h-24 rounded-full bg-slate-400/10 transition-all duration-500 group-hover:bg-slate-400/20 motion-safe:group-hover:scale-150"></div>
 
-                    <div class="relative flex items-center gap-4">
+                    <div class="relative flex flex-wrap items-center justify-between gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-slate-500/10 text-slate-600 transition-all duration-300 group-hover:bg-slate-200 motion-safe:group-hover:scale-105">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-slate-500/10 text-slate-600 transition-all duration-300 group-hover:bg-slate-200 motion-safe:group-hover:scale-105 dark:text-slate-400 dark:group-hover:bg-slate-800">
 
                             <i
                                 data-lucide="eye-off"
@@ -293,7 +313,12 @@
 
                         </div>
 
-                        <div>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-400">
+                            <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
+                            Inactivos
+                        </span>
+
+                        <div class="mt-1 w-full min-w-0">
 
                             <p class="text-2xl font-semibold text-foreground leading-none">
 
@@ -321,12 +346,12 @@
 
         {{-- Listado --}}
 
-        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/10 hover:shadow-md">
+        <section class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-slate-700">
 
 
             {{-- Cabecera y filtros --}}
 
-            <div class="px-5 py-5 border-b border-border">
+            <div class="px-5 py-5 border-b border-border dark:border-slate-700">
 
                 <div class="mb-5">
 
@@ -353,7 +378,7 @@
 
                     {{-- Buscar --}}
 
-                    <div class="group flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white shadow-sm transition-all duration-200 hover:border-primary/40 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 focus-within:shadow-md">
+                    <div class="group flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card shadow-sm transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 focus-within:shadow-md dark:border-slate-700 dark:focus-within:border-blue-500">
 
                         <i
                             data-lucide="search"
@@ -375,7 +400,7 @@
 
                     {{-- Estado --}}
 
-                    <div class="group flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white shadow-sm transition-all duration-200 hover:border-primary/40 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 focus-within:shadow-md">
+                    <div class="group flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card shadow-sm transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 focus-within:shadow-md dark:border-slate-700 dark:focus-within:border-blue-500">
 
                         <i
                             data-lucide="activity"
@@ -385,7 +410,7 @@
 
                         <select
                             name="estado"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                             <option value="">
                                 Todos los estados
@@ -474,7 +499,7 @@
                             <a
                                 href="{{ route('avisos.index') }}"
                                 title="Limpiar filtros"
-                                class="group/clear inline-flex items-center justify-center w-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground shadow-sm transition-all duration-200 hover:text-red-600 hover:border-red-500/30 hover:bg-red-500/5 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
+                                class="group/clear inline-flex items-center justify-center w-10 shrink-0 rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-all duration-200 hover:text-red-600 hover:border-red-500/30 hover:bg-red-500/5 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] dark:border-slate-700 dark:hover:border-red-900/70 dark:hover:bg-red-950/30 dark:hover:text-red-400">
 
                                 <i
                                     data-lucide="x"
@@ -496,11 +521,11 @@
 
             {{-- Tabla --}}
 
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto dark:bg-slate-900/30">
 
                 <table class="w-full min-w-[1050px]">
 
-                    <thead class="bg-muted/40 border-b border-border">
+                    <thead class="bg-muted/40 border-b border-border dark:border-slate-700 dark:bg-slate-900/80">
 
                         <tr class="text-left">
 
@@ -533,7 +558,7 @@
                     </thead>
 
 
-                    <tbody class="divide-y divide-border">
+                    <tbody class="divide-y divide-border dark:divide-slate-800">
 
                         @forelse($avisos as $aviso)
 
@@ -556,7 +581,7 @@
                             @endphp
 
 
-                            <tr class="group/row transition-colors duration-200 hover:bg-primary/[0.025]">
+                            <tr class="group/row transition-colors duration-200 hover:bg-primary/[0.025] dark:bg-slate-900/20 dark:hover:bg-slate-800/40">
 
 
                                 {{-- Aviso --}}
@@ -661,7 +686,7 @@
 
                                     @if(! $aviso->activo)
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-600 text-xs font-medium">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-600 text-xs font-medium dark:text-slate-400">
 
                                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
 
@@ -671,7 +696,7 @@
 
                                     @elseif($programado)
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-medium">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-medium dark:text-amber-400">
 
                                             <i
                                                 data-lucide="clock-3"
@@ -685,7 +710,7 @@
 
                                     @elseif($finalizado)
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-600 text-xs font-medium">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-600 text-xs font-medium dark:text-slate-400">
 
                                             <i
                                                 data-lucide="calendar-x"
@@ -699,7 +724,7 @@
 
                                     @elseif($visible)
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-xs font-medium">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-xs font-medium dark:text-emerald-400">
 
                                             <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -753,7 +778,7 @@
                                                 $aviso
                                             ) }}"
                                             title="Editar aviso"
-                                            class="group/edit inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-lg border border-border bg-white text-muted-foreground shadow-sm transition-all duration-200 hover:text-primary hover:border-primary/30 hover:bg-primary/5 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95]">
+                                            class="group/edit inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-all duration-200 hover:text-primary hover:border-primary/30 hover:bg-primary/5 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95] dark:border-slate-700">
 
                                             <i
                                                 data-lucide="pencil"
@@ -786,7 +811,7 @@
                                                     : 'Activar aviso'
                                                 }}"
                                                 @class([
-                                                    'group/status inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-lg border bg-white text-muted-foreground shadow-sm transition-all duration-200 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95]',
+                                                    'group/status inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-lg border bg-card text-muted-foreground shadow-sm transition-all duration-200 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95] dark:border-slate-700',
 
                                                     'border-border hover:text-red-600 hover:border-red-500/30 hover:bg-red-500/5' =>
                                                         $aviso->activo,
@@ -898,7 +923,7 @@
                 @endphp
 
 
-                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700 dark:bg-blue-950/10">
 
                     <p class="text-xs text-muted-foreground">
 
@@ -936,7 +961,7 @@
 
                             <span
                                 aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-600">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -952,7 +977,7 @@
                                 href="{{ $avisos->previousPageUrl() }}"
                                 rel="prev"
                                 aria-label="Página anterior"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5 dark:border-slate-700">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -972,7 +997,7 @@
 
                             <a
                                 href="{{ $avisos->url(1) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5 dark:border-slate-700">
 
                                 1
 
@@ -1012,7 +1037,7 @@
 
                                 <a
                                     href="{{ $avisos->url($pagina) }}"
-                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5 dark:border-slate-700">
 
                                     {{ $pagina }}
 
@@ -1043,7 +1068,7 @@
 
                             <a
                                 href="{{ $avisos->url($ultimaPagina) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5 dark:border-slate-700">
 
                                 {{ $ultimaPagina }}
 
@@ -1061,7 +1086,7 @@
                                 href="{{ $avisos->nextPageUrl() }}"
                                 rel="next"
                                 aria-label="Página siguiente"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm motion-safe:hover:-translate-y-0.5 dark:border-slate-700">
 
                                 <i
                                     data-lucide="chevron-right"
@@ -1075,7 +1100,7 @@
 
                             <span
                                 aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-600">
 
                                 <i
                                     data-lucide="chevron-right"

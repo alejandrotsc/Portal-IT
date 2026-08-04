@@ -36,7 +36,7 @@
 
                 <div>
 
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full border border-primary/10 bg-primary/5 text-xs font-semibold text-primary dark:border-blue-800/60 dark:bg-blue-950/30">
 
                         <i
                             data-lucide="clipboard-list"
@@ -72,9 +72,9 @@
 
         @if(session('success'))
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
 
                     <i
                         data-lucide="circle-check"
@@ -97,9 +97,9 @@
 
         @if(session('warning'))
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800 dark:border-amber-700/40 dark:bg-amber-950/25 dark:text-amber-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-amber-100 text-amber-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
 
                     <i
                         data-lucide="triangle-alert"
@@ -122,9 +122,9 @@
 
         @if($errors->any())
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
 
                     <i
                         data-lucide="circle-alert"
@@ -154,20 +154,32 @@
 
         {{-- Resumen --}}
 
-        <section class="mb-8">
+        <section class="mb-10">
+
+            <div class="mb-5">
+
+                <h2 class="text-base font-semibold text-foreground">
+                    Resumen de solicitudes
+                </h2>
+
+                <p class="mt-1 text-sm text-muted-foreground">
+                    Estado actual de las solicitudes registradas en el portal.
+                </p>
+
+            </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
 
                 {{-- Total --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 dark:border-blue-900/60 dark:from-blue-950/30 dark:via-slate-900 dark:to-indigo-950/20 dark:hover:border-blue-800/70">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-400/20"></div>
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-400/10 pointer-events-none transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 text-blue-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-400 dark:group-hover:bg-blue-900/50">
 
                             <i
                                 data-lucide="files"
@@ -201,13 +213,13 @@
 
                 {{-- Pendientes --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 dark:border-amber-700/40 dark:from-amber-950/25 dark:via-slate-900 dark:to-orange-950/20 dark:hover:border-amber-700/60">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-amber-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-amber-400/20"></div>
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-amber-400/10 pointer-events-none transition-all duration-500 group-hover:scale-150 group-hover:bg-amber-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-amber-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-400 dark:group-hover:bg-amber-900/40">
 
                             <i
                                 data-lucide="clock-3"
@@ -241,13 +253,13 @@
 
                 {{-- Finalizadas --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10 dark:border-emerald-900/60 dark:from-emerald-950/25 dark:via-slate-900 dark:to-teal-950/20 dark:hover:border-emerald-800/70">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-400/20"></div>
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-emerald-400/10 pointer-events-none transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-emerald-100">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-400 dark:group-hover:bg-emerald-900/40">
 
                             <i
                                 data-lucide="circle-check-big"
@@ -281,13 +293,13 @@
 
                 {{-- Canceladas --}}
 
-                <div class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-500/10">
+                <div class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-500/10 dark:border-slate-700 dark:from-slate-800/70 dark:via-slate-900 dark:to-slate-800/40 dark:hover:border-slate-600">
 
-                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-slate-400/10 transition-all duration-500 group-hover:scale-150 group-hover:bg-slate-400/20"></div>
+                    <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-slate-400/10 pointer-events-none transition-all duration-500 group-hover:scale-150 group-hover:bg-slate-400/20"></div>
 
                     <div class="relative flex items-center gap-4">
 
-                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-slate-500/10 text-slate-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-slate-200">
+                        <div class="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-slate-500/10 text-slate-600 transition-all duration-300 group-hover:scale-105 group-hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:group-hover:bg-slate-600">
 
                             <i
                                 data-lucide="circle-x"
@@ -325,12 +337,12 @@
 
         {{-- Listado --}}
 
-        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md">
+        <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden dark:border-slate-700">
 
 
             {{-- Cabecera y filtros --}}
 
-            <div class="px-5 py-5 border-b border-border">
+            <div class="px-5 py-5 border-b border-border dark:border-slate-700">
 
                 <div class="mb-5">
 
@@ -357,7 +369,7 @@
 
                     {{-- Búsqueda --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="search"
@@ -379,7 +391,7 @@
 
                     {{-- Estado --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="list-filter"
@@ -389,7 +401,7 @@
 
                         <select
                             name="estado"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                             <option value="">
                                 Todos los estados
@@ -439,7 +451,7 @@
 
                     {{-- Categoría --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="tags"
@@ -449,7 +461,7 @@
 
                         <select
                             name="categoria"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                             <option value="">
                                 Todas las categorías
@@ -485,7 +497,7 @@
 
                     {{-- Mes --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="calendar-days"
@@ -496,7 +508,7 @@
                         <select
                             id="mes"
                             name="mes"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                             @foreach($meses as $numero => $nombre)
 
@@ -527,7 +539,7 @@
 
                     {{-- Año --}}
 
-                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                         <i
                             data-lucide="calendar-range"
@@ -538,7 +550,7 @@
                         <select
                             id="anio"
                             name="anio"
-                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                             @foreach($aniosDisponibles as $anioDisponible)
 
@@ -597,7 +609,7 @@
                             <a
                                 href="{{ route('admin.solicitudes') }}"
                                 title="Limpiar filtros"
-                                class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary active:translate-y-0">
+                                class="group/clear inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-lg border border-border bg-card text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary active:translate-y-0 dark:border-slate-700">
 
                                 <i
                                     data-lucide="x"
@@ -619,11 +631,11 @@
 
             {{-- Tabla --}}
 
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto dark:bg-slate-900/30">
 
                 <table class="w-full min-w-[1050px]">
 
-                    <thead class="border-b border-border bg-muted/40">
+                    <thead class="border-b border-border bg-muted/40 dark:border-slate-700 dark:bg-slate-900/80">
 
                         <tr class="text-left">
 
@@ -656,11 +668,11 @@
                     </thead>
 
 
-                    <tbody class="divide-y divide-border">
+                    <tbody class="divide-y divide-border dark:divide-slate-800">
 
                         @forelse($solicitudes as $solicitud)
 
-                            <tr class="group transition-colors duration-200 hover:bg-primary/[0.025]">
+                            <tr class="group transition-colors duration-200 hover:bg-primary/[0.025] dark:bg-slate-900/20 dark:hover:bg-slate-800/40">
 
 
                                 {{-- Solicitud --}}
@@ -740,7 +752,7 @@
 
                                 <td class="px-5 py-4">
 
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 group-hover:border-blue-300 group-hover:bg-blue-100/70">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200/70 bg-blue-50 text-xs font-medium text-blue-700 transition-all duration-200 group-hover:border-blue-300 group-hover:bg-blue-100/70 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-400 dark:group-hover:border-blue-800 dark:group-hover:bg-blue-900/30">
 
                                         <i
                                             data-lucide="tag"
@@ -764,7 +776,7 @@
 
                                     @if($solicitud->estado === 'finalizada')
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
 
                                             <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500"></span>
 
@@ -774,7 +786,7 @@
 
                                     @elseif($solicitud->estado === 'cancelada')
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-600">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-xs font-medium text-red-600 dark:bg-red-500/15 dark:text-red-400">
 
                                             <span class="w-1.5 h-1.5 shrink-0 rounded-full bg-red-500"></span>
 
@@ -784,7 +796,7 @@
 
                                     @else
 
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
 
                                             <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -839,7 +851,7 @@
                                                 'admin.solicitudes.show',
                                                 $solicitud
                                             ) }}"
-                                            class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-white text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                            class="group/button inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-card text-xs font-semibold text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0 dark:border-slate-700">
 
                                             Ver detalle
 
@@ -972,7 +984,7 @@
                 @endphp
 
 
-                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-4 px-5 py-4 border-t border-border bg-blue-50/20 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700 dark:bg-blue-950/10">
 
 
                     {{-- Información --}}
@@ -1022,7 +1034,7 @@
 
                             <span
                                 aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-600">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -1038,7 +1050,7 @@
                                 href="{{ $solicitudes->previousPageUrl() }}"
                                 rel="prev"
                                 aria-label="Página anterior"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0 dark:border-slate-700">
 
                                 <i
                                     data-lucide="chevron-left"
@@ -1058,7 +1070,7 @@
 
                             <a
                                 href="{{ $solicitudes->url(1) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm dark:border-slate-700">
 
                                 1
 
@@ -1101,7 +1113,7 @@
 
                                 <a
                                     href="{{ $solicitudes->url($pagina) }}"
-                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                    class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0 dark:border-slate-700">
 
                                     {{ $pagina }}
 
@@ -1134,7 +1146,7 @@
 
                             <a
                                 href="{{ $solicitudes->url($ultimaPagina) }}"
-                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-white text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0 dark:border-slate-700">
 
                                 {{ $ultimaPagina }}
 
@@ -1152,7 +1164,7 @@
                                 href="{{ $solicitudes->nextPageUrl() }}"
                                 rel="next"
                                 aria-label="Página siguiente"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-white text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm active:translate-y-0 dark:border-slate-700">
 
                                 <i
                                     data-lucide="chevron-right"
@@ -1166,7 +1178,7 @@
 
                             <span
                                 aria-disabled="true"
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed">
+                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-slate-50 text-slate-300 cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-600">
 
                                 <i
                                     data-lucide="chevron-right"

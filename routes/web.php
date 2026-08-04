@@ -5,6 +5,7 @@ use App\Http\Controllers\AvisoController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailDeliveryController;
+use App\Http\Controllers\GuardiaSoporteController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\MemorandoController;
 use App\Http\Controllers\NotificacionController;
@@ -133,10 +134,6 @@ Route::middleware('guest')->group(function () {
     |--------------------------------------------------------------------------
     | Estado del correo de autenticación
     |--------------------------------------------------------------------------
-    |
-    | Ruta pública controlada mediante sesión. El controlador únicamente
-    | permite consultar el delivery_id almacenado para este navegador.
-    |
     */
 
     Route::get(
@@ -146,15 +143,9 @@ Route::middleware('guest')->group(function () {
             'emailStatus',
         ]
     )
-        ->whereNumber(
-            'emailDelivery'
-        )
-        ->middleware(
-            'throttle:60,1'
-        )
-        ->name(
-            'auth.email-status'
-        );
+        ->whereNumber('emailDelivery')
+        ->middleware('throttle:60,1')
+        ->name('auth.email-status');
 
 });
 
@@ -205,19 +196,28 @@ Route::middleware('auth')->group(function () {
 
     Route::get(
         '/notificaciones',
-        [NotificacionController::class, 'index']
+        [
+            NotificacionController::class,
+            'index',
+        ]
     )->name('notificaciones.index');
 
 
     Route::get(
         '/notificaciones/{notification}',
-        [NotificacionController::class, 'abrir']
+        [
+            NotificacionController::class,
+            'abrir',
+        ]
     )->name('notificaciones.abrir');
 
 
     Route::patch(
         '/notificaciones/marcar-todas/leidas',
-        [NotificacionController::class, 'marcarTodasComoLeidas']
+        [
+            NotificacionController::class,
+            'marcarTodasComoLeidas',
+        ]
     )->name('notificaciones.marcar-todas');
 
 
@@ -225,10 +225,6 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     | Estado de correos en cola
     |--------------------------------------------------------------------------
-    |
-    | Permite que el frontend consulte si un correo continúa pendiente,
-    | fue enviado correctamente o terminó fallando.
-    |
     */
 
     Route::get(
@@ -378,6 +374,7 @@ Route::middleware('auth')->group(function () {
         ]
     )->name('memorandos.historico');
 
+
     /*
     |--------------------------------------------------------------------------
     | Visualizar PDF
@@ -406,7 +403,6 @@ Route::middleware('auth')->group(function () {
             'download',
         ]
     )->name('memorandos.download');
-
 
 
     /*
@@ -555,6 +551,7 @@ Route::middleware('auth')->group(function () {
         'show',
     ]);
 
+
     Route::post(
         '/incidencias',
         [
@@ -580,19 +577,19 @@ Route::middleware('auth')->group(function () {
         ]
     )->name('mis-incidencias');
 
-
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| Gestión interna de solicitudes
+| Gestión interna del Portal TI
 |--------------------------------------------------------------------------
 |
 | Acceso:
 |
 | - UsuarioTI
 | - Administrador
+|
 |--------------------------------------------------------------------------
 */
 
@@ -605,63 +602,82 @@ Route::middleware([
     ->group(function () {
 
         /*
-|--------------------------------------------------------------------------
-| Administración de pases
-|--------------------------------------------------------------------------
-*/
+        |--------------------------------------------------------------------------
+        | Guardias asignadas
+        |--------------------------------------------------------------------------
+        |
+        | El UsuarioTI únicamente podrá ver sus propias guardias.
+        | El Administrador podrá consultar el calendario general.
+        |
+        */
 
-Route::get(
-    '/pases',
-    [
-        MemorandoController::class,
-        'administracionPases',
-    ]
-)->name('pases');
-
-
-/*
-|--------------------------------------------------------------------------
-| Detalle del pase
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/pases/{memorando}',
-    [
-        MemorandoController::class,
-        'showAdministracionPase',
-    ]
-)->name('pases.show');
+        Route::get(
+            '/mis-guardias',
+            [
+                GuardiaSoporteController::class,
+                'misGuardias',
+            ]
+        )->name('guardias.mis-guardias');
 
 
-/*
-|--------------------------------------------------------------------------
-| Aprobar pase
-|--------------------------------------------------------------------------
-*/
+        /*
+        |--------------------------------------------------------------------------
+        | Administración de pases
+        |--------------------------------------------------------------------------
+        */
 
-Route::patch(
-    '/pases/{memorando}/aprobar',
-    [
-        MemorandoController::class,
-        'aprobarPase',
-    ]
-)->name('pases.aprobar');
+        Route::get(
+            '/pases',
+            [
+                MemorandoController::class,
+                'administracionPases',
+            ]
+        )->name('pases');
 
 
-/*
-|--------------------------------------------------------------------------
-| Rechazar pase
-|--------------------------------------------------------------------------
-*/
+        /*
+        |--------------------------------------------------------------------------
+        | Detalle del pase
+        |--------------------------------------------------------------------------
+        */
 
-Route::patch(
-    '/pases/{memorando}/rechazar',
-    [
-        MemorandoController::class,
-        'rechazarPase',
-    ]
-)->name('pases.rechazar');
+        Route::get(
+            '/pases/{memorando}',
+            [
+                MemorandoController::class,
+                'showAdministracionPase',
+            ]
+        )->name('pases.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Aprobar pase
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/pases/{memorando}/aprobar',
+            [
+                MemorandoController::class,
+                'aprobarPase',
+            ]
+        )->name('pases.aprobar');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rechazar pase
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/pases/{memorando}/rechazar',
+            [
+                MemorandoController::class,
+                'rechazarPase',
+            ]
+        )->name('pases.rechazar');
 
 
         /*
@@ -681,7 +697,7 @@ Route::patch(
 
         /*
         |--------------------------------------------------------------------------
-        | Detalle
+        | Detalle administrativo de solicitud
         |--------------------------------------------------------------------------
         */
 
@@ -696,7 +712,7 @@ Route::patch(
 
         /*
         |--------------------------------------------------------------------------
-        | Finalizar
+        | Finalizar solicitud
         |--------------------------------------------------------------------------
         */
 
@@ -711,7 +727,7 @@ Route::patch(
 
         /*
         |--------------------------------------------------------------------------
-        | Cancelar
+        | Cancelar solicitud
         |--------------------------------------------------------------------------
         */
 
@@ -723,17 +739,108 @@ Route::patch(
             ]
         )->name('solicitudes.cancelar');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Administración de incidencias
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/incidencias',
+            [
+                IncidenciaController::class,
+                'administracion',
+            ]
+        )->name('incidencias');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detalle administrativo de incidencia
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/incidencias/{incidencia}',
+            [
+                IncidenciaController::class,
+                'showAdministracion',
+            ]
+        )->name('incidencias.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Iniciar atención
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/incidencias/{incidencia}/iniciar',
+            [
+                IncidenciaController::class,
+                'iniciar',
+            ]
+        )->name('incidencias.iniciar');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolver incidencia
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/incidencias/{incidencia}/resolver',
+            [
+                IncidenciaController::class,
+                'resolver',
+            ]
+        )->name('incidencias.resolver');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reabrir incidencia
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/incidencias/{incidencia}/reabrir',
+            [
+                IncidenciaController::class,
+                'reabrir',
+            ]
+        )->name('incidencias.reabrir');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Actualizar prioridad
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/incidencias/{incidencia}/prioridad',
+            [
+                IncidenciaController::class,
+                'actualizarPrioridad',
+            ]
+        )->name('incidencias.prioridad');
+
     });
 
 
 /*
 |--------------------------------------------------------------------------
-| Administración
+| Administración exclusiva
 |--------------------------------------------------------------------------
 |
 | Acceso exclusivo:
 |
 | - Administrador
+|
 |--------------------------------------------------------------------------
 */
 
@@ -827,91 +934,63 @@ Route::middleware([
 
     /*
     |--------------------------------------------------------------------------
-    | Administración de incidencias
+    | Administración de guardias
     |--------------------------------------------------------------------------
     */
 
     Route::get(
-        '/administracion/incidencias',
+        '/administracion/guardias',
         [
-            IncidenciaController::class,
-            'administracion',
+            GuardiaSoporteController::class,
+            'index',
         ]
-    )->name('admin.incidencias');
+    )->name('admin.guardias.index');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Detalle administrativo
+    | Crear guardia
     |--------------------------------------------------------------------------
     */
 
-    Route::get(
-        '/administracion/incidencias/{incidencia}',
+    Route::post(
+        '/administracion/guardias',
         [
-            IncidenciaController::class,
-            'showAdministracion',
+            GuardiaSoporteController::class,
+            'store',
         ]
-    )->name('admin.incidencias.show');
+    )
+        ->middleware('throttle:20,1')
+        ->name('admin.guardias.store');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Iniciar atención
+    | Actualizar guardia
     |--------------------------------------------------------------------------
     */
 
-    Route::patch(
-        '/administracion/incidencias/{incidencia}/iniciar',
+    Route::put(
+        '/administracion/guardias/{guardia}',
         [
-            IncidenciaController::class,
-            'iniciar',
+            GuardiaSoporteController::class,
+            'update',
         ]
-    )->name('admin.incidencias.iniciar');
+    )->name('admin.guardias.update');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Resolver
-    |--------------------------------------------------------------------------
-    */
-
-    Route::patch(
-        '/administracion/incidencias/{incidencia}/resolver',
-        [
-            IncidenciaController::class,
-            'resolver',
-        ]
-    )->name('admin.incidencias.resolver');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Reabrir
+    | Activar o cancelar guardia
     |--------------------------------------------------------------------------
     */
 
     Route::patch(
-        '/administracion/incidencias/{incidencia}/reabrir',
+        '/administracion/guardias/{guardia}/estado',
         [
-            IncidenciaController::class,
-            'reabrir',
+            GuardiaSoporteController::class,
+            'changeStatus',
         ]
-    )->name('admin.incidencias.reabrir');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Actualizar prioridad
-    |--------------------------------------------------------------------------
-    */
-
-    Route::patch(
-        '/administracion/incidencias/{incidencia}/prioridad',
-        [
-            IncidenciaController::class,
-            'actualizarPrioridad',
-        ]
-    )->name('admin.incidencias.prioridad');
+    )->name('admin.guardias.change-status');
 
 });

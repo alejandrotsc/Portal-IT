@@ -28,12 +28,12 @@
 
         <div
             @class([
-                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md',
+                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md dark:border-slate-700',
 
-                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-900/70 dark:hover:border-red-800 dark:focus-within:border-red-500' =>
                     $errors->has('nombre'),
 
-                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10' =>
+                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700 dark:hover:border-blue-800 dark:focus-within:border-blue-500' =>
                     ! $errors->has('nombre'),
             ])>
 
@@ -70,7 +70,7 @@
 
         @error('nombre')
 
-            <p class="flex items-start gap-1.5 mt-2 text-xs text-red-600">
+            <p class="flex items-start gap-1.5 mt-2 text-xs text-red-600 dark:text-red-400">
 
                 <i
                     data-lucide="circle-alert"
@@ -107,12 +107,12 @@
 
         <div
             @class([
-                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md',
+                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md dark:border-slate-700',
 
-                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-900/70 dark:hover:border-red-800 dark:focus-within:border-red-500' =>
                     $errors->has('correo'),
 
-                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10' =>
+                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10 dark:border-slate-700 dark:hover:border-blue-800 dark:focus-within:border-blue-500' =>
                     ! $errors->has('correo'),
             ])>
 
@@ -149,7 +149,7 @@
 
         @error('correo')
 
-            <p class="flex items-start gap-1.5 mt-2 text-xs text-red-600">
+            <p class="flex items-start gap-1.5 mt-2 text-xs text-red-600 dark:text-red-400">
 
                 <i
                     data-lucide="circle-alert"
@@ -215,16 +215,16 @@
 
         <div
             @class([
-                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2',
+                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 dark:border-slate-700',
 
-                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10 focus-within:shadow-md' =>
+                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10 focus-within:shadow-md dark:border-red-900/70 dark:hover:border-red-800 dark:focus-within:border-red-500' =>
                     $errors->has('rol_id'),
 
-                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10 focus-within:shadow-md' =>
+                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10 focus-within:shadow-md dark:border-slate-700 dark:hover:border-blue-800 dark:focus-within:border-blue-500' =>
                     ! $errors->has('rol_id')
                     && ! $cuentaPropia,
 
-                'border-border bg-muted/30 opacity-60 cursor-not-allowed shadow-none' =>
+                'border-border bg-muted/30 opacity-60 cursor-not-allowed shadow-none dark:border-slate-700' =>
                     $cuentaPropia,
             ])>
 
@@ -257,7 +257,7 @@
                 @endunless
                 required
                 @disabled($cuentaPropia)
-                class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 disabled:cursor-not-allowed">
+                class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 disabled:cursor-not-allowed [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                 <option
                     value=""
@@ -319,7 +319,7 @@
 
         @error('rol_id')
 
-            <p class="flex items-start gap-1.5 mt-2 text-xs text-red-600">
+            <p class="flex items-start gap-1.5 mt-2 text-xs text-red-600 dark:text-red-400">
 
                 <i
                     data-lucide="circle-alert"
@@ -376,11 +376,11 @@
 
     {{-- Acciones --}}
 
-    <div class="md:col-span-2 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-5 mt-1 border-t border-border">
+    <div class="md:col-span-2 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-5 mt-1 border-t border-border dark:border-slate-700">
 
         <a
             href="{{ route('usuarios.index') }}"
-            class="group/cancel inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-white text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
+            class="group/cancel inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] dark:border-slate-700 dark:hover:border-red-900/70 dark:hover:bg-red-950/30 dark:hover:text-red-400">
 
             <i
                 data-lucide="x"

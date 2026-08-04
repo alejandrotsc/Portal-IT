@@ -484,6 +484,7 @@ class UsuarioController extends Controller
                 'id',
                 [
                     1,
+                    2,
                     3,
                 ]
             )
@@ -567,6 +568,7 @@ class UsuarioController extends Controller
                 'integer',
                 Rule::in([
                     1,
+                    2,
                     3,
                 ]),
             ],

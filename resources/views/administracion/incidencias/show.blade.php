@@ -13,7 +13,7 @@
 
         <a
             href="{{ route('admin.incidencias') }}"
-            class="group inline-flex items-center gap-2 mb-6 px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 text-sm font-medium text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:shadow-sm active:translate-y-0">
+            class="group inline-flex items-center gap-2 mb-6 px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 text-sm font-medium text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:shadow-sm active:translate-y-0 dark:border-blue-800/60 dark:bg-blue-950/30 dark:hover:border-blue-700/70 dark:hover:bg-blue-900/30">
 
             <i
                 data-lucide="arrow-left"
@@ -33,9 +33,9 @@
 
         @if(session('success'))
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
 
                     <i
                         data-lucide="circle-check"
@@ -58,9 +58,9 @@
 
         @if($errors->any())
 
-            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800">
+            <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-800 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
 
-                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600">
+                <div class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
 
                     <i
                         data-lucide="circle-alert"
@@ -96,7 +96,7 @@
 
                 <div class="flex items-start gap-4">
 
-                    <div class="group flex items-center justify-center w-12 h-12 shrink-0 rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/15 hover:shadow-md">
+                    <div class="group flex items-center justify-center w-12 h-12 shrink-0 rounded-xl border border-primary/10 bg-primary/10 text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/15 hover:shadow-md dark:border-blue-800/60 dark:bg-blue-950/40 dark:hover:border-blue-700/70 dark:hover:bg-blue-900/40">
 
                         <i
                             data-lucide="file-text"
@@ -121,7 +121,7 @@
 
                             @if($incidencia->estaResuelta())
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
 
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 
@@ -131,7 +131,7 @@
 
                             @elseif($incidencia->estaEnProceso())
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400">
 
                                     <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -147,7 +147,7 @@
 
                             @else
 
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
 
                                     <span class="relative flex w-1.5 h-1.5 shrink-0">
 
@@ -214,9 +214,9 @@
 
                 {{-- Información de la incidencia --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md dark:border-slate-700 dark:hover:border-blue-800/70">
 
-                    <div class="flex items-center gap-3 px-6 py-5 border-b border-border">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-border dark:border-slate-700 dark:bg-slate-900/30">
 
                         <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105">
 
@@ -332,7 +332,7 @@
                                 'Ubicación' => $incidencia->ubicacion,
                             ] as $etiqueta => $valor)
 
-                                <div class="rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02]">
+                                <div class="rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02] dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-blue-800/70 dark:hover:bg-slate-800/40">
 
                                     <p class="text-xs font-medium text-muted-foreground">
 
@@ -367,7 +367,7 @@
 
                             </p>
 
-                            <div class="mt-2 rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02]">
+                            <div class="mt-2 rounded-xl border border-border bg-muted/20 px-4 py-3.5 transition-colors duration-200 hover:border-primary/15 hover:bg-primary/[0.02] dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-blue-800/70 dark:hover:bg-slate-800/40">
 
                                 <p class="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{{ $incidencia->descripcion }}</p>
 
@@ -385,13 +385,13 @@
 
                 @if($incidencia->archivos->isNotEmpty())
 
-                    <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-200 hover:shadow-md">
+                    <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-200 hover:shadow-md dark:border-slate-700 dark:hover:border-blue-800/70">
 
-                        <div class="flex items-center justify-between gap-4 px-6 py-5 border-b border-border">
+                        <div class="flex items-center justify-between gap-4 px-6 py-5 border-b border-border dark:border-slate-700 dark:bg-slate-900/30">
 
                             <div class="flex items-center gap-3">
 
-                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-blue-500/10 text-blue-600 transition-transform duration-300 group-hover:scale-105">
+                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-blue-500/10 text-blue-600 transition-transform duration-300 group-hover:scale-105 dark:bg-blue-500/15 dark:text-blue-400">
 
                                     <i
                                         data-lucide="paperclip"
@@ -415,7 +415,7 @@
 
                             </div>
 
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 shrink-0">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 shrink-0 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-400">
 
                                 <i
                                     data-lucide="images"
@@ -434,7 +434,7 @@
 
                             @foreach($incidencia->archivos as $archivo)
 
-                                <article class="group/file overflow-hidden rounded-xl border border-border bg-muted/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.03] hover:shadow-sm">
+                                <article class="group/file overflow-hidden rounded-xl border border-border bg-muted/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/[0.03] hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-blue-800/70 dark:hover:bg-slate-800/40">
 
                                     <a
                                         href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($archivo->ruta) }}"
@@ -486,7 +486,7 @@
                                     </a>
 
 
-                                    <div class="border-t border-border px-4 py-3">
+                                    <div class="border-t border-border px-4 py-3 dark:border-slate-700">
 
                                         @if(filled($archivo->texto_ocr))
 
@@ -510,7 +510,7 @@
 
                                                 </summary>
 
-                                                <div class="mt-3 max-h-52 overflow-y-auto rounded-lg border border-border bg-background p-3 text-xs text-foreground leading-relaxed whitespace-pre-line break-words">{{ $archivo->texto_ocr }}</div>
+                                                <div class="mt-3 max-h-52 overflow-y-auto rounded-lg border border-border bg-background p-3 text-xs text-foreground leading-relaxed whitespace-pre-line break-words dark:border-slate-700 dark:bg-slate-950/60">{{ $archivo->texto_ocr }}</div>
 
                                             </details>
 
@@ -546,9 +546,9 @@
 
                 {{-- Notificación por correo --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/15 hover:shadow-md dark:border-slate-700 dark:hover:border-blue-800/70">
 
-                    <div class="flex items-center gap-3 px-6 py-5 border-b border-border">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-border dark:border-slate-700 dark:bg-slate-900/30">
 
                         <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105">
 
@@ -583,9 +583,9 @@
 
                         @if($incidencia->correo_enviado)
 
-                            <div class="group/mail flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm">
+                            <div class="group/mail flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:hover:border-emerald-800 dark:hover:bg-emerald-950/35">
 
-                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 transition-transform duration-300 group-hover/mail:scale-105">
+                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 transition-transform duration-300 group-hover/mail:scale-105 dark:bg-emerald-900/40 dark:text-emerald-400">
 
                                     <i
                                         data-lucide="mail-check"
@@ -597,13 +597,13 @@
 
                                 <div>
 
-                                    <p class="text-sm font-semibold text-emerald-800">
+                                    <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
 
                                         Notificación enviada
 
                                     </p>
 
-                                    <p class="mt-1 text-xs leading-relaxed text-emerald-700">
+                                    <p class="mt-1 text-xs leading-relaxed text-emerald-700 dark:text-emerald-400">
 
                                         El equipo responsable recibió una notificación sobre esta incidencia.
 
@@ -625,9 +625,9 @@
 
                         @else
 
-                            <div class="group/mail flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 transition-all duration-300 hover:border-amber-300 hover:bg-amber-50 hover:shadow-sm">
+                            <div class="group/mail flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 transition-all duration-300 hover:border-amber-300 hover:bg-amber-50 hover:shadow-sm dark:border-amber-700/40 dark:bg-amber-950/25 dark:hover:border-amber-700/60 dark:hover:bg-amber-950/35">
 
-                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-amber-100 text-amber-600 transition-transform duration-300 group-hover/mail:scale-105">
+                                <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-amber-100 text-amber-600 transition-transform duration-300 group-hover/mail:scale-105 dark:bg-amber-900/40 dark:text-amber-400">
 
                                     <i
                                         data-lucide="mail-warning"
@@ -639,13 +639,13 @@
 
                                 <div>
 
-                                    <p class="text-sm font-semibold text-amber-800">
+                                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">
 
                                         Notificación no enviada
 
                                     </p>
 
-                                    <p class="mt-1 text-xs leading-relaxed text-amber-700">
+                                    <p class="mt-1 text-xs leading-relaxed text-amber-700 dark:text-amber-400">
 
                                         La incidencia quedó registrada, pero no fue posible completar la notificación por correo.
 
@@ -672,9 +672,9 @@
 
                 {{-- Solicitante --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md dark:border-slate-700 dark:hover:border-blue-800/70">
 
-                    <div class="px-5 py-4 border-b border-border">
+                    <div class="px-5 py-4 border-b border-border dark:border-slate-700 dark:bg-slate-900/30">
 
                         <h2 class="text-sm font-semibold text-foreground">
 
@@ -736,9 +736,9 @@
 
                 {{-- Seguimiento --}}
 
-                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md">
+                <section class="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-md dark:border-slate-700 dark:hover:border-blue-800/70">
 
-                    <div class="px-5 py-4 border-b border-border">
+                    <div class="px-5 py-4 border-b border-border dark:border-slate-700 dark:bg-slate-900/30">
 
                         <h2 class="text-sm font-semibold text-foreground">
 
@@ -765,7 +765,7 @@
 
                             @if($incidencia->estaResuelta())
 
-                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
 
                                     <i
                                         data-lucide="circle-check"
@@ -779,7 +779,7 @@
 
                             @elseif($incidencia->estaEnProceso())
 
-                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700 dark:text-cyan-400">
 
                                     <i
                                         data-lucide="loader-circle"
@@ -793,7 +793,7 @@
 
                             @else
 
-                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
 
                                     <i
                                         data-lucide="clock-3"
@@ -862,9 +862,9 @@
 
                 {{-- Prioridad --}}
 
-                <section class="group relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/[0.05] via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
+                <section class="group relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/[0.05] via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md dark:border-slate-700 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900/80 dark:hover:border-blue-800/70">
 
-                    <div class="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150"></div>
+                    <div class="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-primary/5 pointer-events-none transition-transform duration-500 group-hover:scale-150"></div>
 
                     <div class="relative">
 
@@ -891,7 +891,7 @@
                             @csrf
                             @method('PATCH')
 
-                            <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                            <div class="flex items-center gap-2 w-full px-3.5 rounded-lg border border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15">
 
                                 <i
                                     data-lucide="flag"
@@ -902,7 +902,7 @@
                                 <select
                                     name="prioridad"
                                     required
-                                    class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0">
+                                    class="w-full py-2.5 bg-transparent border-0 appearance-none text-sm text-foreground focus:outline-none focus:ring-0 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100">
 
                                     @foreach(\App\Models\Incidencia::PRIORIDADES as $prioridad)
 
@@ -952,9 +952,9 @@
 
                 @if(! $incidencia->estaResuelta())
 
-                    <section class="group relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/[0.05] via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
+                    <section class="group relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/[0.05] via-white to-blue-50/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md dark:border-slate-700 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900/80 dark:hover:border-blue-800/70">
 
-                        <div class="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150"></div>
+                        <div class="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-primary/5 pointer-events-none transition-transform duration-500 group-hover:scale-150"></div>
 
                         <div class="relative">
 
@@ -1024,7 +1024,7 @@
 
                                     <button
                                         type="submit"
-                                        class="group/resolver inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/70 hover:shadow-sm active:translate-y-0">
+                                        class="group/resolver inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/70 hover:shadow-sm active:translate-y-0 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:border-emerald-800 dark:hover:bg-emerald-900/30">
 
                                         <i
                                             data-lucide="circle-check-big"
@@ -1048,11 +1048,11 @@
 
                 @else
 
-                    <section class="group rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm">
+                    <section class="group rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:hover:border-emerald-800 dark:hover:bg-emerald-950/35">
 
                         <div class="flex items-start gap-3">
 
-                            <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 transition-transform duration-300 group-hover:scale-105">
+                            <div class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-emerald-100 text-emerald-600 transition-transform duration-300 group-hover:scale-105 dark:bg-emerald-900/40 dark:text-emerald-400">
 
                                 <i
                                     data-lucide="circle-check-big"
@@ -1094,7 +1094,7 @@
 
                             <button
                                 type="submit"
-                                class="group/reabrir inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-emerald-200 bg-white text-sm font-semibold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/50 hover:shadow-sm active:translate-y-0">
+                                class="group/reabrir inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-emerald-200 bg-card text-sm font-semibold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/50 hover:shadow-sm active:translate-y-0 dark:border-emerald-900/60 dark:text-emerald-400 dark:hover:border-emerald-800 dark:hover:bg-emerald-900/30">
 
                                 <i
                                     data-lucide="rotate-ccw"

@@ -1,16 +1,48 @@
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allow your team to quickly build robust real-time web applications.
- */
+/*
+|--------------------------------------------------------------------------
+| Módulos principales
+|--------------------------------------------------------------------------
+*/
 
-import './echo';
+import './switch';
 
 /*
 |--------------------------------------------------------------------------
-| Notificaciones en tiempo real
+| Inicialización independiente de servicios en tiempo real
 |--------------------------------------------------------------------------
+|
+| La interfaz principal no depende de Echo/Reverb. La conexión se intenta
+| cuando el DOM ya está disponible y cualquier error queda aislado.
+|
 */
-import './notificaciones';
 
-import './switch';
+async function iniciarTiempoReal() {
+    try {
+        await import('./echo');
+
+        if (!window.Echo) {
+            console.warn(
+                '[Echo] El servicio en tiempo real no está disponible.'
+            );
+
+            return;
+        }
+
+        await import('./notificaciones');
+    } catch (error) {
+        console.warn(
+            '[Tiempo real] No fue posible iniciar las notificaciones.',
+            error
+        );
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener(
+        'DOMContentLoaded',
+        iniciarTiempoReal,
+        { once: true }
+    );
+} else {
+    void iniciarTiempoReal();
+}

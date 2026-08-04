@@ -1,5 +1,8 @@
 @php
-    $enDashboard = request()->routeIs('dashboard');
+    $enDashboard = request()->routeIs(
+        'dashboard',
+        'dashboard.*'
+    );
 
     $tituloHeader = match(true) {
         request()->routeIs('memorandos.*') => 'Pases TI',
@@ -463,12 +466,15 @@
 
 
 
-                    <i
-                        data-lucide="chevron-down"
-                        class="w-3.5 h-3.5 text-muted-foreground transition-transform"
-                        :class="profileOpen ? 'rotate-180' : ''"
-                    >
-                    </i>
+                    <span
+    class="inline-flex text-muted-foreground transition-transform"
+    :class="profileOpen ? 'rotate-180' : ''"
+>
+    <i
+        data-lucide="chevron-down"
+        class="h-3.5 w-3.5"
+    ></i>
+</span>
 
 
 
@@ -788,7 +794,5 @@
 
         </div>
     </div>
-
-    <script src="{{ asset('js/switch.js') }}?v=2"></script>
 
 @endif

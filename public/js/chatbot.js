@@ -54,6 +54,8 @@ window.chatbotWidget = function (options = {}) {
 
         scrollFrame: null,
 
+        iconRetryTimeout: null,
+
 
         /*
         |--------------------------------------------------------------------------
@@ -109,19 +111,29 @@ window.chatbotWidget = function (options = {}) {
 
             const now = Date.now();
 
-            const warmedAt = Number(
-                window.localStorage.getItem(
-                    warmedStorageKey
-                )
-                ?? 0
-            );
+            let warmedAt = 0;
+            let warmingAt = 0;
 
-            const warmingAt = Number(
-                window.localStorage.getItem(
-                    warmingStorageKey
-                )
-                ?? 0
-            );
+            try {
+                warmedAt = Number(
+                    window.localStorage.getItem(
+                        warmedStorageKey
+                    )
+                    ?? 0
+                );
+
+                warmingAt = Number(
+                    window.localStorage.getItem(
+                        warmingStorageKey
+                    )
+                    ?? 0
+                );
+
+            } catch (error) {
+                console.debug(
+                    'No fue posible consultar el estado de precarga.'
+                );
+            }
 
             /*
              * El backend mantiene el modelo activo durante 30 minutos.
@@ -152,10 +164,27 @@ window.chatbotWidget = function (options = {}) {
                 return true;
             }
 
-            window.localStorage.setItem(
-                warmingStorageKey,
-                String(now)
-            );
+            try {
+                window.localStorage.setItem(
+                    warmingStorageKey,
+                    String(now)
+                );
+            } catch (error) {
+                console.debug(
+                    'No fue posible guardar el estado de precarga.'
+                );
+            }
+
+            const warmUpController =
+                new AbortController();
+
+            const warmUpTimeout =
+                window.setTimeout(
+                    () => {
+                        warmUpController.abort();
+                    },
+                    30000
+                );
 
             this.warmUpPromise = fetch(
                 endpoint,
@@ -175,6 +204,9 @@ window.chatbotWidget = function (options = {}) {
 
                     credentials:
                         'same-origin',
+
+                    signal:
+                        warmUpController.signal,
                 }
             )
                 .then(async (response) => {
@@ -189,10 +221,16 @@ window.chatbotWidget = function (options = {}) {
                         return false;
                     }
 
-                    window.localStorage.setItem(
-                        warmedStorageKey,
-                        String(Date.now())
-                    );
+                    try {
+                        window.localStorage.setItem(
+                            warmedStorageKey,
+                            String(Date.now())
+                        );
+                    } catch (error) {
+                        console.debug(
+                            'No fue posible guardar la precarga completada.'
+                        );
+                    }
 
                     return true;
                 })
@@ -204,9 +242,19 @@ window.chatbotWidget = function (options = {}) {
                     return false;
                 })
                 .finally(() => {
-                    window.localStorage.removeItem(
-                        warmingStorageKey
+                    window.clearTimeout(
+                        warmUpTimeout
                     );
+
+                    try {
+                        window.localStorage.removeItem(
+                            warmingStorageKey
+                        );
+                    } catch (error) {
+                        console.debug(
+                            'No fue posible limpiar el estado de precarga.'
+                        );
+                    }
 
                     this.warmUpPromise = null;
                 });
@@ -1343,7 +1391,7 @@ window.chatbotWidget = function (options = {}) {
                         this.requestController
                             ?.abort();
                     },
-                    60000
+                    150000
                 );
         },
 
@@ -1672,9 +1720,42 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         */
 
-        renderIcons() {
-            if (!window.lucide) {
+        renderIcons(
+            allowRetry = true
+        ) {
+            if (
+                !window.lucide
+                || typeof window.lucide.createIcons
+                    !== 'function'
+            ) {
+                if (
+                    allowRetry
+                    && this.iconRetryTimeout === null
+                ) {
+                    this.iconRetryTimeout =
+                        window.setTimeout(
+                            () => {
+                                this.iconRetryTimeout = null;
+
+                                this.renderIcons(
+                                    false
+                                );
+                            },
+                            150
+                        );
+                }
+
                 return;
+            }
+
+            if (
+                this.iconRetryTimeout !== null
+            ) {
+                window.clearTimeout(
+                    this.iconRetryTimeout
+                );
+
+                this.iconRetryTimeout = null;
             }
 
             try {

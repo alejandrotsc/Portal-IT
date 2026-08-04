@@ -53,16 +53,6 @@ function iniciarNotificaciones() {
     }
 
 
-    if (!window.Echo) {
-
-        console.error(
-            '[Notificaciones] Laravel Echo no está disponible.'
-        );
-
-        return;
-    }
-
-
     /*
     |--------------------------------------------------------------------------
     | Elementos de la interfaz
@@ -147,6 +137,26 @@ function iniciarNotificaciones() {
 
     /*
     |--------------------------------------------------------------------------
+    | Disponibilidad del servicio en tiempo real
+    |--------------------------------------------------------------------------
+    |
+    | La interfaz se inicializa siempre con los datos entregados por Laravel.
+    | Si Echo no está disponible, únicamente se omite la suscripción en vivo.
+    |
+    */
+
+    if (!window.Echo) {
+
+        console.warn(
+            '[Notificaciones] Tiempo real no disponible. Se mantienen los datos cargados desde el servidor.'
+        );
+
+        return;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Canal privado
     |--------------------------------------------------------------------------
     */
@@ -167,10 +177,25 @@ function iniciarNotificaciones() {
     );
 
 
-    const canal =
-        window.Echo.private(
-            nombreCanal
+    let canal;
+
+
+    try {
+
+        canal =
+            window.Echo.private(
+                nombreCanal
+            );
+
+    } catch (error) {
+
+        console.warn(
+            '[Notificaciones] No fue posible suscribirse al canal privado:',
+            error
         );
+
+        return;
+    }
 
 
     /*
@@ -588,7 +613,9 @@ actualizarFavicon(
 
 
         limitarNotificaciones();
-        recrearIconos();
+        recrearIconos(
+            icono
+        );
     }
 
 
@@ -665,17 +692,24 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     */
 
-    function recrearIconos() {
+    function recrearIconos(
+        iconoPendiente
+    ) {
 
         if (
-            window.lucide
-            &&
+            !iconoPendiente
+            ||
+            !window.lucide
+            ||
             typeof window.lucide.createIcons
-                ===
+                !==
                 'function'
         ) {
-            window.lucide.createIcons();
+            return;
         }
+
+
+        window.lucide.createIcons();
     }
 
 

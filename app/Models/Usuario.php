@@ -93,6 +93,39 @@ class Usuario extends Authenticatable
 
     /*
     |--------------------------------------------------------------------------
+    | Comprobación de roles
+    |--------------------------------------------------------------------------
+    */
+
+    public function esAdministrador(): bool
+    {
+        return $this->rol?->nombre
+            === 'Administrador';
+    }
+
+
+    public function esUsuarioTI(): bool
+    {
+        return $this->rol?->nombre
+            === 'UsuarioTI';
+    }
+
+
+    public function perteneceASoporte(): bool
+    {
+        return in_array(
+            $this->rol?->nombre,
+            [
+                'UsuarioTI',
+                'Administrador',
+            ],
+            true
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Relaciones
     |--------------------------------------------------------------------------
     */
@@ -138,6 +171,42 @@ class Usuario extends Authenticatable
         return $this->hasMany(
             MemorandoHistorial::class,
             'usuario_id'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guardias asignadas
+    |--------------------------------------------------------------------------
+    |
+    | Guardias de sábado o domingo que el UsuarioTI debe atender.
+    |
+    */
+
+    public function guardiasAsignadas(): HasMany
+    {
+        return $this->hasMany(
+            GuardiaSoporte::class,
+            'usuario_id'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guardias creadas
+    |--------------------------------------------------------------------------
+    |
+    | Asignaciones de guardias realizadas por el administrador.
+    |
+    */
+
+    public function guardiasCreadas(): HasMany
+    {
+        return $this->hasMany(
+            GuardiaSoporte::class,
+            'creado_por'
         );
     }
 }

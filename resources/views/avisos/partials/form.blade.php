@@ -63,12 +63,12 @@
 
         <div
             @class([
-                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md',
+                'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md dark:border-slate-700',
 
-                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-900/70 dark:focus-within:border-red-500' =>
                     $errors->has('titulo'),
 
-                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10' =>
+                'border-border focus-within:border-primary focus-within:ring-primary/10 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                     ! $errors->has('titulo'),
             ])>
 
@@ -160,12 +160,12 @@
 
         <div
             @class([
-                'group flex items-start gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md',
+                'group flex items-start gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md dark:border-slate-700',
 
-                'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-900/70 dark:focus-within:border-red-500' =>
                     $errors->has('mensaje'),
 
-                'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10' =>
+                'border-border focus-within:border-primary focus-within:ring-primary/10 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                     ! $errors->has('mensaje'),
             ])>
 
@@ -240,7 +240,7 @@
 
     {{-- Vigencia --}}
 
-    <section class="group/calendar relative overflow-hidden rounded-xl border border-primary/10 bg-gradient-to-br from-primary/[0.035] via-white to-blue-50/40 p-5 transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+    <section class="group/calendar relative overflow-hidden rounded-xl border border-primary/10 bg-gradient-to-br from-primary/[0.035] via-white to-blue-50/40 p-5 transition-all duration-300 hover:border-primary/20 hover:shadow-sm dark:border-slate-700 dark:from-blue-950/25 dark:via-slate-900 dark:to-slate-900/80 dark:hover:border-blue-800/70">
 
         <span class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-primary/5 pointer-events-none transition-all duration-500 group-hover/calendar:bg-primary/10 motion-safe:group-hover/calendar:scale-150"></span>
 
@@ -296,12 +296,12 @@
 
                     <div
                         @class([
-                            'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md',
+                            'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md dark:border-slate-700',
 
-                            'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-900/70 dark:focus-within:border-red-500' =>
                                 $errors->has('fecha_inicio'),
 
-                            'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10' =>
+                            'border-border focus-within:border-primary focus-within:ring-primary/10 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                                 ! $errors->has('fecha_inicio'),
                         ])>
 
@@ -327,7 +327,7 @@
                             @unless($editando)
                                 min="{{ $fechaMinima }}"
                             @endunless
-                            class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0 dark:[color-scheme:dark]">
 
                     </div>
 
@@ -385,12 +385,12 @@
 
                     <div
                         @class([
-                            'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-white shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md',
+                            'group flex items-center gap-2 w-full px-3.5 rounded-lg border bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:shadow-md dark:border-slate-700',
 
-                            'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:ring-red-500/10' =>
+                            'border-red-300 focus-within:border-red-500 focus-within:ring-red-500/10 dark:border-red-900/70 dark:focus-within:border-red-500' =>
                                 $errors->has('fecha_fin'),
 
-                            'border-border hover:border-primary/40 focus-within:border-primary focus-within:ring-primary/10' =>
+                            'border-border focus-within:border-primary focus-within:ring-primary/10 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/15' =>
                                 ! $errors->has('fecha_fin'),
                         ])>
 
@@ -414,7 +414,7 @@
                             name="fecha_fin"
                             value="{{ $fechaFin }}"
                             min="{{ $fechaMinima }}"
-                            class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0">
+                            class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0 dark:[color-scheme:dark]">
 
                     </div>
 
@@ -469,7 +469,7 @@
         x-data="{
             activo: @js($avisoActivo)
         }"
-        class="group/status relative overflow-hidden rounded-xl border border-primary/10 bg-gradient-to-br from-primary/[0.06] via-white to-blue-50/60 p-4 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md">
+        class="group/status relative overflow-hidden rounded-xl border border-primary/10 bg-gradient-to-br from-primary/[0.06] via-white to-blue-50/60 p-4 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-slate-700 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900/80 dark:hover:border-blue-800/70">
 
 
         {{-- Decoración --}}
@@ -500,11 +500,9 @@
                 x-bind:title="activo
                     ? 'Desactivar aviso'
                     : 'Activar aviso'"
-                x-bind:style="{
-                    backgroundColor: activo
-                        ? 'var(--primary)'
-                        : '#cbd5e1'
-                }"
+                x-bind:class="activo
+                    ? 'bg-primary'
+                    : 'bg-slate-300 dark:bg-slate-700'"
                 class="relative shrink-0 mt-0.5 rounded-full cursor-pointer transition-all duration-200 outline-none focus:outline-none focus-visible:outline-none hover:shadow-sm active:scale-95"
                 style="
                     width: 44px;
@@ -553,8 +551,8 @@
                             ? 'Activado'
                             : 'Desactivado'"
                         x-bind:class="activo
-                            ? 'bg-primary/10 text-primary'
-                            : 'bg-slate-500/10 text-slate-500'"
+                            ? 'bg-primary/10 text-primary dark:bg-blue-500/15 dark:text-blue-400'
+                            : 'bg-slate-500/10 text-slate-500 dark:bg-slate-700 dark:text-slate-300'"
                         class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors duration-200">
                     </span>
 
@@ -578,11 +576,11 @@
 
     {{-- Acciones --}}
 
-    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-5 border-t border-border">
+    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-5 border-t border-border dark:border-slate-700">
 
         <a
             href="{{ route('avisos.index') }}"
-            class="group/cancel inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-white text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
+            class="group/cancel inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 hover:shadow motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] dark:border-slate-700 dark:hover:border-red-900/70 dark:hover:bg-red-950/30 dark:hover:text-red-400">
 
             <i
                 data-lucide="x"

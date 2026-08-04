@@ -1,4 +1,16 @@
-document.addEventListener('DOMContentLoaded',()=>{
+function initializeSolicitudes(){
+
+const raizSolicitudes=
+document.getElementById('solicitudForm');
+
+if(
+!raizSolicitudes
+||raizSolicitudes.dataset.solicitudesInitialized==='true'
+){
+return;
+}
+
+raizSolicitudes.dataset.solicitudesInitialized='true';
 
 const PLACEHOLDERS={
 computadora:{
@@ -294,7 +306,7 @@ function aplicarPrellenadoChatbot() {
 
     seleccionarCategoria(
         tarjetaCategoria,
-        true
+        false
     );
 }
 
@@ -604,7 +616,7 @@ camposDinamicos.appendChild(wrapper);
 });
 
 if(window.lucide){
-    lucide.createIcons();
+    window.lucide.createIcons();
 }
 
 }
@@ -806,6 +818,17 @@ if (solicitudForm) {
         enviandoSolicitud = true;
         bloquearBotonEnvio();
 
+        const abortController =
+            new AbortController();
+
+        const timeoutId =
+            window.setTimeout(
+                () => {
+                    abortController.abort();
+                },
+                60000
+            );
+
         try {
             const response = await fetch(solicitudForm.action, {
                 method: 'POST',
@@ -814,6 +837,7 @@ if (solicitudForm) {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new FormData(solicitudForm),
+                signal: abortController.signal,
             });
 
             const responseText = await response.text();
@@ -847,9 +871,22 @@ if (solicitudForm) {
             }
 
         } catch (error) {
-            mostrarErrorSolicitud(error);
+            const errorMostrable =
+                error?.name === 'AbortError'
+                    ? new Error(
+                        'El servidor tardó demasiado en responder. Verifica el estado de la solicitud antes de intentar enviarla nuevamente.'
+                    )
+                    : error;
+
+            mostrarErrorSolicitud(
+                errorMostrable
+            );
 
         } finally {
+            window.clearTimeout(
+                timeoutId
+            );
+
             enviandoSolicitud = false;
             restaurarBotonEnvio();
         }
@@ -887,7 +924,7 @@ function restaurarBotonEnvio() {
         btnEnviarTexto.textContent = 'Enviar solicitud';
     }
 
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
 }
 
 
@@ -963,7 +1000,7 @@ function configurarCorreoEnCola(estado = 'pendiente', attempts = 0) {
 
     actualizarEstadoPersistente('queued');
 
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
 }
 
 
@@ -1014,7 +1051,7 @@ function configurarCorreoExitoso() {
 
     actualizarEstadoPersistente('success');
 
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
 }
 
 
@@ -1067,7 +1104,7 @@ function configurarCorreoFallido(data) {
 
     actualizarEstadoPersistente('warning');
 
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
 }
 
 
@@ -1319,7 +1356,7 @@ function mostrarErrorSolicitud(error) {
     ocultarBotonesOutlook();
     abrirModalSolicitud();
 
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
 }
 
 
@@ -1444,7 +1481,7 @@ document.addEventListener('keydown', (event) => {
 
 if(window.lucide){
 
-    lucide.createIcons();
+    window.lucide.createIcons();
 
 }
 
@@ -1462,4 +1499,21 @@ function escaparHtml(valor){
 }
 
 
-});
+}
+
+
+if(
+document.getElementById('solicitudForm')
+){
+initializeSolicitudes();
+}else if(
+document.readyState==='loading'
+){
+document.addEventListener(
+'DOMContentLoaded',
+initializeSolicitudes,
+{
+once:true,
+}
+);
+}

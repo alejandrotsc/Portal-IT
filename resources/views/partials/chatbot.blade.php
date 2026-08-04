@@ -54,7 +54,6 @@
 
     <div
         x-data="chatbotWidget({ storageKey: 'portal-it-chatbot-history-{{ auth()->id() ?? 'guest' }}' })"
-        x-init="init()"
         class="group/chatbot relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/15 hover:shadow-lg hover:shadow-blue-500/5 dark:border-slate-700/70 dark:bg-slate-900/70 dark:hover:border-blue-700/60 dark:hover:shadow-black/20"
     >
 
@@ -565,24 +564,26 @@
            dark:focus-within:!ring-blue-500/15"
     :class="
         aiMode
-            ? 'border-primary/40 bg-card
-               focus-within:border-primary
-               focus-within:ring-4 focus-within:ring-primary/10'
+            ? 'border-primary/40 bg-card focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10'
             : 'border-border bg-muted/40'
+    "
+>
+    <span
+    class="inline-flex flex-shrink-0 transition-all duration-200
+           group-focus-within/composer:text-blue-600
+           dark:group-focus-within/composer:text-blue-400
+           motion-safe:group-focus-within/composer:scale-110"
+    :class="
+        aiMode
+            ? 'text-primary dark:text-blue-400'
+            : 'text-muted-foreground'
     "
 >
     <i
         data-lucide="message-circle"
-        class="h-4 w-4 flex-shrink-0 transition-all duration-200
-               group-focus-within/composer:text-blue-600
-               dark:group-focus-within/composer:text-blue-400
-               motion-safe:group-focus-within/composer:scale-110"
-        :class="
-            aiMode
-                ? 'text-primary dark:text-blue-400'
-                : 'text-muted-foreground'
-        "
+        class="h-4 w-4"
     ></i>
+</span>
 
     <input
         x-ref="input"

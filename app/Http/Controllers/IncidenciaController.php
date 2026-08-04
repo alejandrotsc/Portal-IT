@@ -827,75 +827,82 @@ class IncidenciaController extends Controller
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Notificar nueva incidencia a los administradores
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Notificar nueva incidencia al equipo administrativo
+|--------------------------------------------------------------------------
+|
+| La notificación se envía a todos los administradores y usuarios TI
+| activos, ya que ambos roles pueden gestionar incidencias.
+|
+*/
 
-    private function notificarNuevaIncidencia(
-        Incidencia $incidencia
-    ): void {
-        try {
-            $incidencia->loadMissing(
-                'usuario'
-            );
+private function notificarNuevaIncidencia(
+    Incidencia $incidencia
+): void {
+    try {
+        $incidencia->loadMissing(
+            'usuario'
+        );
 
-            $administradores = Usuario::query()
-                ->where(
-                    'activo',
-                    true
-                )
-                ->whereHas(
-                    'rol',
-                    function ($query) {
-                        $query->where(
-                            'nombre',
-                            'Administrador'
-                        );
-                    }
-                )
-                ->get();
+        $equipoAdministrativo = Usuario::query()
+            ->where(
+                'activo',
+                true
+            )
+            ->whereHas(
+                'rol',
+                function ($query) {
+                    $query->whereIn(
+                        'nombre',
+                        [
+                            'Administrador',
+                            'UsuarioTI',
+                        ]
+                    );
+                }
+            )
+            ->get();
 
-            if ($administradores->isEmpty()) {
-                Log::warning(
-                    'No existen administradores activos para recibir la notificación de la nueva incidencia.',
-                    [
-                        'incidencia_id' =>
-                            $incidencia->id,
-
-                        'codigo' =>
-                            $incidencia->codigo,
-                    ]
-                );
-
-                return;
-            }
-
-            Notification::send(
-                $administradores,
-                new NuevaIncidenciaNotification(
-                    $incidencia
-                )
-            );
-        } catch (\Throwable $exception) {
-            Log::error(
-                'No se pudo enviar la notificación de la nueva incidencia a los administradores.',
+        if ($equipoAdministrativo->isEmpty()) {
+            Log::warning(
+                'No existen administradores o usuarios TI activos para recibir la notificación de la nueva incidencia.',
                 [
                     'incidencia_id' =>
                         $incidencia->id,
 
                     'codigo' =>
                         $incidencia->codigo,
-
-                    'usuario_id' =>
-                        $incidencia->usuario_id,
-
-                    'error' =>
-                        $exception->getMessage(),
                 ]
             );
+
+            return;
         }
+
+        Notification::send(
+            $equipoAdministrativo,
+            new NuevaIncidenciaNotification(
+                $incidencia
+            )
+        );
+    } catch (\Throwable $exception) {
+        Log::error(
+            'No se pudo enviar la notificación de la nueva incidencia al equipo administrativo.',
+            [
+                'incidencia_id' =>
+                    $incidencia->id,
+
+                'codigo' =>
+                    $incidencia->codigo,
+
+                'usuario_id' =>
+                    $incidencia->usuario_id,
+
+                'error' =>
+                    $exception->getMessage(),
+            ]
+        );
     }
+}
 
 
     /*

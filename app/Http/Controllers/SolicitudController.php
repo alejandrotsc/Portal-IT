@@ -875,76 +875,81 @@ class SolicitudController extends Controller
 
 
     /*
-    |--------------------------------------------------------------------------
-    | Notificar nueva solicitud a los administradores
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Notificar nueva solicitud al equipo administrativo
+|--------------------------------------------------------------------------
+|
+| La notificación se envía a administradores y usuarios TI activos.
+|
+*/
 
-    private function notificarNuevaSolicitud(
-        Solicitud $solicitud
-    ): void {
-        try {
-            $solicitud->loadMissing(
-                'usuario'
-            );
+private function notificarNuevaSolicitud(
+    Solicitud $solicitud
+): void {
+    try {
+        $solicitud->loadMissing(
+            'usuario'
+        );
 
-            $administradores =
-                Usuario::query()
-                    ->where(
-                        'activo',
-                        true
-                    )
-                    ->whereHas(
-                        'rol',
-                        function ($query) {
-                            $query->where(
-                                'nombre',
-                                'Administrador'
-                            );
-                        }
-                    )
-                    ->get();
+        $equipoAdministrativo = Usuario::query()
+            ->where(
+                'activo',
+                true
+            )
+            ->whereHas(
+                'rol',
+                function ($query) {
+                    $query->whereIn(
+                        'nombre',
+                        [
+                            'Administrador',
+                            'UsuarioTI',
+                        ]
+                    );
+                }
+            )
+            ->get();
 
-            if ($administradores->isEmpty()) {
-                Log::warning(
-                    'No existen administradores activos para recibir la notificación de la nueva solicitud.',
-                    [
-                        'solicitud_id' =>
-                            $solicitud->id,
-
-                        'folio' =>
-                            $solicitud->folio,
-                    ]
-                );
-
-                return;
-            }
-
-            Notification::send(
-                $administradores,
-                new NuevaSolicitudNotification(
-                    $solicitud
-                )
-            );
-        } catch (\Throwable $exception) {
-            Log::error(
-                'No se pudo enviar la notificación de la nueva solicitud a los administradores.',
+        if ($equipoAdministrativo->isEmpty()) {
+            Log::warning(
+                'No existen administradores o usuarios TI activos para recibir la notificación de la nueva solicitud.',
                 [
                     'solicitud_id' =>
                         $solicitud->id,
 
                     'folio' =>
                         $solicitud->folio,
-
-                    'usuario_id' =>
-                        $solicitud->usuario_id,
-
-                    'error' =>
-                        $exception->getMessage(),
                 ]
             );
+
+            return;
         }
+
+        Notification::send(
+            $equipoAdministrativo,
+            new NuevaSolicitudNotification(
+                $solicitud
+            )
+        );
+    } catch (\Throwable $exception) {
+        Log::error(
+            'No se pudo enviar la notificación de la nueva solicitud al equipo administrativo.',
+            [
+                'solicitud_id' =>
+                    $solicitud->id,
+
+                'folio' =>
+                    $solicitud->folio,
+
+                'usuario_id' =>
+                    $solicitud->usuario_id,
+
+                'error' =>
+                    $exception->getMessage(),
+            ]
+        );
     }
+}
 
 
     /*
