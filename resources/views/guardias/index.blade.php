@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Administración de turnos')
+
 @section('content')
 
 @php
@@ -95,7 +97,7 @@
                             class="text-2xl font-semibold tracking-tight
                                    text-foreground"
                         >
-                            Administración de guardias
+                            Administración de turnos
                         </h1>
 
                         <p
@@ -217,7 +219,7 @@
                 <div>
 
                     <h2 class="text-sm font-semibold text-foreground">
-                        Asignar nueva guardia
+                        Asignar nuevo turno
                     </h2>
 
                     <p class="mt-1 text-sm text-muted-foreground">
@@ -313,21 +315,27 @@
                         </label>
 
                         <input
-                            type="date"
-                            id="fecha"
-                            name="fecha"
-                            value="{{ old('fecha') }}"
-                            min="{{ today()->format('Y-m-d') }}"
-                            required
-                            class="w-full rounded-lg border border-border
-                                   bg-card px-3.5 py-2.5 text-sm
-                                   text-foreground shadow-sm
-                                   transition-all duration-200
-                                   focus:border-primary focus:outline-none
-                                   focus:ring-2 focus:ring-primary/10
-                                   dark:border-slate-700
-                                   dark:focus:border-blue-500"
-                        >
+    type="date"
+    id="fecha"
+    name="fecha"
+    value="{{ old('fecha') }}"
+    min="{{ today()->format('Y-m-d') }}"
+    required
+    inputmode="none"
+    onkeydown="event.preventDefault()"
+    onpaste="event.preventDefault()"
+    onclick="this.showPicker && this.showPicker()"
+    onfocus="this.showPicker && this.showPicker()"
+    class="w-full rounded-lg border border-border
+           bg-card px-3.5 py-2.5 text-sm
+           text-foreground shadow-sm
+           transition-all duration-200
+           focus:border-primary focus:outline-none
+           focus:ring-2 focus:ring-primary/10
+           dark:border-slate-700
+           dark:focus:border-blue-500
+           cursor-pointer"
+>
 
                         <p class="mt-1.5 text-xs text-muted-foreground">
                             Únicamente sábado o domingo.
@@ -481,7 +489,7 @@
                             name="observacion"
                             value="{{ old('observacion') }}"
                             maxlength="500"
-                            placeholder="Información adicional de la guardia"
+                            placeholder="Información adicional del turno"
                             class="w-full rounded-lg border border-border
                                    bg-card px-3.5 py-2.5 text-sm
                                    text-foreground shadow-sm
@@ -548,7 +556,7 @@
                                    group-hover:scale-110"
                         ></i>
 
-                        Asignar guardia
+                        Asignar turno
                     </button>
                 </div>
 
@@ -677,7 +685,7 @@
             <div class="mb-5">
 
                 <h2 class="text-base font-semibold text-foreground">
-                    Guardias de {{ $meses[$mes] }} de {{ $anio }}
+                    Turnos de {{ $meses[$mes] }} de {{ $anio }}
                 </h2>
 
                 <p class="mt-1 text-sm text-muted-foreground">
@@ -1064,31 +1072,26 @@
                                                         </label>
 
                                                         <input
-                                                            type="date"
-                                                            name="fecha"
-                                                            value="{{
-                                                                $guardia
-                                                                    ->fecha
-                                                                    ->format(
-                                                                        'Y-m-d'
-                                                                    )
-                                                            }}"
-                                                            min="{{
-                                                                today()
-                                                                    ->format(
-                                                                        'Y-m-d'
-                                                                    )
-                                                            }}"
-                                                            required
-                                                            class="w-full
-                                                                   rounded-lg
-                                                                   border
-                                                                   border-border
-                                                                   bg-card
-                                                                   px-3 py-2
-                                                                   text-sm
-                                                                   text-foreground"
-                                                        >
+    type="date"
+    name="fecha"
+    value="{{ $guardia->fecha->format('Y-m-d') }}"
+    min="{{ today()->format('Y-m-d') }}"
+    required
+    inputmode="none"
+    onkeydown="event.preventDefault()"
+    onpaste="event.preventDefault()"
+    onclick="this.showPicker && this.showPicker()"
+    onfocus="this.showPicker && this.showPicker()"
+    class="w-full
+           rounded-lg
+           border
+           border-border
+           bg-card
+           px-3 py-2
+           text-sm
+           text-foreground
+           cursor-pointer"
+>
                                                     </div>
 
                                                     <div>

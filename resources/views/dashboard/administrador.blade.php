@@ -611,7 +611,7 @@
                 class="mb-2 text-sm font-semibold
                        text-foreground"
             >
-                Administración de guardias
+                Administración de turnos
             </h3>
 
             <p
@@ -619,7 +619,7 @@
                        text-muted-foreground"
             >
                 Programa el agente de soporte asignado para
-                las guardias de sábado y domingo.
+                los turnos de sábado y domingo.
             </p>
 
             <div class="mt-auto flex flex-wrap gap-2 pt-5">
@@ -1332,7 +1332,7 @@
                             class="mt-1 text-sm leading-relaxed
                                    text-muted-foreground"
                         >
-                            Los cambios realizados en usuarios, guardias,
+                            Los cambios realizados en usuarios, turnos,
                             solicitudes, incidencias, pases y avisos pueden
                             afectar directamente el acceso, seguimiento y la
                             información mostrada dentro del portal.

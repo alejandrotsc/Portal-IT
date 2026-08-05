@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mis guardias')
+@section('title', 'Mis turnos')
 
 @section('content')
 
@@ -108,7 +108,7 @@
                             {{
                                 $esAdministrador
                                     ? 'Calendario general de guardias'
-                                    : 'Mis guardias'
+                                    : 'Mis turnos'
                             }}
                         </h1>
 
@@ -118,13 +118,13 @@
                         >
                             @if($esAdministrador)
 
-                                Consulta las guardias activas programadas
+                                Consulta los turnos activos programados
                                 para el equipo de soporte.
 
                             @else
 
-                                Consulta las guardias de fin de semana que
-                                te han sido asignadas, junto con su horario
+                                Consulta los turnos de fin de semana que
+                                te han sido asignados, junto con su horario
                                 y ubicación.
 
                             @endif
@@ -150,7 +150,7 @@
                             class="h-4 w-4"
                         ></i>
 
-                        Administrar guardias
+                        Administrar turnos
                     </a>
 
                 @endif
@@ -171,7 +171,7 @@
                 </h2>
 
                 <p class="mt-1 text-sm text-muted-foreground">
-                    Distribución de guardias para
+                    Distribución de turnos para
                     {{ $meses[$mes] }} de {{ $anio }}.
                 </p>
 
@@ -251,7 +251,7 @@
                     </p>
 
                     <p class="relative mt-2 text-sm text-muted-foreground">
-                        Guardias del período
+                        Turnos del período
                     </p>
                 </div>
 
@@ -328,7 +328,7 @@
                     </p>
 
                     <p class="relative mt-2 text-sm text-muted-foreground">
-                        Guardias próximas
+                        Turnos próximos
                     </p>
                 </div>
 
@@ -397,7 +397,7 @@
                     </p>
 
                     <p class="relative mt-2 text-sm text-muted-foreground">
-                        Guardias en TVC
+                        Turnos en TVC
                     </p>
                 </div>
 
@@ -466,7 +466,7 @@
                     </p>
 
                     <p class="relative mt-2 text-sm text-muted-foreground">
-                        Guardias en CNT
+                        Turnos en CNT
                     </p>
                 </div>
 
@@ -1139,14 +1139,14 @@
                             class="text-sm font-semibold
                                    text-foreground"
                         >
-                            Información de las guardias
+                            Información de los turnos
                         </h3>
 
                         <p
                             class="mt-1 text-sm leading-relaxed
                                    text-muted-foreground"
                         >
-                            Las guardias corresponden únicamente a sábados
+                            Los turnos corresponden únicamente a sábados
                             y domingos. Verifica la fecha, el horario y la
                             ubicación antes de cada asignación.
                         </p>

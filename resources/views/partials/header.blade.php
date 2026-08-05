@@ -10,6 +10,7 @@
         request()->routeIs('incidencias.*') => 'Incidencias TI',
         request()->routeIs('usuarios.*') => 'Usuarios TI',
         request()->routeIs('avisos.*') => 'Avisos TI',
+        request()->routeIs('admin.guardias.*') => 'Turnos TI',
         request()->routeIs(
         'admin.pases',
         'admin.pases.*'

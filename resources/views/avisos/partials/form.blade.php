@@ -320,14 +320,19 @@
                         </i>
 
                         <input
-                            type="datetime-local"
-                            id="fecha_inicio"
-                            name="fecha_inicio"
-                            value="{{ $fechaInicio }}"
-                            @unless($editando)
-                                min="{{ $fechaMinima }}"
-                            @endunless
-                            class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0 dark:[color-scheme:dark]">
+    type="datetime-local"
+    id="fecha_inicio"
+    name="fecha_inicio"
+    value="{{ $fechaInicio }}"
+    @unless($editando)
+        min="{{ $fechaMinima }}"
+    @endunless
+    inputmode="none"
+    onkeydown="event.preventDefault()"
+    onpaste="event.preventDefault()"
+    onclick="this.showPicker && this.showPicker()"
+    onfocus="this.showPicker && this.showPicker()"
+    class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0 dark:[color-scheme:dark] cursor-pointer">
 
                     </div>
 
@@ -409,12 +414,17 @@
                         </i>
 
                         <input
-                            type="datetime-local"
-                            id="fecha_fin"
-                            name="fecha_fin"
-                            value="{{ $fechaFin }}"
-                            min="{{ $fechaMinima }}"
-                            class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0 dark:[color-scheme:dark]">
+    type="datetime-local"
+    id="fecha_fin"
+    name="fecha_fin"
+    value="{{ $fechaFin }}"
+    min="{{ $fechaMinima }}"
+    inputmode="none"
+    onkeydown="event.preventDefault()"
+    onpaste="event.preventDefault()"
+    onclick="this.showPicker && this.showPicker()"
+    onfocus="this.showPicker && this.showPicker()"
+    class="w-full py-2.5 bg-transparent border-0 text-sm text-foreground focus:outline-none focus:ring-0 dark:[color-scheme:dark] cursor-pointer">
 
                     </div>
 

@@ -20,7 +20,7 @@
 
             <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105">
 
-                3
+                2
 
             </span>
 
@@ -271,7 +271,7 @@
 
             <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-sm transition-transform duration-300 motion-safe:group-hover:scale-105">
 
-                4
+                3
 
             </span>
 

@@ -769,7 +769,7 @@
             class="text-xs font-medium uppercase tracking-wide
                    text-muted-foreground"
         >
-            Próximas guardias
+            Próximos turnos
         </span>
 
     </div>

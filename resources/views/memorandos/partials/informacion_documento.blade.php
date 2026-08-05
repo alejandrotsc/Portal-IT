@@ -37,7 +37,7 @@
                    transition-transform duration-300
                    motion-safe:group-hover:scale-105"
         >
-            2
+            1
         </span>
 
         <div class="min-w-0">
