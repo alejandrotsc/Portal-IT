@@ -146,6 +146,8 @@
                lg:px-12"
     >
         @yield('content')
+
+        @include('partials.support-widget')
     </main>
 
 

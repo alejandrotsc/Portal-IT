@@ -947,8 +947,6 @@
 
         </section>
 
-        @include('partials.support-widget')
-
     </main>
 
 </div>

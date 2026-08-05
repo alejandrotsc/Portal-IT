@@ -12,6 +12,4 @@
 
     @include('partials.informacion')
 
-    @include('partials.support-widget')
-
 @endsection

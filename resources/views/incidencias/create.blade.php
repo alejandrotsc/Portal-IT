@@ -578,8 +578,6 @@
 
     </form>
 
-    @include('partials.support-widget')
-
 </main>
 
 </div>
