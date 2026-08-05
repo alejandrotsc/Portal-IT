@@ -67,6 +67,10 @@ class UsuarioController extends Controller
                                 ->orWhereRaw(
                                     'LOWER(correo) LIKE ?',
                                     ["%{$termino}%"]
+                                )
+                                ->orWhereRaw(
+                                    'LOWER(COALESCE(extension_telefonica, \'\')) LIKE ?',
+                                    ["%{$termino}%"]
                                 );
                         }
                     );
@@ -100,7 +104,10 @@ class UsuarioController extends Controller
             ->when(
                 $estadoSeleccionado === 'pendiente',
                 fn ($query) => $query
-                    ->where('activo', true)
+                    ->where(
+                        'activo',
+                        true
+                    )
                     ->whereNull(
                         'correo_verificado_at'
                     )
@@ -111,41 +118,31 @@ class UsuarioController extends Controller
             ->withQueryString();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Roles visibles en el filtro
-        |--------------------------------------------------------------------------
-        |
-        | Únicamente se muestran:
-        |
-        | 1 = Usuario
-        | 3 = Administrador
-        |
-        | UsuarioTI permanece en la base de datos, pero no aparece como opción
-        | administrable dentro de este módulo.
-        |
-        */
-
         $roles = $this->rolesDisponibles();
 
 
         $resumen = [
             'total' => Usuario::count(),
 
-            'activos' => Usuario::where(
-                'activo',
-                true
-            )->count(),
+            'activos' => Usuario::query()
+                ->where(
+                    'activo',
+                    true
+                )
+                ->count(),
 
-            'inactivos' => Usuario::where(
-                'activo',
-                false
-            )->count(),
+            'inactivos' => Usuario::query()
+                ->where(
+                    'activo',
+                    false
+                )
+                ->count(),
 
-            'pendientes' => Usuario::where(
-                'activo',
-                true
-            )
+            'pendientes' => Usuario::query()
+                ->where(
+                    'activo',
+                    true
+                )
                 ->whereNull(
                     'correo_verificado_at'
                 )
@@ -178,7 +175,8 @@ class UsuarioController extends Controller
         return view(
             'usuarios.create',
             [
-                'roles' => $this->rolesDisponibles(),
+                'roles' =>
+                    $this->rolesDisponibles(),
             ]
         );
     }
@@ -195,17 +193,32 @@ class UsuarioController extends Controller
             $request
         );
 
+        $extensionTelefonica =
+            $this->resolverExtensionTelefonica(
+                (int) $validated['rol_id'],
+                $validated['extension_telefonica']
+                    ?? null
+            );
+
 
         $usuario = Usuario::create([
-            'nombre' => $validated['nombre'],
+            'nombre' =>
+                $validated['nombre'],
 
-            'correo' => $validated['correo'],
+            'correo' =>
+                $validated['correo'],
 
-            'rol_id' => $validated['rol_id'],
+            'rol_id' =>
+                $validated['rol_id'],
 
-            'activo' => true,
+            'extension_telefonica' =>
+                $extensionTelefonica,
 
-            'correo_verificado_at' => null,
+            'activo' =>
+                true,
+
+            'correo_verificado_at' =>
+                null,
         ]);
 
 
@@ -217,7 +230,8 @@ class UsuarioController extends Controller
             Log::error(
                 'No se pudo enviar el código al usuario creado por administración.',
                 [
-                    'usuario_id' => $usuario->id,
+                    'usuario_id' =>
+                        $usuario->id,
 
                     'error' =>
                         $exception->getMessage(),
@@ -254,7 +268,8 @@ class UsuarioController extends Controller
         return view(
             'usuarios.edit',
             [
-                'usuario' => $usuario,
+                'usuario' =>
+                    $usuario,
 
                 'roles' =>
                     $this->rolesDisponibles(),
@@ -294,7 +309,8 @@ class UsuarioController extends Controller
             if (
                 ! $rolAdministrador
                 || (int) $validated['rol_id']
-                    !== (int) $rolAdministrador->id
+                    !==
+                    (int) $rolAdministrador->id
             ) {
                 return back()
                     ->withInput()
@@ -306,17 +322,34 @@ class UsuarioController extends Controller
         }
 
 
-        $correoCambio = mb_strtolower(
-            $usuario->correo
-        ) !== $validated['correo'];
+        $correoCambio =
+            mb_strtolower(
+                $usuario->correo
+            )
+            !==
+            $validated['correo'];
+
+
+        $extensionTelefonica =
+            $this->resolverExtensionTelefonica(
+                (int) $validated['rol_id'],
+                $validated['extension_telefonica']
+                    ?? null
+            );
 
 
         $usuario->update([
-            'nombre' => $validated['nombre'],
+            'nombre' =>
+                $validated['nombre'],
 
-            'correo' => $validated['correo'],
+            'correo' =>
+                $validated['correo'],
 
-            'rol_id' => $validated['rol_id'],
+            'rol_id' =>
+                $validated['rol_id'],
+
+            'extension_telefonica' =>
+                $extensionTelefonica,
 
             'correo_verificado_at' =>
                 $correoCambio
@@ -392,7 +425,8 @@ class UsuarioController extends Controller
 
 
         $usuario->update([
-            'activo' => ! $usuario->activo,
+            'activo' =>
+                ! $usuario->activo,
         ]);
 
 
@@ -445,7 +479,8 @@ class UsuarioController extends Controller
             Log::error(
                 'No se pudo reenviar el código desde administración.',
                 [
-                    'usuario_id' => $usuario->id,
+                    'usuario_id' =>
+                        $usuario->id,
 
                     'error' =>
                         $exception->getMessage(),
@@ -470,22 +505,17 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Roles disponibles
     |--------------------------------------------------------------------------
-    |
-    | Se centraliza la consulta para evitar repetirla en index, create y edit.
-    | El rol UsuarioTI no se elimina de la tabla, únicamente deja de aparecer
-    | como una opción seleccionable desde la administración de usuarios.
-    |
     */
 
     private function rolesDisponibles()
     {
         return Rol::query()
             ->whereIn(
-                'id',
+                'nombre',
                 [
-                    1,
-                    2,
-                    3,
+                    'Usuario',
+                    'UsuarioTI',
+                    'Administrador',
                 ]
             )
             ->orderBy('nombre')
@@ -502,6 +532,17 @@ class UsuarioController extends Controller
     private function normalizarDatos(
         Request $request
     ): void {
+        $extensionTelefonica = preg_replace(
+            '/\s+/',
+            '',
+            trim(
+                (string) $request->input(
+                    'extension_telefonica',
+                    ''
+                )
+            )
+        );
+
         $request->merge([
             'nombre' => preg_replace(
                 '/\s+/',
@@ -516,6 +557,11 @@ class UsuarioController extends Controller
                     (string) $request->correo
                 )
             ),
+
+            'extension_telefonica' =>
+                $extensionTelefonica !== ''
+                    ? $extensionTelefonica
+                    : null,
         ]);
     }
 
@@ -530,82 +576,156 @@ class UsuarioController extends Controller
         Request $request,
         ?Usuario $usuario = null
     ): array {
-        return $request->validate([
-            'nombre' => [
-                'required',
-                'string',
-                'min:3',
-                'max:200',
-                'regex:/^[\pL\s.\'-]+$/u',
+        $rolUsuarioTI = Rol::query()
+            ->where(
+                'nombre',
+                'UsuarioTI'
+            )
+            ->value('id');
+
+        $rolesPermitidos =
+            $this->rolesDisponibles()
+                ->pluck('id')
+                ->map(
+                    fn ($id) => (int) $id
+                )
+                ->all();
+
+
+        return $request->validate(
+            [
+                'nombre' => [
+                    'required',
+                    'string',
+                    'min:3',
+                    'max:200',
+                    'regex:/^[\pL\s.\'-]+$/u',
+                ],
+
+                'correo' => [
+                    'required',
+                    'string',
+                    'email:rfc',
+                    'max:200',
+
+                    Rule::unique(
+                        'usuarios',
+                        'correo'
+                    )->ignore(
+                        $usuario?->id
+                    ),
+                ],
+
+                'rol_id' => [
+                    'required',
+                    'integer',
+
+                    Rule::in(
+                        $rolesPermitidos
+                    ),
+                ],
+
+                'extension_telefonica' => [
+                    Rule::requiredIf(
+                        $rolUsuarioTI !== null
+                        && (int) $request->input(
+                            'rol_id'
+                        )
+                        ===
+                        (int) $rolUsuarioTI
+                    ),
+
+                    'nullable',
+                    'string',
+                    'max:10',
+                    'regex:/^[0-9]+$/',
+                ],
             ],
+            [
+                'nombre.required' =>
+                    'Debe ingresar el nombre completo.',
 
-            'correo' => [
-                'required',
-                'string',
-                'email:rfc',
-                'max:200',
+                'nombre.min' =>
+                    'El nombre debe tener al menos 3 caracteres.',
 
-                Rule::unique(
-                    'usuarios',
-                    'correo'
-                )->ignore(
-                    $usuario?->id
-                ),
-            ],
+                'nombre.max' =>
+                    'El nombre no puede superar los 200 caracteres.',
 
-            /*
-            |--------------------------------------------------------------------------
-            | Roles permitidos
-            |--------------------------------------------------------------------------
-            |
-            | Se valida también en el servidor para impedir que alguien pueda
-            | enviar manualmente rol_id=2 modificando el formulario.
-            |
-            */
+                'nombre.regex' =>
+                    'El nombre contiene caracteres no permitidos.',
 
-            'rol_id' => [
-                'required',
-                'integer',
-                Rule::in([
-                    1,
-                    2,
-                    3,
-                ]),
-            ],
-        ], [
-            'nombre.required' =>
-                'Debe ingresar el nombre completo.',
+                'correo.required' =>
+                    'Debe ingresar el correo electrónico.',
 
-            'nombre.min' =>
-                'El nombre debe tener al menos 3 caracteres.',
+                'correo.email' =>
+                    'Debe ingresar un correo electrónico válido.',
 
-            'nombre.max' =>
-                'El nombre no puede superar los 200 caracteres.',
+                'correo.max' =>
+                    'El correo no puede superar los 200 caracteres.',
 
-            'nombre.regex' =>
-                'El nombre contiene caracteres no permitidos.',
+                'correo.unique' =>
+                    'El correo ya pertenece a otro usuario.',
 
-            'correo.required' =>
-                'Debe ingresar el correo electrónico.',
+                'rol_id.required' =>
+                    'Debe seleccionar un rol.',
 
-            'correo.email' =>
-                'Debe ingresar un correo electrónico válido.',
+                'rol_id.integer' =>
+                    'El rol seleccionado no es válido.',
 
-            'correo.max' =>
-                'El correo no puede superar los 200 caracteres.',
+                'rol_id.in' =>
+                    'El rol seleccionado no es válido.',
 
-            'correo.unique' =>
-                'El correo ya pertenece a otro usuario.',
+                'extension_telefonica.required' =>
+                    'Debe ingresar la extensión telefónica del usuario de soporte.',
 
-            'rol_id.required' =>
-                'Debe seleccionar un rol.',
+                'extension_telefonica.string' =>
+                    'La extensión telefónica no es válida.',
 
-            'rol_id.integer' =>
-                'El rol seleccionado no es válido.',
+                'extension_telefonica.max' =>
+                    'La extensión telefónica no puede superar los 10 caracteres.',
 
-            'rol_id.in' =>
-                'El rol seleccionado no es válido.',
-        ]);
+                'extension_telefonica.regex' =>
+                    'La extensión telefónica solo puede contener números.',
+            ]
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver extensión telefónica
+    |--------------------------------------------------------------------------
+    |
+    | Únicamente los usuarios con rol UsuarioTI conservan una extensión.
+    | Para cualquier otro rol se guarda NULL.
+    |
+    */
+
+    private function resolverExtensionTelefonica(
+        int $rolId,
+        ?string $extensionTelefonica
+    ): ?string {
+        $rolUsuarioTIId = Rol::query()
+            ->where(
+                'nombre',
+                'UsuarioTI'
+            )
+            ->value('id');
+
+        if (
+            $rolUsuarioTIId === null
+            || $rolId !== (int) $rolUsuarioTIId
+        ) {
+            return null;
+        }
+
+        $extensionTelefonica = trim(
+            (string) $extensionTelefonica
+        );
+
+        return $extensionTelefonica !== ''
+            ? $extensionTelefonica
+            : null;
     }
 
 
@@ -621,9 +741,11 @@ class UsuarioController extends Controller
         $usuario->tokensAutenticacion()
             ->whereNull('used_at')
             ->update([
-                'used_at' => now(),
+                'used_at' =>
+                    now(),
 
-                'updated_at' => now(),
+                'updated_at' =>
+                    now(),
             ]);
     }
 

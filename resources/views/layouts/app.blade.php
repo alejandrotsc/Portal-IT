@@ -34,10 +34,17 @@
         href="{{ asset('img/logo-it.ico') }}"
     >
 
+
     {{--
-        Aplica el tema guardado antes de cargar los estilos.
-        Esto evita que aparezca primero el modo claro.
+    |--------------------------------------------------------------------------
+    | Tema inicial
+    |--------------------------------------------------------------------------
+    |
+    | Aplica el tema guardado antes de cargar los estilos para evitar que
+    | aparezca brevemente el modo claro.
+    |
     --}}
+
     <script>
         (() => {
             try {
@@ -61,65 +68,96 @@
         })();
     </script>
 
-    {{-- Tailwind CDN --}}
+
+    {{--
+    |--------------------------------------------------------------------------
+    | Tailwind CSS
+    |--------------------------------------------------------------------------
+    --}}
+
     <script src="https://cdn.tailwindcss.com"></script>
 
-    {{-- Permite controlar dark mode mediante la clase .dark --}}
+
+    {{--
+    |--------------------------------------------------------------------------
+    | Configuración de Tailwind
+    |--------------------------------------------------------------------------
+    --}}
+
     <script>
         tailwind.config = {
             darkMode: 'class',
         };
     </script>
 
-    {{-- Estilos compilados y personalizados del portal --}}
-    <link
-        rel="stylesheet"
-        href="{{ asset('css/app.css') }}"
-    >
 
     {{--
-        Lucide se carga antes de Alpine para que los iconos estén
-        disponibles cuando Alpine inicialice el componente principal.
-        defer evita que la descarga detenga el procesamiento del HTML.
+    |--------------------------------------------------------------------------
+    | Alpine.js
+    |--------------------------------------------------------------------------
     --}}
-    <script
-        defer
-        src="https://unpkg.com/lucide@latest"
-    ></script>
 
-    {{-- Alpine --}}
-    <script
-        defer
-        src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
+   
+{{--
+    |--------------------------------------------------------------------------
+    | Aplicación principal
+    |--------------------------------------------------------------------------
+    |
+    | Define portalApp() desde el archivo público actual.
+    |
+    --}}
 
-    {{-- JavaScript compilado mediante Vite --}}
-     @vite('resources/js/app.js')
+    <script src="{{ asset('js/portal.js') }}"></script>
+
+    {{--
+    |--------------------------------------------------------------------------
+    | JavaScript compilado con Vite
+    |--------------------------------------------------------------------------
+    |
+    | Lucide se importa localmente desde resources/js/app.js, por lo que ya
+    | no es necesario cargarlo desde un CDN.
+    |
+    --}}
+
+    @vite([
+    'resources/css/app.css',
+    'resources/js/app.js',
+])
+
 
     {{-- Estilos específicos agregados por las vistas --}}
+
     @stack('styles')
 </head>
+
 
 <body
     class="min-h-screen bg-background text-foreground"
     x-data="portalApp()"
     x-init="init()"
 >
+
     @include('partials.header')
+
 
     <main
         class="mx-auto max-w-[1300px]
-               space-y-10 px-8 py-10 lg:px-12"
+               space-y-10 px-8 py-10
+               lg:px-12"
     >
         @yield('content')
     </main>
 
+
     <footer class="mt-16 border-t border-border py-6">
+
         <div
-            class="mx-auto flex max-w-5xl flex-col
-                   items-center justify-between gap-2
-                   px-6 sm:flex-row"
+            class="mx-auto flex max-w-5xl
+                   flex-col items-center
+                   justify-between gap-2 px-6
+                   sm:flex-row"
         >
+
             <p class="text-xs text-muted-foreground">
                 © {{ date('Y') }} Portal de Gestión TI —
                 Área de Tecnología e Información
@@ -128,16 +166,16 @@
             <p class="text-xs text-muted-foreground">
                 v1.0 · Lunes a Viernes 09:00–18:00
             </p>
+
         </div>
+
     </footer>
 
-    {{--
-        Define portalApp() desde el archivo público actual.
-        Se conserva esta ubicación para no cambiar su funcionamiento.
-    --}}
-    <script src="{{ asset('js/portal.js') }}"></script>
+
 
     {{-- Scripts específicos agregados por las vistas --}}
+
     @stack('scripts')
+
 </body>
 </html>

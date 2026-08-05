@@ -43,6 +43,254 @@
         border-radius: 999px;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Superficie sólida de conversación
+    |--------------------------------------------------------------------------
+    |
+    | Se usa un color sólido porque los recortes de las colitas deben coincidir
+    | exactamente con el fondo en ambos modos.
+    |
+    */
+
+    #chatbot-messages {
+        --chat-surface: rgb(248 250 252);
+        background: var(--chat-surface);
+    }
+
+    html.dark #chatbot-messages {
+        --chat-surface: rgb(15 23 42);
+        background: var(--chat-surface);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Burbujas estilo iMessage
+    |--------------------------------------------------------------------------
+    */
+
+    .chatbot-message-bubble {
+        --bubble-tail-color: rgb(250 252 255);
+        --bubble-background: rgb(255 255 255);
+
+        position: relative;
+        isolation: isolate;
+        max-width: 100%;
+        padding: 0.78rem 1rem;
+        border-radius: 1.2rem;
+        background: var(--bubble-background);
+        box-shadow:
+            0 1px 2px rgba(15, 23, 42, 0.055),
+            0 4px 12px rgba(15, 23, 42, 0.035);
+    }
+
+    .chatbot-message-bubble > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .chatbot-message-bubble--bot {
+        --bubble-tail-color: rgb(250 252 255);
+        --bubble-background: linear-gradient(
+            to bottom,
+            rgb(255 255 255) 0%,
+            rgb(250 252 255) 100%
+        );
+
+        color: rgb(30 41 59);
+        border-bottom-left-radius: 0.3rem;
+    }
+
+    .chatbot-message-bubble--user {
+        --bubble-tail-color: rgb(37 99 235);
+        --bubble-background: linear-gradient(
+            to bottom,
+            rgb(45 112 238) 0%,
+            rgb(37 99 235) 100%
+        );
+
+        color: rgb(255 255 255);
+        border-bottom-right-radius: 0.3rem;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Colita izquierda del asistente
+    |--------------------------------------------------------------------------
+    */
+
+    .chatbot-message-bubble--bot::before {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        left: -11px;
+        bottom: 0;
+        width: 27px;
+        height: 24px;
+        background: var(--bubble-tail-color);
+        border-bottom-right-radius: 21px;
+    }
+
+    .chatbot-message-bubble--bot::after {
+        content: "";
+        position: absolute;
+        z-index: 1;
+        left: -16px;
+        bottom: 0;
+        width: 16px;
+        height: 25px;
+        background: var(--chat-surface);
+        border-bottom-right-radius: 16px;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Colita derecha del usuario
+    |--------------------------------------------------------------------------
+    */
+
+    .chatbot-message-bubble--user::before {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        right: -11px;
+        bottom: 0;
+        width: 27px;
+        height: 24px;
+        background: var(--bubble-tail-color);
+        border-bottom-left-radius: 21px;
+    }
+
+    .chatbot-message-bubble--user::after {
+        content: "";
+        position: absolute;
+        z-index: 1;
+        right: -16px;
+        bottom: 0;
+        width: 16px;
+        height: 25px;
+        background: var(--chat-surface);
+        border-bottom-left-radius: 16px;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modo oscuro
+    |--------------------------------------------------------------------------
+    |
+    | La parte inferior de cada degradado y su colita usan exactamente el mismo
+    | valor para que no exista cambio de tono en la unión.
+    |
+    */
+
+    html.dark .chatbot-message-bubble--bot {
+        --bubble-tail-color: rgb(42 53 71);
+        --bubble-background: linear-gradient(
+            to bottom,
+            rgb(47 59 78) 0%,
+            rgb(42 53 71) 100%
+        );
+
+        color: rgb(248 250 252);
+        box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.24),
+            0 6px 18px rgba(0, 0, 0, 0.16);
+    }
+
+    html.dark .chatbot-message-bubble--user {
+        --bubble-tail-color: rgb(37 99 235);
+        --bubble-background: linear-gradient(
+            to bottom,
+            rgb(45 112 238) 0%,
+            rgb(37 99 235) 100%
+        );
+    }
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Opciones de los flujos
+    |--------------------------------------------------------------------------
+    |
+    | Conservan la misma superficie visual de las burbujas, pero sin colita.
+    | Los colores semánticos permanecen en los iconos y en el borde al pasar
+    | el cursor para no perder la identificación de cada acción.
+    |
+    */
+
+    .chatbot-flow-option {
+        background: linear-gradient(
+            to bottom,
+            rgb(255 255 255) 0%,
+            rgb(250 252 255) 100%
+        ) !important;
+        border-color: rgba(226, 232, 240, 0.9);
+        border-radius: 1.2rem;
+        box-shadow:
+            0 1px 2px rgba(15, 23, 42, 0.05),
+            0 4px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .chatbot-flow-option:hover {
+        background: linear-gradient(
+            to bottom,
+            rgb(255 255 255) 0%,
+            rgb(247 250 253) 100%
+        ) !important;
+        box-shadow:
+            0 2px 4px rgba(15, 23, 42, 0.08),
+            0 8px 20px rgba(15, 23, 42, 0.07);
+    }
+
+    .chatbot-flow-option > span:last-child > span:first-child {
+        color: rgb(30 41 59);
+    }
+
+    .chatbot-flow-option > span:last-child > span:last-child {
+        color: rgb(71 85 105);
+    }
+
+    html.dark .chatbot-flow-option {
+        background: linear-gradient(
+            to bottom,
+            rgb(47 59 78) 0%,
+            rgb(42 53 71) 100%
+        ) !important;
+        border-color: rgba(100, 116, 139, 0.58);
+        box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.24),
+            0 6px 18px rgba(0, 0, 0, 0.16);
+    }
+
+    html.dark .chatbot-flow-option:hover {
+        background: linear-gradient(
+            to bottom,
+            rgb(51 65 85) 0%,
+            rgb(45 57 75) 100%
+        ) !important;
+        box-shadow:
+            0 2px 5px rgba(0, 0, 0, 0.26),
+            0 9px 22px rgba(0, 0, 0, 0.2);
+    }
+
+    html.dark .chatbot-flow-option > span:last-child > span:first-child {
+        color: rgb(248 250 252);
+    }
+
+    html.dark .chatbot-flow-option > span:last-child > span:last-child {
+        color: rgb(203 213 225);
+    }
+
+        /* Texto secundario dentro de las burbujas */
+    .chatbot-message-bubble--bot .text-muted-foreground {
+        color: rgb(71 85 105);
+    }
+
+    html.dark .chatbot-message-bubble--bot .text-muted-foreground {
+        color: rgb(226 232 240);
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .chatbot-welcome {
             animation: none !important;
@@ -129,7 +377,7 @@
         <div
             id="chatbot-messages"
             x-ref="messages"
-            class="chatbot-scrollbar min-h-[430px] max-h-[560px] space-y-5 overflow-y-auto bg-muted/30 dark:bg-slate-950/35 px-5 py-5 sm:px-6"
+            class="chatbot-scrollbar min-h-[430px] max-h-[560px] space-y-5 overflow-y-auto px-5 py-5 sm:px-6"
             aria-live="polite"
         >
 
@@ -137,28 +385,19 @@
 
             <div
                 x-show="messages.length === 0"
-                class="chatbot-welcome flex items-start gap-3"
+                class="chatbot-welcome flex justify-start"
             >
 
-                <div
-                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-400 shadow-sm"
-                >
-                    <i
-                        data-lucide="bot"
-                        class="h-4 w-4"
-                    ></i>
-                </div>
-
-
-                <div class="w-full max-w-2xl">
+                <div class="w-full max-w-[84%] sm:max-w-2xl">
 
                     <div
-                        class="rounded-2xl rounded-tl-md border border-border bg-card px-4 py-3 shadow-sm dark:border-slate-700/70 dark:bg-slate-900"
+                        class="chatbot-message-bubble chatbot-message-bubble--bot"
                     >
-                        <p class="text-sm leading-relaxed text-foreground">
+                        <p class="text-sm leading-relaxed text-inherit">
                             Hola{{ auth()->check() ? ', '.explode(' ', trim(auth()->user()->nombre))[0] : '' }}.
                             Soy el asistente del Portal TI. ¿Qué necesitas gestionar hoy?
                         </p>
+
                     </div>
 
 
@@ -170,7 +409,7 @@
                             type="button"
                             @click="sendAction('problema.menu', 'Reportar un problema')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-rose-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-rose-800 dark:hover:bg-rose-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card chatbot-flow-option group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-rose-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-rose-800 dark:hover:bg-rose-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/45 dark:text-rose-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="triangle-alert" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
@@ -192,7 +431,7 @@
                             type="button"
                             @click="sendAction('solicitud.menu', 'Solicitar un servicio')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-cyan-800 dark:hover:bg-cyan-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card chatbot-flow-option group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-cyan-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-cyan-800 dark:hover:bg-cyan-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-950/45 dark:text-cyan-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="clipboard-list" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
@@ -214,7 +453,7 @@
                             type="button"
                             @click="sendAction('pase.menu', 'Gestionar un pase')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card chatbot-flow-option group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="badge-check" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
@@ -236,7 +475,7 @@
                             type="button"
                             @click="sendAction('gestion.estado', 'Consultar mis gestiones')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-sky-800 dark:hover:bg-sky-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            class="chatbot-card chatbot-flow-option group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-sky-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-sky-800 dark:hover:bg-sky-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="history" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
@@ -258,7 +497,7 @@
                             type="button"
                             @click="sendAction('ai.enable', 'Escribir otra consulta')"
                             :disabled="loading"
-                            class="chatbot-card group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-violet-800 dark:hover:bg-violet-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
+                            class="chatbot-card chatbot-flow-option group/action grid min-h-[68px] w-full grid-cols-[36px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-dashed border-border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-900 dark:hover:border-violet-800 dark:hover:bg-violet-950/15 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
                         >
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-950/45 dark:text-violet-300 transition-all duration-300 motion-safe:group-hover/action:scale-105">
                                 <i data-lucide="message-square-text" class="h-4 w-4 transition-transform duration-300 motion-safe:group-hover/action:scale-110"></i>
@@ -291,43 +530,26 @@
             >
 
                 <div
-                    class="flex items-start gap-3"
-                    :class="msg.from === 'user' ? 'flex-row-reverse' : ''"
+                    class="flex w-full"
+                    :class="msg.from === 'user' ? 'justify-end' : 'justify-start'"
                     x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-y-2"
                     x-transition:enter-end="opacity-100 translate-y-0"
                 >
 
-                    {{-- Avatar --}}
-
                     <div
-                        class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border shadow-sm"
-                        :class="
-                            msg.from === 'user'
-                                ? 'border-blue-600 bg-blue-600 text-white'
-                                : 'border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-400'
-                        "
-                    >
-                        <i
-                            :data-lucide="msg.from === 'user' ? 'user-round' : 'bot'"
-                            class="h-4 w-4"
-                        ></i>
-                    </div>
-
-
-                    <div
-                        class="max-w-[88%] sm:max-w-2xl"
+                        class="flex max-w-[84%] flex-col sm:max-w-2xl"
                         :class="msg.from === 'user' ? 'items-end' : 'items-start'"
                     >
 
                         {{-- Burbuja --}}
 
                         <div
-                            class="rounded-2xl border px-4 py-3 shadow-[0_5px_16px_rgba(15,23,42,0.055)]"
+                            class="chatbot-message-bubble"
                             :class="
                                 msg.from === 'user'
-                                    ? 'rounded-tr-md border-primary bg-primary text-white'
-                                    : 'rounded-tl-md border-border bg-card text-foreground dark:border-slate-700/70 dark:bg-slate-900 dark:text-slate-200'
+                                    ? 'chatbot-message-bubble--user'
+                                    : 'chatbot-message-bubble--bot'
                             "
                         >
 
@@ -451,6 +673,7 @@
                                 </template>
                             @endif
 
+
                         </div>
 
 
@@ -469,7 +692,7 @@
                                         type="button"
                                         @click="executeAction(action, msg)"
                                         :disabled="loading"
-                                        class="chatbot-card group/action flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:shadow-md dark:bg-slate-900 dark:hover:bg-slate-800/70 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                                        class="chatbot-card chatbot-flow-option group/action flex items-center gap-2.5 rounded-xl border bg-card p-3 text-left shadow-sm transition-all duration-300 hover:shadow-md dark:bg-slate-900 dark:hover:bg-slate-800/70 motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                                         :class="chatbotActionAppearance(action).buttonClass"
                                     >
                                         <span
@@ -623,8 +846,6 @@
         ></i>
     </button>
 </form>
-
-            </form>
 
 
             <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">

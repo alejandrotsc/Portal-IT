@@ -23,6 +23,7 @@ class Usuario extends Authenticatable
         'correo_verificado_at',
         'rol_id',
         'activo',
+        'extension_telefonica',
     ];
 
 

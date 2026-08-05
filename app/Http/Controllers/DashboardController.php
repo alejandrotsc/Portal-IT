@@ -7,6 +7,7 @@ use App\Models\Incidencia;
 use App\Models\Memorando;
 use App\Models\Solicitud;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -18,9 +19,10 @@ class DashboardController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(): View
-    {
-        $usuario = auth()->user();
+    public function index(
+        Request $request
+    ): View {
+        $usuario = $request->user();
 
         return match ($usuario->rol?->nombre) {
             'Usuario' =>
@@ -31,10 +33,12 @@ class DashboardController extends Controller
                 $this->dashboardAdministrativo(),
 
             default =>
-                abort(403),
+                abort(
+                    403,
+                    'No tienes permiso para acceder al dashboard.'
+                ),
         };
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -42,20 +46,39 @@ class DashboardController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    private function dashboardUsuario(): View
-    {
+    private function dashboardUsuario(): View {
+        /*
+        |--------------------------------------------------------------------------
+        | Zona horaria
+        |--------------------------------------------------------------------------
+        */
+
+        $zonaHoraria = config(
+            'app.timezone',
+            'America/Tegucigalpa'
+        );
+
         /*
         |--------------------------------------------------------------------------
         | Fecha y hora actual
         |--------------------------------------------------------------------------
         */
 
-        $ahora = now();
+        $ahora = Carbon::now(
+            $zonaHoraria
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Inicio del día evaluado
+        |--------------------------------------------------------------------------
+        */
 
         $hoy = $ahora
             ->copy()
             ->startOfDay();
 
+        $fechaHoy = $hoy->toDateString();
 
         /*
         |--------------------------------------------------------------------------
@@ -63,18 +86,12 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $esFinDeSemana =
-            $hoy->isSaturday()
-            || $hoy->isSunday();
-
+        $esFinDeSemana = $hoy->isWeekend();
 
         /*
         |--------------------------------------------------------------------------
         | Guardia asignada para hoy
         |--------------------------------------------------------------------------
-        |
-        | Solo se consulta cuando hoy es sábado o domingo.
-        |
         */
 
         $guardiaHoy = null;
@@ -84,73 +101,74 @@ class DashboardController extends Controller
                 ->with([
                     'agente.rol',
                 ])
-                ->where(
-                    'activo',
-                    true
-                )
+                ->activas()
                 ->whereDate(
                     'fecha',
-                    $hoy
+                    $fechaHoy
                 )
                 ->first();
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | Disponibilidad actual del agente
         |--------------------------------------------------------------------------
-        |
-        | Comprueba si la hora actual está dentro del horario programado.
-        |
         */
 
         $guardiaDisponibleAhora = false;
 
+        $inicioGuardia = null;
+        $finGuardia = null;
+
         if ($guardiaHoy) {
+            $fechaGuardia = $guardiaHoy
+                ->fecha
+                ->toDateString();
+
+            $horaInicio = substr(
+                (string) $guardiaHoy->hora_inicio,
+                0,
+                8
+            );
+
+            $horaFin = substr(
+                (string) $guardiaHoy->hora_fin,
+                0,
+                8
+            );
+
             $inicioGuardia = Carbon::parse(
-                $guardiaHoy
-                    ->fecha
-                    ->format('Y-m-d')
-                .' '
-                .$guardiaHoy->hora_inicio,
-                config('app.timezone')
+                $fechaGuardia
+                    . ' '
+                    . $horaInicio,
+                $zonaHoraria
             );
 
             $finGuardia = Carbon::parse(
-                $guardiaHoy
-                    ->fecha
-                    ->format('Y-m-d')
-                .' '
-                .$guardiaHoy->hora_fin,
-                config('app.timezone')
+                $fechaGuardia
+                    . ' '
+                    . $horaFin,
+                $zonaHoraria
             );
 
-            $guardiaDisponibleAhora =
-                $ahora->between(
+            $guardiaDisponibleAhora = $ahora
+                ->betweenIncluded(
                     $inicioGuardia,
-                    $finGuardia,
-                    true
+                    $finGuardia
                 );
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | Próximas dos fechas de guardia
         |--------------------------------------------------------------------------
         |
-        | De lunes a viernes:
-        |
-        | - Próximo sábado.
-        | - Domingo siguiente.
-        |
         | Si hoy es sábado:
         |
-        | - Domingo siguiente.
-        | - Sábado de la próxima semana.
+        | - Domingo inmediato.
+        | - Sábado siguiente.
         |
-        | Si hoy es domingo:
+        | Si hoy es domingo o día laboral:
         |
         | - Próximo sábado.
         | - Domingo siguiente.
@@ -174,50 +192,54 @@ class DashboardController extends Controller
                     Carbon::SATURDAY
                 );
 
-            $segundaFechaGuardia =
-                $primeraFechaGuardia
-                    ->copy()
-                    ->addDay();
+            $segundaFechaGuardia = $primeraFechaGuardia
+                ->copy()
+                ->addDay();
         }
-
 
         $proximasFechasGuardia = collect([
             $primeraFechaGuardia,
             $segundaFechaGuardia,
         ]);
 
-
         /*
         |--------------------------------------------------------------------------
-        | Guardias de las próximas fechas
+        | Guardias asignadas para las próximas fechas
         |--------------------------------------------------------------------------
         */
+
+        $fechasConsulta = $proximasFechasGuardia
+            ->map(
+                fn (Carbon $fecha): string =>
+                    $fecha->toDateString()
+            )
+            ->values()
+            ->all();
 
         $guardiasProximas = GuardiaSoporte::query()
             ->with([
                 'agente.rol',
             ])
-            ->where(
-                'activo',
-                true
-            )
+            ->activas()
             ->whereIn(
                 'fecha',
-                $proximasFechasGuardia
-                    ->map(
-                        fn (Carbon $fecha) =>
-                            $fecha->format('Y-m-d')
-                    )
-                    ->all()
+                $fechasConsulta
             )
+            ->orderBy('fecha')
+            ->orderBy('hora_inicio')
             ->get()
             ->keyBy(
-                fn (GuardiaSoporte $guardia) =>
+                fn (GuardiaSoporte $guardia): string =>
                     $guardia
                         ->fecha
-                        ->format('Y-m-d')
+                        ->toDateString()
             );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Mostrar dashboard del usuario
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'dashboard.usuario',
@@ -233,7 +255,6 @@ class DashboardController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Dashboard administrativo
@@ -247,7 +268,6 @@ class DashboardController extends Controller
     private function dashboardAdministrativo(): View
     {
         $ahora = now();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -284,7 +304,6 @@ class DashboardController extends Controller
                 'sessions.user_id'
             );
 
-
         /*
         |--------------------------------------------------------------------------
         | Solicitudes pendientes
@@ -298,7 +317,6 @@ class DashboardController extends Controller
             )
             ->count();
 
-
         /*
         |--------------------------------------------------------------------------
         | Incidencias abiertas
@@ -311,7 +329,6 @@ class DashboardController extends Controller
                 Incidencia::ESTADO_ABIERTA
             )
             ->count();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -338,6 +355,11 @@ class DashboardController extends Controller
             )
             ->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Mostrar dashboard administrativo
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'dashboard.administrador',

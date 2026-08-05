@@ -168,6 +168,8 @@
 
 </form>
 
+@include('partials.support-widget')
+
 </div>
 
 

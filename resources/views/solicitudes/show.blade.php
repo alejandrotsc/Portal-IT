@@ -889,6 +889,8 @@
 
         </div>
 
+        @include('partials.support-widget')
+
     </main>
 
 </div>

@@ -1,10 +1,80 @@
 /*
 |--------------------------------------------------------------------------
+| Alpine.js
+|--------------------------------------------------------------------------
+|
+| Alpine se carga localmente mediante Vite, por lo que los componentes
+| interactivos no dependen de internet.
+|
+*/
+
+import Alpine from 'alpinejs';
+
+
+/*
+|--------------------------------------------------------------------------
+| Lucide Icons
+|--------------------------------------------------------------------------
+*/
+
+import {
+    createIcons,
+    icons,
+} from 'lucide';
+
+
+/*
+|--------------------------------------------------------------------------
 | Módulos principales
 |--------------------------------------------------------------------------
 */
 
 import './switch';
+
+
+/*
+|--------------------------------------------------------------------------
+| Inicialización de iconos Lucide
+|--------------------------------------------------------------------------
+*/
+
+function iniciarLucide() {
+    try {
+        createIcons({
+            icons,
+
+            attrs: {
+                'aria-hidden': 'true',
+            },
+        });
+    } catch (error) {
+        console.warn(
+            '[Lucide] No fue posible renderizar los iconos.',
+            error
+        );
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Compatibilidad global
+|--------------------------------------------------------------------------
+|
+| Algunos componentes usan:
+|
+| window.lucide.createIcons()
+|
+| Se conserva esa llamada para no modificar los Blade existentes.
+|
+*/
+
+window.lucide = {
+    createIcons: iniciarLucide,
+};
+
+window.Alpine = Alpine;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +90,7 @@ async function iniciarTiempoReal() {
     try {
         await import('./echo');
 
-        if (!window.Echo) {
+        if (! window.Echo) {
             console.warn(
                 '[Echo] El servicio en tiempo real no está disponible.'
             );
@@ -37,12 +107,80 @@ async function iniciarTiempoReal() {
     }
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Inicialización general
+|--------------------------------------------------------------------------
+*/
+
+function iniciarInterfaz() {
+    /*
+    |--------------------------------------------------------------------------
+    | Alpine
+    |--------------------------------------------------------------------------
+    |
+    | Alpine debe iniciarse una sola vez.
+    |
+    */
+
+    if (! window.__alpineIniciado) {
+        Alpine.start();
+
+        window.__alpineIniciado = true;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lucide
+    |--------------------------------------------------------------------------
+    */
+
+    iniciarLucide();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tiempo real
+    |--------------------------------------------------------------------------
+    */
+
+    void iniciarTiempoReal();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Inicio de la interfaz
+|--------------------------------------------------------------------------
+*/
+
 if (document.readyState === 'loading') {
     document.addEventListener(
         'DOMContentLoaded',
-        iniciarTiempoReal,
-        { once: true }
+        iniciarInterfaz,
+        {
+            once: true,
+        }
     );
 } else {
-    void iniciarTiempoReal();
+    iniciarInterfaz();
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar iconos dinámicos
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+    'lucide:refresh',
+    iniciarLucide
+);
+
+document.addEventListener(
+    'livewire:navigated',
+    iniciarLucide
+);

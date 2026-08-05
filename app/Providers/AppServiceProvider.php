@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Aviso;
 use App\Services\Chatbot\IntentRecognizerInterface;
 use App\Services\Chatbot\KeywordIntentRecognizer;
+use App\View\Composers\SupportWidgetComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -41,116 +42,127 @@ class AppServiceProvider extends ServiceProvider
         $this->configurarLimiteReenvio();
 
         $this->compartirAvisosTicker();
+
+        $this->registrarWidgetSoporte();
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Compartir avisos con el layout
+    | Compartir avisos visibles
     |--------------------------------------------------------------------------
     |
-    | Solamente se comparten avisos:
+    | Los avisos se comparten con el layout principal y los dashboards.
+    | La colección se reutiliza durante la misma solicitud para evitar
+    | ejecutar la consulta más de una vez.
     |
-    | - Activos.
-    | - Cuya fecha de inicio ya se alcanzó.
-    | - Cuya fecha de finalización aún no ha pasado.
-    |--------------------------------------------------------------------------
     */
 
-    /*
-|--------------------------------------------------------------------------
-| Compartir avisos visibles
-|--------------------------------------------------------------------------
-*/
-
-private function compartirAvisosTicker(): void
-{
-    /*
-    | Se conserva la colección durante la solicitud para evitar
-    | ejecutar la misma consulta dos veces:
-    |
-    | - Una vez para layouts.app.
-    | - Otra vez para dashboard.*.
-    */
-
-    $avisosTicker = null;
+    private function compartirAvisosTicker(): void
+    {
+        $avisosTicker = null;
 
 
-    View::composer(
-        [
-            'layouts.app',
-            'dashboard.*',
-        ],
-        function ($view) use (
-            &$avisosTicker
-        ): void {
-            if ($avisosTicker === null) {
-                $ahora = now();
+        View::composer(
+            [
+                'layouts.app',
+                'dashboard.*',
+            ],
+            function ($view) use (
+                &$avisosTicker
+            ): void {
+                if ($avisosTicker === null) {
+                    $ahora = now();
 
-                $avisosTicker = Aviso::query()
-                    ->where(
-                        'activo',
-                        true
-                    )
 
-                    /*
-                    | Publicación inmediata o fecha ya alcanzada.
-                    */
+                    $avisosTicker = Aviso::query()
+                        ->where(
+                            'activo',
+                            true
+                        )
 
-                    ->where(
-                        function ($query) use ($ahora) {
-                            $query
-                                ->whereNull(
-                                    'fecha_inicio'
-                                )
-                                ->orWhere(
-                                    'fecha_inicio',
-                                    '<=',
-                                    $ahora
-                                );
-                        }
-                    )
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Publicación inmediata o fecha ya alcanzada
+                        |--------------------------------------------------------------------------
+                        */
 
-                    /*
-                    | Sin vencimiento o fecha todavía vigente.
-                    */
+                        ->where(
+                            function ($query) use ($ahora) {
+                                $query
+                                    ->whereNull(
+                                        'fecha_inicio'
+                                    )
+                                    ->orWhere(
+                                        'fecha_inicio',
+                                        '<=',
+                                        $ahora
+                                    );
+                            }
+                        )
 
-                    ->where(
-                        function ($query) use ($ahora) {
-                            $query
-                                ->whereNull(
-                                    'fecha_fin'
-                                )
-                                ->orWhere(
-                                    'fecha_fin',
-                                    '>=',
-                                    $ahora
-                                );
-                        }
-                    )
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Sin vencimiento o fecha todavía vigente
+                        |--------------------------------------------------------------------------
+                        */
 
-                    ->orderByDesc(
-                        'created_at'
-                    )
+                        ->where(
+                            function ($query) use ($ahora) {
+                                $query
+                                    ->whereNull(
+                                        'fecha_fin'
+                                    )
+                                    ->orWhere(
+                                        'fecha_fin',
+                                        '>=',
+                                        $ahora
+                                    );
+                            }
+                        )
 
-                    ->limit(10)
+                        ->orderByDesc(
+                            'created_at'
+                        )
 
-                    ->get([
-                        'id',
-                        'titulo',
-                        'mensaje',
-                        'fecha_inicio',
-                        'fecha_fin',
-                        'created_at',
-                    ]);
+                        ->limit(10)
+
+                        ->get([
+                            'id',
+                            'titulo',
+                            'mensaje',
+                            'fecha_inicio',
+                            'fecha_fin',
+                            'created_at',
+                        ]);
+                }
+
+
+                $view->with(
+                    'avisosTicker',
+                    $avisosTicker
+                );
             }
+        );
+    }
 
 
-            $view->with(
-                'avisosTicker',
-                $avisosTicker
-            );
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Registrar widget de soporte
+    |--------------------------------------------------------------------------
+    |
+    | Se registran nombres de vistas Blade, no nombres de rutas.
+    | La obtención de las guardias se encuentra centralizada dentro de
+    | SupportWidgetComposer.
+    |
+    */
+
+    private function registrarWidgetSoporte(): void
+{
+    View::composer(
+        'partials.support-widget',
+        SupportWidgetComposer::class
     );
 }
 
@@ -160,38 +172,34 @@ private function compartirAvisosTicker(): void
     | Límite para verificar código
     |--------------------------------------------------------------------------
     |
-    | Este límite protege el formulario donde se introduce el código
-    | de seis dígitos.
+    | Protege el formulario donde el usuario introduce el código de
+    | verificación.
     |
-    | Es independiente del límite para solicitar un código nuevo.
-    |--------------------------------------------------------------------------
     */
 
     private function configurarLimiteVerificacion(): void
     {
         RateLimiter::for(
             'verificar-codigo',
-            function (Request $request) {
-                $identificador = $this->identificador(
-                    $request
-                );
+            function (
+                Request $request
+            ) {
+                $identificador =
+                    $this->identificador(
+                        $request
+                    );
 
 
                 return Limit::perMinute(5)
                     ->by(
                         'verificar-codigo:'
-                        . $identificador
+                        .$identificador
                     )
                     ->response(
                         function (
                             Request $request,
                             array $headers
                         ) {
-                            /*
-                            | En lugar de mostrar una pantalla técnica 429,
-                            | regresar al formulario con un mensaje entendible.
-                            */
-
                             return redirect()
                                 ->back()
                                 ->withInput(
@@ -215,36 +223,33 @@ private function compartirAvisosTicker(): void
     | Límite para reenviar código
     |--------------------------------------------------------------------------
     |
-    | Este contador es completamente diferente al de verificación.
-    | Cinco códigos incorrectos no bloquean el primer reenvío.
-    |--------------------------------------------------------------------------
+    | Este límite es independiente del límite de validación de códigos.
+    |
     */
 
     private function configurarLimiteReenvio(): void
     {
         RateLimiter::for(
             'reenviar-codigo',
-            function (Request $request) {
-                $identificador = $this->identificador(
-                    $request
-                );
+            function (
+                Request $request
+            ) {
+                $identificador =
+                    $this->identificador(
+                        $request
+                    );
 
 
                 return Limit::perMinute(2)
                     ->by(
                         'reenviar-codigo:'
-                        . $identificador
+                        .$identificador
                     )
                     ->response(
                         function (
                             Request $request,
                             array $headers
                         ) {
-                            /*
-                            | Evitar mostrar directamente:
-                            | 429 Too Many Requests
-                            */
-
                             return redirect()
                                 ->back()
                                 ->withInput(
@@ -268,11 +273,9 @@ private function compartirAvisosTicker(): void
     | Construir identificador del limitador
     |--------------------------------------------------------------------------
     |
-    | Combina el correo y la dirección IP.
+    | Combina el correo y la dirección IP. El correo se procesa con
+    | SHA-256 para evitar que quede visible dentro de las claves de caché.
     |
-    | El correo se procesa con SHA-256 para no dejarlo directamente
-    | visible dentro de las claves almacenadas en caché.
-    |--------------------------------------------------------------------------
     */
 
     private function identificador(
@@ -298,8 +301,8 @@ private function compartirAvisosTicker(): void
         return hash(
             'sha256',
             $correo
-            . '|'
-            . $request->ip()
+            .'|'
+            .$request->ip()
         );
     }
 }

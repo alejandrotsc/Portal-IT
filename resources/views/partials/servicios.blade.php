@@ -1,25 +1,21 @@
 {{-- Servicios frecuentes --}}
 
-<style>
-    .service-card-gradient {
-        background: var(--service-gradient-light);
-    }
-
-    .dark .service-card-gradient {
-        background: var(--service-gradient-dark);
-    }
-</style>
 <section>
 
-    <div class="flex items-center justify-between mb-4">
+    {{-- Encabezado --}}
+
+    <div class="mb-4 flex items-center justify-between">
 
         <div>
 
-            <h2 class="text-sm font-semibold text-foreground uppercase tracking-widest">
+            <h2
+                class="text-sm font-semibold uppercase
+                       tracking-widest text-foreground"
+            >
                 Servicios frecuentes
             </h2>
 
-            <p class="text-xs text-muted-foreground mt-1">
+            <p class="mt-1 text-xs text-muted-foreground">
                 Accesos rápidos a solicitudes comunes.
             </p>
 
@@ -28,388 +24,668 @@
     </div>
 
 
+    {{-- Cuadrícula responsive --}}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-
-{{-- Pase menor a 24 horas --}}
-<a
-    href="{{ route('memorandos.pase_temporal') }}"
-    class="group block h-full"
->
     <div
-        class="relative h-full overflow-hidden
-               bg-card rounded-2xl border border-border p-5
-               transition-all duration-300
-               hover:-translate-y-1
-               hover:shadow-lg dark:hover:shadow-black/20
-               hover:border-blue-200 dark:hover:border-blue-800"
+        class="grid grid-cols-1 gap-4
+               sm:grid-cols-2
+               lg:grid-cols-4"
     >
 
-        {{-- Fondo degradado azul --}}
-        <div
-            class="service-card-gradient absolute inset-0 pointer-events-none
-                   opacity-40 group-hover:opacity-100
-                   transition-opacity duration-300"
-            style="
-                --service-gradient-light: linear-gradient(
-                    135deg,
-                    rgba(239, 246, 255, 0.95) 0%,
-                    rgba(255, 255, 255, 0.20) 55%,
-                    rgba(236, 254, 255, 0.90) 100%
-                );
-                --service-gradient-dark: linear-gradient(
-                    135deg,
-                    rgba(30, 58, 138, 0.30) 0%,
-                    rgba(17, 24, 39, 0.12) 55%,
-                    rgba(8, 47, 73, 0.26) 100%
-                );
-            "
-        ></div>
 
+        {{-- Pase menor a 24 horas --}}
 
-        {{-- Contenido --}}
-        <div class="relative z-10 h-full flex flex-col">
+        <a
+            href="{{ route('memorandos.pase_temporal') }}"
+            class="group/card block h-full"
+        >
+            <article
+                class="relative flex h-full min-h-[210px]
+                       flex-col overflow-hidden rounded-2xl
+                       border border-border bg-card
+                       px-5 pb-5 pt-6 shadow-sm
+                       transition-all duration-300
+                       hover:-translate-y-1
+                       hover:border-blue-200
+                       hover:shadow-lg
+                       hover:shadow-blue-500/10
+                       dark:hover:border-blue-800
+                       dark:hover:shadow-black/25"
+            >
 
-            <div class="flex items-start justify-between mb-5">
-
-                <div
-                    class="w-11 h-11 rounded-xl
-                           bg-blue-100 dark:bg-blue-950/50
-                           flex items-center justify-center
-                           transition-transform duration-300
-                           group-hover:scale-105"
-                >
-                    <i
-                        data-lucide="clock"
-                        class="w-5 h-5 text-blue-600 dark:text-blue-400"
-                    ></i>
-                </div>
-
-                <i
-                    data-lucide="arrow-right"
-                    class="w-4 h-4 text-blue-500 dark:text-blue-400
-                           opacity-0 -translate-x-1
-                           transition-all duration-300
-                           group-hover:opacity-100
-                           group-hover:translate-x-1"
-                ></i>
-
-            </div>
-
-
-            <h3 class="text-sm font-semibold text-foreground mb-2">
-                Pase menor a 24 horas
-            </h3>
-
-
-            <p class="text-xs text-muted-foreground leading-relaxed">
-                Solicitud de acceso temporal de corta duración.
-            </p>
-
-
-            <div class="mt-auto pt-5">
+                {{-- Acento superior --}}
 
                 <span
-                    class="inline-flex items-center rounded-full
-                           bg-blue-100 dark:bg-blue-950/50 px-2.5 py-1
-                           text-[11px] font-medium text-blue-700 dark:text-blue-300"
-                >
-                    Acceso
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-</a>
-
-
-
-{{-- Pase mayor a 24 horas --}}
-<a
-    href="{{ route('memorandos.autorizacion') }}"
-    class="group block h-full"
->
-    <div
-        class="relative h-full overflow-hidden
-               bg-card rounded-2xl border border-border p-5
-               transition-all duration-300
-               hover:-translate-y-1
-               hover:shadow-lg dark:hover:shadow-black/20
-               hover:border-indigo-200 dark:hover:border-indigo-800"
-    >
-
-        {{-- Fondo degradado índigo --}}
-        <div
-            class="service-card-gradient absolute inset-0 pointer-events-none
-                   opacity-40 group-hover:opacity-100
-                   transition-opacity duration-300"
-            style="
-                --service-gradient-light: linear-gradient(
-                    135deg,
-                    rgba(238, 242, 255, 0.95) 0%,
-                    rgba(255, 255, 255, 0.20) 55%,
-                    rgba(245, 243, 255, 0.90) 100%
-                );
-                --service-gradient-dark: linear-gradient(
-                    135deg,
-                    rgba(49, 46, 129, 0.30) 0%,
-                    rgba(17, 24, 39, 0.12) 55%,
-                    rgba(76, 29, 149, 0.24) 100%
-                );
-            "
-        ></div>
-
-
-        {{-- Contenido --}}
-        <div class="relative z-10 h-full flex flex-col">
-
-            <div class="flex items-start justify-between mb-5">
-
-                <div
-                    class="w-11 h-11 rounded-xl
-                           bg-indigo-100 dark:bg-indigo-950/50
-                           flex items-center justify-center
-                           transition-transform duration-300
-                           group-hover:scale-105"
-                >
-                    <i
-                        data-lucide="file-check"
-                        class="w-5 h-5 text-indigo-600 dark:text-indigo-400"
-                    ></i>
-                </div>
-
-                <i
-                    data-lucide="arrow-right"
-                    class="w-4 h-4 text-indigo-500 dark:text-indigo-400
-                           opacity-0 -translate-x-1
+                    class="absolute left-5 right-5 top-0
+                           h-1 rounded-b-full
+                           bg-gradient-to-r
+                           from-blue-500 to-cyan-400
                            transition-all duration-300
-                           group-hover:opacity-100
-                           group-hover:translate-x-1"
-                ></i>
-
-            </div>
+                           group-hover/card:left-4
+                           group-hover/card:right-4"
+                ></span>
 
 
-            <h3 class="text-sm font-semibold text-foreground mb-2">
-                Pase mayor a 24 horas
-            </h3>
-
-
-            <p class="text-xs text-muted-foreground leading-relaxed">
-                Solicitud de memorando de autorización.
-            </p>
-
-
-            <div class="mt-auto pt-5">
+                {{-- Brillo decorativo --}}
 
                 <span
-                    class="inline-flex items-center rounded-full
-                           bg-indigo-100 dark:bg-indigo-950/50 px-2.5 py-1
-                           text-[11px] font-medium text-indigo-700 dark:text-indigo-300"
-                >
-                    Acceso extendido
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-</a>
+                    class="pointer-events-none absolute
+                           -right-10 -top-10
+                           h-28 w-28 rounded-full
+                           bg-blue-500/[0.06] blur-3xl
+                           transition-all duration-500
+                           group-hover/card:scale-125
+                           group-hover/card:bg-blue-500/10"
+                ></span>
 
 
-
-{{-- Solicitudes --}}
-<a
-    href="{{ route('solicitudes.create') }}"
-    class="group block h-full"
->
-    <div
-        class="relative h-full overflow-hidden
-               bg-card rounded-2xl border border-border p-5
-               transition-all duration-300
-               hover:-translate-y-1
-               hover:shadow-lg dark:hover:shadow-black/20
-               hover:border-emerald-200 dark:hover:border-emerald-800"
-    >
-
-        {{-- Fondo degradado verde --}}
-        <div
-            class="service-card-gradient absolute inset-0 pointer-events-none
-                   opacity-40 group-hover:opacity-100
-                   transition-opacity duration-300"
-            style="
-                --service-gradient-light: linear-gradient(
-                    135deg,
-                    rgba(236, 253, 245, 0.95) 0%,
-                    rgba(255, 255, 255, 0.20) 55%,
-                    rgba(240, 253, 250, 0.90) 100%
-                );
-                --service-gradient-dark: linear-gradient(
-                    135deg,
-                    rgba(6, 78, 59, 0.30) 0%,
-                    rgba(17, 24, 39, 0.12) 55%,
-                    rgba(19, 78, 74, 0.24) 100%
-                );
-            "
-        ></div>
-
-
-        {{-- Contenido --}}
-        <div class="relative z-10 h-full flex flex-col">
-
-            <div class="flex items-start justify-between mb-5">
+                {{-- Encabezado de la tarjeta --}}
 
                 <div
-                    class="w-11 h-11 rounded-xl
-                           bg-emerald-100 dark:bg-emerald-950/50
-                           flex items-center justify-center
-                           transition-transform duration-300
-                           group-hover:scale-105"
+                    class="relative mb-5 flex
+                           items-start justify-between gap-4"
                 >
-                    <i
-                        data-lucide="clipboard-list"
-                        class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
-                    ></i>
+
+                    <div
+                        class="flex h-11 w-11 shrink-0
+                               items-center justify-center
+                               rounded-xl border
+                               border-blue-200/70
+                               bg-blue-50 text-blue-600
+                               transition-all duration-300
+                               group-hover/card:scale-105
+                               group-hover/card:border-blue-300
+                               group-hover/card:bg-blue-100
+                               dark:border-blue-900
+                               dark:bg-blue-950/50
+                               dark:text-blue-400
+                               dark:group-hover/card:border-blue-800
+                               dark:group-hover/card:bg-blue-950/80"
+                    >
+                        <i
+                            data-lucide="clock"
+                            stroke-width="1.8"
+                            class="h-5 w-5"
+                        ></i>
+                    </div>
+
+
+                    {{-- Flecha visible únicamente en hover --}}
+
+                    <div
+                        class="flex h-8 w-8 translate-x-1
+                               items-center justify-center
+                               rounded-lg
+                               text-blue-600 opacity-0
+                               transition-all duration-300
+                               group-hover/card:translate-x-0
+                               group-hover/card:bg-blue-50
+                               group-hover/card:opacity-100
+                               dark:text-blue-400
+                               dark:group-hover/card:bg-blue-950/50"
+                    >
+                        <i
+                            data-lucide="arrow-up-right"
+                            stroke-width="1.8"
+                            class="h-4 w-4
+                                   transition-transform duration-300
+                                   group-hover/card:translate-x-0.5
+                                   group-hover/card:-translate-y-0.5"
+                        ></i>
+                    </div>
+
                 </div>
 
-                <i
-                    data-lucide="arrow-right"
-                    class="w-4 h-4 text-emerald-500 dark:text-emerald-400
-                           opacity-0 -translate-x-1
-                           transition-all duration-300
-                           group-hover:opacity-100
-                           group-hover:translate-x-1"
-                ></i>
 
-            </div>
+                {{-- Contenido --}}
+
+                <div class="relative flex flex-1 flex-col">
+
+                    <h3
+                        class="mb-2 text-sm font-semibold
+                               leading-relaxed text-foreground
+                               transition-colors duration-200
+                               group-hover/card:text-blue-700
+                               dark:group-hover/card:text-blue-300"
+                    >
+                        Pase menor a 24 horas
+                    </h3>
+
+                    <p
+                        class="text-xs leading-relaxed
+                               text-muted-foreground"
+                    >
+                        Solicitud de acceso temporal de corta duración.
+                    </p>
 
 
-            <h3 class="text-sm font-semibold text-foreground mb-2">
-                Solicitudes
-            </h3>
+                    {{-- Etiqueta --}}
+
+                    <div class="mt-auto pt-5">
+
+                        <span
+                            class="inline-flex items-center gap-1.5
+                                   rounded-lg border
+                                   border-blue-200/70
+                                   bg-blue-50/70 px-2.5 py-1
+                                   text-[11px] font-medium
+                                   text-blue-700
+                                   transition-colors duration-200
+                                   group-hover/card:border-blue-300
+                                   group-hover/card:bg-blue-100
+                                   dark:border-blue-900
+                                   dark:bg-blue-950/40
+                                   dark:text-blue-300
+                                   dark:group-hover/card:border-blue-800
+                                   dark:group-hover/card:bg-blue-950/70"
+                        >
+                            <i
+                                data-lucide="key-round"
+                                stroke-width="1.8"
+                                class="h-3 w-3"
+                            ></i>
+
+                            Acceso
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+        </a>
 
 
-            <p class="text-xs text-muted-foreground leading-relaxed">
-                Gestiona requerimientos, accesos y servicios tecnológicos.
-            </p>
 
+        {{-- Pase mayor a 24 horas --}}
 
-            <div class="mt-auto pt-5">
+        <a
+            href="{{ route('memorandos.autorizacion') }}"
+            class="group/card block h-full"
+        >
+            <article
+                class="relative flex h-full min-h-[210px]
+                       flex-col overflow-hidden rounded-2xl
+                       border border-border bg-card
+                       px-5 pb-5 pt-6 shadow-sm
+                       transition-all duration-300
+                       hover:-translate-y-1
+                       hover:border-indigo-200
+                       hover:shadow-lg
+                       hover:shadow-indigo-500/10
+                       dark:hover:border-indigo-800
+                       dark:hover:shadow-black/25"
+            >
+
+                {{-- Acento superior --}}
 
                 <span
-                    class="inline-flex items-center rounded-full
-                           bg-emerald-100 dark:bg-emerald-950/50 px-2.5 py-1
-                           text-[11px] font-medium text-emerald-700 dark:text-emerald-300"
-                >
-                    Gestión
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-</a>
+                    class="absolute left-5 right-5 top-0
+                           h-1 rounded-b-full
+                           bg-gradient-to-r
+                           from-indigo-500 to-violet-500
+                           transition-all duration-300
+                           group-hover/card:left-4
+                           group-hover/card:right-4"
+                ></span>
 
 
+                {{-- Brillo decorativo --}}
 
-{{-- Reporte de incidencia --}}
-<a
-    href="{{ route('incidencias.create') }}"
-    class="group block h-full"
->
-    <div
-        class="relative h-full overflow-hidden
-               bg-card rounded-2xl border border-border p-5
-               transition-all duration-300
-               hover:-translate-y-1
-               hover:shadow-lg dark:hover:shadow-black/20
-               hover:border-orange-200 dark:hover:border-orange-800"
-    >
-
-        {{-- Fondo degradado naranja --}}
-        <div
-            class="service-card-gradient absolute inset-0 pointer-events-none
-                   opacity-40 group-hover:opacity-100
-                   transition-opacity duration-300"
-            style="
-                --service-gradient-light: linear-gradient(
-                    135deg,
-                    rgba(255, 247, 237, 0.95) 0%,
-                    rgba(255, 255, 255, 0.20) 55%,
-                    rgba(254, 242, 242, 0.90) 100%
-                );
-                --service-gradient-dark: linear-gradient(
-                    135deg,
-                    rgba(124, 45, 18, 0.30) 0%,
-                    rgba(17, 24, 39, 0.12) 55%,
-                    rgba(127, 29, 29, 0.22) 100%
-                );
-            "
-        ></div>
+                <span
+                    class="pointer-events-none absolute
+                           -right-10 -top-10
+                           h-28 w-28 rounded-full
+                           bg-indigo-500/[0.06] blur-3xl
+                           transition-all duration-500
+                           group-hover/card:scale-125
+                           group-hover/card:bg-indigo-500/10"
+                ></span>
 
 
-        {{-- Contenido --}}
-        <div class="relative z-10 h-full flex flex-col">
-
-            <div class="flex items-start justify-between mb-5">
+                {{-- Encabezado de la tarjeta --}}
 
                 <div
-                    class="w-11 h-11 rounded-xl
-                           bg-orange-100 dark:bg-orange-950/50
-                           flex items-center justify-center
-                           transition-transform duration-300
-                           group-hover:scale-105"
+                    class="relative mb-5 flex
+                           items-start justify-between gap-4"
                 >
-                    <i
-                        data-lucide="circle-alert"
-                        class="w-5 h-5 text-orange-600 dark:text-orange-400"
-                    ></i>
+
+                    <div
+                        class="flex h-11 w-11 shrink-0
+                               items-center justify-center
+                               rounded-xl border
+                               border-indigo-200/70
+                               bg-indigo-50 text-indigo-600
+                               transition-all duration-300
+                               group-hover/card:scale-105
+                               group-hover/card:border-indigo-300
+                               group-hover/card:bg-indigo-100
+                               dark:border-indigo-900
+                               dark:bg-indigo-950/50
+                               dark:text-indigo-400
+                               dark:group-hover/card:border-indigo-800
+                               dark:group-hover/card:bg-indigo-950/80"
+                    >
+                        <i
+                            data-lucide="file-check"
+                            stroke-width="1.8"
+                            class="h-5 w-5"
+                        ></i>
+                    </div>
+
+
+                    {{-- Flecha visible únicamente en hover --}}
+
+                    <div
+                        class="flex h-8 w-8 translate-x-1
+                               items-center justify-center
+                               rounded-lg
+                               text-indigo-600 opacity-0
+                               transition-all duration-300
+                               group-hover/card:translate-x-0
+                               group-hover/card:bg-indigo-50
+                               group-hover/card:opacity-100
+                               dark:text-indigo-400
+                               dark:group-hover/card:bg-indigo-950/50"
+                    >
+                        <i
+                            data-lucide="arrow-up-right"
+                            stroke-width="1.8"
+                            class="h-4 w-4
+                                   transition-transform duration-300
+                                   group-hover/card:translate-x-0.5
+                                   group-hover/card:-translate-y-0.5"
+                        ></i>
+                    </div>
+
                 </div>
 
-                <i
-                    data-lucide="arrow-right"
-                    class="w-4 h-4 text-orange-500 dark:text-orange-400
-                           opacity-0 -translate-x-1
-                           transition-all duration-300
-                           group-hover:opacity-100
-                           group-hover:translate-x-1"
-                ></i>
 
-            </div>
+                {{-- Contenido --}}
+
+                <div class="relative flex flex-1 flex-col">
+
+                    <h3
+                        class="mb-2 text-sm font-semibold
+                               leading-relaxed text-foreground
+                               transition-colors duration-200
+                               group-hover/card:text-indigo-700
+                               dark:group-hover/card:text-indigo-300"
+                    >
+                        Pase mayor a 24 horas
+                    </h3>
+
+                    <p
+                        class="text-xs leading-relaxed
+                               text-muted-foreground"
+                    >
+                        Solicitud de memorando de autorización.
+                    </p>
 
 
-            <h3 class="text-sm font-semibold text-foreground mb-2">
-                Reporte de incidencia
-            </h3>
+                    {{-- Etiqueta --}}
+
+                    <div class="mt-auto pt-5">
+
+                        <span
+                            class="inline-flex items-center gap-1.5
+                                   rounded-lg border
+                                   border-indigo-200/70
+                                   bg-indigo-50/70 px-2.5 py-1
+                                   text-[11px] font-medium
+                                   text-indigo-700
+                                   transition-colors duration-200
+                                   group-hover/card:border-indigo-300
+                                   group-hover/card:bg-indigo-100
+                                   dark:border-indigo-900
+                                   dark:bg-indigo-950/40
+                                   dark:text-indigo-300
+                                   dark:group-hover/card:border-indigo-800
+                                   dark:group-hover/card:bg-indigo-950/70"
+                        >
+                            <i
+                                data-lucide="shield-check"
+                                stroke-width="1.8"
+                                class="h-3 w-3"
+                            ></i>
+
+                            Acceso extendido
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+        </a>
 
 
-            <p class="text-xs text-muted-foreground leading-relaxed">
-                Registro de fallas, errores o interrupciones de servicio.
-            </p>
 
+        {{-- Solicitudes --}}
 
-            <div class="mt-auto pt-5">
+        <a
+            href="{{ route('solicitudes.create') }}"
+            class="group/card block h-full"
+        >
+            <article
+                class="relative flex h-full min-h-[210px]
+                       flex-col overflow-hidden rounded-2xl
+                       border border-border bg-card
+                       px-5 pb-5 pt-6 shadow-sm
+                       transition-all duration-300
+                       hover:-translate-y-1
+                       hover:border-emerald-200
+                       hover:shadow-lg
+                       hover:shadow-emerald-500/10
+                       dark:hover:border-emerald-800
+                       dark:hover:shadow-black/25"
+            >
+
+                {{-- Acento superior --}}
 
                 <span
-                    class="inline-flex items-center rounded-full
-                           bg-orange-100 dark:bg-orange-950/50 px-2.5 py-1
-                           text-[11px] font-medium text-orange-700 dark:text-orange-300"
+                    class="absolute left-5 right-5 top-0
+                           h-1 rounded-b-full
+                           bg-gradient-to-r
+                           from-emerald-500 to-teal-400
+                           transition-all duration-300
+                           group-hover/card:left-4
+                           group-hover/card:right-4"
+                ></span>
+
+
+                {{-- Brillo decorativo --}}
+
+                <span
+                    class="pointer-events-none absolute
+                           -right-10 -top-10
+                           h-28 w-28 rounded-full
+                           bg-emerald-500/[0.06] blur-3xl
+                           transition-all duration-500
+                           group-hover/card:scale-125
+                           group-hover/card:bg-emerald-500/10"
+                ></span>
+
+
+                {{-- Encabezado de la tarjeta --}}
+
+                <div
+                    class="relative mb-5 flex
+                           items-start justify-between gap-4"
                 >
-                    Soporte
-                </span>
 
-            </div>
+                    <div
+                        class="flex h-11 w-11 shrink-0
+                               items-center justify-center
+                               rounded-xl border
+                               border-emerald-200/70
+                               bg-emerald-50 text-emerald-600
+                               transition-all duration-300
+                               group-hover/card:scale-105
+                               group-hover/card:border-emerald-300
+                               group-hover/card:bg-emerald-100
+                               dark:border-emerald-900
+                               dark:bg-emerald-950/50
+                               dark:text-emerald-400
+                               dark:group-hover/card:border-emerald-800
+                               dark:group-hover/card:bg-emerald-950/80"
+                    >
+                        <i
+                            data-lucide="clipboard-list"
+                            stroke-width="1.8"
+                            class="h-5 w-5"
+                        ></i>
+                    </div>
 
-        </div>
 
-    </div>
-</a>
+                    {{-- Flecha visible únicamente en hover --}}
 
+                    <div
+                        class="flex h-8 w-8 translate-x-1
+                               items-center justify-center
+                               rounded-lg
+                               text-emerald-600 opacity-0
+                               transition-all duration-300
+                               group-hover/card:translate-x-0
+                               group-hover/card:bg-emerald-50
+                               group-hover/card:opacity-100
+                               dark:text-emerald-400
+                               dark:group-hover/card:bg-emerald-950/50"
+                    >
+                        <i
+                            data-lucide="arrow-up-right"
+                            stroke-width="1.8"
+                            class="h-4 w-4
+                                   transition-transform duration-300
+                                   group-hover/card:translate-x-0.5
+                                   group-hover/card:-translate-y-0.5"
+                        ></i>
+                    </div>
+
+                </div>
+
+
+                {{-- Contenido --}}
+
+                <div class="relative flex flex-1 flex-col">
+
+                    <h3
+                        class="mb-2 text-sm font-semibold
+                               leading-relaxed text-foreground
+                               transition-colors duration-200
+                               group-hover/card:text-emerald-700
+                               dark:group-hover/card:text-emerald-300"
+                    >
+                        Solicitudes
+                    </h3>
+
+                    <p
+                        class="text-xs leading-relaxed
+                               text-muted-foreground"
+                    >
+                        Gestiona requerimientos, accesos y servicios tecnológicos.
+                    </p>
+
+
+                    {{-- Etiqueta --}}
+
+                    <div class="mt-auto pt-5">
+
+                        <span
+                            class="inline-flex items-center gap-1.5
+                                   rounded-lg border
+                                   border-emerald-200/70
+                                   bg-emerald-50/70 px-2.5 py-1
+                                   text-[11px] font-medium
+                                   text-emerald-700
+                                   transition-colors duration-200
+                                   group-hover/card:border-emerald-300
+                                   group-hover/card:bg-emerald-100
+                                   dark:border-emerald-900
+                                   dark:bg-emerald-950/40
+                                   dark:text-emerald-300
+                                   dark:group-hover/card:border-emerald-800
+                                   dark:group-hover/card:bg-emerald-950/70"
+                        >
+                            <i
+                                data-lucide="workflow"
+                                stroke-width="1.8"
+                                class="h-3 w-3"
+                            ></i>
+
+                            Gestión
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+        </a>
+
+
+
+        {{-- Reporte de incidencia --}}
+
+        <a
+            href="{{ route('incidencias.create') }}"
+            class="group/card block h-full"
+        >
+            <article
+                class="relative flex h-full min-h-[210px]
+                       flex-col overflow-hidden rounded-2xl
+                       border border-border bg-card
+                       px-5 pb-5 pt-6 shadow-sm
+                       transition-all duration-300
+                       hover:-translate-y-1
+                       hover:border-orange-200
+                       hover:shadow-lg
+                       hover:shadow-orange-500/10
+                       dark:hover:border-orange-800
+                       dark:hover:shadow-black/25"
+            >
+
+                {{-- Acento superior --}}
+
+                <span
+                    class="absolute left-5 right-5 top-0
+                           h-1 rounded-b-full
+                           bg-gradient-to-r
+                           from-orange-500 to-red-400
+                           transition-all duration-300
+                           group-hover/card:left-4
+                           group-hover/card:right-4"
+                ></span>
+
+
+                {{-- Brillo decorativo --}}
+
+                <span
+                    class="pointer-events-none absolute
+                           -right-10 -top-10
+                           h-28 w-28 rounded-full
+                           bg-orange-500/[0.06] blur-3xl
+                           transition-all duration-500
+                           group-hover/card:scale-125
+                           group-hover/card:bg-orange-500/10"
+                ></span>
+
+
+                {{-- Encabezado de la tarjeta --}}
+
+                <div
+                    class="relative mb-5 flex
+                           items-start justify-between gap-4"
+                >
+
+                    <div
+                        class="flex h-11 w-11 shrink-0
+                               items-center justify-center
+                               rounded-xl border
+                               border-orange-200/70
+                               bg-orange-50 text-orange-600
+                               transition-all duration-300
+                               group-hover/card:scale-105
+                               group-hover/card:border-orange-300
+                               group-hover/card:bg-orange-100
+                               dark:border-orange-900
+                               dark:bg-orange-950/50
+                               dark:text-orange-400
+                               dark:group-hover/card:border-orange-800
+                               dark:group-hover/card:bg-orange-950/80"
+                    >
+                        <i
+                            data-lucide="circle-alert"
+                            stroke-width="1.8"
+                            class="h-5 w-5"
+                        ></i>
+                    </div>
+
+
+                    {{-- Flecha visible únicamente en hover --}}
+
+                    <div
+                        class="flex h-8 w-8 translate-x-1
+                               items-center justify-center
+                               rounded-lg
+                               text-orange-600 opacity-0
+                               transition-all duration-300
+                               group-hover/card:translate-x-0
+                               group-hover/card:bg-orange-50
+                               group-hover/card:opacity-100
+                               dark:text-orange-400
+                               dark:group-hover/card:bg-orange-950/50"
+                    >
+                        <i
+                            data-lucide="arrow-up-right"
+                            stroke-width="1.8"
+                            class="h-4 w-4
+                                   transition-transform duration-300
+                                   group-hover/card:translate-x-0.5
+                                   group-hover/card:-translate-y-0.5"
+                        ></i>
+                    </div>
+
+                </div>
+
+
+                {{-- Contenido --}}
+
+                <div class="relative flex flex-1 flex-col">
+
+                    <h3
+                        class="mb-2 text-sm font-semibold
+                               leading-relaxed text-foreground
+                               transition-colors duration-200
+                               group-hover/card:text-orange-700
+                               dark:group-hover/card:text-orange-300"
+                    >
+                        Reporte de incidencia
+                    </h3>
+
+                    <p
+                        class="text-xs leading-relaxed
+                               text-muted-foreground"
+                    >
+                        Registro de fallas, errores o interrupciones de servicio.
+                    </p>
+
+
+                    {{-- Etiqueta --}}
+
+                    <div class="mt-auto pt-5">
+
+                        <span
+                            class="inline-flex items-center gap-1.5
+                                   rounded-lg border
+                                   border-orange-200/70
+                                   bg-orange-50/70 px-2.5 py-1
+                                   text-[11px] font-medium
+                                   text-orange-700
+                                   transition-colors duration-200
+                                   group-hover/card:border-orange-300
+                                   group-hover/card:bg-orange-100
+                                   dark:border-orange-900
+                                   dark:bg-orange-950/40
+                                   dark:text-orange-300
+                                   dark:group-hover/card:border-orange-800
+                                   dark:group-hover/card:bg-orange-950/70"
+                        >
+                            <i
+                                data-lucide="headset"
+                                stroke-width="1.8"
+                                class="h-3 w-3"
+                            ></i>
+
+                            Soporte
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+        </a>
 
     </div>
 

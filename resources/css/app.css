@@ -1,14 +1,15 @@
 @import "tailwindcss";
-@import "./portal.css";
-
-@custom-variant dark (&:where(.dark, .dark *));
 
 @source "../views/**/*.blade.php";
 @source "../js/**/*.js";
 @source "../../public/js/**/*.js";
 @source "../../app/**/*.php";
+@source "../../storage/framework/views/**/*.php";
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
-@source "../../storage/framework/views/*.php";
+
+@import "./portal.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
     --font-sans:
