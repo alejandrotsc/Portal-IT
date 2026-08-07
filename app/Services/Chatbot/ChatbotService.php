@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\Route;
 
 class ChatbotService
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe los servicios responsables del reconocimiento de intenciones,
+    | construcción de respuestas, estados de gestiones, inteligencia
+    | artificial, contexto conversacional, flujos y prellenado.
+    |
+    */
+
     public function __construct(
         private readonly IntentRecognizerInterface $recognizer,
         private readonly ChatbotResponseBuilder $responseBuilder,
@@ -27,6 +38,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Respuesta tradicional
     |--------------------------------------------------------------------------
+    |
+    | Procesa una solicitud convencional utilizando el mismo flujo principal del servicio, pero sin enviar fragmentos progresivos al cliente.
+    |
     */
 
     public function handle(
@@ -54,6 +68,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Procesar mensaje o acción
     |--------------------------------------------------------------------------
+    |
+    | Coordina el procesamiento completo del chatbot, normalizando la entrada, resolviendo acciones, intenciones, diagnósticos, consultas de estado y respuestas mediante IA.
+    |
     */
 
     public function handleStream(
@@ -290,6 +307,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Procesar acción interactiva
     |--------------------------------------------------------------------------
+    |
+    | Resuelve acciones enviadas desde botones, incluyendo consulta de estado, prellenado de formularios y navegación entre nodos del flujo.
+    |
     */
 
     private function handleAction(
@@ -382,6 +402,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Consultar Ollama
     |--------------------------------------------------------------------------
+    |
+    | Construye el contexto de la consulta, ejecuta la generación mediante el servicio de IA y aplica controles de disponibilidad, confianza y seguridad antes de devolver la respuesta.
+    |
     */
 
     private function askAI(
@@ -531,6 +554,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Respuesta del sistema para IA ocupada o no disponible
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta uniforme para estados temporales del proveedor y conserva acciones que permiten reintentar o regresar al flujo principal.
+    |
     */
 
     private function buildSystemAIResponse(
@@ -601,6 +627,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Detectar diagnóstico local
     |--------------------------------------------------------------------------
+    |
+    | Evalúa diagnósticos configurados mediante palabras clave ponderadas y selecciona la coincidencia con mayor puntuación cuando supera el mínimo establecido.
+    |
     */
 
     private function detectLocalDiagnostic(
@@ -720,6 +749,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Confirmar que el usuario describe una falla
     |--------------------------------------------------------------------------
+    |
+    | Busca señales lingüísticas que indiquen que el mensaje corresponde a un problema técnico susceptible de diagnóstico.
+    |
     */
 
     private function looksLikeDiagnosticRequest(
@@ -768,6 +800,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Construir diagnóstico controlado
     |--------------------------------------------------------------------------
+    |
+    | Genera una respuesta local con pasos seguros, contexto de prellenado y acciones de seguimiento a partir del diagnóstico seleccionado.
+    |
     */
 
     private function buildLocalDiagnosticResponse(
@@ -911,6 +946,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Datos sugeridos para incidencia
     |--------------------------------------------------------------------------
+    |
+    | Asocia diagnósticos conocidos con valores iniciales que pueden utilizarse posteriormente para preparar un formulario de incidencia.
+    |
     */
 
     private function diagnosticPrefill(
@@ -974,6 +1012,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Validar respuesta generada
     |--------------------------------------------------------------------------
+    |
+    | Aplica restricciones de longitud, contenido y cantidad de pasos para impedir que la IA entregue instrucciones administrativas o potencialmente inseguras.
+    |
     */
 
     private function isSafeGeneratedMessage(
@@ -1082,6 +1123,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Respuesta segura cuando Ollama incumple las reglas
     |--------------------------------------------------------------------------
+    |
+    | Genera una respuesta alternativa cuando el contenido producido por la IA no supera las validaciones de seguridad establecidas.
+    |
     */
 
     private function buildSafeAIFallback(
@@ -1131,6 +1175,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Detectar flujo técnico
     |--------------------------------------------------------------------------
+    |
+    | Relaciona términos del mensaje con flujos guiados para problemas frecuentes como conectividad, correo, lentitud, encendido, impresión, aplicaciones y periféricos.
+    |
     */
 
     private function detectProblemFlow(
@@ -1219,6 +1266,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Comando directo para incidencia
     |--------------------------------------------------------------------------
+    |
+    | Identifica expresiones explícitas mediante las cuales el usuario solicita registrar o crear directamente una incidencia.
+    |
     */
 
     private function isDirectIncidenceCommand(
@@ -1254,6 +1304,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Construir contexto para Ollama
     |--------------------------------------------------------------------------
+    |
+    | Prepara el contexto enviado al modelo utilizando intención, usuario, historial reciente y datos acumulados durante el flujo actual.
+    |
     */
 
     private function buildAIContext(
@@ -1329,6 +1382,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Construir respuesta final de IA
     |--------------------------------------------------------------------------
+    |
+    | Integra la respuesta de IA con el constructor general, conserva el contexto de conversación y agrega acciones de menú y prellenado cuando corresponda.
+    |
     */
 
     private function buildAIResponse(
@@ -1442,6 +1498,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Preparar formulario desde la conversación
     |--------------------------------------------------------------------------
+    |
+    | Utiliza el contenido acumulado de la conversación para extraer datos estructurados y preparar una incidencia o solicitud para revisión del usuario.
+    |
     */
 
     private function buildFormPrefillResponse(
@@ -1649,6 +1708,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Fallo al preparar formulario
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta alternativa cuando no fue posible preparar automáticamente el formulario e incluye la opción de completarlo manualmente.
+    |
     */
 
     private function buildPrefillFailureResponse(
@@ -1719,6 +1781,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Botón de formulario preparado
     |--------------------------------------------------------------------------
+    |
+    | Genera una acción de redirección hacia el formulario correspondiente incluyendo únicamente los campos extraídos permitidos para el módulo.
+    |
     */
 
     private function buildPrefillRedirectAction(
@@ -1777,6 +1842,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Botón de formulario manual
     |--------------------------------------------------------------------------
+    |
+    | Construye una acción de acceso directo al formulario sin datos automáticos cuando el prellenado no se encuentra disponible.
+    |
     */
 
     private function buildManualFormAction(
@@ -1824,6 +1892,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Filtrar campos por módulo
     |--------------------------------------------------------------------------
+    |
+    | Limita los campos extraídos a aquellos admitidos específicamente por los formularios de incidencias o solicitudes.
+    |
     */
 
     private function filterFieldsForModule(
@@ -1872,6 +1943,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Resumen de datos preparados
     |--------------------------------------------------------------------------
+    |
+    | Genera una vista resumida de los principales campos detectados para que el usuario pueda revisarlos antes de abrir el formulario.
+    |
     */
 
     private function buildPrefillSummaryMessage(
@@ -1958,6 +2032,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Acumular texto para prellenado
     |--------------------------------------------------------------------------
+    |
+    | Conserva fragmentos relevantes de la conversación en el contexto para utilizarlos posteriormente durante la extracción automática de datos.
+    |
     */
 
     private function appendPrefillSource(
@@ -2020,6 +2097,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Construir acciones de prellenado
     |--------------------------------------------------------------------------
+    |
+    | Genera botones para preparar incidencias o solicitudes cuando el mensaje y el contexto indican que existe información suficiente para intentarlo.
+    |
     */
 
     private function buildPrefillActions(
@@ -2080,6 +2160,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Detectar tipos de prellenado
     |--------------------------------------------------------------------------
+    |
+    | Determina si el contenido de la conversación corresponde a una incidencia, solicitud o ambas opciones mediante intención, señales textuales y contexto acumulado.
+    |
     */
 
     private function detectPrefillTypes(
@@ -2158,6 +2241,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Eliminar botones duplicados
     |--------------------------------------------------------------------------
+    |
+    | Elimina acciones rápidas repetidas comparando sus propiedades principales antes de devolverlas al frontend.
+    |
     */
 
     private function uniqueQuickActions(
@@ -2212,6 +2298,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Estado de gestiones
     |--------------------------------------------------------------------------
+    |
+    | Consulta el resumen de gestiones asociadas al usuario y construye una respuesta con totales, estados y elementos recientes.
+    |
     */
 
     private function buildEstadoResponse(
@@ -2417,6 +2506,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Preparar contexto acumulado
     |--------------------------------------------------------------------------
+    |
+    | Filtra, limpia y limita los valores almacenados durante el recorrido del chatbot para conservar únicamente campos permitidos.
+    |
     */
 
     private function prepareFlowContext(
@@ -2513,6 +2605,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Preparar nombre del usuario
     |--------------------------------------------------------------------------
+    |
+    | Normaliza el nombre mostrado por el chatbot y utiliza el valor de respaldo configurado cuando el dato recibido no es válido.
+    |
     */
 
     private function prepareUserName(
@@ -2566,6 +2661,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Preparar mensaje del usuario
     |--------------------------------------------------------------------------
+    |
+    | Limpia caracteres de control y limita la longitud del mensaje antes de procesarlo mediante reconocimiento, flujos o inteligencia artificial.
+    |
     */
 
     private function prepareUserMessage(
@@ -2602,6 +2700,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Obtener identificador del usuario
     |--------------------------------------------------------------------------
+    |
+    | Extrae y valida el identificador autenticable del usuario para utilizarlo en consultas de historial, estado y contexto.
+    |
     */
 
     private function resolveUserId(
@@ -2628,6 +2729,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Normalizar texto
     |--------------------------------------------------------------------------
+    |
+    | Convierte el texto a minúsculas, elimina variaciones de caracteres acentuados y normaliza espacios para facilitar comparaciones internas.
+    |
     */
 
     private function normalizeText(
@@ -2662,6 +2766,9 @@ class ChatbotService
     |--------------------------------------------------------------------------
     | Singular y plural
     |--------------------------------------------------------------------------
+    |
+    | Selecciona la forma singular o plural de una expresión según la cantidad recibida.
+    |
     */
 
     private function pluralize(

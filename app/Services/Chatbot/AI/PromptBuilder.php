@@ -11,8 +11,9 @@ class PromptBuilder
     | Construir prompt completo
     |--------------------------------------------------------------------------
     |
-    | Se mantiene para compatibilidad con componentes que todavía necesiten
-    | recibir el prompt principal y el mensaje del usuario en una sola cadena.
+    | Combina el prompt principal del sistema con el mensaje recibido
+    | del usuario. Se mantiene para compatibilidad con componentes que
+    | todavía necesitan trabajar con una única cadena de texto.
     |
     */
 
@@ -34,6 +35,11 @@ class PromptBuilder
     |--------------------------------------------------------------------------
     | Prompt principal
     |--------------------------------------------------------------------------
+    |
+    | Construye las instrucciones principales enviadas al modelo utilizando
+    | únicamente información permitida del contexto y adaptando el
+    | comportamiento según el propósito actual de la consulta.
+    |
     */
 
     public function systemPrompt(
@@ -109,6 +115,11 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Instrucción según propósito
     |--------------------------------------------------------------------------
+    |
+    | Determina las instrucciones adicionales que debe recibir el modelo
+    | según si la operación corresponde a una conversación normal,
+    | prellenado de formularios o precarga del servicio.
+    |
     */
 
     private function purposeInstruction(
@@ -136,6 +147,10 @@ PROMPT,
     |--------------------------------------------------------------------------
     | Sanitizar contexto
     |--------------------------------------------------------------------------
+    |
+    | Conserva únicamente las claves autorizadas antes de incorporar
+    | información dinámica del contexto dentro del prompt enviado al modelo.
+    |
     */
 
     private function sanitizeContext(
@@ -162,6 +177,10 @@ PROMPT,
     |--------------------------------------------------------------------------
     | Normalizar propósito
     |--------------------------------------------------------------------------
+    |
+    | Convierte las diferentes denominaciones aceptadas para cada propósito
+    | a los valores internos utilizados por el constructor de prompts.
+    |
     */
 
     private function normalizePurpose(
@@ -193,6 +212,10 @@ PROMPT,
     |--------------------------------------------------------------------------
     | Limpiar mensaje
     |--------------------------------------------------------------------------
+    |
+    | Normaliza el mensaje recibido eliminando caracteres de control y
+    | limitando su longitud antes de incorporarlo al prompt.
+    |
     */
 
     private function cleanMessage(
@@ -223,6 +246,11 @@ PROMPT,
     |--------------------------------------------------------------------------
     | Limpiar valores dinámicos
     |--------------------------------------------------------------------------
+    |
+    | Sanitiza los valores provenientes del contexto antes de insertarlos
+    | dentro del prompt, eliminando contenido no permitido y limitando su
+    | longitud para evitar alterar la estructura de las instrucciones.
+    |
     */
 
     private function cleanValue(
@@ -244,8 +272,15 @@ PROMPT,
         }
 
         /*
-         * Eliminar caracteres de control.
-         */
+        |--------------------------------------------------------------------------
+        | Eliminar caracteres de control
+        |--------------------------------------------------------------------------
+        |
+        | Sustituye caracteres de control que podrían modificar la
+        | estructura o interpretación del contenido dinámico.
+        |
+        */
+
         $value = preg_replace(
             '/[\x00-\x1F\x7F]/u',
             ' ',
@@ -253,8 +288,15 @@ PROMPT,
         ) ?? $value;
 
         /*
-         * Convertir saltos y espacios consecutivos en un solo espacio.
-         */
+        |--------------------------------------------------------------------------
+        | Normalizar espacios
+        |--------------------------------------------------------------------------
+        |
+        | Convierte saltos y secuencias de espacios consecutivos en un
+        | único espacio para mantener el contenido en una sola línea.
+        |
+        */
+
         $value = preg_replace(
             '/\s+/u',
             ' ',
@@ -262,9 +304,15 @@ PROMPT,
         ) ?? $value;
 
         /*
-         * Eliminar delimitadores que podrían alterar visualmente
-         * la estructura del prompt.
-         */
+        |--------------------------------------------------------------------------
+        | Eliminar delimitadores
+        |--------------------------------------------------------------------------
+        |
+        | Retira caracteres que podrían alterar visualmente la estructura
+        | utilizada para separar datos e instrucciones dentro del prompt.
+        |
+        */
+
         $value = str_replace(
             [
                 '"',
@@ -285,6 +333,12 @@ PROMPT,
         if ($value === '') {
             return $fallback;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Limitar longitud del valor
+        |--------------------------------------------------------------------------
+        */
 
         return mb_substr(
             $value,

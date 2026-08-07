@@ -18,6 +18,10 @@ class AppServiceProvider extends ServiceProvider
     |--------------------------------------------------------------------------
     | Registrar servicios
     |--------------------------------------------------------------------------
+    |
+    | Registra las dependencias de la aplicación y vincula la interfaz
+    | utilizada por el chatbot con su implementación correspondiente.
+    |
     */
 
     public function register(): void
@@ -28,11 +32,14 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Inicializar servicios
     |--------------------------------------------------------------------------
+    |
+    | Configura los limitadores de solicitudes y registra los elementos
+    | compartidos que estarán disponibles dentro de las vistas.
+    |
     */
 
     public function boot(): void
@@ -45,7 +52,6 @@ class AppServiceProvider extends ServiceProvider
 
         $this->registrarWidgetSoporte();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +68,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $avisosTicker = null;
 
-
         View::composer(
             [
                 'layouts.app',
@@ -74,7 +79,6 @@ class AppServiceProvider extends ServiceProvider
                 if ($avisosTicker === null) {
                     $ahora = now();
 
-
                     $avisosTicker = Aviso::query()
                         ->where(
                             'activo',
@@ -85,6 +89,10 @@ class AppServiceProvider extends ServiceProvider
                         |--------------------------------------------------------------------------
                         | Publicación inmediata o fecha ya alcanzada
                         |--------------------------------------------------------------------------
+                        |
+                        | Incluye los avisos sin fecha de inicio definida o cuya
+                        | fecha de publicación ya fue alcanzada.
+                        |
                         */
 
                         ->where(
@@ -105,6 +113,10 @@ class AppServiceProvider extends ServiceProvider
                         |--------------------------------------------------------------------------
                         | Sin vencimiento o fecha todavía vigente
                         |--------------------------------------------------------------------------
+                        |
+                        | Incluye los avisos sin fecha de finalización o aquellos
+                        | cuya vigencia todavía no ha terminado.
+                        |
                         */
 
                         ->where(
@@ -120,13 +132,10 @@ class AppServiceProvider extends ServiceProvider
                                     );
                             }
                         )
-
                         ->orderByDesc(
                             'created_at'
                         )
-
                         ->limit(10)
-
                         ->get([
                             'id',
                             'titulo',
@@ -137,6 +146,11 @@ class AppServiceProvider extends ServiceProvider
                         ]);
                 }
 
+                /*
+                |--------------------------------------------------------------------------
+                | Compartir colección con la vista
+                |--------------------------------------------------------------------------
+                */
 
                 $view->with(
                     'avisosTicker',
@@ -145,7 +159,6 @@ class AppServiceProvider extends ServiceProvider
             }
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -159,13 +172,12 @@ class AppServiceProvider extends ServiceProvider
     */
 
     private function registrarWidgetSoporte(): void
-{
-    View::composer(
-        'partials.support-widget',
-        SupportWidgetComposer::class
-    );
-}
-
+    {
+        View::composer(
+            'partials.support-widget',
+            SupportWidgetComposer::class
+        );
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -173,7 +185,7 @@ class AppServiceProvider extends ServiceProvider
     |--------------------------------------------------------------------------
     |
     | Protege el formulario donde el usuario introduce el código de
-    | verificación.
+    | verificación limitando la cantidad de intentos permitidos.
     |
     */
 
@@ -184,11 +196,26 @@ class AppServiceProvider extends ServiceProvider
             function (
                 Request $request
             ) {
+                /*
+                |--------------------------------------------------------------------------
+                | Construir identificador
+                |--------------------------------------------------------------------------
+                */
+
                 $identificador =
                     $this->identificador(
                         $request
                     );
 
+                /*
+                |--------------------------------------------------------------------------
+                | Aplicar límite de intentos
+                |--------------------------------------------------------------------------
+                |
+                | Permite hasta cinco intentos por minuto para cada combinación
+                | de correo y dirección IP.
+                |
+                */
 
                 return Limit::perMinute(5)
                     ->by(
@@ -217,13 +244,13 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Límite para reenviar código
     |--------------------------------------------------------------------------
     |
-    | Este límite es independiente del límite de validación de códigos.
+    | Este límite es independiente del límite de validación de códigos
+    | y controla la frecuencia con la que puede solicitarse uno nuevo.
     |
     */
 
@@ -234,11 +261,26 @@ class AppServiceProvider extends ServiceProvider
             function (
                 Request $request
             ) {
+                /*
+                |--------------------------------------------------------------------------
+                | Construir identificador
+                |--------------------------------------------------------------------------
+                */
+
                 $identificador =
                     $this->identificador(
                         $request
                     );
 
+                /*
+                |--------------------------------------------------------------------------
+                | Aplicar límite de reenvíos
+                |--------------------------------------------------------------------------
+                |
+                | Permite solicitar hasta dos códigos por minuto para cada
+                | combinación de correo y dirección IP.
+                |
+                */
 
                 return Limit::perMinute(2)
                     ->by(
@@ -267,7 +309,6 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Construir identificador del limitador
@@ -281,6 +322,16 @@ class AppServiceProvider extends ServiceProvider
     private function identificador(
         Request $request
     ): string {
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener correo normalizado
+        |--------------------------------------------------------------------------
+        |
+        | Recupera el correo desde la solicitud o desde la sesión y lo
+        | normaliza antes de construir el identificador.
+        |
+        */
+
         $correo = mb_strtolower(
             trim(
                 (string) (
@@ -297,6 +348,11 @@ class AppServiceProvider extends ServiceProvider
             )
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Generar identificador seguro
+        |--------------------------------------------------------------------------
+        */
 
         return hash(
             'sha256',

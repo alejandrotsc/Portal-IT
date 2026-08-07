@@ -4,6 +4,17 @@ namespace App\Services\Chatbot\Diagnostics;
 
 class DiagnosticEngine
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Ejecutar diagnóstico
+    |--------------------------------------------------------------------------
+    |
+    | Analiza el mensaje recibido, evalúa los diagnósticos configurados
+    | y devuelve la coincidencia con mayor puntuación cuando supera
+    | el mínimo requerido.
+    |
+    */
+
     public function diagnose(
         string $message
     ): ?array {
@@ -15,6 +26,12 @@ class DiagnosticEngine
             return null;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener configuración de diagnósticos
+        |--------------------------------------------------------------------------
+        */
+
         $config = config(
             'chatbot_diagnostics',
             []
@@ -23,6 +40,16 @@ class DiagnosticEngine
         if(!is_array($config)){
             return null;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolver diagnósticos disponibles
+        |--------------------------------------------------------------------------
+        |
+        | Utiliza la sección específica de diagnósticos cuando existe o
+        | extrae automáticamente las entradas compatibles de la configuración.
+        |
+        */
 
         $diagnostics =
             isset($config['diagnosticos'])
@@ -37,6 +64,12 @@ class DiagnosticEngine
             return null;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Puntuación mínima requerida
+        |--------------------------------------------------------------------------
+        */
+
         $minimumScore = max(
             1,
             (int) (
@@ -47,6 +80,16 @@ class DiagnosticEngine
         );
 
         $best = null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Evaluar diagnósticos
+        |--------------------------------------------------------------------------
+        |
+        | Recorre cada diagnóstico configurado y conserva únicamente
+        | la coincidencia que obtenga la mayor puntuación.
+        |
+        */
 
         foreach($diagnostics as $key=>$diagnostic){
             if(!is_array($diagnostic)){
@@ -72,6 +115,12 @@ class DiagnosticEngine
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validar resultado final
+        |--------------------------------------------------------------------------
+        */
+
         if(
             !$best
             ||
@@ -82,6 +131,16 @@ class DiagnosticEngine
 
         return $best;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Evaluar diagnóstico
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba las palabras clave asociadas a un diagnóstico, acumula
+    | su puntuación y prepara los pasos y datos que serán devueltos.
+    |
+    */
 
     private function evaluateDiagnostic(
         string $key,
@@ -100,6 +159,12 @@ class DiagnosticEngine
 
         $score = 0;
         $matched = [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Evaluar palabras clave
+        |--------------------------------------------------------------------------
+        */
 
         foreach($keywords as $keyWord=>$value){
             [$keyword, $weight] =
@@ -136,6 +201,12 @@ class DiagnosticEngine
             return null;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Preparar pasos del diagnóstico
+        |--------------------------------------------------------------------------
+        */
+
         $steps =
             $diagnostic['steps']
             ??
@@ -159,6 +230,12 @@ class DiagnosticEngine
             )
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Resultado del diagnóstico
+        |--------------------------------------------------------------------------
+        */
+
         return [
             'key'=>$key,
 
@@ -181,6 +258,16 @@ class DiagnosticEngine
             ),
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver palabra clave
+    |--------------------------------------------------------------------------
+    |
+    | Normaliza la estructura de cada palabra clave y determina el peso
+    | que debe aportar a la puntuación total del diagnóstico.
+    |
+    */
 
     private function resolveKeyword(
         int|string $key,
@@ -213,6 +300,16 @@ class DiagnosticEngine
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Extraer diagnósticos
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene de la configuración únicamente las entradas que poseen
+    | una estructura válida y contienen palabras clave para evaluación.
+    |
+    */
+
     private function extractDiagnostics(
         array $config
     ): array {
@@ -231,6 +328,16 @@ class DiagnosticEngine
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar coincidencia
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si una palabra clave aparece dentro del mensaje como
+    | una expresión independiente después de su normalización.
+    |
+    */
+
     private function matches(
         string $message,
         string $keyword
@@ -242,6 +349,16 @@ class DiagnosticEngine
             $message
         ) === 1;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar texto
+    |--------------------------------------------------------------------------
+    |
+    | Convierte el texto a minúsculas, elimina acentos, caracteres
+    | especiales y espacios repetidos para facilitar las comparaciones.
+    |
+    */
 
     private function normalize(
         string $text
@@ -263,6 +380,12 @@ class DiagnosticEngine
             ]
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Eliminar caracteres especiales
+        |--------------------------------------------------------------------------
+        */
+
         $text =
             preg_replace(
                 '/[^a-z0-9\s]/u',
@@ -271,6 +394,12 @@ class DiagnosticEngine
             )
             ??
             $text;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Normalizar espacios
+        |--------------------------------------------------------------------------
+        */
 
         $text =
             preg_replace(

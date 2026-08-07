@@ -6,8 +6,28 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/*
+|--------------------------------------------------------------------------
+| Middleware de control por rol
+|--------------------------------------------------------------------------
+|
+| Verifica que el usuario esté autenticado, tenga una cuenta activa y posea
+| uno de los roles permitidos antes de continuar hacia la ruta solicitada.
+|
+*/
+
 class RolMiddleware
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Procesar solicitud
+    |--------------------------------------------------------------------------
+    |
+    | Ejecuta las validaciones de autenticación, estado de cuenta y rol antes
+    | de permitir que la solicitud continúe hacia el controlador.
+    |
+    */
+
     public function handle(
         Request $request,
         Closure $next,
@@ -15,11 +35,14 @@ class RolMiddleware
     ): Response {
         $usuario = $request->user();
 
-
         /*
         |--------------------------------------------------------------------------
         | Validar autenticación
         |--------------------------------------------------------------------------
+        |
+        | Redirige al login cuando no existe un usuario autenticado en la
+        | solicitud actual.
+        |
         */
 
         if (! $usuario) {
@@ -27,11 +50,14 @@ class RolMiddleware
                 ->route('login');
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Validar estado de la cuenta
         |--------------------------------------------------------------------------
+        |
+        | Si la cuenta fue desactivada, se cierra la sesión, se invalida la
+        | sesión actual y se genera un nuevo token CSRF antes de redirigir.
+        |
         */
 
         if (! $usuario->activo) {
@@ -53,17 +79,19 @@ class RolMiddleware
                 ]);
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Validar rol
         |--------------------------------------------------------------------------
+        |
+        | Comprueba que el rol actual del usuario exista y se encuentre dentro
+        | de los roles autorizados recibidos por el middleware.
+        |
         */
 
         $rolActual = $usuario
             ->rol
             ?->nombre;
-
 
         if (
             ! $rolActual
@@ -79,6 +107,15 @@ class RolMiddleware
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Continuar solicitud
+        |--------------------------------------------------------------------------
+        |
+        | Si todas las validaciones fueron superadas, la solicitud continúa
+        | hacia el siguiente middleware o controlador.
+        |
+        */
 
         return $next($request);
     }

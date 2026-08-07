@@ -11,17 +11,29 @@ class EstadoPaseActualizadoNotification extends Notification
 {
     use Queueable;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el memorando correspondiente al pase cuyo estado fue
+    | actualizado y lo conserva para construir la notificación.
+    |
+    */
 
     public function __construct(
         private readonly Memorando $memorando
     ) {
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Canales de notificación
     |--------------------------------------------------------------------------
+    |
+    | Define los canales utilizados para almacenar la notificación en
+    | la base de datos y transmitirla en tiempo real al usuario.
+    |
     */
 
     public function via(
@@ -33,11 +45,14 @@ class EstadoPaseActualizadoNotification extends Notification
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Información almacenada en la base de datos
     |--------------------------------------------------------------------------
+    |
+    | Define los datos que serán persistidos como parte del registro
+    | de la notificación asociada al cambio de estado del pase.
+    |
     */
 
     public function toDatabase(
@@ -46,11 +61,14 @@ class EstadoPaseActualizadoNotification extends Notification
         return $this->datosNotificacion();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Información enviada en tiempo real
     |--------------------------------------------------------------------------
+    |
+    | Construye el mensaje que será transmitido mediante broadcast para
+    | actualizar las notificaciones del usuario en tiempo real.
+    |
     */
 
     public function toBroadcast(
@@ -61,11 +79,14 @@ class EstadoPaseActualizadoNotification extends Notification
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Tipo de evento transmitido
     |--------------------------------------------------------------------------
+    |
+    | Define el identificador utilizado por el cliente para reconocer
+    | las notificaciones relacionadas con cambios de estado de pases.
+    |
     */
 
     public function broadcastType(): string
@@ -73,11 +94,14 @@ class EstadoPaseActualizadoNotification extends Notification
         return 'estado-pase-actualizado';
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Compatibilidad con otros canales
     |--------------------------------------------------------------------------
+    |
+    | Proporciona la representación general de la notificación utilizando
+    | los mismos datos empleados por los demás canales disponibles.
+    |
     */
 
     public function toArray(
@@ -86,11 +110,14 @@ class EstadoPaseActualizadoNotification extends Notification
         return $this->datosNotificacion();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Datos comunes de la notificación
     |--------------------------------------------------------------------------
+    |
+    | Centraliza la información utilizada por los distintos canales para
+    | mantener una estructura consistente en toda la notificación.
+    |
     */
 
     private function datosNotificacion(): array
@@ -135,11 +162,14 @@ class EstadoPaseActualizadoNotification extends Notification
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Código visible del pase
     |--------------------------------------------------------------------------
+    |
+    | Obtiene el código asignado al memorando o genera una representación
+    | alternativa utilizando su identificador cuando no existe un código.
+    |
     */
 
     private function obtenerCodigo(): string
@@ -153,11 +183,14 @@ class EstadoPaseActualizadoNotification extends Notification
             );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Título
     |--------------------------------------------------------------------------
+    |
+    | Determina el título mostrado en la notificación según el estado
+    | actual del pase.
+    |
     */
 
     private function obtenerTitulo(): string
@@ -176,11 +209,14 @@ class EstadoPaseActualizadoNotification extends Notification
         };
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Estado legible
     |--------------------------------------------------------------------------
+    |
+    | Convierte el estado interno del memorando en un texto comprensible
+    | que pueda ser utilizado directamente dentro de la notificación.
+    |
     */
 
     private function obtenerEstadoTexto(): string
@@ -208,11 +244,14 @@ class EstadoPaseActualizadoNotification extends Notification
         };
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Icono Lucide
     |--------------------------------------------------------------------------
+    |
+    | Determina el icono utilizado visualmente para representar el
+    | estado actual del pase dentro de la notificación.
+    |
     */
 
     private function obtenerIcono(): string

@@ -12,8 +12,30 @@ use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador del chatbot
+|--------------------------------------------------------------------------
+|
+| Coordina las solicitudes del asistente del Portal TI, incluyendo el modo
+| tradicional, streaming NDJSON, precarga del proveedor de IA, consulta de
+| gestiones, retroalimentación y persistencia del historial.
+|
+*/
+
 class ChatbotController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Dependencias
+    |--------------------------------------------------------------------------
+    |
+    | Recibe los servicios responsables de procesar conversaciones, consultar
+    | el estado de gestiones y comunicarse con el proveedor de inteligencia
+    | artificial configurado.
+    |
+    */
+
     public function __construct(
         private readonly ChatbotService $chatbotService,
         private readonly GestionStatusService $gestionStatus,
@@ -24,6 +46,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Precargar Ollama
     |--------------------------------------------------------------------------
+    |
+    | Evita precargas duplicadas del modelo, coordina concurrencia mediante bloqueos de caché y conserva una marca temporal mientras el modelo debe permanecer disponible.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ejecutar precarga del modelo
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba marcas y bloqueos de caché antes de solicitar la activación del
+    | proveedor de IA, evitando trabajos pesados repetidos.
+    |
     */
 
     public function warmUp(): JsonResponse
@@ -100,6 +135,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Respuesta JSON tradicional
     |--------------------------------------------------------------------------
+    |
+    | Procesa una interacción completa del chatbot mediante una respuesta JSON convencional y registra la conversación cuando existe un usuario autenticado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Procesar mensaje tradicional
+    |--------------------------------------------------------------------------
+    |
+    | Valida la entrada, prepara contexto y delega la interacción al servicio
+    | principal antes de registrar el resultado.
+    |
     */
 
     public function message(Request $request): JsonResponse
@@ -155,6 +203,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Respuesta progresiva NDJSON
     |--------------------------------------------------------------------------
+    |
+    | Entrega la respuesta del chatbot como eventos NDJSON, permitiendo mantener activa la conexión y enviar el resultado final de forma progresiva.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Procesar mensaje mediante streaming
+    |--------------------------------------------------------------------------
+    |
+    | Prepara la solicitud, abre una respuesta NDJSON y transmite eventos de
+    | inicio, actividad, finalización o error al frontend.
+    |
     */
 
     public function stream(
@@ -306,6 +367,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Estado de gestiones
     |--------------------------------------------------------------------------
+    |
+    | Consulta las gestiones recientes del usuario autenticado y devuelve acciones rápidas para repetir la consulta o regresar al menú principal.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Consultar gestiones recientes
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve las últimas gestiones asociadas al usuario autenticado junto con
+    | las acciones disponibles en el flujo conversacional.
+    |
     */
 
     public function estado(
@@ -396,6 +470,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Retroalimentación
     |--------------------------------------------------------------------------
+    |
+    | Registra si una conversación resultó útil, verificando que pertenezca al usuario autenticado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registrar retroalimentación
+    |--------------------------------------------------------------------------
+    |
+    | Valida la conversación y almacena la valoración únicamente cuando el
+    | registro pertenece al usuario autenticado.
+    |
     */
 
     public function feedback(
@@ -460,6 +547,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Preparar PHP para streaming
     |--------------------------------------------------------------------------
+    |
+    | Desactiva límites y buffers de salida que puedan impedir que los eventos NDJSON lleguen progresivamente al navegador.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configurar entorno de streaming
+    |--------------------------------------------------------------------------
+    |
+    | Ajusta límites de ejecución y buffering para favorecer la entrega
+    | progresiva de datos desde PHP hacia el navegador.
+    |
     */
 
     private function prepareStreamingEnvironment(): void
@@ -503,6 +603,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Validar mensaje, acción y contexto
     |--------------------------------------------------------------------------
+    |
+    | Valida los datos aceptados por el chatbot y limita longitud, formato y estructura del contexto interactivo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar solicitud del chatbot
+    |--------------------------------------------------------------------------
+    |
+    | Garantiza que exista un mensaje o una acción válida y limita el contexto
+    | recibido antes de procesar la conversación.
+    |
     */
 
     private function validateChatRequest(
@@ -556,6 +669,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Limpiar contexto recibido
     |--------------------------------------------------------------------------
+    |
+    | Filtra las claves permitidas, descarta valores inválidos y limita la longitud antes de enviar el contexto a los servicios internos.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar contexto del flujo
+    |--------------------------------------------------------------------------
+    |
+    | Conserva únicamente las claves reconocidas por el chatbot y aplica
+    | límites distintos para campos normales y prefill_source.
+    |
     */
 
     private function prepareFlowContext(
@@ -633,6 +759,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Texto almacenado en conversación
     |--------------------------------------------------------------------------
+    |
+    | Genera el texto persistido en el historial a partir del mensaje escrito, la acción ejecutada o una interacción genérica.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir mensaje para historial
+    |--------------------------------------------------------------------------
+    |
+    | Determina qué texto debe almacenarse cuando la interacción proviene de un
+    | mensaje libre, una acción del flow o un evento genérico.
+    |
     */
 
     private function buildStoredMessage(
@@ -657,6 +796,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Emitir evento NDJSON
     |--------------------------------------------------------------------------
+    |
+    | Serializa y envía un evento del stream utilizando una estructura uniforme de tipo y datos.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enviar evento del stream
+    |--------------------------------------------------------------------------
+    |
+    | Serializa el evento y fuerza su salida para que el frontend pueda
+    | procesarlo inmediatamente.
+    |
     */
 
     private function emitStreamEvent(
@@ -686,6 +838,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Vaciar salida
     |--------------------------------------------------------------------------
+    |
+    | Fuerza la entrega inmediata del contenido acumulado para reducir el buffering durante el streaming.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Forzar salida pendiente
+    |--------------------------------------------------------------------------
+    |
+    | Vacía los buffers disponibles y solicita a PHP entregar el contenido
+    | acumulado al cliente.
+    |
     */
 
     private function flushOutput(): void
@@ -703,6 +868,19 @@ class ChatbotController extends Controller
     |--------------------------------------------------------------------------
     | Guardar conversación
     |--------------------------------------------------------------------------
+    |
+    | Persiste la interacción del usuario, respuesta, intención, puntuación y acción sin bloquear el chatbot si el almacenamiento falla.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Persistir conversación
+    |--------------------------------------------------------------------------
+    |
+    | Guarda la interacción y sus metadatos principales cuando existe un
+    | usuario autenticado, sin impedir la respuesta si la persistencia falla.
+    |
     */
 
     private function saveConversation(

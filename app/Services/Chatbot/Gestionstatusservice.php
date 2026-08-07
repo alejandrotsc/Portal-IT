@@ -17,6 +17,11 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Obtener resumen y gestiones recientes
     |--------------------------------------------------------------------------
+    |
+    | Calcula el resumen general de incidencias, solicitudes y memorandos
+    | pertenecientes al usuario, clasifica sus estados y devuelve además
+    | las gestiones más recientes ordenadas cronológicamente.
+    |
     */
 
     public function getSummaryFor(
@@ -34,9 +39,9 @@ class GestionStatusService
         | Resumen general
         |--------------------------------------------------------------------------
         |
-        | Se cuentan todas las gestiones del usuario, pero solo se selecciona
-        | el campo estado. No se cargan modelos completos innecesariamente.
-        |--------------------------------------------------------------------------
+        | Cuenta todas las gestiones del usuario recuperando únicamente el
+        | campo estado para evitar cargar modelos completos innecesariamente.
+        |
         */
 
         $incidenciaStates = Incidencia::query()
@@ -76,6 +81,10 @@ class GestionStatusService
         |--------------------------------------------------------------------------
         | No existen gestiones
         |--------------------------------------------------------------------------
+        |
+        | Finaliza inmediatamente cuando el usuario no posee registros en
+        | ninguno de los módulos considerados por el resumen.
+        |
         */
 
         if ($summary['total'] === 0) {
@@ -88,9 +97,10 @@ class GestionStatusService
         | Consultar únicamente gestiones recientes
         |--------------------------------------------------------------------------
         |
-        | Cada módulo devuelve como máximo $limit registros.
-        | Después se combinan y se toman las últimas $limit en general.
-        |--------------------------------------------------------------------------
+        | Cada módulo devuelve como máximo el límite solicitado. Después,
+        | todos los resultados se combinan, ordenan y reducen nuevamente
+        | para conservar únicamente las gestiones más recientes en general.
+        |
         */
 
         $items = collect()
@@ -145,8 +155,9 @@ class GestionStatusService
     | Compatibilidad con el método anterior
     |--------------------------------------------------------------------------
     |
-    | Si otro archivo todavía utiliza getRecentFor(), seguirá funcionando.
-    |--------------------------------------------------------------------------
+    | Mantiene disponible el método getRecentFor() para componentes que
+    | todavía esperan únicamente la lista de gestiones recientes.
+    |
     */
 
     public function getRecentFor(
@@ -164,6 +175,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Incidencias recientes
     |--------------------------------------------------------------------------
+    |
+    | Recupera las incidencias más recientes del usuario y las transforma
+    | a una estructura uniforme utilizada por el chatbot.
+    |
     */
 
     private function getRecentIncidencias(
@@ -234,6 +249,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Solicitudes recientes
     |--------------------------------------------------------------------------
+    |
+    | Recupera las solicitudes más recientes del usuario y normaliza sus
+    | datos para presentarlas junto con las demás gestiones.
+    |
     */
 
     private function getRecentSolicitudes(
@@ -305,6 +324,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Memorandos recientes
     |--------------------------------------------------------------------------
+    |
+    | Recupera los memorandos más recientes solicitados por el usuario,
+    | incluyendo su tipo cuando la relación correspondiente está disponible.
+    |
     */
 
     private function getRecentMemorandos(
@@ -372,6 +395,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Clasificar estado
     |--------------------------------------------------------------------------
+    |
+    | Agrupa los diferentes estados utilizados por los módulos del portal
+    | en las categorías generales de abiertas, en proceso o finalizadas.
+    |
     */
 
     private function classifyState(
@@ -434,6 +461,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Formatear estado
     |--------------------------------------------------------------------------
+    |
+    | Convierte el estado almacenado a una representación legible para el
+    | usuario, reemplazando separadores y aplicando formato de título.
+    |
     */
 
     private function formatState(
@@ -457,6 +488,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Tipo de memorando
     |--------------------------------------------------------------------------
+    |
+    | Obtiene el nombre visual del tipo de memorando cuando la relación
+    | está disponible y utiliza un valor genérico como respaldo.
+    |
     */
 
     private function memorandoType(
@@ -494,6 +529,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | URL de incidencia
     |--------------------------------------------------------------------------
+    |
+    | Resuelve la mejor ruta disponible para consultar una incidencia,
+    | utilizando rutas alternativas cuando no existe una vista individual.
+    |
     */
 
     private function incidenciaUrl(
@@ -526,6 +565,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | URL de solicitud
     |--------------------------------------------------------------------------
+    |
+    | Resuelve la ruta adecuada para consultar una solicitud utilizando
+    | la vista individual, historial configurado o formulario como respaldo.
+    |
     */
 
     private function solicitudUrl(
@@ -563,6 +606,11 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | URL de memorando
     |--------------------------------------------------------------------------
+    |
+    | Determina la ruta de consulta apropiada según el tipo de memorando
+    | y utiliza rutas generales de respaldo cuando no existe una vista
+    | individual específica.
+    |
     */
 
     private function memorandoUrl(
@@ -632,8 +680,12 @@ class GestionStatusService
 
     /*
     |--------------------------------------------------------------------------
-    | Fecha
+    | Formatear fecha
     |--------------------------------------------------------------------------
+    |
+    | Convierte una fecha válida al formato utilizado por el chatbot y
+    | devuelve null cuando el valor no puede procesarse correctamente.
+    |
     */
 
     private function formatDate(
@@ -657,6 +709,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Timestamp para ordenar
     |--------------------------------------------------------------------------
+    |
+    | Obtiene la marca de tiempo utilizada internamente para ordenar
+    | gestiones provenientes de diferentes módulos.
+    |
     */
 
     private function timestamp(
@@ -678,6 +734,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Limitar texto
     |--------------------------------------------------------------------------
+    |
+    | Garantiza una longitud máxima para los títulos mostrados y utiliza
+    | un texto genérico cuando el contenido original se encuentra vacío.
+    |
     */
 
     private function limitText(
@@ -706,6 +766,10 @@ class GestionStatusService
     |--------------------------------------------------------------------------
     | Normalizar texto
     |--------------------------------------------------------------------------
+    |
+    | Convierte el texto a una forma uniforme sin acentos, separadores
+    | innecesarios ni espacios repetidos para facilitar comparaciones.
+    |
     */
 
     private function normalizeText(

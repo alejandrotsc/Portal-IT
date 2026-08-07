@@ -12,6 +12,16 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el memorando correspondiente al pase recién registrado y lo
+    | conserva para construir la información que será notificada.
+    |
+    */
+
     public function __construct(
         private readonly Memorando $memorando
     ) {
@@ -21,6 +31,10 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
     |--------------------------------------------------------------------------
     | Canales
     |--------------------------------------------------------------------------
+    |
+    | Define los canales utilizados para almacenar la notificación en
+    | la base de datos y transmitirla en tiempo real.
+    |
     */
 
     public function via(
@@ -36,18 +50,48 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
     |--------------------------------------------------------------------------
     | Datos de la notificación
     |--------------------------------------------------------------------------
+    |
+    | Construye y centraliza la información utilizada por los diferentes
+    | canales para notificar el registro de un nuevo pase.
+    |
     */
 
     private function datosNotificacion(): array
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Cargar relaciones necesarias
+        |--------------------------------------------------------------------------
+        |
+        | Carga el tipo de memorando y el usuario solicitante para incluir
+        | esta información dentro del mensaje de notificación.
+        |
+        */
+
         $this->memorando->loadMissing([
             'tipo',
             'solicitante',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Información del solicitante
+        |--------------------------------------------------------------------------
+        */
+
         $nombreSolicitante =
             $this->memorando->solicitante?->nombre
             ?? 'Un usuario';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tipo de pase
+        |--------------------------------------------------------------------------
+        |
+        | Determina el nombre descriptivo del pase según el tipo de
+        | memorando asociado a la gestión.
+        |
+        */
 
         $tipoPase =
             $this->memorando->tipo?->slug
@@ -55,6 +99,16 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
             'pase_temporal'
                 ? 'pase menor a 24 horas'
                 : 'pase mayor a 24 horas';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Identificador visible
+        |--------------------------------------------------------------------------
+        |
+        | Utiliza el código del memorando cuando está disponible o genera
+        | un identificador alternativo utilizando el ID del registro.
+        |
+        */
 
         $identificador =
             $this->memorando->codigo
@@ -64,6 +118,16 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
                 '0',
                 STR_PAD_LEFT
             );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Información compartida
+        |--------------------------------------------------------------------------
+        |
+        | Define los datos del pase que serán almacenados y transmitidos
+        | mediante los canales configurados.
+        |
+        */
 
         return [
             'tipo' =>
@@ -84,11 +148,11 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
                 'badge-check',
 
             'url' =>
-    route(
-        'admin.pases.show',
-        $this->memorando,
-        false
-    ),
+                route(
+                    'admin.pases.show',
+                    $this->memorando,
+                    false
+                ),
 
             'memorando_id' =>
                 $this->memorando->id,
@@ -136,6 +200,10 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
     |--------------------------------------------------------------------------
     | Guardar en base de datos
     |--------------------------------------------------------------------------
+    |
+    | Define la información que será almacenada de forma persistente
+    | dentro de la tabla de notificaciones del sistema.
+    |
     */
 
     public function toDatabase(
@@ -148,6 +216,10 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
     |--------------------------------------------------------------------------
     | Enviar mediante Reverb
     |--------------------------------------------------------------------------
+    |
+    | Construye el mensaje que será transmitido en tiempo real para
+    | informar inmediatamente sobre el nuevo pase registrado.
+    |
     */
 
     public function toBroadcast(
@@ -162,6 +234,10 @@ class NuevoPaseNotification extends Notification implements ShouldQueue
     |--------------------------------------------------------------------------
     | Tipo de evento broadcast
     |--------------------------------------------------------------------------
+    |
+    | Define el identificador utilizado por el cliente para reconocer
+    | las notificaciones correspondientes a nuevos pases.
+    |
     */
 
     public function broadcastType(): string

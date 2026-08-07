@@ -19,10 +19,16 @@ class FormPrefillExtractorService
 
     private const TIPO_SOLICITUD = 'solicitud';
 
-    /**
-     * Extrae información del mensaje para prellenar
-     * un formulario de incidencia o solicitud.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Extraer información para prellenado
+    |--------------------------------------------------------------------------
+    |
+    | Analiza el mensaje recibido para identificar una incidencia o
+    | solicitud y extraer los campos que pueden utilizarse para completar
+    | automáticamente el formulario correspondiente.
+    |
+    */
     public function extract(
         string $message,
         ?string $forcedType = null,
@@ -139,6 +145,11 @@ class FormPrefillExtractorService
     |--------------------------------------------------------------------------
     | Ejecutar extracción mediante Ollama
     |--------------------------------------------------------------------------
+    |
+    | Envía el mensaje al modelo configurado y procesa la respuesta JSON
+    | generada para obtener información estructurada destinada al
+    | prellenado de formularios.
+    |
     */
 
     private function performExtraction(
@@ -341,6 +352,11 @@ class FormPrefillExtractorService
     |--------------------------------------------------------------------------
     | Prompt de extracción
     |--------------------------------------------------------------------------
+    |
+    | Construye las instrucciones utilizadas por el modelo según el tipo
+    | de gestión solicitado, definiendo las reglas y estructura JSON
+    | esperadas para incidencias y solicitudes.
+    |
     */
 
     private function systemPrompt(
@@ -436,6 +452,11 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Decodificar JSON
     |--------------------------------------------------------------------------
+    |
+    | Limpia posibles bloques Markdown agregados por el modelo y convierte
+    | el contenido recibido a un arreglo PHP utilizando validación estricta
+    | de JSON.
+    |
     */
 
     private function decodeJson(
@@ -469,6 +490,11 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar resultado
     |--------------------------------------------------------------------------
+    |
+    | Valida el tipo de gestión detectado, sanitiza los campos extraídos,
+    | conserva los valores existentes y construye una respuesta uniforme
+    | para el proceso de prellenado.
+    |
     */
 
     private function normalizeResult(
@@ -540,6 +566,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Sanitizar campos de incidencia
     |--------------------------------------------------------------------------
+    |
+    | Filtra y normaliza únicamente los campos permitidos para una
+    | incidencia antes de devolverlos al formulario.
+    |
     */
 
     private function sanitizeIncidenceFields(
@@ -598,6 +628,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Sanitizar campos de solicitud
     |--------------------------------------------------------------------------
+    |
+    | Filtra, normaliza y limita la longitud de los campos permitidos
+    | para una solicitud antes de utilizarlos en el formulario.
+    |
     */
 
     private function sanitizeRequestFields(
@@ -643,6 +677,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Sanitizar contexto existente
     |--------------------------------------------------------------------------
+    |
+    | Conserva únicamente las claves permitidas del contexto previamente
+    | introducido por el usuario para evitar utilizar valores inesperados.
+    |
     */
 
     private function sanitizeExistingContext(
@@ -682,6 +720,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar tipo de gestión
     |--------------------------------------------------------------------------
+    |
+    | Convierte distintas expresiones equivalentes a los tipos internos
+    | utilizados para representar incidencias y solicitudes.
+    |
     */
 
     private function normalizeManagementType(
@@ -708,6 +750,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar tiempo del problema
     |--------------------------------------------------------------------------
+    |
+    | Convierte expresiones relacionadas con la duración del problema a
+    | los valores permitidos por el formulario de incidencias.
+    |
     */
 
     private function normalizeIncidentTime(
@@ -742,6 +788,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar afectación
     |--------------------------------------------------------------------------
+    |
+    | Interpreta diferentes expresiones de impacto y las convierte a los
+    | valores admitidos para indicar cuántos usuarios están afectados.
+    |
     */
 
     private function normalizeImpact(
@@ -780,6 +830,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar categoría de solicitud
     |--------------------------------------------------------------------------
+    |
+    | Identifica la categoría correspondiente a una solicitud utilizando
+    | expresiones relacionadas con los servicios disponibles en el portal.
+    |
     */
 
     private function normalizeRequestCategory(
@@ -838,6 +892,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar confianza
     |--------------------------------------------------------------------------
+    |
+    | Convierte el nivel de confianza recibido a un valor entre cero y uno
+    | y aplica un valor predeterminado cuando el dato no es numérico.
+    |
     */
 
     private function normalizeConfidence(
@@ -863,6 +921,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Agregar texto seguro
     |--------------------------------------------------------------------------
+    |
+    | Limpia etiquetas HTML, normaliza espacios y limita la longitud del
+    | texto antes de incorporarlo al conjunto de campos extraídos.
+    |
     */
 
     private function addText(
@@ -902,6 +964,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Normalizar texto
     |--------------------------------------------------------------------------
+    |
+    | Convierte el texto a minúsculas y elimina variaciones de caracteres
+    | acentuados para facilitar comparaciones y detección de coincidencias.
+    |
     */
 
     private function normalizeText(
@@ -930,6 +996,11 @@ PROMPT;
     |--------------------------------------------------------------------------
     | URL de Ollama
     |--------------------------------------------------------------------------
+    |
+    | Obtiene la dirección configurada para comunicarse con Ollama y
+    | utiliza la dirección local predeterminada cuando no existe una
+    | configuración válida.
+    |
     */
 
     private function ollamaUrl(): string
@@ -1058,6 +1129,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Clave de deduplicación
     |--------------------------------------------------------------------------
+    |
+    | Genera una clave estable a partir del tipo de gestión, mensaje y
+    | contexto existente para reutilizar solicitudes recientes idénticas.
+    |
     */
 
     private function dedupKey(
@@ -1094,6 +1169,10 @@ PROMPT;
     |--------------------------------------------------------------------------
     | Resultado vacío
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta uniforme cuando no fue posible extraer datos
+    | utilizables o cuando el proceso debe finalizar por alguna condición.
+    |
     */
 
     private function emptyResult(

@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ELEMENTOS DEL FORMULARIO
     |--------------------------------------------------------------------------
+    |
+    | Obtiene las referencias principales utilizadas por el formulario, el sistema de evidencias, el modal y los estados de correo.
+    |
     */
 
     const dropzone = document.getElementById('dropzone');
@@ -93,6 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ETIQUETAS LEGIBLES
     |--------------------------------------------------------------------------
+    |
+    | Define equivalencias de texto para mostrar valores internos del formulario de una forma más clara en mensajes y reportes.
+    |
     */
 
     const etiquetasAfectacion = {
@@ -108,6 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
         varios_dias: 'Desde hace varios días',
     };
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener etiqueta legible
+    |--------------------------------------------------------------------------
+    |
+    | Convierte valores internos del formulario en textos preparados para
+    | mostrarse en mensajes, vistas y reportes de seguimiento.
+    |
+    */
 
     function obtenerEtiqueta(mapa, valor) {
         if (!valor) {
@@ -133,6 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | DRAG & DROP
     |--------------------------------------------------------------------------
+    |
+    | Gestiona la selección de imágenes mediante clic, teclado o arrastre, incluyendo validación básica, deduplicación y vista previa.
+    |
     */
 
     dropzone?.addEventListener('click', () => {
@@ -188,6 +207,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Agregar evidencias
+    |--------------------------------------------------------------------------
+    |
+    | Incorpora imágenes válidas a la colección temporal, evita duplicados
+    | y descarta archivos que exceden el tamaño permitido.
+    |
+    */
+
     function agregarArchivos(files) {
         Array.from(files).forEach(file => {
 
@@ -217,6 +246,16 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPreview();
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Renderizar evidencias
+    |--------------------------------------------------------------------------
+    |
+    | Reconstruye la vista previa de imágenes, sincroniza el FileList real
+    | del input y permite eliminar evidencias antes del envío.
+    |
+    */
 
     function renderPreview() {
         if (!preview || !input) return;
@@ -313,6 +352,18 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | LIMPIAR FORMULARIO
     |--------------------------------------------------------------------------
+    |
+    | Restablece campos y evidencias seleccionadas después de completar correctamente una incidencia o cuando el usuario cancela.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restablecer formulario
+    |--------------------------------------------------------------------------
+    |
+    | Limpia campos y evidencias para devolver el módulo a su estado inicial.
+    |
     */
 
     function limpiarFormulario() {
@@ -337,6 +388,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | OUTLOOK 365
     |--------------------------------------------------------------------------
+    |
+    | Abre el mensaje de respaldo en Outlook 365 cuando la notificación automática no puede completarse.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Abrir reporte en Outlook
+    |--------------------------------------------------------------------------
+    |
+    | Abre el deeplink preparado en una nueva pestaña y limita aperturas
+    | duplicadas ocasionadas por múltiples clics consecutivos.
+    |
     */
 
     function abrirOutlook(boton, event) {
@@ -397,6 +461,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ENVIAR INCIDENCIA
     |--------------------------------------------------------------------------
+    |
+    | Intercepta el submit tradicional, registra la incidencia mediante fetch y procesa el estado inicial de la notificación por correo.
+    |
     */
 
     form.addEventListener('submit', async event => {
@@ -539,6 +606,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver mensaje de error
+    |--------------------------------------------------------------------------
+    |
+    | Prioriza errores de validación devueltos por Laravel y utiliza mensajes
+    | generales únicamente cuando no existe un detalle específico.
+    |
+    */
+
     function obtenerMensajeError(data) {
         const primerGrupo = data?.errors
             ? Object.values(data.errors)[0]
@@ -557,6 +634,16 @@ document.addEventListener('DOMContentLoaded', () => {
             + 'Revisa la información e intenta nuevamente.';
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Capturar datos de la incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Conserva la información principal del formulario antes de limpiarlo para
+    | reutilizarla en mensajes de respaldo y reportes enviados a Outlook.
+    |
+    */
 
     function obtenerDatosFormulario() {
         const afectacion =
@@ -610,6 +697,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | SEGUIMIENTO DEL ESTADO DEL CORREO
     |--------------------------------------------------------------------------
+    |
+    | Consulta periódicamente el estado de EmailDelivery y actualiza la interfaz hasta confirmar envío, fallo o finalizar el seguimiento.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Vigilar entrega del correo
+    |--------------------------------------------------------------------------
+    |
+    | Realiza consultas periódicas al estado de EmailDelivery y detiene el
+    | seguimiento anterior cuando comienza un nuevo proceso de envío.
+    |
     */
 
     async function vigilarEstadoCorreo(
@@ -749,6 +849,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Esperar intervalo
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve una promesa utilizada para espaciar las consultas periódicas
+    | realizadas durante el seguimiento del correo.
+    |
+    */
+
     function esperar(
         milisegundos
     ) {
@@ -766,6 +876,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ÉXITO: REGISTRADA Y NOTIFICADA
     |--------------------------------------------------------------------------
+    |
+    | Agrupa la lógica utilizada cuando la incidencia fue registrada y la notificación fue aceptada por el sistema de correo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver estado inicial
+    |--------------------------------------------------------------------------
+    |
+    | Determina si el correo fue enviado, falló o quedó en cola inmediatamente
+    | después de registrar correctamente la incidencia.
+    |
     */
 
     function configurarResultadoInicial(
@@ -813,6 +936,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar correo en cola
+    |--------------------------------------------------------------------------
+    |
+    | Representa que la incidencia ya fue registrada mientras la notificación
+    | continúa pendiente o siendo procesada por el worker.
+    |
+    */
+
     function mostrarCorreoEnCola(
         data,
         estado = 'pendiente',
@@ -855,6 +988,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar resultado exitoso
+    |--------------------------------------------------------------------------
+    |
+    | Actualiza modal, código e indicador SMTP cuando la incidencia fue
+    | registrada y la notificación fue enviada correctamente.
+    |
+    */
+
     function mostrarExito(data) {
         ocultarBotonesReporte();
 
@@ -888,6 +1031,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ADVERTENCIA: REGISTRADA, PERO NO NOTIFICADA
     |--------------------------------------------------------------------------
+    |
+    | Representa una incidencia guardada correctamente cuya notificación automática no pudo enviarse.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar advertencia de correo
+    |--------------------------------------------------------------------------
+    |
+    | Informa que la incidencia fue registrada pero el aviso automático falló
+    | y habilita el seguimiento manual mediante Outlook 365.
+    |
     */
 
     function mostrarAdvertenciaCorreo(
@@ -936,6 +1092,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ERROR: NO SE REGISTRÓ
     |--------------------------------------------------------------------------
+    |
+    | Representa un fallo total en el que la incidencia no pudo almacenarse correctamente en el backend.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar error total
+    |--------------------------------------------------------------------------
+    |
+    | Presenta el estado de error cuando el backend no pudo registrar la
+    | incidencia y conserva los datos ingresados para un nuevo intento.
+    |
     */
 
     function mostrarErrorTotal(
@@ -984,6 +1153,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | CONFIGURACIÓN DEL MODAL
     |--------------------------------------------------------------------------
+    |
+    | Centraliza los estilos y textos utilizados por el modal según el estado actual del registro y del correo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configurar cabecera del modal
+    |--------------------------------------------------------------------------
+    |
+    | Aplica icono, colores, título y mensaje según el estado actual del
+    | proceso de registro.
+    |
     */
 
     function configurarCabecera(
@@ -1051,6 +1233,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configurar detalle del correo
+    |--------------------------------------------------------------------------
+    |
+    | Actualiza el bloque interno del modal utilizado para representar el
+    | estado de la notificación SMTP.
+    |
+    */
 
     function configurarEstadoCorreo(
         tipo,
@@ -1147,6 +1339,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar código de incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Presenta u oculta el identificador generado por el backend según exista
+    | un registro válido.
+    |
+    */
+
     function mostrarCodigo(codigo) {
         if (!codigoIncidencia) return;
 
@@ -1183,6 +1385,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | MENSAJE DE RESPALDO PARA OUTLOOK
     |--------------------------------------------------------------------------
+    |
+    | Construye el deeplink de Outlook con los datos de la incidencia para permitir un seguimiento manual.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir enlace de Outlook
+    |--------------------------------------------------------------------------
+    |
+    | Genera un mensaje de seguimiento con los datos de la incidencia y la
+    | información del usuario para abrirlo directamente en Outlook 365.
+    |
     */
 
     function construirOutlook(
@@ -1286,6 +1501,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | BOTONES DE OUTLOOK
     |--------------------------------------------------------------------------
+    |
+    | Configura y muestra los botones de respaldo de Outlook según se trate de una advertencia SMTP o un error total.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configurar botones de reporte
+    |--------------------------------------------------------------------------
+    |
+    | Asigna el enlace de Outlook y adapta los estilos según se trate de una
+    | advertencia de correo o un fallo completo del registro.
+    |
     */
 
     function configurarBotonesReporte(
@@ -1367,6 +1595,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ocultar botones de reporte
+    |--------------------------------------------------------------------------
+    |
+    | Oculta las alternativas manuales cuando ya no son necesarias y elimina
+    | cualquier URL temporal asociada.
+    |
+    */
+
     function ocultarBotonesReporte() {
         [
             btnReportarModal,
@@ -1383,6 +1621,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar indicador SMTP
+    |--------------------------------------------------------------------------
+    |
+    | Sincroniza el indicador persistente con los estados de cola, éxito,
+    | advertencia o error de la notificación.
+    |
+    */
 
     function actualizarIndicador(
         tipo,
@@ -1440,6 +1688,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | BOTÓN DE ENVÍO
     |--------------------------------------------------------------------------
+    |
+    | Controla el estado de carga del botón para evitar envíos repetidos y mostrar progreso al usuario.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activar estado de carga
+    |--------------------------------------------------------------------------
+    |
+    | Deshabilita temporalmente el botón y muestra progreso mientras el
+    | formulario se encuentra en proceso de registro.
+    |
     */
 
     function activarCarga() {
@@ -1453,6 +1714,16 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restaurar botón de envío
+    |--------------------------------------------------------------------------
+    |
+    | Reactiva el botón y reconstruye su contenido original después de
+    | finalizar el intento de registro.
+    |
+    */
 
     function restaurarBoton() {
         if (!btnEnviar) return;
@@ -1480,6 +1751,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | MODAL
     |--------------------------------------------------------------------------
+    |
+    | Administra apertura, cierre y bloqueo de desplazamiento del modal de resultado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Abrir modal de resultado
+    |--------------------------------------------------------------------------
+    |
+    | Muestra el resultado del proceso y bloquea el desplazamiento del
+    | documento mientras el modal permanece visible.
+    |
     */
 
     function abrirModal() {
@@ -1492,6 +1776,15 @@ document.addEventListener('DOMContentLoaded', () => {
         refrescarIconos();
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cerrar modal de resultado
+    |--------------------------------------------------------------------------
+    |
+    | Oculta el modal y restaura el desplazamiento normal de la página.
+    |
+    */
 
     function ocultarModal() {
         if (!modal) return;
@@ -1529,6 +1822,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ICONOS
     |--------------------------------------------------------------------------
+    |
+    | Reinicializa Lucide después de generar o sustituir contenido dinámico dentro de la interfaz.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Refrescar iconos
+    |--------------------------------------------------------------------------
+    |
+    | Solicita a Lucide reconstruir los iconos después de cambios dinámicos
+    | en el contenido de la interfaz.
+    |
     */
 
     function refrescarIconos() {

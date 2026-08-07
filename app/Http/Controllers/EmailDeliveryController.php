@@ -8,17 +8,42 @@ use App\Models\Memorando;
 use App\Models\Solicitud;
 use Illuminate\Http\JsonResponse;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de entregas de correo
+|--------------------------------------------------------------------------
+|
+| Permite consultar el estado de una entrega de correo asociada a una gestión
+| del Portal TI, verificando primero que el usuario tenga autorización para
+| acceder a dicha información.
+|
+*/
+
 class EmailDeliveryController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
     | Consultar estado del correo
     |--------------------------------------------------------------------------
+    |
+    | Recupera el estado actual de la entrega y devuelve una respuesta
+    | normalizada con indicadores de cola, envío, fallo e intentos realizados.
+    |
     */
 
     public function status(
         EmailDelivery $emailDelivery
     ): JsonResponse {
+        /*
+        |--------------------------------------------------------------------------
+        | Usuario autenticado
+        |--------------------------------------------------------------------------
+        |
+        | La consulta requiere una sesión válida antes de evaluar permisos
+        | sobre la gestión relacionada.
+        |
+        */
+
         $usuario = auth()->user();
 
         abort_unless(
@@ -26,11 +51,14 @@ class EmailDeliveryController extends Controller
             401
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Cargar la gestión relacionada
         |--------------------------------------------------------------------------
+        |
+        | Recupera mediante la relación polimórfica el registro que originó
+        | la entrega de correo.
+        |
         */
 
         $emailDelivery->loadMissing(
@@ -39,7 +67,6 @@ class EmailDeliveryController extends Controller
 
         $gestion =
             $emailDelivery->emailable;
-
 
         /*
         |--------------------------------------------------------------------------
@@ -73,11 +100,14 @@ class EmailDeliveryController extends Controller
             'No tienes permiso para consultar el estado de este correo.'
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Estado normalizado
         |--------------------------------------------------------------------------
+        |
+        | Convierte el estado almacenado a minúsculas y elimina espacios para
+        | mantener una comparación consistente en la respuesta JSON.
+        |
         */
 
         $estado =
@@ -87,11 +117,14 @@ class EmailDeliveryController extends Controller
                 )
             );
 
-
         /*
         |--------------------------------------------------------------------------
         | Respuesta
         |--------------------------------------------------------------------------
+        |
+        | Devuelve el estado actual de la entrega junto con marcas booleanas
+        | y fechas relevantes para que el frontend pueda actualizar la interfaz.
+        |
         */
 
         return response()->json([
@@ -147,11 +180,14 @@ class EmailDeliveryController extends Controller
         ]);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Verificar propietario de la gestión
     |--------------------------------------------------------------------------
+    |
+    | Determina si el usuario autenticado es propietario de la gestión que
+    | originó el envío, según el tipo concreto del modelo relacionado.
+    |
     */
 
     private function usuarioEsPropietario(

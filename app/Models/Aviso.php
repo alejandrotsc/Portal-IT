@@ -10,9 +10,27 @@ class Aviso extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tabla asociada
+    |--------------------------------------------------------------------------
+    |
+    | Define la tabla utilizada por el modelo para almacenar y consultar
+    | los avisos registrados dentro del Portal TI.
+    |
+    */
 
     protected $table = 'avisos';
 
+    /*
+    |--------------------------------------------------------------------------
+    | Campos asignables
+    |--------------------------------------------------------------------------
+    |
+    | Define los atributos que pueden ser asignados de forma masiva
+    | durante la creación o actualización de un aviso.
+    |
+    */
 
     protected $fillable = [
         'titulo',
@@ -24,6 +42,15 @@ class Aviso extends Model
         'creado_por',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversión de tipos
+    |--------------------------------------------------------------------------
+    |
+    | Convierte automáticamente las fechas a objetos de fecha y el estado
+    | activo a un valor booleano al interactuar con el modelo.
+    |
+    */
 
     protected function casts(): array
     {
@@ -42,7 +69,6 @@ class Aviso extends Model
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Relaciones
@@ -57,7 +83,6 @@ class Aviso extends Model
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Estado del aviso
@@ -71,20 +96,17 @@ class Aviso extends Model
             && $this->fecha_inicio->isFuture();
     }
 
-
     public function estaFinalizado(): bool
     {
         return $this->fecha_fin
             && $this->fecha_fin->isPast();
     }
 
-
     public function estaVisible(): bool
     {
         if (! $this->activo) {
             return false;
         }
-
 
         if (
             $this->fecha_inicio
@@ -93,7 +115,6 @@ class Aviso extends Model
             return false;
         }
 
-
         if (
             $this->fecha_fin
             && $this->fecha_fin->isPast()
@@ -101,10 +122,8 @@ class Aviso extends Model
             return false;
         }
 
-
         return true;
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -118,12 +137,10 @@ class Aviso extends Model
             !== null;
     }
 
-
     public function pendienteDeNotificar(): bool
     {
         return ! $this->fueNotificado();
     }
-
 
     public function marcarComoNotificado(): bool
     {

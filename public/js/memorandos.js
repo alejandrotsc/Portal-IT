@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
 |--------------------------------------------------------------------------
 | REFERENCIAS GENERALES
 |--------------------------------------------------------------------------
+|
+| Obtiene los elementos principales utilizados para controlar el formulario, el tipo de gestión seleccionado y las distintas vistas previas del documento.
+|
 */
 const form = document.getElementById('documentForm');
 const tipoSelect = document.getElementById('tipo_id');
@@ -33,6 +36,9 @@ const cerradaPase = document.getElementById('cerrada_pase');
 |--------------------------------------------------------------------------
 | CONTENEDORES PRINCIPALES
 |--------------------------------------------------------------------------
+|
+| Agrupa las referencias de los contenedores utilizados para alternar entre placeholder, memorando, pase temporal y solicitud de compra.
+|
 */
 const placeholder = document.getElementById('preview-placeholder-container');
 const previewDocumento = document.getElementById('preview-documento-real');
@@ -44,11 +50,24 @@ const formularios = document.querySelectorAll('.formulario-dinamico');
 |--------------------------------------------------------------------------
 | FECHAS
 |--------------------------------------------------------------------------
+|
+| Define utilidades para establecer, validar y mostrar fechas en formato corto y largo dentro del formulario y sus vistas previas.
+|
 */
 const meses = [
     'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
     'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
 ];
+
+/*
+|--------------------------------------------------------------------------
+| Formatear fecha corta
+|--------------------------------------------------------------------------
+|
+| Convierte una instancia Date al formato YYYY-MM-DD requerido por los
+| campos de fecha del formulario.
+|
+*/
 
 function formatoFechaCorta(date) {
     let mes = date.getMonth() + 1;
@@ -57,6 +76,16 @@ function formatoFechaCorta(date) {
     if (dia < 10) dia = '0' + dia;
     return `${date.getFullYear()}-${mes}-${dia}`;
 }
+
+/*
+|--------------------------------------------------------------------------
+| Formatear fecha larga
+|--------------------------------------------------------------------------
+|
+| Convierte una fecha YYYY-MM-DD a una representación legible en español
+| y descarta valores incompletos o inválidos.
+|
+*/
 
 function formatoFechaLarga(valor) {
     if (!valor) {
@@ -100,7 +129,20 @@ if (fechaPase && !fechaPase.value) {
 |--------------------------------------------------------------------------
 | CONTROL DE PREVIEWS
 |--------------------------------------------------------------------------
+|
+| Centraliza la visibilidad de las diferentes vistas previas y garantiza que únicamente se muestre el documento correspondiente al tipo seleccionado.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Ocultar vistas previas
+|--------------------------------------------------------------------------
+|
+| Oculta todos los contenedores de preview antes de mostrar el documento
+| correspondiente al tipo de gestión seleccionado.
+|
+*/
+
 function ocultarTodo() {
     if (placeholder) placeholder.style.display = 'none';
     if (previewDocumento) previewDocumento.style.display = 'none';
@@ -109,10 +151,30 @@ function ocultarTodo() {
     previews.forEach(p => p.style.display = 'none');
 }
 
+/*
+|--------------------------------------------------------------------------
+| Mostrar placeholder
+|--------------------------------------------------------------------------
+|
+| Restablece las vistas y presenta el estado inicial cuando todavía no se
+| ha seleccionado un tipo de documento.
+|
+*/
+
 function mostrarPlaceholder() {
     ocultarTodo();
     if (placeholder) placeholder.style.display = 'block';
 }
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar documento
+|--------------------------------------------------------------------------
+|
+| Activa la vista previa general o la específica del pase temporal según
+| el tipo de gestión recibido.
+|
+*/
 
 function mostrarDocumento(tipo) {
     ocultarTodo();
@@ -134,6 +196,16 @@ function mostrarDocumento(tipo) {
     });
 }
 
+/*
+|--------------------------------------------------------------------------
+| Mostrar solicitud de compra
+|--------------------------------------------------------------------------
+|
+| Activa la vista previa correspondiente a la solicitud de compra y su
+| contenido interno asociado.
+|
+*/
+
 function mostrarCompra() {
     ocultarTodo();
     if (previewCompra) {
@@ -147,6 +219,9 @@ function mostrarCompra() {
 |--------------------------------------------------------------------------
 | DATOS GENERALES
 |--------------------------------------------------------------------------
+|
+| Sincroniza destinatarios, remitente, asunto y fecha entre los campos del formulario y las vistas previas de memorando y compra.
+|
 */
 const outPara = document.getElementById('out_para');
 const outCc = document.getElementById('out_cc');
@@ -160,6 +235,16 @@ const outDeCompra = document.getElementById('out_de_compra');
 const outAsuntoCompra = document.getElementById('out_asunto_compra');
 const outFechaCompra = document.getElementById('out_fecha_compra');
 
+/*
+|--------------------------------------------------------------------------
+| Obtener destinatarios en copia
+|--------------------------------------------------------------------------
+|
+| Reúne las opciones seleccionadas del campo CC y devuelve su texto para
+| representarlo dentro de la vista previa.
+|
+*/
+
 function obtenerCC() {
     if (!cc) return '-';
 
@@ -167,6 +252,16 @@ function obtenerCC() {
         .map(option => option.text)
         .join(', ') || '-';
 }
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar datos generales
+|--------------------------------------------------------------------------
+|
+| Sincroniza la información común del formulario con las distintas vistas
+| previas que comparten destinatarios, remitente, asunto y fecha.
+|
+*/
 
 function actualizarDatosGenerales() {
     const valorCC = obtenerCC();
@@ -189,6 +284,9 @@ function actualizarDatosGenerales() {
 |--------------------------------------------------------------------------
 | AUTORIZACION
 |--------------------------------------------------------------------------
+|
+| Actualiza en tiempo real los datos específicos utilizados por la autorización de ingreso de equipo.
+|
 */
 const colaborador = document.getElementById('colaborador');
 const cargoArea = document.getElementById('cargo_area');
@@ -199,6 +297,16 @@ const outColaborador = document.getElementById('out_colaborador');
 const outCargoArea = document.getElementById('out_cargo_area');
 const outFechaIngreso = document.getElementById('out_fecha_ingreso');
 const outMotivo = document.getElementById('out_motivo_autorizacion');
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar autorización
+|--------------------------------------------------------------------------
+|
+| Refleja en la vista previa los datos específicos de la autorización de
+| ingreso, incluyendo colaborador, área, fecha y motivo.
+|
+*/
 
 function actualizarAutorizacion() {
     if (outColaborador) outColaborador.textContent = colaborador?.value || '-';
@@ -211,9 +319,22 @@ function actualizarAutorizacion() {
 |--------------------------------------------------------------------------
 | OBSERVACIONES
 |--------------------------------------------------------------------------
+|
+| Sincroniza el campo de observaciones con su representación dentro de la vista previa.
+|
 */
 const observaciones = document.getElementById('observaciones');
 const outObservaciones = document.getElementById('out_observaciones');
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar observaciones
+|--------------------------------------------------------------------------
+|
+| Refleja el contenido del campo de observaciones en el documento o utiliza
+| un texto predeterminado cuando no se ha proporcionado información.
+|
+*/
 
 function actualizarObservaciones() {
     if (outObservaciones) outObservaciones.textContent = observaciones?.value || 'Sin observaciones.';
@@ -223,8 +344,21 @@ function actualizarObservaciones() {
 |--------------------------------------------------------------------------
 | PASE TEMPORAL
 |--------------------------------------------------------------------------
+|
+| Actualiza los campos visibles del pase temporal, incluyendo responsables, empresa, horarios, observaciones, estado y equipos.
+|
 */
 const outFechaPase = document.querySelector('#preview-pase-temporal [data-field="fecha"]');
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar pase temporal
+|--------------------------------------------------------------------------
+|
+| Sincroniza todos los campos del pase temporal con su vista previa y
+| actualiza también el tipo de solicitud y los equipos registrados.
+|
+*/
 
 function actualizarPaseTemporal() {
     const preview = document.querySelector('#preview-pase-temporal');
@@ -272,11 +406,24 @@ function actualizarPaseTemporal() {
 |--------------------------------------------------------------------------
 | EQUIPOS (PASE TEMPORAL)
 |--------------------------------------------------------------------------
+|
+| Administra dinámicamente las filas de equipos del pase temporal y mantiene sincronizada su tabla de vista previa.
+|
 */
 const equiposPaseBody = document.getElementById('equipos-body');
 const previewEquiposPase = document.getElementById('previewEquipos');
 const btnAgregarEquipoPase = document.getElementById('btnAgregarEquipo');
 let contadorEquipoPase = 1;
+
+/*
+|--------------------------------------------------------------------------
+| Crear fila de equipo para pase
+|--------------------------------------------------------------------------
+|
+| Genera una nueva fila editable para registrar equipos dentro del pase
+| temporal y activa sus eventos de actualización.
+|
+*/
 
 function crearFilaEquipoPase() {
     const fila = document.createElement('tr');
@@ -293,6 +440,16 @@ function crearFilaEquipoPase() {
     activarFilaEquipoPase(fila);
     return fila;
 }
+
+/*
+|--------------------------------------------------------------------------
+| Activar fila de equipo para pase
+|--------------------------------------------------------------------------
+|
+| Registra los eventos necesarios para mantener sincronizada la vista previa
+| y controlar la eliminación de filas.
+|
+*/
 
 function activarFilaEquipoPase(fila) {
     fila.querySelectorAll('input').forEach(input => {
@@ -311,6 +468,16 @@ function activarFilaEquipoPase(fila) {
         });
     }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar equipos del pase
+|--------------------------------------------------------------------------
+|
+| Construye la tabla de vista previa utilizando únicamente las filas que
+| contienen información registrada.
+|
+*/
 
 function actualizarEquiposPase() {
     if (!equiposPaseBody || !previewEquiposPase) return;
@@ -351,7 +518,20 @@ if (btnAgregarEquipoPase) {
 |--------------------------------------------------------------------------
 | ACTUALIZACION GLOBAL
 |--------------------------------------------------------------------------
+|
+| Determina qué bloque de vista previa debe actualizarse según el tipo de gestión actualmente seleccionado.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Actualizar vista previa
+|--------------------------------------------------------------------------
+|
+| Ejecuta la sincronización correspondiente al tipo de documento activo y
+| mantiene sus datos visibles actualizados en tiempo real.
+|
+*/
+
 function actualizarPreview() {
     const tipoActual = tipoSelect?.selectedOptions[0]?.dataset?.formulario;
 
@@ -388,11 +568,24 @@ if (fechaPase) {
 |--------------------------------------------------------------------------
 | EQUIPOS (AUTORIZACION)
 |--------------------------------------------------------------------------
+|
+| Administra las filas dinámicas de equipo asociadas a la autorización y actualiza su representación en el documento.
+|
 */
 const equipoFilas = document.getElementById('equipoFilas');
 const equipoSalida = document.getElementById('equipoSalida');
 const agregarFilaEquipo = document.getElementById('agregarFila');
 let contadorEquipo = 1;
+
+/*
+|--------------------------------------------------------------------------
+| Crear fila de equipo para autorización
+|--------------------------------------------------------------------------
+|
+| Genera una nueva fila indexada para registrar equipo dentro de la
+| autorización y activa sus eventos asociados.
+|
+*/
 
 function crearFilaEquipo() {
     const fila = document.createElement('tr');
@@ -410,6 +603,16 @@ function crearFilaEquipo() {
     return fila;
 }
 
+/*
+|--------------------------------------------------------------------------
+| Activar fila de equipo
+|--------------------------------------------------------------------------
+|
+| Registra eventos sobre los campos y el botón de eliminación de una fila
+| perteneciente a la autorización.
+|
+*/
+
 function activarFilaEquipo(fila) {
     fila.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', actualizarEquipos);
@@ -426,6 +629,16 @@ function activarFilaEquipo(fila) {
         });
     }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar equipos de autorización
+|--------------------------------------------------------------------------
+|
+| Reconstruye la tabla de vista previa con la información capturada en las
+| filas dinámicas de equipo.
+|
+*/
 
 function actualizarEquipos() {
     if (!equipoFilas || !equipoSalida) return;
@@ -462,11 +675,31 @@ if (agregarFilaEquipo) {
     });
 }
 
+/*
+|--------------------------------------------------------------------------
+| Actualizar tipo de pase
+|--------------------------------------------------------------------------
+|
+| Marca visualmente la opción del pase temporal que corresponde al tipo de
+| solicitud seleccionado por el usuario.
+|
+*/
+
 function actualizarTipoSolicitud() {
     document.querySelectorAll('#preview-pase-temporal [data-check]').forEach(check => {
         check.textContent = check.dataset.check === tipoPase?.value ? '✓' : '';
     });
 }
+
+/*
+|--------------------------------------------------------------------------
+| Generar número de pase
+|--------------------------------------------------------------------------
+|
+| Obtiene el contador almacenado localmente, incrementa su valor y genera
+| una numeración visual de cinco dígitos para el pase temporal.
+|
+*/
 
 function generarNumeroPase() {
     if (numeroPase) {
@@ -490,6 +723,9 @@ paseCampos.forEach(campo => {
 |--------------------------------------------------------------------------
 | SOLICITUD DE COMPRA
 |--------------------------------------------------------------------------
+|
+| Sincroniza los datos generales de la solicitud de compra, proveedor, justificación y clasificación interna del documento.
+|
 */
 const empresa = document.getElementById('empresa');
 const tipoMercado = document.getElementById('tipo_mercado');
@@ -508,6 +744,16 @@ const outProveedor = document.getElementById('out_proveedor');
 const outRazonProveedor = document.getElementById('out_razon_proveedor');
 const outProveedorDocumento = document.getElementById('out_proveedor_documento');
 
+/*
+|--------------------------------------------------------------------------
+| Actualizar solicitud de compra
+|--------------------------------------------------------------------------
+|
+| Sincroniza proveedor, justificación y clasificación de compra con sus
+| respectivas vistas previas y tablas de artículos.
+|
+*/
+
 function actualizarCompra() {
     if (outInventario) outInventario.textContent = inventario?.value || '-';
     if (outMantenimiento) outMantenimiento.textContent = mantenimiento?.value || '';
@@ -520,6 +766,16 @@ function actualizarCompra() {
     actualizarFechaCompra();
     actualizarArticulos();
 }
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar fecha de compra
+|--------------------------------------------------------------------------
+|
+| Separa la fecha seleccionada en día, mes y año para mostrarla en los
+| campos correspondientes del formato de compra.
+|
+*/
 
 function actualizarFechaCompra() {
     if (!fecha || !fecha.value) return;
@@ -538,6 +794,9 @@ function actualizarFechaCompra() {
 |--------------------------------------------------------------------------
 | ARTICULOS DE COMPRA
 |--------------------------------------------------------------------------
+|
+| Obtiene y administra los artículos registrados dentro de la solicitud de compra.
+|
 */
 const articulosBody = document.getElementById('articulosBody');
 const btnAgregarArticulo = document.getElementById('btnAgregarArticulo');
@@ -545,6 +804,16 @@ const tablaArticulosPreview = document.getElementById('tablaArticulosPreview');
 const tablaDetalleMemo = document.getElementById('tablaDetalleMemo');
 
 let contadorArticulo = 1;
+
+/*
+|--------------------------------------------------------------------------
+| Obtener artículos
+|--------------------------------------------------------------------------
+|
+| Extrae los valores de cada fila dinámica de artículos y los transforma en
+| objetos utilizados por las vistas previas.
+|
+*/
 
 function obtenerArticulos() {
     if (!articulosBody) return [];
@@ -564,7 +833,20 @@ function obtenerArticulos() {
 |--------------------------------------------------------------------------
 | GENERAR TABLA ARTICULOS PREVIEW
 |--------------------------------------------------------------------------
+|
+| Construye las tablas de artículos utilizadas tanto por la solicitud de compra como por el memorando asociado.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Actualizar tablas de artículos
+|--------------------------------------------------------------------------
+|
+| Reconstruye las tablas de artículos del formato de compra y del memorando
+| utilizando la información actualmente capturada.
+|
+*/
+
 function actualizarArticulos() {
     const articulos = obtenerArticulos();
 
@@ -612,7 +894,20 @@ function actualizarArticulos() {
 |--------------------------------------------------------------------------
 | AGREGAR ARTICULOS
 |--------------------------------------------------------------------------
+|
+| Crea nuevas filas de artículos, registra sus eventos y permite eliminarlas dinámicamente.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Crear artículo
+|--------------------------------------------------------------------------
+|
+| Genera una nueva fila indexada para registrar un artículo y activa sus
+| controles de edición y eliminación.
+|
+*/
+
 function crearArticulo() {
     const fila = document.createElement('tr');
     fila.className = 'fila-articulo';
@@ -632,6 +927,16 @@ function crearArticulo() {
     activarArticulo(fila);
     return fila;
 }
+
+/*
+|--------------------------------------------------------------------------
+| Activar artículo
+|--------------------------------------------------------------------------
+|
+| Registra los eventos necesarios para sincronizar cambios y eliminar filas
+| de artículos de forma dinámica.
+|
+*/
 
 function activarArticulo(fila) {
     fila.querySelectorAll('input,select').forEach(campo => {
@@ -663,7 +968,20 @@ if (btnAgregarArticulo) {
 |--------------------------------------------------------------------------
 | CHECKBOX EMPRESA / MERCADO
 |--------------------------------------------------------------------------
+|
+| Actualiza los indicadores visuales de empresa y tipo de mercado según las opciones seleccionadas.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Actualizar indicadores de compra
+|--------------------------------------------------------------------------
+|
+| Marca visualmente la empresa y el tipo de mercado seleccionados dentro
+| del formato de solicitud de compra.
+|
+*/
+
 function actualizarCheckboxes() {
     const empresaChecks = document.querySelectorAll('.checkbox[data-empresa]');
     empresaChecks.forEach(check => {
@@ -694,6 +1012,9 @@ function actualizarCheckboxes() {
 |--------------------------------------------------------------------------
 | TABS MEMORANDO / COMPRA
 |--------------------------------------------------------------------------
+|
+| Permite alternar visualmente entre las páginas del memorando y la solicitud de compra.
+|
 */
 document.querySelectorAll('.document-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -711,7 +1032,20 @@ document.querySelectorAll('.document-tab').forEach(tab => {
 |--------------------------------------------------------------------------
 | CAMBIO DE TIPO DE DOCUMENTO
 |--------------------------------------------------------------------------
+|
+| Actualiza formulario, preview, destinatarios y texto del botón cuando cambia el tipo de gestión seleccionado.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Resolver texto del botón
+|--------------------------------------------------------------------------
+|
+| Devuelve la etiqueta correspondiente del botón principal según el tipo
+| de documento que se está generando.
+|
+*/
+
 function textoBoton(tipo) {
     switch (tipo) {
         case 'solicitud_compra':
@@ -725,11 +1059,31 @@ function textoBoton(tipo) {
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Mostrar formulario correspondiente
+|--------------------------------------------------------------------------
+|
+| Alterna los formularios dinámicos y deja visible únicamente el bloque
+| asociado al tipo de gestión seleccionado.
+|
+*/
+
 function mostrarFormulario(tipo) {
     formularios.forEach(formulario => {
         formulario.style.display = formulario.dataset.formulario === tipo ? 'block' : 'none';
     });
 }
+
+/*
+|--------------------------------------------------------------------------
+| Aplicar tipo de documento
+|--------------------------------------------------------------------------
+|
+| Coordina formulario, preview, destinatarios, campo oculto y texto del
+| botón cada vez que cambia la gestión seleccionada.
+|
+*/
 
 function aplicarTipo() {
     const opcion = tipoSelect?.selectedOptions[0];
@@ -773,7 +1127,20 @@ if (tipoSelect) {
 |--------------------------------------------------------------------------
 | DESTINATARIOS SEGÚN GESTIÓN
 |--------------------------------------------------------------------------
+|
+| Asigna automáticamente los destinatarios y copias correspondientes de acuerdo con el tipo de documento.
+|
 */
+/*
+|--------------------------------------------------------------------------
+| Actualizar destinatarios
+|--------------------------------------------------------------------------
+|
+| Configura automáticamente los campos PARA y CC conforme a las reglas
+| definidas para cada tipo de gestión.
+|
+*/
+
 function actualizarDestinatarios(tipo) {
     if (!para || !cc) return;
 
@@ -816,6 +1183,9 @@ function actualizarDestinatarios(tipo) {
 |--------------------------------------------------------------------------
 | ESTADO INICIAL
 |--------------------------------------------------------------------------
+|
+| Aplica la configuración inicial del formulario y sincroniza las vistas previas cuando la página termina de cargarse.
+|
 */
 aplicarTipo();
 
@@ -832,6 +1202,9 @@ if (tipoSelect?.selectedOptions[0]?.dataset?.formulario === 'pase_temporal') {
 |--------------------------------------------------------------------------
 | ENVÍO DEL FORMULARIO
 |--------------------------------------------------------------------------
+|
+| Intercepta el submit tradicional, envía los datos mediante fetch y procesa la respuesta devuelta por el backend.
+|
 */
 if (form) {
     form.addEventListener('submit', async e => {

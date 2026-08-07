@@ -12,16 +12,29 @@ class GuardiaAsignadaNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe la guardia de soporte asignada y la conserva para construir
+    | la información que será enviada al usuario mediante la notificación.
+    |
+    */
+
     public function __construct(
         private readonly GuardiaSoporte $guardia
     ) {
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Canales
     |--------------------------------------------------------------------------
+    |
+    | Define los canales utilizados para almacenar la notificación en
+    | la base de datos y transmitirla en tiempo real al usuario.
+    |
     */
 
     public function via(
@@ -33,19 +46,42 @@ class GuardiaAsignadaNotification extends Notification implements ShouldQueue
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Información compartida
     |--------------------------------------------------------------------------
+    |
+    | Construye y centraliza los datos utilizados por los diferentes
+    | canales de notificación relacionados con la guardia asignada.
+    |
     */
 
     private function datosNotificacion(): array
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Cargar relaciones necesarias
+        |--------------------------------------------------------------------------
+        |
+        | Carga la información del agente asignado y del usuario que creó
+        | la guardia para incluir estos datos dentro de la notificación.
+        |
+        */
+
         $this->guardia->loadMissing([
             'agente',
             'creador',
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Formatear fecha de la guardia
+        |--------------------------------------------------------------------------
+        |
+        | Prepara una representación legible de la fecha utilizando la
+        | configuración regional en español.
+        |
+        */
 
         $fecha = $this->guardia
             ->fecha
@@ -57,6 +93,16 @@ class GuardiaAsignadaNotification extends Notification implements ShouldQueue
                 'dddd D [de] MMMM [de] YYYY'
             )
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Datos de la notificación
+        |--------------------------------------------------------------------------
+        |
+        | Define la información de la guardia que será almacenada y
+        | transmitida al usuario mediante los canales configurados.
+        |
+        */
 
         return [
             'tipo' =>
@@ -157,11 +203,14 @@ class GuardiaAsignadaNotification extends Notification implements ShouldQueue
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Base de datos
     |--------------------------------------------------------------------------
+    |
+    | Define la información que será almacenada de forma persistente
+    | dentro de la tabla de notificaciones del sistema.
+    |
     */
 
     public function toDatabase(
@@ -170,11 +219,14 @@ class GuardiaAsignadaNotification extends Notification implements ShouldQueue
         return $this->datosNotificacion();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Broadcast
     |--------------------------------------------------------------------------
+    |
+    | Construye el mensaje que será transmitido en tiempo real para que
+    | el usuario reciba inmediatamente la asignación de la guardia.
+    |
     */
 
     public function toBroadcast(
@@ -185,11 +237,14 @@ class GuardiaAsignadaNotification extends Notification implements ShouldQueue
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Tipo enviado mediante Broadcast
     |--------------------------------------------------------------------------
+    |
+    | Define el identificador utilizado por el cliente para reconocer
+    | las notificaciones correspondientes a nuevas guardias asignadas.
+    |
     */
 
     public function broadcastType(): string

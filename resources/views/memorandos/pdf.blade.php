@@ -7,291 +7,435 @@
 
     <style>
 
-        @page {
-            margin: 42px 48px 48px;
-        }
+    @page {
+        margin: 40px 50px 48px;
+    }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CONFIGURACIÓN GENERAL
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | CONFIGURACIÓN GENERAL
+    |--------------------------------------------------------------------------
+    */
 
-        body {
-            margin: 0;
-            font-family: "DejaVu Serif", "Times New Roman", serif;
-            color: #111827;
-            font-size: 11.5px;
-            line-height: 1.55;
-        }
+    * {
+        box-sizing: border-box;
+    }
 
-        * {
-            box-sizing: border-box;
-        }
+    body {
+        margin: 0;
 
-        .documento {
-            width: 100%;
-        }
+        font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
 
+        color: #202020;
 
-        /*
-        |--------------------------------------------------------------------------
-        | ENCABEZADO
-        |--------------------------------------------------------------------------
-        */
+        font-size: 10.5px;
+        line-height: 1.48;
+    }
 
-        .encabezado {
-            border-bottom: 1.5px solid #1f2937;
-            padding-bottom: 14px;
-            margin-bottom: 22px;
-        }
-
-        .encabezado-tabla {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .encabezado-logo {
-            width: 22%;
-            vertical-align: middle;
-        }
-
-        .encabezado-titulo {
-            width: 78%;
-            padding-right: 22%;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .logo {
-            width: 104px;
-            display: block;
-        }
-
-        .titulo-principal {
-            margin: 0;
-            color: #111827;
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-
-        .subtitulo {
-            margin-top: 4px;
-            color: #4b5563;
-            font-size: 8.5px;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-        }
-
-        .codigo-documento {
-            color: #111827;
-            font-size: 9px;
-            font-weight: bold;
-        }
-
-        .codigo-documento span {
-            display: block;
-            margin-top: 3px;
-            color: #6b7280;
-            font-size: 8px;
-            font-weight: normal;
-        }
+    .documento {
+        width: 100%;
+    }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | BLOQUE DE DATOS
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | ENCABEZADO
+    |--------------------------------------------------------------------------
+    */
 
-        .datos {
-            margin-bottom: 24px;
-            border: 1px solid #d1d5db;
-        }
+    .encabezado {
+        position: relative;
 
-        .tabla-datos {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        margin-bottom: 18px;
+        padding: 8px 0 9px;
 
-        .tabla-datos td {
-            padding: 7px 10px;
-            border-bottom: 1px solid #e5e7eb;
-            vertical-align: top;
-        }
+        border-top: 1px solid #8a8a8a;
+        border-bottom: 1px solid #8a8a8a;
+    }
 
-        .tabla-datos tr:last-child td {
-            border-bottom: 0;
-        }
+    .encabezado-tabla {
+        width: 100%;
 
-        .tabla-datos .etiqueta {
-            width: 92px;
-            background: #f3f4f6;
-            color: #1f2937;
-            font-size: 9px;
-            font-weight: bold;
-            letter-spacing: 0.4px;
-        }
+        border-collapse: collapse;
+    }
 
-        .tabla-datos .valor {
-            color: #111827;
-            font-size: 10.5px;
-        }
+    .encabezado-logo {
+        width: 22%;
 
+        vertical-align: middle;
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | CUERPO DEL DOCUMENTO
-        |--------------------------------------------------------------------------
-        */
+    .encabezado-titulo {
+        width: 78%;
 
-        .cuerpo {
-            margin-top: 4px;
-            text-align: justify;
-        }
+        padding-right: 22%;
 
-        .cuerpo p {
-            margin: 0 0 13px;
-        }
+        text-align: center;
+        vertical-align: middle;
+    }
 
-        .cuerpo strong {
-            color: #111827;
-        }
+    .logo {
+        display: block;
 
-        .bloque-destacado {
-            margin: 10px 0 16px;
-            padding: 11px 13px;
-            border-left: 3px solid #374151;
-            background: #f9fafb;
-        }
+        width: 82px;
+    }
 
-        .bloque-destacado p {
-            margin: 0;
-        }
+    .titulo-principal {
+        margin: 0;
 
-        .seccion-titulo {
-            margin: 20px 0 8px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #9ca3af;
-            color: #111827;
-            font-size: 10px;
-            font-weight: bold;
-            letter-spacing: 0.7px;
-            text-transform: uppercase;
-        }
+        color: #252525;
 
-        .motivo {
-            min-height: 48px;
-            margin-top: 6px;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            background: #ffffff;
-            text-align: justify;
-        }
+        font-size: 16px;
+        font-weight: bold;
+
+        letter-spacing: 0.7px;
+    }
+
+    .subtitulo {
+        margin-top: 3px;
+
+        color: #666666;
+
+        font-size: 7.5px;
+
+        letter-spacing: 0.45px;
+        text-transform: uppercase;
+    }
+
+    .codigo-documento {
+        color: #2d2d2d;
+
+        font-size: 8px;
+        font-weight: bold;
+    }
+
+    .codigo-documento span {
+        display: block;
+
+        margin-top: 2px;
+
+        color: #777777;
+
+        font-size: 7.5px;
+        font-weight: normal;
+    }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | TABLA DE EQUIPOS
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | BLOQUE DE DATOS
+    |--------------------------------------------------------------------------
+    */
 
-        .tabla-equipos {
-            width: 100%;
-            margin-top: 10px;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
+    .datos {
+        margin-bottom: 22px;
 
-        .tabla-equipos th {
-            padding: 7px 5px;
-            border: 1px solid #9ca3af;
-            background: #e5e7eb;
-            color: #111827;
-            font-size: 8px;
-            font-weight: bold;
-            text-align: center;
-            text-transform: uppercase;
-        }
+        border: 0;
+    }
 
-        .tabla-equipos td {
-            padding: 7px 5px;
-            border: 1px solid #cbd5e1;
-            color: #1f2937;
-            font-size: 8.5px;
-            text-align: center;
-            vertical-align: middle;
-            word-wrap: break-word;
-        }
+    .tabla-datos {
+        width: 100%;
 
-        .tabla-equipos tbody tr:nth-child(even) td {
-            background: #f9fafb;
-        }
+        border-collapse: collapse;
+    }
 
-        .sin-registros {
-            padding: 14px 8px !important;
-            color: #6b7280 !important;
-            font-style: italic;
-        }
+    .tabla-datos td {
+        padding: 3px 0;
 
+        border: 0;
 
-        /*
-        |--------------------------------------------------------------------------
-        | CIERRE Y FIRMA
-        |--------------------------------------------------------------------------
-        */
+        vertical-align: top;
+    }
 
-        .cierre {
-            margin-top: 26px;
-            text-align: justify;
-        }
+    .tabla-datos .etiqueta {
+    width: 100px;
 
-        .firma {
-            width: 270px;
-            margin: 68px auto 0;
-            text-align: center;
-        }
+    padding-right: 14px;
 
-        .firma-linea {
-            border-top: 1px solid #111827;
-            margin-bottom: 7px;
-        }
+    background: transparent;
 
-        .firma-nombre {
-            margin: 0;
-            color: #111827;
-            font-size: 10px;
-            font-weight: bold;
-        }
+    font-family: "Helvetica", "DejaVu Sans", Arial, sans-serif;
 
-        .firma-cargo {
-            margin: 2px 0 0;
-            color: #6b7280;
-            font-size: 8.5px;
-        }
+    color: #222222;
+
+    font-size: 9.5px;
+    font-weight: bold;
+
+    letter-spacing: 0;
+}
+
+    .tabla-datos .valor {
+    padding-left: 4px;
+
+    font-family: "Helvetica", "DejaVu Sans", Arial, sans-serif;
+
+    color: #222222;
+
+    font-size: 10px;
+    font-weight: normal;
+
+    line-height: 1.25;
+}
+
+    .tabla-datos tr:last-child td {
+        padding-bottom: 8px;
+    }
+
+    .datos::after {
+        display: block;
+
+        width: 100%;
+
+        margin-top: 5px;
+
+        border-bottom: 1px solid #687f97;
+
+        content: "";
+    }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | PIE DE PÁGINA
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | CUERPO DEL DOCUMENTO
+    |--------------------------------------------------------------------------
+    */
 
-        .pie {
-            position: fixed;
-            right: 0;
-            bottom: -25px;
-            left: 0;
-            border-top: 1px solid #d1d5db;
-            padding-top: 6px;
-            color: #6b7280;
-            font-size: 8px;
-            text-align: center;
-        }
+    .cuerpo {
+        margin-top: 3px;
 
-    </style>
+        color: #272727;
+
+        text-align: justify;
+    }
+
+    .cuerpo p {
+        margin: 0 0 12px;
+    }
+
+    .cuerpo strong {
+        color: #222222;
+
+        font-weight: bold;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | BLOQUE DESTACADO
+    |--------------------------------------------------------------------------
+    */
+
+    .bloque-destacado {
+        margin: 8px 0 13px;
+
+        padding: 0;
+
+        border: 0;
+
+        background: transparent;
+    }
+
+    .bloque-destacado p {
+        margin: 0;
+    }
+
+    .bloque-destacado strong {
+        font-weight: bold;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TÍTULOS DE SECCIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    .seccion-titulo {
+        margin: 18px 0 7px;
+
+        padding: 0 0 4px;
+
+        border: 0;
+        border-bottom: 1px solid #a3a3a3;
+
+        color: #292929;
+
+        font-size: 9px;
+        font-weight: bold;
+
+        letter-spacing: 0.25px;
+        text-transform: uppercase;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MOTIVO
+    |--------------------------------------------------------------------------
+    */
+
+    .motivo {
+        min-height: 0;
+
+        margin-top: 5px;
+
+        padding: 4px 0 4px 10px;
+
+        border: 0;
+        border-left: 2px solid #8c9dac;
+
+        background: transparent;
+
+        color: #303030;
+
+        text-align: justify;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TABLA DE EQUIPOS
+    |--------------------------------------------------------------------------
+    */
+
+    .tabla-equipos {
+        width: 100%;
+
+        margin-top: 9px;
+
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .tabla-equipos th {
+        padding: 6px 5px;
+
+        border: 1px solid #5e5e5e;
+
+        background: #ededeb;
+
+        color: #222222;
+
+        font-size: 8.5px;
+        font-weight: bold;
+
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .tabla-equipos td {
+        padding: 7px 6px;
+
+        border: 1px solid #666666;
+
+        background: #ffffff;
+
+        color: #272727;
+
+        font-size: 8.5px;
+
+        text-align: center;
+        vertical-align: middle;
+
+        word-wrap: break-word;
+    }
+
+    .tabla-equipos tbody tr:nth-child(even) td {
+        background: #ffffff;
+    }
+
+    .sin-registros {
+        padding: 13px 8px !important;
+
+        color: #707070 !important;
+
+        font-style: italic;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CIERRE
+    |--------------------------------------------------------------------------
+    */
+
+    .cierre {
+        margin-top: 25px;
+
+        color: #292929;
+
+        text-align: justify;
+    }
+
+    .cierre p {
+        margin: 0;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FIRMA
+    |--------------------------------------------------------------------------
+    */
+
+    .firma {
+        width: 270px;
+
+        margin: 62px auto 0;
+
+        text-align: center;
+    }
+
+    .firma-linea {
+        margin-bottom: 6px;
+
+        border-top: 1px solid #444444;
+    }
+
+    .firma-nombre {
+        margin: 0;
+
+        color: #272727;
+
+        font-size: 9px;
+        font-weight: bold;
+    }
+
+    .firma-cargo {
+        margin: 2px 0 0;
+
+        color: #6b6b6b;
+
+        font-size: 8px;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PIE DE PÁGINA
+    |--------------------------------------------------------------------------
+    */
+
+    .pie {
+        position: fixed;
+
+        right: 0;
+        bottom: -25px;
+        left: 0;
+
+        padding-top: 5px;
+
+        border-top: 1px solid #bdbdbd;
+
+        color: #7c7c7c;
+
+        font-size: 7px;
+
+        text-align: center;
+    }
+
+</style>
 
 </head>
 

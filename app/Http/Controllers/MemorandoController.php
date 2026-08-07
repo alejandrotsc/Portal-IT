@@ -29,6 +29,17 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de memorandos
+|--------------------------------------------------------------------------
+|
+| Gestiona los distintos flujos documentales del Portal TI: memorandos,
+| pases menores y mayores a 24 horas, solicitudes de compra, generación de
+| folios y PDF, historial, notificaciones y administración de estados.
+|
+*/
+
 class MemorandoController extends Controller
 {
 
@@ -36,6 +47,19 @@ class MemorandoController extends Controller
     |--------------------------------------------------------------------------
     | Crear memorando
     |--------------------------------------------------------------------------
+    |
+    | Registra los datos principales del memorando y lo deja inicialmente en estado generado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario general
+    |--------------------------------------------------------------------------
+    |
+    | Determina los tipos de memorando visibles según el rol autenticado y
+    | prepara la pantalla general de creación.
+    |
     */
 
     public function create()
@@ -70,6 +94,19 @@ class MemorandoController extends Controller
     |--------------------------------------------------------------------------
     | Crear pase menor a 24 horas
     |--------------------------------------------------------------------------
+    |
+    | Obtiene el tipo activo correspondiente al pase temporal y presenta su formulario específico.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de pase temporal
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el tipo activo correspondiente y renderiza el formulario
+    | específico para pases menores a 24 horas.
+    |
     */
 
     public function createPaseTemporal()
@@ -89,6 +126,19 @@ class MemorandoController extends Controller
     |--------------------------------------------------------------------------
     | Crear memorando autorización
     |--------------------------------------------------------------------------
+    |
+    | Obtiene el tipo activo de autorización y presenta el formulario utilizado para pases mayores a 24 horas.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de autorización
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el tipo activo de autorización y renderiza el formulario de
+    | pase mayor a 24 horas.
+    |
     */
 
     public function createAutorizacion()
@@ -108,6 +158,19 @@ class MemorandoController extends Controller
 |--------------------------------------------------------------------------
 | Enviar pase menor a 24 horas por correo
 |--------------------------------------------------------------------------
+|
+| Valida, registra y envía el pase temporal a Helpdesk dentro de una transacción, conservando el memorando aunque el correo quede pendiente.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Registrar pase temporal
+|--------------------------------------------------------------------------
+|
+| Ejecuta el flujo transaccional de creación, historial, correo con seguimiento
+| y notificación administrativa del pase menor a 24 horas.
+|
 */
 
 public function storePaseTemporal(
@@ -443,8 +506,21 @@ public function storePaseTemporal(
     |--------------------------------------------------------------------------
     | Crear compra
     |--------------------------------------------------------------------------
+    |
+    | Prepara el formulario general de compra filtrando los tipos de memorando permitidos según el rol.
+    |
     */
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de compra
+    |--------------------------------------------------------------------------
+    |
+    | Filtra los tipos disponibles según el rol y prepara la vista utilizada
+    | para solicitudes relacionadas con compras y servicios.
+    |
+    */
 
     public function createCompra()
     {
@@ -473,6 +549,19 @@ public function storePaseTemporal(
     |--------------------------------------------------------------------------
     | Carga dinámica de vistas de preview
     |--------------------------------------------------------------------------
+    |
+    | Carga la vista de preview correspondiente al tipo solicitado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar preview dinámico
+    |--------------------------------------------------------------------------
+    |
+    | Resuelve la vista parcial correspondiente al tipo solicitado para que el
+    | frontend pueda cargarla de forma asíncrona.
+    |
     */
 
     public function previewDinamico($tipo)
@@ -484,6 +573,19 @@ public function storePaseTemporal(
     |--------------------------------------------------------------------------
     | Guardar memorando
     |--------------------------------------------------------------------------
+    |
+    | Procesa memorandos generales, valida permisos, genera folio cuando corresponde, guarda datos específicos y genera el PDF.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registrar memorando general
+    |--------------------------------------------------------------------------
+    |
+    | Valida permisos y datos, genera folio si corresponde, guarda información
+    | específica, crea el PDF y procesa correo e historial.
+    |
     */
 
     public function store(
@@ -529,6 +631,9 @@ public function storePaseTemporal(
             |--------------------------------------------------------------------------
             | Validación permisos
             |--------------------------------------------------------------------------
+            |
+            | Comprueba que el tipo de memorando pueda ser generado por el rol autenticado.
+            |
             */
 
             if($rol !== 'Administrador'){
@@ -554,6 +659,9 @@ public function storePaseTemporal(
             |--------------------------------------------------------------------------
             | Generar Folio si aplica
             |--------------------------------------------------------------------------
+            |
+            | Genera un folio DIT únicamente para tipos configurados como documentos con consecutivo.
+            |
             */
 
             $codigo = null;
@@ -570,6 +678,9 @@ public function storePaseTemporal(
             |--------------------------------------------------------------------------
             | Datos adicionales
             |--------------------------------------------------------------------------
+            |
+            | Captura los campos dinámicos del formulario para conservar información no incluida en columnas principales.
+            |
             */
 
             $datosExtra = $request->except([
@@ -584,6 +695,9 @@ public function storePaseTemporal(
             |--------------------------------------------------------------------------
             | Crear memorando
             |--------------------------------------------------------------------------
+            |
+            | Registra los datos principales del memorando y lo deja inicialmente en estado generado.
+            |
             */
 
             $memorando = Memorando::create([
@@ -619,6 +733,9 @@ public function storePaseTemporal(
 |--------------------------------------------------------------------------
 | Datos específicos
 |--------------------------------------------------------------------------
+|
+| Delegar el almacenamiento de información particular al método asociado al formulario del memorando.
+|
 */
 
 $this->guardarDatosFormulario(
@@ -654,12 +771,18 @@ $memorando = Memorando::with([
 |--------------------------------------------------------------------------
 | Generar PDF
 |--------------------------------------------------------------------------
+|
+| Renderiza el memorando mediante DomPDF, almacena el archivo y asocia su ruta al registro.
+|
 */
 
 /*
 |--------------------------------------------------------------------------
 | Generar PDF
 |--------------------------------------------------------------------------
+|
+| Renderiza el memorando mediante DomPDF, almacena el archivo y asocia su ruta al registro.
+|
 */
 
 $memorando->refresh();
@@ -710,6 +833,9 @@ $memorando->update([
             |--------------------------------------------------------------------------
             | Registrar archivo
             |--------------------------------------------------------------------------
+            |
+            | Registra el PDF generado dentro de los archivos asociados al memorando.
+            |
             */
 
             MemorandoArchivo::create([
@@ -847,6 +973,9 @@ if ($tipo->formulario === 'autorizacion') {
 |--------------------------------------------------------------------------
 | Construir respuesta
 |--------------------------------------------------------------------------
+|
+| Genera la respuesta JSON con identificadores, ruta de descarga y estado del correo cuando aplica.
+|
 */
 
 $response = [
@@ -873,6 +1002,9 @@ $response = [
 |--------------------------------------------------------------------------
 | Agregar resultado SMTP solamente para autorizaciones
 |--------------------------------------------------------------------------
+|
+| Incluye el estado de EmailDelivery únicamente cuando el memorando generó una notificación de autorización.
+|
 */
 
 if ($delivery !== null) {
@@ -920,6 +1052,19 @@ return response()->json(
     |--------------------------------------------------------------------------
     | Guardar información según formulario
     |--------------------------------------------------------------------------
+    |
+    | Centraliza el almacenamiento de estructuras específicas según el formulario asociado al tipo de memorando.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guardar datos específicos
+    |--------------------------------------------------------------------------
+    |
+    | Aplica el almacenamiento complementario correspondiente al formulario
+    | asociado con el tipo de memorando.
+    |
     */
 
     private function guardarDatosFormulario(
@@ -934,6 +1079,9 @@ return response()->json(
             |--------------------------------------------------------------------------
             | Solicitudes de compra
             |--------------------------------------------------------------------------
+            |
+            | Guarda los datos complementarios de compras, servicios, repuestos o accesorios cuando el formulario los requiere.
+            |
             */
 
             case 'orden_pago':
@@ -993,6 +1141,9 @@ return response()->json(
 |--------------------------------------------------------------------------
 | Equipos tecnológicos
 |--------------------------------------------------------------------------
+|
+| Almacena los equipos en datos_extra y registra cada elemento como artículo del memorando.
+|
 */
 
 case 'laptop':
@@ -1039,6 +1190,9 @@ break;
             |--------------------------------------------------------------------------
             | Pase temporal / Autorización
             |--------------------------------------------------------------------------
+            |
+            | Guarda todos los campos dinámicos del formulario dentro de datos_extra para posteriores previews, PDF y consultas.
+            |
             */
 
             case 'pase_temporal':
@@ -1067,6 +1221,19 @@ break;
     |--------------------------------------------------------------------------
     | Generar folio DIT
     |--------------------------------------------------------------------------
+    |
+    | Incrementa de forma bloqueada el contador del prefijo y construye el folio con consecutivo, mes y año.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir folio consecutivo
+    |--------------------------------------------------------------------------
+    |
+    | Bloquea el contador correspondiente, incrementa el valor y devuelve el
+    | folio institucional con prefijo, consecutivo, mes y año.
+    |
     */
 
     private function generarFolio($prefijo)
@@ -1099,6 +1266,19 @@ break;
 |--------------------------------------------------------------------------
 | Mis pases
 |--------------------------------------------------------------------------
+|
+| Construye el historial del usuario para pases menores y mayores a 24 horas con filtros por período y tipo.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar historial de pases
+|--------------------------------------------------------------------------
+|
+| Valida filtros, calcula métricas del período y construye el listado paginado
+| del usuario autenticado.
+|
 */
 
 public function misPases(Request $request)
@@ -1144,6 +1324,9 @@ public function misPases(Request $request)
     |--------------------------------------------------------------------------
     | Consulta base del usuario
     |--------------------------------------------------------------------------
+    |
+    | Limita la consulta a memorandos del solicitante autenticado y a tipos de pase soportados.
+    |
     */
 
     $consultaBase = Memorando::query()
@@ -1169,6 +1352,9 @@ public function misPases(Request $request)
     |--------------------------------------------------------------------------
     | Años disponibles
     |--------------------------------------------------------------------------
+    |
+    | Obtiene los años con registros disponibles y conserva siempre el año actual.
+    |
     */
 
     $aniosDisponibles = (clone $consultaBase)
@@ -1197,6 +1383,9 @@ public function misPases(Request $request)
     |--------------------------------------------------------------------------
     | Consulta del periodo seleccionado
     |--------------------------------------------------------------------------
+    |
+    | Filtra los pases por mes y año antes de calcular métricas o aplicar el tipo seleccionado.
+    |
     */
 
     $consultaPeriodo = (clone $consultaBase)
@@ -1248,6 +1437,9 @@ public function misPases(Request $request)
     |--------------------------------------------------------------------------
     | Listado filtrado y paginado
     |--------------------------------------------------------------------------
+    |
+    | Carga las relaciones necesarias y aplica el filtro de tipo antes de paginar el historial.
+    |
     */
 
     $memorandos = (clone $consultaPeriodo)
@@ -1293,6 +1485,19 @@ public function misPases(Request $request)
 |--------------------------------------------------------------------------
 | Detalle centralizado de un pase
 |--------------------------------------------------------------------------
+|
+| Carga la información completa del pase y valida tipo y propiedad antes de mostrar el detalle.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar detalle de pase
+|--------------------------------------------------------------------------
+|
+| Carga las relaciones principales y valida que el memorando sea un pase y que
+| el usuario tenga permiso para consultarlo.
+|
 */
 
 public function showPase(
@@ -1311,6 +1516,9 @@ public function showPase(
     |--------------------------------------------------------------------------
     | Verificar que sea un pase
     |--------------------------------------------------------------------------
+    |
+    | Confirma que el memorando corresponda a pase temporal o autorización.
+    |
     */
 
     abort_unless(
@@ -1330,6 +1538,9 @@ public function showPase(
     |--------------------------------------------------------------------------
     | Verificar propietario
     |--------------------------------------------------------------------------
+    |
+    | Restringe la consulta al solicitante original o a un administrador.
+    |
     */
 
     $esAdministrador =
@@ -1360,6 +1571,19 @@ public function showPase(
     |--------------------------------------------------------------------------
     | Administración de pases
     |--------------------------------------------------------------------------
+    |
+    | Prepara el panel administrativo con filtros, búsqueda, período, tipo y resumen de estados.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar administración de pases
+    |--------------------------------------------------------------------------
+    |
+    | Valida filtros y prepara el listado administrativo con búsqueda, métricas
+    | y estados del período seleccionado.
+    |
     */
 
     public function administracionPases(
@@ -1653,6 +1877,19 @@ public function showPase(
     |--------------------------------------------------------------------------
     | Detalle administrativo del pase
     |--------------------------------------------------------------------------
+    |
+    | Carga el pase con relaciones e historial ordenado para su revisión administrativa.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar detalle administrativo
+    |--------------------------------------------------------------------------
+    |
+    | Verifica el tipo de memorando y carga relaciones e historial para su
+    | revisión desde el panel administrativo.
+    |
     */
 
     public function showAdministracionPase(
@@ -1681,6 +1918,19 @@ public function showPase(
     |--------------------------------------------------------------------------
     | Aprobar pase
     |--------------------------------------------------------------------------
+    |
+    | Cambia un pase generado a aprobado, registra el historial y notifica al solicitante.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aprobar pase pendiente
+    |--------------------------------------------------------------------------
+    |
+    | Cambia el estado dentro de una transacción, registra el historial y
+    | notifica posteriormente al solicitante.
+    |
     */
 
     public function aprobarPase(
@@ -1741,6 +1991,19 @@ public function showPase(
     |--------------------------------------------------------------------------
     | Rechazar pase
     |--------------------------------------------------------------------------
+    |
+    | Valida el motivo, cambia el estado a rechazado, registra el historial y notifica al solicitante.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rechazar pase pendiente
+    |--------------------------------------------------------------------------
+    |
+    | Valida el motivo, cambia el estado, registra el historial y notifica al
+    | solicitante sobre la resolución.
+    |
     */
 
     public function rechazarPase(
@@ -1849,6 +2112,16 @@ public function showPase(
 |
 */
 
+/*
+|--------------------------------------------------------------------------
+| Enviar notificación de nuevo pase
+|--------------------------------------------------------------------------
+|
+| Distribuye la notificación entre administradores y usuarios TI activos,
+| registrando cualquier fallo sin interrumpir el flujo principal.
+|
+*/
+
 private function notificarNuevoPase(
     Memorando $memorando
 ): void {
@@ -1926,6 +2199,19 @@ private function notificarNuevoPase(
     |--------------------------------------------------------------------------
     | Notificar actualización del pase
     |--------------------------------------------------------------------------
+    |
+    | Notifica al solicitante cuando cambia el estado administrativo de su pase.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar cambio de estado del pase
+    |--------------------------------------------------------------------------
+    |
+    | Envía al solicitante la actualización administrativa y registra cualquier
+    | error de notificación.
+    |
     */
 
     private function notificarEstadoPase(
@@ -1966,6 +2252,19 @@ private function notificarNuevoPase(
     |--------------------------------------------------------------------------
     | Verificar que el memorando sea un pase
     |--------------------------------------------------------------------------
+    |
+    | Protege las acciones administrativas asegurando que el registro corresponda a un tipo de pase válido.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar tipo de pase
+    |--------------------------------------------------------------------------
+    |
+    | Carga el tipo relacionado y bloquea cualquier registro que no corresponda
+    | a pase temporal o autorización.
+    |
     */
 
     private function asegurarQueEsPase(
@@ -1993,6 +2292,9 @@ private function notificarNuevoPase(
     |--------------------------------------------------------------------------
     | Histórico de memorandos
     |--------------------------------------------------------------------------
+    |
+    | Mantiene compatibilidad con el historial anterior redirigiendo al historial centralizado de pases.
+    |
     */
 
     /*
@@ -2002,6 +2304,16 @@ private function notificarNuevoPase(
 |
 | Se conserva para que los enlaces antiguos continúen funcionando.
 | El historial de pases ahora está centralizado en misPases().
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Redirigir historial anterior
+|--------------------------------------------------------------------------
+|
+| Mantiene compatibilidad con rutas antiguas enviando al historial centralizado
+| de pases.
 |
 */
 
@@ -2019,6 +2331,18 @@ public function historico()
     |--------------------------------------------------------------------------
     | Descargar PDF
     |--------------------------------------------------------------------------
+    |
+    | Valida la existencia del archivo generado y fuerza su descarga desde el almacenamiento.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Descargar documento generado
+    |--------------------------------------------------------------------------
+    |
+    | Verifica la existencia física del PDF antes de entregarlo como descarga.
+    |
     */
 
     public function download($id)
@@ -2049,6 +2373,18 @@ public function historico()
     |--------------------------------------------------------------------------
     | Visualizar PDF
     |--------------------------------------------------------------------------
+    |
+    | Valida la existencia del archivo generado y lo devuelve para visualización directa en el navegador.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Visualizar documento generado
+    |--------------------------------------------------------------------------
+    |
+    | Verifica la existencia del PDF y lo devuelve directamente al navegador.
+    |
     */
 
     public function pdf($id)

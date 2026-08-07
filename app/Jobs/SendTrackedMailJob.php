@@ -24,38 +24,76 @@ use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 
+/*
+|--------------------------------------------------------------------------
+| Job de envío de correo con seguimiento
+|--------------------------------------------------------------------------
+|
+| Procesa los correos registrados en EmailDelivery, aplica reintentos,
+| reconstruye el Mailable correspondiente, actualiza el estado del envío y
+| sincroniza el modelo relacionado cuando SMTP confirma la entrega.
+|
+*/
+
 class SendTrackedMailJob implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Cantidad máxima de intentos.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Cantidad máxima de intentos
+    |--------------------------------------------------------------------------
+    |
+    | Define cuántas veces puede ejecutarse el Job antes de considerarse
+    | definitivamente fallido.
+    |
+    */
     public int $tries = 3;
 
-    /**
-     * Tiempo máximo de ejecución por intento.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Tiempo máximo por intento
+    |--------------------------------------------------------------------------
+    |
+    | Limita la duración de cada ejecución individual del Job.
+    |
+    */
     public int $timeout = 120;
 
-    /**
-     * Evita que el worker continúe ejecutando el Job
-     * después de superar el tiempo límite.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Fallar cuando se supera el timeout
+    |--------------------------------------------------------------------------
+    |
+    | Indica al worker que marque el Job como fallido cuando exceda el tiempo
+    | máximo configurado.
+    |
+    */
     public bool $failOnTimeout = true;
 
-    /**
-     * ID del registro de seguimiento del correo.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Identificador de seguimiento
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el ID de EmailDelivery y asigna el trabajo a la cola exclusiva
+    | utilizada para procesar correos.
+    |
+    */
     public function __construct(
         public readonly int $emailDeliveryId
     ) {
         $this->onQueue('emails');
     }
 
-    /**
-     * Tiempos de espera entre reintentos.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Esperas entre reintentos
+    |--------------------------------------------------------------------------
+    |
+    | Define los intervalos progresivos aplicados después de cada fallo.
+    |
+    */
     public function backoff(): array
     {
         return [
@@ -65,9 +103,15 @@ class SendTrackedMailJob implements ShouldQueue
         ];
     }
 
-    /**
-     * Procesar el envío del correo.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Procesar envío del correo
+    |--------------------------------------------------------------------------
+    |
+    | Recupera la entrega, evita reenvíos, reconstruye el Mailable, intenta el
+    | envío y actualiza estados, reintentos y logs según el resultado.
+    |
+    */
     public function handle(): void
     {
         $delivery = EmailDelivery::query()
@@ -79,6 +123,10 @@ class SendTrackedMailJob implements ShouldQueue
         |--------------------------------------------------------------------------
         | Evitar reenvíos accidentales
         |--------------------------------------------------------------------------
+        |
+        | Si la entrega ya fue confirmada como enviada, el Job termina sin
+        | intentar nuevamente el correo.
+        |
         */
 
         if ($delivery->fueEnviado()) {
@@ -94,11 +142,29 @@ class SendTrackedMailJob implements ShouldQueue
         }
 
         try {
+            /*
+            |--------------------------------------------------------------------------
+            | Marcar intento en curso
+            |--------------------------------------------------------------------------
+            */
+
             $delivery->marcarEnviando();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Reconstruir correo
+            |--------------------------------------------------------------------------
+            */
 
             $mailable = $this->reconstruirMailable(
                 $delivery
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Enviar mediante SMTP
+            |--------------------------------------------------------------------------
+            */
 
             $sentMessage = Mail::to(
                 $delivery->recipient_email,
@@ -119,6 +185,12 @@ class SendTrackedMailJob implements ShouldQueue
                 $providerMessageId =
                     $sentMessage->getMessageId();
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Confirmar entrega
+            |--------------------------------------------------------------------------
+            */
 
             $delivery->marcarEnviado(
                 $providerMessageId
@@ -149,6 +221,16 @@ class SendTrackedMailJob implements ShouldQueue
             );
 
         } catch (Throwable $exception) {
+            /*
+            |--------------------------------------------------------------------------
+            | Gestionar fallo y reintento
+            |--------------------------------------------------------------------------
+            |
+            | Determina si quedan intentos, programa la siguiente ejecución o
+            | marca definitivamente la entrega como fallida.
+            |
+            */
+
             $intentoActual =
                 max(
                     1,
@@ -230,10 +312,15 @@ class SendTrackedMailJob implements ShouldQueue
         }
     }
 
-    /**
-     * Reconstruir el Mailable usando la clase y metadata
-     * almacenadas en EmailDelivery.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir Mailable
+    |--------------------------------------------------------------------------
+    |
+    | Selecciona el constructor correspondiente según la clase almacenada en
+    | EmailDelivery y reconstruye el correo a partir de su metadata.
+    |
+    */
     private function reconstruirMailable(
         EmailDelivery $delivery
     ): Mailable {
@@ -281,9 +368,15 @@ class SendTrackedMailJob implements ShouldQueue
         };
     }
 
-    /**
-     * Reconstruir correo de incidencia.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir correo de incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Recupera la incidencia asociada y genera su Mailable con las relaciones
+    | necesarias para construir el mensaje.
+    |
+    */
     private function crearIncidenciaMail(
         array $metadata
     ): IncidenciaMail {
@@ -307,9 +400,14 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Reconstruir correo de solicitud.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir correo de solicitud
+    |--------------------------------------------------------------------------
+    |
+    | Recupera la solicitud relacionada y construye el Mailable correspondiente.
+    |
+    */
     private function crearSolicitudMail(
         array $metadata
     ): SolicitudMail {
@@ -332,9 +430,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Reconstruir correo de pase temporal.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir correo de pase temporal
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el memorando asociado al pase menor a 24 horas y reconstruye su
+    | Mailable.
+    |
+    */
     private function crearPaseTemporalMail(
         array $metadata
     ): PaseTemporalMail {
@@ -357,9 +461,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Reconstruir correo de autorización.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir correo de autorización
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el memorando, tipo y solicitante requeridos para reconstruir el
+    | correo de autorización.
+    |
+    */
     private function crearAutorizacionMail(
         array $metadata
     ): AutorizacionMail {
@@ -383,9 +493,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Reconstruir correo de enlace mágico.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir correo de enlace mágico
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el usuario y descifra la URL almacenada en metadata antes de
+    | construir el Mailable de acceso.
+    |
+    */
     private function crearEnlaceMagicoMail(
         array $metadata
     ): EnlaceMagicoMail {
@@ -413,9 +529,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Reconstruir correo de código de verificación.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reconstruir correo de verificación
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el usuario y descifra el código almacenado para reconstruir el
+    | Mailable de verificación.
+    |
+    */
     private function crearCodigoVerificacionMail(
         array $metadata
     ): CodigoVerificacionMail {
@@ -443,13 +565,17 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Descifrar secretos de autenticación almacenados en metadata.
-     *
-     * La compatibilidad con la clave antigua en texto plano permite procesar
-     * trabajos que ya estaban en cola antes del cambio. Los nuevos registros
-     * deben utilizar exclusivamente las claves cifradas.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener secreto desde metadata
+    |--------------------------------------------------------------------------
+    |
+    | Descifra valores sensibles almacenados en metadata y mantiene
+    | compatibilidad con claves antiguas en texto plano para trabajos previos.
+    |
+    | Los registros nuevos deben utilizar exclusivamente las claves cifradas.
+    |
+    */
     private function obtenerSecretoMetadata(
         array $metadata,
         string $encryptedKey,
@@ -496,9 +622,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Obtener y validar texto almacenado en metadata.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener texto desde metadata
+    |--------------------------------------------------------------------------
+    |
+    | Recupera y valida un valor textual obligatorio almacenado en la metadata
+    | del correo.
+    |
+    */
     private function obtenerTextoMetadata(
         array $metadata,
         string $key,
@@ -522,9 +654,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Obtener y validar un ID almacenado en metadata.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener ID desde metadata
+    |--------------------------------------------------------------------------
+    |
+    | Recupera un identificador numérico positivo y genera una excepción cuando
+    | la metadata no contiene un valor válido.
+    |
+    */
     private function obtenerIdMetadata(
         array $metadata,
         string $key
@@ -544,12 +682,15 @@ class SendTrackedMailJob implements ShouldQueue
         return (int) $value;
     }
 
-    /**
-     * Actualizar el modelo relacionado después del envío.
-     *
-     * Se comprueban las columnas para mantener compatibilidad
-     * entre Incidencia, Solicitud y Memorando.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar modelo relacionado
+    |--------------------------------------------------------------------------
+    |
+    | Marca el modelo padre como enviado cuando dispone de las columnas
+    | correspondientes, manteniendo compatibilidad entre distintos modelos.
+    |
+    */
     private function marcarModeloPadreComoEnviado(
         EmailDelivery $delivery
     ): void {
@@ -608,9 +749,15 @@ class SendTrackedMailJob implements ShouldQueue
         )->save();
     }
 
-    /**
-     * Generar una descripción segura para base de datos y logs.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Generar descripción segura del error
+    |--------------------------------------------------------------------------
+    |
+    | Reduce la información de la excepción a una descripción adecuada para
+    | almacenamiento y logs sin exponer detalles sensibles.
+    |
+    */
     private function descripcionSeguraError(Throwable $exception): string
     {
         $codigo = (string) $exception->getCode();
@@ -624,9 +771,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Calcular cuándo ocurrirá el siguiente intento.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Calcular siguiente reintento
+    |--------------------------------------------------------------------------
+    |
+    | Determina la fecha del próximo intento utilizando el backoff configurado
+    | y el número actual de ejecuciones.
+    |
+    */
     private function calcularSiguienteReintento(): mixed
     {
         $attempt =
@@ -649,9 +802,15 @@ class SendTrackedMailJob implements ShouldQueue
         );
     }
 
-    /**
-     * Registrar el fallo definitivo del Job.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Registrar fallo definitivo
+    |--------------------------------------------------------------------------
+    |
+    | Marca la entrega como fallida cuando ya no habrá más reintentos y deja un
+    | registro crítico para diagnóstico.
+    |
+    */
     public function failed(
         ?Throwable $exception
     ): void {

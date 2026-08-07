@@ -12,6 +12,10 @@ class Incidencia extends Model
     |--------------------------------------------------------------------------
     | Estados
     |--------------------------------------------------------------------------
+    |
+    | Define los estados disponibles para representar el ciclo de vida
+    | de una incidencia dentro del Portal TI.
+    |
     */
 
     public const ESTADO_ABIERTA =
@@ -29,11 +33,14 @@ class Incidencia extends Model
         self::ESTADO_RESUELTA,
     ];
 
-
     /*
     |--------------------------------------------------------------------------
     | Prioridades
     |--------------------------------------------------------------------------
+    |
+    | Define los niveles de prioridad disponibles para clasificar las
+    | incidencias según su impacto o urgencia.
+    |
     */
 
     public const PRIORIDAD_BAJA =
@@ -55,10 +62,28 @@ class Incidencia extends Model
         self::PRIORIDAD_CRITICA,
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tabla asociada
+    |--------------------------------------------------------------------------
+    |
+    | Define la tabla utilizada para almacenar las incidencias registradas
+    | por los usuarios dentro del Portal TI.
+    |
+    */
 
     protected $table =
         'incidencias';
 
+    /*
+    |--------------------------------------------------------------------------
+    | Campos asignables
+    |--------------------------------------------------------------------------
+    |
+    | Define los atributos que pueden ser asignados de forma masiva
+    | durante la creación o actualización de una incidencia.
+    |
+    */
 
     protected $fillable = [
         'codigo',
@@ -75,6 +100,15 @@ class Incidencia extends Model
         'fecha_envio_correo',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversión de tipos
+    |--------------------------------------------------------------------------
+    |
+    | Convierte automáticamente el estado de envío del correo a booleano
+    | y la fecha de envío a un objeto de fecha y hora.
+    |
+    */
 
     protected $casts = [
         'correo_enviado' =>
@@ -84,11 +118,14 @@ class Incidencia extends Model
             'datetime',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
     | Consultar estado
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para determinar rápidamente el
+    | estado actual en el que se encuentra una incidencia.
+    |
     */
 
     public function estaAbierta(): bool
@@ -109,11 +146,14 @@ class Incidencia extends Model
             === self::ESTADO_RESUELTA;
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Usuario creador
     |--------------------------------------------------------------------------
+    |
+    | Define la relación con el usuario que registró originalmente
+    | la incidencia dentro del sistema.
+    |
     */
 
     public function usuario(): BelongsTo
@@ -124,11 +164,14 @@ class Incidencia extends Model
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Archivos adjuntos
     |--------------------------------------------------------------------------
+    |
+    | Define la relación con las evidencias o archivos que fueron
+    | adjuntados a la incidencia durante su registro.
+    |
     */
 
     public function archivos(): HasMany

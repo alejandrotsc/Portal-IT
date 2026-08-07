@@ -13,9 +13,27 @@ class Usuario extends Authenticatable
     use HasFactory;
     use Notifiable;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tabla asociada
+    |--------------------------------------------------------------------------
+    |
+    | Define la tabla utilizada para almacenar los usuarios registrados
+    | dentro del Portal TI.
+    |
+    */
 
     protected $table = 'usuarios';
 
+    /*
+    |--------------------------------------------------------------------------
+    | Campos asignables
+    |--------------------------------------------------------------------------
+    |
+    | Define los atributos que pueden ser asignados de forma masiva
+    | durante la creación o actualización de un usuario.
+    |
+    */
 
     protected $fillable = [
         'nombre',
@@ -26,11 +44,29 @@ class Usuario extends Authenticatable
         'extension_telefonica',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Campos ocultos
+    |--------------------------------------------------------------------------
+    |
+    | Evita que información interna de autenticación sea incluida
+    | accidentalmente al serializar el modelo.
+    |
+    */
 
     protected $hidden = [
         'remember_token',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversión de tipos
+    |--------------------------------------------------------------------------
+    |
+    | Convierte automáticamente la fecha de verificación del correo a
+    | un objeto de fecha y el estado activo a un valor booleano.
+    |
+    */
 
     protected function casts(): array
     {
@@ -43,11 +79,14 @@ class Usuario extends Authenticatable
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Correo
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para consultar y actualizar el
+    | estado de verificación del correo electrónico del usuario.
+    |
     */
 
     public function correoEstaVerificado(): bool
@@ -55,7 +94,6 @@ class Usuario extends Authenticatable
         return $this->correo_verificado_at
             !== null;
     }
-
 
     public function marcarCorreoComoVerificado(): bool
     {
@@ -69,12 +107,20 @@ class Usuario extends Authenticatable
         ])->save();
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Dirección para notificaciones por correo
+    |--------------------------------------------------------------------------
+    |
+    | Define la dirección de correo electrónico que Laravel utilizará
+    | al enviar notificaciones mediante el canal de correo.
+    |
+    */
 
     public function routeNotificationForMail(): string
     {
         return $this->correo;
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -91,11 +137,14 @@ class Usuario extends Authenticatable
         return 'usuarios.'.$this->id;
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Comprobación de roles
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para determinar el rol del usuario
+    | y comprobar si pertenece al personal encargado del soporte TI.
+    |
     */
 
     public function esAdministrador(): bool
@@ -104,13 +153,11 @@ class Usuario extends Authenticatable
             === 'Administrador';
     }
 
-
     public function esUsuarioTI(): bool
     {
         return $this->rol?->nombre
             === 'UsuarioTI';
     }
-
 
     public function perteneceASoporte(): bool
     {
@@ -124,11 +171,14 @@ class Usuario extends Authenticatable
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Relaciones
+    | Rol asignado
     |--------------------------------------------------------------------------
+    |
+    | Define la relación con el rol que determina los permisos y nivel
+    | de acceso correspondiente al usuario dentro del Portal TI.
+    |
     */
 
     public function rol(): BelongsTo
@@ -139,6 +189,15 @@ class Usuario extends Authenticatable
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tokens de autenticación
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los tokens temporales generados para los
+    | procesos de autenticación asociados al usuario.
+    |
+    */
 
     public function tokensAutenticacion(): HasMany
     {
@@ -148,6 +207,15 @@ class Usuario extends Authenticatable
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Avisos creados
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los avisos que fueron registrados por el
+    | usuario dentro del Portal TI.
+    |
+    */
 
     public function avisosCreados(): HasMany
     {
@@ -157,6 +225,15 @@ class Usuario extends Authenticatable
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Memorandos solicitados
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los memorandos en los que el usuario figura
+    | como solicitante de la gestión.
+    |
+    */
 
     public function memorandos(): HasMany
     {
@@ -166,6 +243,15 @@ class Usuario extends Authenticatable
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Historial de memorandos
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los registros históricos de memorandos en
+    | los que el usuario aparece como responsable de algún cambio.
+    |
+    */
 
     public function historial(): HasMany
     {
@@ -175,13 +261,13 @@ class Usuario extends Authenticatable
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Guardias asignadas
     |--------------------------------------------------------------------------
     |
-    | Guardias de sábado o domingo que el UsuarioTI debe atender.
+    | Define las guardias de soporte que han sido asignadas al usuario
+    | para atender los turnos correspondientes.
     |
     */
 
@@ -193,13 +279,13 @@ class Usuario extends Authenticatable
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Guardias creadas
     |--------------------------------------------------------------------------
     |
-    | Asignaciones de guardias realizadas por el administrador.
+    | Define las asignaciones de guardia que fueron registradas por el
+    | usuario cuando actúa como administrador.
     |
     */
 

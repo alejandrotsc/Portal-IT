@@ -20,9 +20,15 @@ use Throwable;
 
 class TrackedMailService
 {
-    /**
-     * Envía un correo de forma síncrona y registra todo el proceso.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Enviar correo de forma síncrona
+    |--------------------------------------------------------------------------
+    |
+    | Registra el envío, protege la metadata sensible, ejecuta el envío
+    | inmediatamente y actualiza el estado del registro según el resultado.
+    |
+    */
     public function send(
         Model $emailable,
         Mailable $mailable,
@@ -85,9 +91,15 @@ class TrackedMailService
         return $delivery->fresh();
     }
 
-    /**
-     * Registra el correo y lo despacha para enviarse en segundo plano.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Enviar correo de forma asíncrona
+    |--------------------------------------------------------------------------
+    |
+    | Registra el correo junto con la metadata necesaria y despacha un Job
+    | para completar el envío posteriormente mediante la cola configurada.
+    |
+    */
     public function sendAsync(
         Model $emailable,
         Mailable $mailable,
@@ -147,6 +159,15 @@ class TrackedMailService
         return $delivery->fresh();
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Crear registro de entrega
+    |--------------------------------------------------------------------------
+    |
+    | Genera el registro EmailDelivery asociado al modelo, destinatario, tipo de correo y metadata antes de ejecutar o encolar el envío.
+    |
+    */
+
     private function crearDelivery(
         Model $emailable,
         Mailable $mailable,
@@ -175,12 +196,16 @@ class TrackedMailService
         ]);
     }
 
-    /**
-     * Agrega la metadata necesaria para reconstruir cada Mailable.
-     *
-     * Los secretos de autenticación se almacenan cifrados con APP_KEY.
-     * Nunca deben quedar como texto plano en email_deliveries.metadata.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar metadata del correo
+    |--------------------------------------------------------------------------
+    |
+    | Agrega la información necesaria para reconstruir cada Mailable y
+    | protege los datos sensibles de autenticación mediante cifrado con
+    | APP_KEY antes de almacenarlos en email_deliveries.metadata.
+    |
+    */
     private function prepararMetadata(
         Model $emailable,
         Mailable $mailable,
@@ -236,10 +261,16 @@ class TrackedMailService
         return array_merge($metadata, $automaticMetadata);
     }
 
-    /**
-     * Protege secretos si en algún momento un correo de autenticación
-     * se envía por el método síncrono.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Proteger metadata sensible
+    |--------------------------------------------------------------------------
+    |
+    | Cifra secretos utilizados por correos de autenticación cuando estos
+    | se envían mediante el flujo síncrono y elimina sus versiones en texto
+    | plano antes de registrar la entrega.
+    |
+    */
     private function protegerMetadataSensible(
         Mailable $mailable,
         array $metadata
@@ -271,6 +302,15 @@ class TrackedMailService
         return $metadata;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Eliminar secretos en texto plano
+    |--------------------------------------------------------------------------
+    |
+    | Retira de la metadata cualquier clave sensible que no debe persistirse sin cifrado, como URLs, códigos o tokens de autenticación.
+    |
+    */
+
     private function eliminarClavesSensiblesPlanas(array $metadata): array
     {
         unset(
@@ -283,6 +323,15 @@ class TrackedMailService
         return $metadata;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener metadata original
+    |--------------------------------------------------------------------------
+    |
+    | Recupera un valor obligatorio desde la metadata recibida originalmente antes de aplicar filtros o transformaciones.
+    |
+    */
+
     private function obtenerTextoMetadataOriginal(
         array $originalMetadata,
         string $key,
@@ -294,6 +343,15 @@ class TrackedMailService
             descripcion: $descripcion
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar valor de metadata
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene y valida un valor textual obligatorio de la metadata, generando una excepción cuando el dato no está disponible.
+    |
+    */
 
     private function obtenerTextoMetadata(
         array $metadata,
@@ -310,6 +368,15 @@ class TrackedMailService
 
         return trim($value);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir contexto seguro de error
+    |--------------------------------------------------------------------------
+    |
+    | Genera la información utilizada en los registros de error sin incluir secretos ni contenido sensible del correo.
+    |
+    */
 
     private function contextoSeguroDeError(
         EmailDelivery $delivery,

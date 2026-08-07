@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de avisos TI
+|--------------------------------------------------------------------------
+|
+| Gestiona la publicación, consulta, edición y estado de los avisos del
+| Portal TI, incluyendo filtros administrativos y notificaciones a usuarios
+| cuando un aviso comienza a estar visible.
+|
+*/
+
 class AvisoController extends Controller
 {
 
@@ -20,6 +31,19 @@ class AvisoController extends Controller
 |--------------------------------------------------------------------------
 | Avisos públicos vigentes
 |--------------------------------------------------------------------------
+|
+| Obtiene los avisos activos cuya ventana de publicación se encuentra vigente y los muestra paginados en la vista pública.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Consultar avisos públicos
+|--------------------------------------------------------------------------
+|
+| Recupera únicamente los avisos disponibles para los usuarios según su
+| estado activo y rango de vigencia.
+|
 */
 
 public function publicos(): View
@@ -72,6 +96,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Listado
     |--------------------------------------------------------------------------
+    |
+    | Construye el listado administrativo de avisos aplicando búsqueda, filtros por estado, paginación y resumen de indicadores.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Consultar listado administrativo
+    |--------------------------------------------------------------------------
+    |
+    | Aplica búsqueda textual, filtros de estado y paginación, además de
+    | preparar los contadores utilizados por el panel administrativo.
+    |
     */
 
     public function index(
@@ -301,6 +338,9 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Crear
     |--------------------------------------------------------------------------
+    |
+    | Presenta el formulario utilizado para registrar un nuevo aviso TI.
+    |
     */
 
     public function create(): View
@@ -315,6 +355,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Guardar
     |--------------------------------------------------------------------------
+    |
+    | Normaliza y valida la solicitud, crea el aviso y notifica a los usuarios cuando el contenido queda visible inmediatamente.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Crear aviso
+    |--------------------------------------------------------------------------
+    |
+    | Procesa los datos recibidos, registra el aviso y dispara notificaciones
+    | cuando el contenido debe mostrarse desde ese momento.
+    |
     */
 
     public function store(
@@ -373,6 +426,9 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Editar
     |--------------------------------------------------------------------------
+    |
+    | Presenta el formulario de edición con la información del aviso seleccionado.
+    |
     */
 
     public function edit(
@@ -389,6 +445,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Actualizar
     |--------------------------------------------------------------------------
+    |
+    | Actualiza los datos del aviso y notifica a los usuarios únicamente cuando pasa de no visible a visible.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modificar aviso
+    |--------------------------------------------------------------------------
+    |
+    | Actualiza el registro existente y evita notificaciones duplicadas cuando
+    | el aviso ya se encontraba visible antes de la edición.
+    |
     */
 
     public function update(
@@ -455,6 +524,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Activar o desactivar
     |--------------------------------------------------------------------------
+    |
+    | Invierte el estado activo del aviso y genera una notificación cuando la activación lo vuelve visible.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cambiar estado del aviso
+    |--------------------------------------------------------------------------
+    |
+    | Activa o desactiva el registro y notifica únicamente cuando el cambio lo
+    | convierte en un aviso visible para los usuarios.
+    |
     */
 
     public function changeStatus(
@@ -494,6 +576,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Verificar si el aviso está visible
     |--------------------------------------------------------------------------
+    |
+    | Determina si un aviso está activo y dentro de su rango válido de publicación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Evaluar visibilidad actual
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba estado activo, fecha de inicio y fecha de finalización para
+    | determinar si el aviso debe mostrarse en este momento.
+    |
     */
 
     private function estaVisibleAhora(
@@ -527,6 +622,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Notificar aviso visible
     |--------------------------------------------------------------------------
+    |
+    | Envía la notificación del nuevo aviso a los usuarios activos, excluyendo al usuario que realizó la publicación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enviar notificación del aviso
+    |--------------------------------------------------------------------------
+    |
+    | Selecciona usuarios activos distintos del creador y distribuye la
+    | notificación correspondiente mediante el sistema de notificaciones.
+    |
     */
 
     private function notificarNuevoAviso(
@@ -572,6 +680,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Normalizar información
     |--------------------------------------------------------------------------
+    |
+    | Limpia espacios innecesarios en título y mensaje antes de ejecutar la validación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar datos de entrada
+    |--------------------------------------------------------------------------
+    |
+    | Reduce espacios repetidos y limpia extremos antes de aplicar las reglas
+    | de validación.
+    |
     */
 
     private function normalizarDatos(
@@ -605,6 +726,19 @@ public function publicos(): View
     |--------------------------------------------------------------------------
     | Validación
     |--------------------------------------------------------------------------
+    |
+    | Define reglas y mensajes de validación para contenido, fechas y estado del aviso.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar información del aviso
+    |--------------------------------------------------------------------------
+    |
+    | Aplica reglas dinámicas para las fechas y valida longitud, contenido y
+    | estado antes de guardar los cambios.
+    |
     */
 
     private function validarAviso(

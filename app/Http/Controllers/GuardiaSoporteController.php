@@ -15,6 +15,16 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de guardias de soporte
+|--------------------------------------------------------------------------
+|
+| Gestiona la asignación y consulta de guardias de fin de semana del Portal TI,
+| incluyendo validación de agentes, períodos, horarios, estados y notificaciones.
+|
+*/
+
 class GuardiaSoporteController extends Controller
 {
     /*
@@ -22,7 +32,20 @@ class GuardiaSoporteController extends Controller
     | Administración de guardias
     |--------------------------------------------------------------------------
     |
+    | Prepara el panel administrativo con agentes disponibles, período
+    | seleccionado y asignaciones registradas.
+    |
     | Vista disponible únicamente para el Administrador.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar administración de guardias
+    |--------------------------------------------------------------------------
+    |
+    | Resuelve el período consultado, agentes disponibles y asignaciones
+    | registradas antes de renderizar el panel administrativo.
     |
     */
 
@@ -110,11 +133,23 @@ class GuardiaSoporteController extends Controller
     | Guardias asignadas
     |--------------------------------------------------------------------------
     |
+    | Presenta las asignaciones activas según el nivel de acceso.
+    |
     | UsuarioTI:
-    | Solo consulta sus propias guardias.
+    | - Consulta únicamente sus propias guardias.
     |
     | Administrador:
-    | Puede consultar el calendario general.
+    | - Puede consultar el calendario general.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar guardias según el rol
+    |--------------------------------------------------------------------------
+    |
+    | Construye la consulta del período y aplica las restricciones necesarias
+    | para UsuarioTI o Administrador.
     |
     */
 
@@ -186,6 +221,19 @@ class GuardiaSoporteController extends Controller
 |--------------------------------------------------------------------------
 | Crear guardia
 |--------------------------------------------------------------------------
+|
+| Valida la información recibida, comprueba que el agente sea UsuarioTI, registra la asignación y envía la notificación correspondiente.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Registrar nueva guardia
+|--------------------------------------------------------------------------
+|
+| Valida la solicitud, comprueba el agente seleccionado, crea la asignación
+| y notifica al UsuarioTI correspondiente.
+|
 */
 
 public function store(
@@ -201,6 +249,9 @@ public function store(
     |--------------------------------------------------------------------------
     | Verificar que el agente sea UsuarioTI
     |--------------------------------------------------------------------------
+    |
+    | Realiza una validación adicional sobre la cuenta seleccionada para confirmar que esté activa y pertenezca al rol requerido.
+    |
     */
 
     $this->obtenerAgenteValido(
@@ -211,6 +262,9 @@ public function store(
     |--------------------------------------------------------------------------
     | Registrar guardia
     |--------------------------------------------------------------------------
+    |
+    | Crea la asignación con agente, creador, fecha, horario, ubicación, observación y estado activo.
+    |
     */
 
     $guardia = GuardiaSoporte::create([
@@ -244,6 +298,9 @@ public function store(
     |--------------------------------------------------------------------------
     | Notificar al agente asignado
     |--------------------------------------------------------------------------
+    |
+    | Envía una notificación al UsuarioTI seleccionado una vez registrada correctamente la guardia.
+    |
     */
 
     $this->notificarGuardiaAsignada(
@@ -274,6 +331,19 @@ public function store(
 |--------------------------------------------------------------------------
 | Actualizar guardia
 |--------------------------------------------------------------------------
+|
+| Valida y modifica una guardia existente, detectando si hubo cambio de agente para evitar notificaciones innecesarias.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Modificar guardia existente
+|--------------------------------------------------------------------------
+|
+| Actualiza la asignación y determina si el agente cambió para decidir si debe
+| enviarse una nueva notificación.
+|
 */
 
 public function update(
@@ -291,6 +361,9 @@ public function update(
     |--------------------------------------------------------------------------
     | Verificar que el agente sea UsuarioTI
     |--------------------------------------------------------------------------
+    |
+    | Realiza una validación adicional sobre la cuenta seleccionada para confirmar que esté activa y pertenezca al rol requerido.
+    |
     */
 
     $this->obtenerAgenteValido(
@@ -301,6 +374,9 @@ public function update(
     |--------------------------------------------------------------------------
     | Comprobar si la guardia fue reasignada
     |--------------------------------------------------------------------------
+    |
+    | Compara el agente anterior con el nuevo para determinar si corresponde enviar una nueva notificación.
+    |
     */
 
     $agenteAnteriorId =
@@ -317,6 +393,9 @@ public function update(
     |--------------------------------------------------------------------------
     | Actualizar información
     |--------------------------------------------------------------------------
+    |
+    | Actualiza los datos operativos de la guardia manteniendo el registro existente.
+    |
     */
 
     $guardia->update([
@@ -344,6 +423,9 @@ public function update(
     |--------------------------------------------------------------------------
     | Notificar únicamente cuando cambió el agente
     |--------------------------------------------------------------------------
+    |
+    | Evita avisos duplicados y notifica solamente al nuevo agente cuando ocurre una reasignación.
+    |
     */
 
     if ($fueReasignada) {
@@ -380,6 +462,19 @@ public function update(
     |--------------------------------------------------------------------------
     | Activar o cancelar guardia
     |--------------------------------------------------------------------------
+    |
+    | Alterna el estado activo de la asignación y evita reactivar guardias cuya fecha ya pasó.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cambiar estado de guardia
+    |--------------------------------------------------------------------------
+    |
+    | Activa o cancela una guardia existente aplicando la restricción sobre
+    | fechas ya transcurridas.
+    |
     */
 
     public function changeStatus(
@@ -425,6 +520,19 @@ public function update(
     |--------------------------------------------------------------------------
     | Validar datos de la guardia
     |--------------------------------------------------------------------------
+    |
+    | Aplica reglas de agente, fecha, fin de semana, unicidad, horario, ubicación y observación antes de guardar cambios.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar información de guardia
+    |--------------------------------------------------------------------------
+    |
+    | Centraliza las reglas de negocio y mensajes de validación utilizados
+    | tanto al crear como al actualizar una asignación.
+    |
     */
 
     private function validarGuardia(
@@ -557,11 +665,22 @@ public function update(
     | Obtener agente válido
     |--------------------------------------------------------------------------
     |
-    | La clave foránea garantiza que el usuario exista.
-    | Esta validación adicional garantiza que:
+    | La clave foránea garantiza que el usuario exista. Esta validación
+    | adicional confirma que el agente pueda ser asignado operativamente.
     |
-    | - La cuenta esté activa.
-    | - El rol sea UsuarioTI.
+    | Requisitos:
+    | - Cuenta activa.
+    | - Rol UsuarioTI.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar agente seleccionado
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve el UsuarioTI activo correspondiente o genera un error de
+    | validación cuando la cuenta no puede asumir la guardia.
     |
     */
 
@@ -603,6 +722,19 @@ public function update(
     |--------------------------------------------------------------------------
     | Obtener mes y año
     |--------------------------------------------------------------------------
+    |
+    | Normaliza el período solicitado y aplica valores actuales cuando el mes o año recibido se encuentra fuera del rango permitido.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver período consultado
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene mes y año desde la solicitud y corrige valores fuera del rango
+    | permitido utilizando el período actual.
+    |
     */
 
     private function obtenerPeriodo(
@@ -643,6 +775,19 @@ public function update(
     |--------------------------------------------------------------------------
     | Obtener años disponibles
     |--------------------------------------------------------------------------
+    |
+    | Construye la lista de años existentes en las guardias e incluye siempre el año actual.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir años disponibles
+    |--------------------------------------------------------------------------
+    |
+    | Recupera años existentes en la base de datos, añade el año actual y
+    | devuelve la colección sin duplicados y ordenada de forma descendente.
+    |
     */
 
     private function obtenerAniosDisponibles(): Collection
@@ -669,7 +814,18 @@ public function update(
 | Notificar asignación de guardia
 |--------------------------------------------------------------------------
 |
-| La notificación se envía únicamente al UsuarioTI asignado.
+| Carga las relaciones necesarias y envía la notificación únicamente al
+| UsuarioTI asignado. Cualquier fallo se registra sin impedir la operación.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Enviar notificación de guardia
+|--------------------------------------------------------------------------
+|
+| Notifica al agente asignado y registra advertencias o errores sin bloquear
+| el proceso principal de creación o actualización.
 |
 */
 
@@ -730,8 +886,18 @@ private function notificarGuardiaAsignada(
     | Autorizar administrador
     |--------------------------------------------------------------------------
     |
-    | Las rutas ya están protegidas por middleware. Esta validación agrega
-    | una segunda capa para las acciones que modifican asignaciones.
+    | Las rutas ya están protegidas por middleware. Esta validación añade una
+    | segunda capa para las acciones que administran o modifican guardias.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar permisos administrativos
+    |--------------------------------------------------------------------------
+    |
+    | Confirma que el usuario autenticado tenga privilegios de Administrador
+    | antes de permitir acciones de gestión sobre las guardias.
     |
     */
 

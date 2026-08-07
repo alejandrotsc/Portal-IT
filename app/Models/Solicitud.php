@@ -7,13 +7,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Solicitud extends Model
 {
-    protected $table = 'solicitudes';
+    /*
+    |--------------------------------------------------------------------------
+    | Tabla asociada
+    |--------------------------------------------------------------------------
+    |
+    | Define la tabla utilizada para almacenar las solicitudes registradas
+    | por los usuarios dentro del Portal TI.
+    |
+    */
 
+    protected $table = 'solicitudes';
 
     /*
     |--------------------------------------------------------------------------
     | Estados
     |--------------------------------------------------------------------------
+    |
+    | Define los estados disponibles para representar el ciclo de vida
+    | de una solicitud dentro del sistema.
+    |
     */
 
     public const ESTADO_PENDIENTE =
@@ -25,6 +38,15 @@ class Solicitud extends Model
     public const ESTADO_CANCELADA =
         'cancelada';
 
+    /*
+    |--------------------------------------------------------------------------
+    | Campos asignables
+    |--------------------------------------------------------------------------
+    |
+    | Define los atributos que pueden ser asignados de forma masiva
+    | durante la creación o actualización de una solicitud.
+    |
+    */
 
     protected $fillable = [
         'folio',
@@ -38,6 +60,16 @@ class Solicitud extends Model
         'correo_enviado_at',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversión de tipos
+    |--------------------------------------------------------------------------
+    |
+    | Convierte automáticamente los datos adicionales a un arreglo, el
+    | estado de envío del correo a booleano y su fecha a un objeto de
+    | fecha y hora.
+    |
+    */
 
     protected $casts = [
         'datos_extra' => 'array',
@@ -47,11 +79,14 @@ class Solicitud extends Model
         'correo_enviado_at' => 'datetime',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
-    | Relaciones
+    | Usuario relacionado
     |--------------------------------------------------------------------------
+    |
+    | Define la relación con el usuario que registró originalmente
+    | la solicitud dentro del Portal TI.
+    |
     */
 
     public function usuario(): BelongsTo
@@ -62,11 +97,14 @@ class Solicitud extends Model
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Estado
+    | Consultar estado
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para determinar rápidamente el
+    | estado actual en el que se encuentra una solicitud.
+    |
     */
 
     public function estaPendiente(): bool
@@ -75,13 +113,11 @@ class Solicitud extends Model
             === self::ESTADO_PENDIENTE;
     }
 
-
     public function estaFinalizada(): bool
     {
         return $this->estado
             === self::ESTADO_FINALIZADA;
     }
-
 
     public function estaCancelada(): bool
     {

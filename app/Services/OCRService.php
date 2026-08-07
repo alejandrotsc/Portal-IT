@@ -7,13 +7,16 @@ use Symfony\Component\Process\Process;
 
 class OcrService
 {
-    /**
-     * Lee una imagen mediante Tesseract y devuelve
-     * el código o mensaje de error identificado.
-     *
-     * Siempre retorna string para mantener compatibilidad
-     * con el registro de incidencias y el envío del correo.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Leer imagen mediante OCR
+    |--------------------------------------------------------------------------
+    |
+    | Ejecuta Tesseract sobre la imagen recibida, normaliza el texto
+    | reconocido y extrae códigos o mensajes de error útiles para el
+    | registro de incidencias y el envío de correo.
+    |
+    */
     public function leerImagen(string $ruta): string
     {
         if (!is_file($ruta)) {
@@ -110,11 +113,15 @@ class OcrService
         }
     }
 
-    /**
-     * Busca primero códigos de error, luego mensajes
-     * relacionados con fallos y finalmente utiliza
-     * el texto reconocido como respaldo.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Extraer error del texto reconocido
+    |--------------------------------------------------------------------------
+    |
+    | Prioriza códigos de error, posteriormente mensajes relacionados con
+    | fallos y finalmente utiliza las primeras líneas útiles como respaldo.
+    |
+    */
     private function extraerError(string $texto): string
     {
         $texto = trim($texto);
@@ -162,6 +169,9 @@ class OcrService
         |--------------------------------------------------------------------------
         | 1. Buscar códigos de error
         |--------------------------------------------------------------------------
+        |
+        | Busca primero patrones de códigos reconocibles y conserva líneas cercanas que puedan aportar contexto descriptivo.
+        |
         */
 
         $lineasConCodigo = [];
@@ -212,15 +222,15 @@ class OcrService
             );
         }
 
-       /*
-|--------------------------------------------------------------------------
-| 2. Buscar mensajes de error o fallo
-|--------------------------------------------------------------------------
-|
-| Detecta palabras relevantes en español e inglés.
-| También obtiene contexto anterior y posterior.
-|
-*/
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Buscar mensajes de error o fallo
+        |--------------------------------------------------------------------------
+        |
+        | Detecta expresiones relacionadas con errores en español e inglés
+        | y conserva líneas cercanas que puedan aportar contexto adicional.
+        |
+        */
 
 $mensajesError = [];
 
@@ -314,10 +324,15 @@ if (!empty($mensajesError)) {
         );
     }
 
-    /**
-     * Determina si una línea contiene un código
-     * de error conocido.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar código de error
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si una línea coincide con alguno de los patrones de códigos
+    | de error conocidos por el servicio.
+    |
+    */
     private function contieneCodigoError(string $linea): bool
     {
         foreach ($this->patronesCodigosError() as $patron) {
@@ -329,9 +344,15 @@ if (!empty($mensajesError)) {
         return false;
     }
 
-    /**
-     * Patrones de códigos de error comunes.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Patrones de códigos de error
+    |--------------------------------------------------------------------------
+    |
+    | Define expresiones regulares para reconocer códigos frecuentes de
+    | Windows, HTTP, bases de datos, navegadores y otras plataformas.
+    |
+    */
     private function patronesCodigosError(): array
     {
         return [
@@ -424,10 +445,15 @@ if (!empty($mensajesError)) {
         ];
     }
 
-    /**
-     * Determina si una línea parece contener
-     * un mensaje de error aunque no tenga código.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar mensaje de error
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si una línea contiene expresiones asociadas a fallos,
+    | advertencias, problemas de conexión, permisos u otros errores.
+    |
+    */
     private function pareceMensajeError(string $linea): bool
     {
         foreach ($this->patronesMensajesError() as $patron) {
@@ -439,16 +465,16 @@ if (!empty($mensajesError)) {
         return false;
     }
 
-    /**
-     * Patrones de mensajes de error en español e inglés.
-     */
-    /**
- * Patrones de mensajes de error en español e inglés.
- *
- * No se limita únicamente a la palabra "error".
- * Incluye fallos, permisos, conexión, archivos,
- * autenticación, instalación y aplicaciones.
- */
+    /*
+    |--------------------------------------------------------------------------
+    | Patrones de mensajes de error
+    |--------------------------------------------------------------------------
+    |
+    | Define expresiones comunes en español e inglés relacionadas con
+    | fallos, permisos, autenticación, conectividad, archivos, instalación,
+    | recursos y disponibilidad de servicios.
+    |
+    */
 private function patronesMensajesError(): array
 {
     return [
@@ -457,6 +483,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Palabras generales
         |--------------------------------------------------------------------------
+        |
+        | Agrupa términos generales utilizados habitualmente para describir errores, fallos, advertencias y problemas.
+        |
         */
 
         '/\berror(?:es)?\b/iu',
@@ -483,6 +512,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Mensajes generales en español
         |--------------------------------------------------------------------------
+        |
+        | Incluye expresiones frecuentes utilizadas por aplicaciones y sistemas para comunicar fallos en español.
+        |
         */
 
         '/\bno se pudo\b/iu',
@@ -506,6 +538,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Mensajes generales en inglés
         |--------------------------------------------------------------------------
+        |
+        | Incluye expresiones comunes utilizadas por aplicaciones y sistemas para comunicar fallos en inglés.
+        |
         */
 
         '/\bsomething went wrong\b/iu',
@@ -533,6 +568,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Acceso, permisos y autenticación
         |--------------------------------------------------------------------------
+        |
+        | Detecta mensajes relacionados con permisos, credenciales, autenticación, sesiones y acceso restringido.
+        |
         */
 
         '/\bacceso denegado\b/iu',
@@ -565,6 +603,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Conectividad y red
         |--------------------------------------------------------------------------
+        |
+        | Detecta fallos relacionados con conexión, disponibilidad de red, servidores, tiempo de espera y DNS.
+        |
         */
 
         '/\bsin conexi[oó]n\b/iu',
@@ -601,6 +642,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Archivos y rutas
         |--------------------------------------------------------------------------
+        |
+        | Detecta problemas relacionados con archivos faltantes, rutas inválidas, corrupción o fallos al abrir y guardar.
+        |
         */
 
         '/\barchivo no encontrado\b/iu',
@@ -628,6 +672,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Datos inválidos
         |--------------------------------------------------------------------------
+        |
+        | Detecta mensajes relacionados con datos incorrectos, formatos no válidos y campos obligatorios faltantes.
+        |
         */
 
         '/\binválid[oa]\b/iu',
@@ -652,6 +699,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Instalación, actualización y ejecución
         |--------------------------------------------------------------------------
+        |
+        | Detecta errores producidos al instalar, actualizar, iniciar o ejecutar aplicaciones y procesos.
+        |
         */
 
         '/\bno se pudo instalar\b/iu',
@@ -681,6 +731,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Recursos y almacenamiento
         |--------------------------------------------------------------------------
+        |
+        | Detecta problemas relacionados con espacio en disco, memoria y disponibilidad de recursos.
+        |
         */
 
         '/\bsin espacio\b/iu',
@@ -700,6 +753,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | No encontrado o no disponible
         |--------------------------------------------------------------------------
+        |
+        | Detecta mensajes que indican ausencia, indisponibilidad o falta de respuesta de recursos y páginas.
+        |
         */
 
         '/\bno encontrado\b/iu',
@@ -720,9 +776,15 @@ private function patronesMensajesError(): array
     ];
 }
 
-    /**
-     * Normaliza el texto producido por Tesseract.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar texto reconocido
+    |--------------------------------------------------------------------------
+    |
+    | Corrige errores frecuentes producidos por OCR, elimina caracteres no
+    | útiles y conserva únicamente contenido legible para su análisis.
+    |
+    */
     private function normalizarTexto(string $texto): string
     {
         $texto = str_replace(
@@ -735,6 +797,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Correcciones frecuentes del OCR
         |--------------------------------------------------------------------------
+        |
+        | Corrige variaciones comunes generadas por Tesseract en códigos y nombres técnicos antes de aplicar los patrones de detección.
+        |
         */
 
         /*
@@ -795,6 +860,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Eliminar emojis e iconos
         |--------------------------------------------------------------------------
+        |
+        | Retira caracteres gráficos que no aportan información al análisis del mensaje reconocido.
+        |
         */
 
         $texto = preg_replace(
@@ -807,6 +875,9 @@ private function patronesMensajesError(): array
         |--------------------------------------------------------------------------
         | Mantener caracteres legibles
         |--------------------------------------------------------------------------
+        |
+        | Conserva letras, números, signos de puntuación, separadores y saltos de línea necesarios para interpretar el texto.
+        |
         */
 
         $texto = preg_replace(
@@ -818,10 +889,15 @@ private function patronesMensajesError(): array
         return trim($texto);
     }
 
-    /**
-     * Limpia una línea sin eliminar códigos,
-     * signos o información importante.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Limpiar línea
+    |--------------------------------------------------------------------------
+    |
+    | Elimina caracteres visuales innecesarios y espacios repetidos sin
+    | remover códigos, símbolos ni información relevante del mensaje.
+    |
+    */
     private function limpiarLinea(?string $linea): string
     {
         if (!$linea) {
@@ -864,10 +940,15 @@ private function patronesMensajesError(): array
         return trim($linea);
     }
 
-    /**
-     * Elimina líneas propias de la interfaz
-     * que no aportan al diagnóstico.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar línea irrelevante
+    |--------------------------------------------------------------------------
+    |
+    | Identifica textos propios de botones, archivos o elementos visuales
+    | que no aportan información útil para el diagnóstico.
+    |
+    */
     private function esLineaBasura(string $linea): bool
     {
         $lineasBasura = [
@@ -915,10 +996,15 @@ private function patronesMensajesError(): array
         return false;
     }
 
-    /**
-     * Determina si una línea cercana puede servir
-     * como descripción del error.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar línea descriptiva
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si una línea cercana posee longitud y contenido suficientes
+    | para utilizarse como contexto descriptivo del error identificado.
+    |
+    */
     private function esLineaDescriptiva(string $linea): bool
     {
         $longitud = mb_strlen($linea);
@@ -940,10 +1026,15 @@ private function patronesMensajesError(): array
         ) === 1;
     }
 
-    /**
-     * Limita el resultado para evitar guardar
-     * textos demasiado extensos.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Limitar resultado
+    |--------------------------------------------------------------------------
+    |
+    | Reduce la longitud del resultado final para evitar almacenar textos
+    | excesivos provenientes del proceso de reconocimiento óptico.
+    |
+    */
     private function limitarResultado(string $resultado): string
     {
         $resultado = trim($resultado);

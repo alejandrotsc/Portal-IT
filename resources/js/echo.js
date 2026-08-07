@@ -1,7 +1,29 @@
+/*
+|--------------------------------------------------------------------------
+| Laravel Echo y Reverb
+|--------------------------------------------------------------------------
+|
+| Configura la conexión en tiempo real del Portal TI mediante Laravel Echo,
+| Reverb y Pusher, incluyendo autenticación, control de tiempo de espera y
+| eventos de conexión.
+|
+*/
+
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
+
+
+/*
+|--------------------------------------------------------------------------
+| Configuración general
+|--------------------------------------------------------------------------
+|
+| Define el tiempo máximo de espera y obtiene los valores necesarios para
+| establecer la conexión con Reverb desde las variables de entorno.
+|
+*/
 
 const REVERB_TIMEOUT_MS = 8000;
 
@@ -35,10 +57,15 @@ const port = Number(
 const appKey =
     import.meta.env.VITE_REVERB_APP_KEY;
 
+
 /*
 |--------------------------------------------------------------------------
 | Validación de configuración
 |--------------------------------------------------------------------------
+|
+| Verifica que exista la clave de aplicación requerida antes de intentar
+| iniciar la conexión en tiempo real.
+|
 */
 
 if (!appKey) {
@@ -49,10 +76,15 @@ if (!appKey) {
     iniciarEcho();
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | Inicializar Echo
 |--------------------------------------------------------------------------
+|
+| Crea la instancia de Laravel Echo, configura el transporte WebSocket,
+| autentica canales privados y registra los eventos principales de conexión.
+|
 */
 
 function iniciarEcho() {
@@ -102,10 +134,15 @@ function iniciarEcho() {
 
         let conectado = false;
 
+
         /*
         |--------------------------------------------------------------------------
         | Límite de espera
         |--------------------------------------------------------------------------
+        |
+        | Desactiva temporalmente la conexión si Reverb no responde dentro del
+        | tiempo máximo definido, evitando que el portal permanezca esperando.
+        |
         */
 
         const timeoutId = window.setTimeout(
@@ -125,10 +162,15 @@ function iniciarEcho() {
             REVERB_TIMEOUT_MS
         );
 
+
         /*
         |--------------------------------------------------------------------------
         | Eventos de conexión
         |--------------------------------------------------------------------------
+        |
+        | Escucha los cambios de estado de la conexión y los expone mediante
+        | eventos personalizados para que otros módulos puedan reaccionar.
+        |
         */
 
         connection.bind(
@@ -187,6 +229,7 @@ function iniciarEcho() {
                 );
             }
         );
+
     } catch (error) {
         console.warn(
             '[Reverb] No fue posible inicializar Echo:',
@@ -197,10 +240,15 @@ function iniciarEcho() {
     }
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | Desconexión segura
 |--------------------------------------------------------------------------
+|
+| Cierra la instancia de Echo sin propagar errores y limpia la referencia
+| global para evitar reutilizar una conexión inválida.
+|
 */
 
 function desconectarEcho() {

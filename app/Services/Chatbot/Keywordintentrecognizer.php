@@ -4,6 +4,16 @@ namespace App\Services\Chatbot;
 
 class KeywordIntentRecognizer implements IntentRecognizerInterface
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Prioridad de intenciones
+    |--------------------------------------------------------------------------
+    |
+    | Define el orden utilizado para resolver empates cuando dos o más
+    | intenciones obtienen la misma puntuación durante el reconocimiento.
+    |
+    */
+
     private array $priorityIntents = [
         'consultar_estado',
         'pase_menor_24h',
@@ -14,15 +24,40 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         'saludo',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Intenciones secundarias
+    |--------------------------------------------------------------------------
+    |
+    | Identifica intenciones que deben descartarse cuando el mensaje
+    | contiene además una intención principal con mayor relevancia.
+    |
+    */
+
     private array $secondaryIntents = [
         'saludo',
         'cierre',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Reconocer intención
+    |--------------------------------------------------------------------------
+    |
+    | Normaliza el mensaje, evalúa las palabras clave configuradas,
+    | calcula puntuaciones y devuelve la intención con mayor relevancia
+    | junto con su confianza, coincidencias y posibles alternativas.
+    |
+    */
+
     public function recognize(string $message): IntentResult
     {
         $normalized = $this->normalize($message);
-        $keywords = config('chatbot.keywords', []);
+
+        $keywords = config(
+            'chatbot.keywords',
+            []
+        );
 
         if(
             $normalized === ''
@@ -35,6 +70,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         }
 
         $results = [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Evaluar intenciones configuradas
+        |--------------------------------------------------------------------------
+        |
+        | Recorre las palabras clave asociadas a cada intención y acumula
+        | su puntuación según el peso configurado o calculado automáticamente.
+        |
+        */
 
         foreach($keywords as $intent=>$words){
             if(!is_array($words)){
@@ -96,10 +141,26 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             return IntentResult::unknown();
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Eliminar intenciones secundarias
+        |--------------------------------------------------------------------------
+        */
+
         $results =
             $this->removeSecondaryIntents(
                 $results
             );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ordenar resultados
+        |--------------------------------------------------------------------------
+        |
+        | Ordena primero por puntuación y utiliza la prioridad configurada
+        | para resolver empates entre intenciones con el mismo resultado.
+        |
+        */
 
         usort(
             $results,
@@ -125,6 +186,12 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
 
         $best = $results[0];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validar puntuación mínima
+        |--------------------------------------------------------------------------
+        */
+
         $minimumScore =
             max(
                 1,
@@ -137,6 +204,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         if($best['score'] < $minimumScore){
             return IntentResult::unknown();
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Preparar alternativas
+        |--------------------------------------------------------------------------
+        |
+        | Conserva hasta tres resultados adicionales para disponer de
+        | posibles intenciones alternativas detectadas en el mensaje.
+        |
+        */
 
         $alternatives = [];
 
@@ -164,6 +241,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             alternatives:$alternatives
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver palabra clave
+    |--------------------------------------------------------------------------
+    |
+    | Interpreta cada entrada configurada y determina su palabra clave
+    | junto con un peso personalizado cuando este haya sido definido.
+    |
+    */
 
     private function resolveKeyword(
         int|string $key,
@@ -196,6 +283,17 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Eliminar intenciones secundarias
+    |--------------------------------------------------------------------------
+    |
+    | Descarta saludos y cierres cuando existe al menos una intención
+    | principal, evitando que expresiones sociales oculten la necesidad
+    | real identificada dentro del mensaje.
+    |
+    */
+
     private function removeSecondaryIntents(
         array $results
     ): array {
@@ -226,6 +324,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar coincidencia
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba que la palabra o expresión aparezca como una coincidencia
+    | independiente dentro del mensaje previamente normalizado.
+    |
+    */
+
     private function matches(
         string $message,
         string $keyword
@@ -246,6 +354,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             $message
         ) === 1;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar texto
+    |--------------------------------------------------------------------------
+    |
+    | Convierte el contenido a minúsculas, elimina acentos y caracteres
+    | especiales, y normaliza espacios para facilitar las comparaciones.
+    |
+    */
 
     private function normalize(
         string $text
@@ -289,6 +407,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         return trim($text);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Calcular peso de palabra clave
+    |--------------------------------------------------------------------------
+    |
+    | Asigna una puntuación automática según la cantidad de palabras que
+    | componen la expresión, dando mayor peso a frases más específicas.
+    |
+    */
+
     private function calculateKeywordWeight(
         string $keyword
     ): int {
@@ -308,6 +436,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
         };
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Calcular nivel de confianza
+    |--------------------------------------------------------------------------
+    |
+    | Convierte la puntuación obtenida en un valor de confianza utilizado
+    | posteriormente por otros componentes del chatbot.
+    |
+    */
+
     private function calculateConfidence(
         int $score
     ): float {
@@ -319,6 +457,16 @@ class KeywordIntentRecognizer implements IntentRecognizerInterface
             default=>0.60,
         };
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver prioridad
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene la posición de una intención dentro del orden de prioridad
+    | y utiliza un valor elevado cuando no existe una prioridad definida.
+    |
+    */
 
     private function priority(
         string $intent

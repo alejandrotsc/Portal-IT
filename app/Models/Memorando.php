@@ -13,6 +13,10 @@ class Memorando extends Model
     |--------------------------------------------------------------------------
     | Estados
     |--------------------------------------------------------------------------
+    |
+    | Define los estados disponibles para representar el ciclo de vida
+    | de un memorando dentro del Portal TI.
+    |
     */
 
     public const ESTADO_GENERADO =
@@ -29,7 +33,6 @@ class Memorando extends Model
 
     public const ESTADO_ARCHIVADO =
         'ARCHIVADO';
-
 
     /*
     |--------------------------------------------------------------------------
@@ -48,16 +51,28 @@ class Memorando extends Model
         self::ESTADO_RECHAZADO,
     ];
 
-
     /*
     |--------------------------------------------------------------------------
-    | Configuración del modelo
+    | Tabla asociada
     |--------------------------------------------------------------------------
+    |
+    | Define la tabla utilizada para almacenar los memorandos generados
+    | dentro del Portal TI.
+    |
     */
 
     protected $table =
         'memorandos';
 
+    /*
+    |--------------------------------------------------------------------------
+    | Campos asignables
+    |--------------------------------------------------------------------------
+    |
+    | Define los atributos que pueden ser asignados de forma masiva
+    | durante la creación o actualización de un memorando.
+    |
+    */
 
     protected $fillable = [
         'codigo',
@@ -74,6 +89,15 @@ class Memorando extends Model
         'datos_extra',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Conversión de tipos
+    |--------------------------------------------------------------------------
+    |
+    | Convierte automáticamente los datos adicionales a un arreglo y
+    | la fecha del documento a un objeto de fecha.
+    |
+    */
 
     protected $casts = [
         'datos_extra' =>
@@ -83,11 +107,14 @@ class Memorando extends Model
             'date',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
-    | Relaciones
+    | Tipo de memorando
     |--------------------------------------------------------------------------
+    |
+    | Define la relación con el tipo correspondiente al memorando,
+    | permitiendo identificar su clasificación y configuración.
+    |
     */
 
     public function tipo(): BelongsTo
@@ -98,6 +125,15 @@ class Memorando extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Solicitante
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con el usuario que generó o solicitó
+    | originalmente el memorando.
+    |
+    */
 
     public function solicitante(): BelongsTo
     {
@@ -107,6 +143,15 @@ class Memorando extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Solicitud de compra
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con la solicitud de compra asociada al memorando
+    | cuando este corresponde a una gestión de adquisición.
+    |
+    */
 
     public function solicitudCompra(): HasOne
     {
@@ -116,6 +161,15 @@ class Memorando extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Artículos
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los artículos registrados como parte
+    | del contenido o detalle del memorando.
+    |
+    */
 
     public function articulos(): HasMany
     {
@@ -125,6 +179,15 @@ class Memorando extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Archivos adjuntos
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los archivos vinculados al memorando,
+    | incluyendo documentos de respaldo o evidencias relacionadas.
+    |
+    */
 
     public function archivos(): HasMany
     {
@@ -134,6 +197,15 @@ class Memorando extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Aprobaciones
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los registros de aprobación asociados
+    | al proceso de revisión del memorando.
+    |
+    */
 
     public function aprobaciones(): HasMany
     {
@@ -143,6 +215,15 @@ class Memorando extends Model
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Historial
+    |--------------------------------------------------------------------------
+    |
+    | Define la relación con los registros históricos que permiten
+    | consultar los cambios realizados sobre el memorando.
+    |
+    */
 
     public function historial(): HasMany
     {
@@ -152,11 +233,14 @@ class Memorando extends Model
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Helpers de estado
+    | Consultar estado
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para determinar rápidamente el
+    | estado actual en el que se encuentra el memorando.
+    |
     */
 
     public function estaGenerado(): bool
@@ -165,13 +249,11 @@ class Memorando extends Model
             === self::ESTADO_GENERADO;
     }
 
-
     public function estaEnFirma(): bool
     {
         return $this->estado
             === self::ESTADO_EN_FIRMA;
     }
-
 
     public function estaAprobado(): bool
     {
@@ -179,13 +261,11 @@ class Memorando extends Model
             === self::ESTADO_APROBADO;
     }
 
-
     public function estaRechazado(): bool
     {
         return $this->estado
             === self::ESTADO_RECHAZADO;
     }
-
 
     public function estaArchivado(): bool
     {
@@ -193,17 +273,29 @@ class Memorando extends Model
             === self::ESTADO_ARCHIVADO;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Pendiente de revisión
+    |--------------------------------------------------------------------------
+    |
+    | Determina si el memorando se encuentra en estado generado y,
+    | por lo tanto, pendiente de revisión administrativa.
+    |
+    */
 
     public function estaPendienteDeRevision(): bool
     {
         return $this->estaGenerado();
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Helpers generales
+    | Verificar requerimiento de folio
     |--------------------------------------------------------------------------
+    |
+    | Determina si el tipo de memorando asociado requiere que se genere
+    | un folio para identificar formalmente el documento.
+    |
     */
 
     public function requiereFolio(): bool
@@ -212,6 +304,15 @@ class Memorando extends Model
             === true;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar documento PDF
+    |--------------------------------------------------------------------------
+    |
+    | Determina si el memorando posee una ruta de archivo PDF registrada
+    | y disponible como parte de la gestión.
+    |
+    */
 
     public function tienePdf(): bool
     {

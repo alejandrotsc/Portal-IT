@@ -6,12 +6,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de notificaciones
+|--------------------------------------------------------------------------
+|
+| Gestiona el listado de notificaciones del usuario, la apertura segura de
+| cada elemento, el marcado como leído y la redirección hacia destinos internos
+| del Portal TI.
+|
+*/
+
 class NotificacionController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
     | Listado de notificaciones
     |--------------------------------------------------------------------------
+    |
+    | Recupera las notificaciones del usuario autenticado, ordenadas desde la
+    | más reciente y paginadas para su visualización.
+    |
     */
 
     public function index(
@@ -29,11 +44,14 @@ class NotificacionController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Abrir notificación
     |--------------------------------------------------------------------------
+    |
+    | Busca la notificación dentro del usuario autenticado, la marca como leída
+    | cuando corresponde y redirige de forma segura a su destino interno.
+    |
     */
 
     public function abrir(
@@ -44,6 +62,9 @@ class NotificacionController extends Controller
         |--------------------------------------------------------------------------
         | Buscar únicamente dentro de las notificaciones del usuario
         |--------------------------------------------------------------------------
+        |
+        | Evita consultar notificaciones pertenecientes a otros usuarios.
+        |
         */
 
         $notificacion = $request
@@ -53,22 +74,28 @@ class NotificacionController extends Controller
                 $notification
             );
 
-
         /*
         |--------------------------------------------------------------------------
         | Marcar como leída
         |--------------------------------------------------------------------------
+        |
+        | Actualiza el estado solamente cuando la notificación aún se encuentra
+        | pendiente de lectura.
+        |
         */
 
         if ($notificacion->unread()) {
             $notificacion->markAsRead();
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Obtener destino
         |--------------------------------------------------------------------------
+        |
+        | Utiliza la URL almacenada en los datos de la notificación o, como
+        | respaldo, la ruta interna del dashboard.
+        |
         */
 
         $url = $notificacion->data['url']
@@ -76,7 +103,6 @@ class NotificacionController extends Controller
                 'dashboard',
                 absolute: false
             );
-
 
         /*
         |--------------------------------------------------------------------------
@@ -98,11 +124,14 @@ class NotificacionController extends Controller
             PHP_URL_PATH
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Validar ruta
         |--------------------------------------------------------------------------
+        |
+        | Si no se obtiene una ruta utilizable, se utiliza el dashboard como
+        | destino seguro predeterminado.
+        |
         */
 
         if (
@@ -116,11 +145,14 @@ class NotificacionController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Conservar parámetros GET
         |--------------------------------------------------------------------------
+        |
+        | Recupera y adjunta nuevamente la cadena de consulta de la URL original
+        | para no perder filtros o parámetros necesarios.
+        |
         */
 
         $query = parse_url(
@@ -136,11 +168,14 @@ class NotificacionController extends Controller
             $ruta .= '?'.$query;
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Redirección interna
         |--------------------------------------------------------------------------
+        |
+        | Envía al usuario hacia la ruta normalizada asociada con la
+        | notificación seleccionada.
+        |
         */
 
         return redirect()->to(
@@ -148,11 +183,14 @@ class NotificacionController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Marcar todas como leídas
     |--------------------------------------------------------------------------
+    |
+    | Actualiza en una sola operación todas las notificaciones pendientes del
+    | usuario autenticado y regresa a la vista anterior.
+    |
     */
 
     public function marcarTodasComoLeidas(

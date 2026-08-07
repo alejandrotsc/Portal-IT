@@ -17,12 +17,35 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de solicitudes
+|--------------------------------------------------------------------------
+|
+| Gestiona el ciclo de vida de las solicitudes del Portal TI: creación,
+| campos dinámicos, correo con seguimiento, historial del usuario, panel
+| administrativo, cambios de estado, notificaciones y permisos internos.
+|
+*/
+
 class SolicitudController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
     | Formulario para el usuario
     |--------------------------------------------------------------------------
+    |
+    | Presenta la vista utilizada por el usuario para registrar una nueva solicitud de servicio TI.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de solicitud
+    |--------------------------------------------------------------------------
+    |
+    | Renderiza la pantalla utilizada para registrar una nueva solicitud TI.
+    |
     */
 
     public function create(): View
@@ -37,6 +60,19 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Registrar solicitud
     |--------------------------------------------------------------------------
+    |
+    | Valida la información, genera el folio, conserva campos dinámicos, registra la solicitud y procesa correo y notificaciones.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Procesar nueva solicitud
+    |--------------------------------------------------------------------------
+    |
+    | Ejecuta el flujo completo de validación, folio, persistencia, correo y
+    | notificación administrativa.
+    |
     */
 
     public function store(
@@ -152,9 +188,10 @@ class SolicitudController extends Controller
         | Enviar correo con seguimiento
         |--------------------------------------------------------------------------
         |
-        | Si el SMTP falla, la solicitud permanece registrada y el error
+        | Coloca la notificación en la cola mediante TrackedMailService. Si el
+        | SMTP falla, la solicitud permanece registrada y el detalle del error
         | queda almacenado en email_deliveries.
-        |--------------------------------------------------------------------------
+        |
         */
 
         $delivery = $trackedMail->sendAsync(
@@ -196,8 +233,9 @@ class SolicitudController extends Controller
         | Estado inicial del correo
         |--------------------------------------------------------------------------
         |
-        | El Job actualizará estos campos cuando SMTP confirme el envío.
-        |--------------------------------------------------------------------------
+        | La solicitud permanece inicialmente sin confirmación de envío. El Job
+        | actualizará estos campos cuando el servidor SMTP confirme el resultado.
+        |
         */
 
         $solicitud->update([
@@ -326,6 +364,19 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Solicitudes del usuario autenticado
     |--------------------------------------------------------------------------
+    |
+    | Construye el historial mensual del usuario junto con filtros, resumen, años disponibles y paginación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar historial del usuario
+    |--------------------------------------------------------------------------
+    |
+    | Valida el período, calcula métricas y prepara el listado paginado de las
+    | solicitudes pertenecientes al usuario autenticado.
+    |
     */
 
     public function misSolicitudes(
@@ -335,6 +386,9 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Validación de filtros
     |--------------------------------------------------------------------------
+    |
+    | Valida mes y año antes de construir el historial del usuario.
+    |
     */
 
     $validated = $request->validate([
@@ -369,6 +423,9 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Años disponibles
     |--------------------------------------------------------------------------
+    |
+    | Obtiene los años con solicitudes registradas y conserva siempre el año actual.
+    |
     */
 
     $aniosDisponibles = Solicitud::query()
@@ -412,6 +469,9 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Consulta del periodo
     |--------------------------------------------------------------------------
+    |
+    | Limita las solicitudes al usuario autenticado y al mes y año seleccionados.
+    |
     */
 
     $consultaPeriodo = Solicitud::query()
@@ -434,8 +494,8 @@ class SolicitudController extends Controller
     | Resumen del periodo
     |--------------------------------------------------------------------------
     |
-    | Se calcula antes de paginar para que los valores representen todas
-    | las solicitudes del periodo y no únicamente la página visible.
+    | Se calcula antes de paginar para que los indicadores representen todas
+    | las solicitudes del período y no únicamente la página visible.
     |
     */
 
@@ -463,6 +523,9 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Listado paginado
     |--------------------------------------------------------------------------
+    |
+    | Ordena las solicitudes por fecha y prepara la paginación conservando los filtros activos.
+    |
     */
 
     $solicitudes = (clone $consultaPeriodo)
@@ -475,6 +538,9 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Vista
     |--------------------------------------------------------------------------
+    |
+    | Entrega a la vista todas las colecciones, filtros e indicadores calculados.
+    |
     */
 
     return view(
@@ -496,6 +562,18 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Detalle para el usuario
     |--------------------------------------------------------------------------
+    |
+    | Permite consultar una solicitud únicamente cuando pertenece al usuario autenticado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar detalle propio
+    |--------------------------------------------------------------------------
+    |
+    | Verifica la propiedad de la solicitud antes de presentar su detalle.
+    |
     */
 
     public function show(
@@ -520,6 +598,19 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Listado administrativo
     |--------------------------------------------------------------------------
+    |
+    | Prepara el panel administrativo con filtros por período, búsqueda, estado, categoría y resumen.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar administración de solicitudes
+    |--------------------------------------------------------------------------
+    |
+    | Valida filtros y construye el listado administrativo con búsqueda,
+    | categoría, estado y métricas del período.
+    |
     */
 
     public function administracion(
@@ -779,6 +870,19 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Detalle administrativo
     |--------------------------------------------------------------------------
+    |
+    | Carga el usuario relacionado y muestra la solicitud en el panel administrativo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar detalle administrativo
+    |--------------------------------------------------------------------------
+    |
+    | Verifica permisos internos y carga la información del usuario asociado
+    | antes de mostrar la solicitud.
+    |
     */
 
     public function showAdministracion(
@@ -802,6 +906,19 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Finalizar solicitud
     |--------------------------------------------------------------------------
+    |
+    | Cambia una solicitud pendiente a finalizada y notifica al propietario.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Finalizar solicitud pendiente
+    |--------------------------------------------------------------------------
+    |
+    | Aplica la transición a finalizada únicamente cuando la gestión continúa
+    | pendiente y notifica al usuario.
+    |
     */
 
     public function finalizar(
@@ -840,6 +957,19 @@ class SolicitudController extends Controller
     |--------------------------------------------------------------------------
     | Cancelar solicitud
     |--------------------------------------------------------------------------
+    |
+    | Cambia una solicitud pendiente a cancelada y notifica al propietario.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cancelar solicitud pendiente
+    |--------------------------------------------------------------------------
+    |
+    | Aplica la transición a cancelada únicamente cuando la gestión continúa
+    | pendiente y notifica al usuario.
+    |
     */
 
     public function cancelar(
@@ -879,7 +1009,18 @@ class SolicitudController extends Controller
 | Notificar nueva solicitud al equipo administrativo
 |--------------------------------------------------------------------------
 |
-| La notificación se envía a administradores y usuarios TI activos.
+| Envía la notificación a administradores y usuarios TI activos, ya que ambos
+| roles pueden participar en el seguimiento de solicitudes.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Enviar notificación administrativa
+|--------------------------------------------------------------------------
+|
+| Selecciona administradores y usuarios TI activos y distribuye la notificación
+| correspondiente a la nueva solicitud.
 |
 */
 
@@ -956,6 +1097,19 @@ private function notificarNuevaSolicitud(
     |--------------------------------------------------------------------------
     | Notificar actualización de estado
     |--------------------------------------------------------------------------
+    |
+    | Notifica al usuario cuando cambia el estado de su solicitud.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar cambio de estado
+    |--------------------------------------------------------------------------
+    |
+    | Envía al propietario la actualización de estado y registra cualquier
+    | fallo de notificación sin interrumpir la operación principal.
+    |
     */
 
     private function notificarEstadoSolicitud(
@@ -996,6 +1150,19 @@ private function notificarNuevaSolicitud(
     |--------------------------------------------------------------------------
     | Autorizar gestión interna
     |--------------------------------------------------------------------------
+    |
+    | Restringe las acciones administrativas a usuarios con rol UsuarioTI o Administrador.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar permisos de seguimiento
+    |--------------------------------------------------------------------------
+    |
+    | Confirma que el usuario autenticado tenga rol UsuarioTI o Administrador
+    | antes de permitir modificaciones sobre solicitudes.
+    |
     */
 
     private function autorizarSeguimiento(): void

@@ -12,6 +12,11 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Procesar acción interactiva
     |--------------------------------------------------------------------------
+    |
+    | Resuelve una acción del flujo configurado, prepara el mensaje,
+    | combina el contexto acumulado y construye las acciones disponibles
+    | para continuar la interacción del chatbot.
+    |
     */
 
     public function handle(
@@ -19,6 +24,12 @@ class ChatbotFlowService
         string $userName = 'usuario',
         array $context = []
     ): ?array {
+        /*
+        |--------------------------------------------------------------------------
+        | Validar acción solicitada
+        |--------------------------------------------------------------------------
+        */
+
         $action = trim($action);
 
         if (
@@ -27,6 +38,12 @@ class ChatbotFlowService
         ) {
             return null;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener nodos configurados
+        |--------------------------------------------------------------------------
+        */
 
         $nodes = config(
             'chatbot_flows.nodes',
@@ -50,6 +67,12 @@ class ChatbotFlowService
         $message = $this->prepareMessage(
             $node['message'] ?? ''
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Personalizar mensaje del nodo
+        |--------------------------------------------------------------------------
+        */
 
         $message = str_replace(
             '{usuario}',
@@ -124,6 +147,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Obtener menú inicial
     |--------------------------------------------------------------------------
+    |
+    | Obtiene la acción configurada como punto de entrada del chatbot y
+    | devuelve el menú principal correspondiente al usuario.
+    |
     */
 
     public function menu(
@@ -154,6 +181,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Comprobar si existe una acción
     |--------------------------------------------------------------------------
+    |
+    | Verifica que el identificador recibido sea válido y que exista un
+    | nodo configurado para dicha acción dentro de los flujos del chatbot.
+    |
     */
 
     public function exists(
@@ -179,6 +210,11 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar botones
     |--------------------------------------------------------------------------
+    |
+    | Valida y transforma las acciones rápidas definidas en un nodo,
+    | combinando su contexto, apariencia y comportamiento antes de
+    | entregarlas al frontend.
+    |
     */
 
     private function prepareActions(
@@ -338,6 +374,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Construir redirección con prellenado
     |--------------------------------------------------------------------------
+    |
+    | Construye una acción de redirección hacia el formulario asociado a
+    | un módulo y agrega únicamente los campos de prellenado permitidos.
+    |
     */
 
     private function prepareRedirectAction(
@@ -409,6 +449,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Construir botón de Helpdesk
     |--------------------------------------------------------------------------
+    |
+    | Prepara una acción que abre Outlook con un correo dirigido al
+    | Helpdesk, incluyendo asunto, cuerpo y contexto previamente validado.
+    |
     */
 
     private function prepareHelpdeskAction(
@@ -419,6 +463,12 @@ class ChatbotFlowService
         string $nodeMessage = '',
         string $userName = 'usuario'
     ): ?array {
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener correo de Helpdesk
+        |--------------------------------------------------------------------------
+        */
+
         $helpdeskEmail = trim(
             (string) config(
                 'chatbot.helpdesk_email',
@@ -461,6 +511,16 @@ class ChatbotFlowService
             customBody: $action['body'] ?? null
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Construir enlaces de correo
+        |--------------------------------------------------------------------------
+        |
+        | Genera el enlace principal para Outlook Web y un enlace mailto
+        | como mecanismo de respaldo.
+        |
+        */
+
         $outlookUrl =
             'https://outlook.office.com/mail/deeplink/compose'
             .'?to='.rawurlencode($helpdeskEmail)
@@ -502,6 +562,11 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Construir contenido del correo a Helpdesk
     |--------------------------------------------------------------------------
+    |
+    | Genera el cuerpo del correo utilizando los datos recopilados durante
+    | el flujo, la última orientación mostrada y cualquier plantilla
+    | personalizada definida en la acción.
+    |
     */
 
     private function buildHelpdeskBody(
@@ -670,6 +735,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Agregar campo al correo
     |--------------------------------------------------------------------------
+    |
+    | Agrega una línea al contenido del correo únicamente cuando el valor
+    | recibido puede normalizarse y contiene información utilizable.
+    |
     */
 
     private function appendContextLine(
@@ -694,6 +763,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar datos de prellenado
     |--------------------------------------------------------------------------
+    |
+    | Filtra y normaliza los valores acumulados durante el flujo para
+    | conservar únicamente campos permitidos para formularios y Helpdesk.
+    |
     */
 
     private function preparePrefill(
@@ -786,6 +859,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Filtrar campos según módulo
     |--------------------------------------------------------------------------
+    |
+    | Limita los datos de prellenado a los campos admitidos por el módulo
+    | de incidencia o solicitud antes de construir la redirección.
+    |
     */
 
     private function filterPrefillByModule(
@@ -834,6 +911,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar modo del nodo
     |--------------------------------------------------------------------------
+    |
+    | Normaliza el modo de presentación del nodo y garantiza que solamente
+    | se utilicen los modos reconocidos por la interfaz del chatbot.
+    |
     */
 
     private function prepareMode(
@@ -861,6 +942,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar tipo de acción
     |--------------------------------------------------------------------------
+    |
+    | Normaliza y valida el tipo de acción para impedir que se procesen
+    | comportamientos no reconocidos por el flujo del chatbot.
+    |
     */
 
     private function prepareActionType(
@@ -890,6 +975,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Validar valor según la acción
     |--------------------------------------------------------------------------
+    |
+    | Verifica el formato del valor asociado a cada tipo de acción,
+    | diferenciando entre identificadores internos y mensajes libres.
+    |
     */
 
     private function isValidActionValue(
@@ -920,6 +1009,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar textos
     |--------------------------------------------------------------------------
+    |
+    | Centraliza la limpieza, validación y limitación de textos utilizados
+    | por mensajes, etiquetas, descripciones, asuntos y valores de contexto.
+    |
     */
 
     private function prepareUserName(
@@ -1068,6 +1161,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar icono
     |--------------------------------------------------------------------------
+    |
+    | Valida el identificador del icono y garantiza que solo contenga
+    | caracteres compatibles con los nombres utilizados por Lucide.
+    |
     */
 
     private function prepareIcon(
@@ -1101,6 +1198,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Preparar variante visual
     |--------------------------------------------------------------------------
+    |
+    | Normaliza la variante visual de una acción y utiliza el estilo
+    | predeterminado cuando el valor recibido no es reconocido.
+    |
     */
 
     private function prepareVariant(
@@ -1127,6 +1228,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Validar identificador de nodo
     |--------------------------------------------------------------------------
+    |
+    | Comprueba que el identificador de una acción interna utilice
+    | únicamente los caracteres permitidos por la configuración de flujos.
+    |
     */
 
     private function isValidAction(
@@ -1142,6 +1247,10 @@ class ChatbotFlowService
     |--------------------------------------------------------------------------
     | Respuesta predeterminada
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta mínima de respaldo cuando no es posible
+    | resolver correctamente el menú inicial configurado.
+    |
     */
 
     private function defaultMenuResponse(): array

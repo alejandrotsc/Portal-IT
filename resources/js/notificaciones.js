@@ -3,12 +3,15 @@
 | Notificaciones en tiempo real
 |--------------------------------------------------------------------------
 |
-| Escucha el canal privado del usuario mediante Laravel Echo y actualiza:
+| Gestiona la recepción de notificaciones mediante Laravel Echo y mantiene
+| sincronizados los principales indicadores visuales del Portal TI.
 |
+| Actualiza:
 | - Contador de la campana.
 | - Resumen de notificaciones sin leer.
 | - Lista desplegable.
 | - Título de la pestaña.
+| - Favicon con indicador numérico.
 |
 */
 
@@ -17,6 +20,19 @@
 |--------------------------------------------------------------------------
 | Inicialización
 |--------------------------------------------------------------------------
+|
+| Prepara el módulo, valida la existencia del widget y del usuario autenticado y establece el estado inicial de las notificaciones.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Inicializar módulo de notificaciones
+|--------------------------------------------------------------------------
+|
+| Valida los elementos requeridos, carga el estado inicial y configura la
+| suscripción privada del usuario cuando Echo está disponible.
+|
 */
 
 function iniciarNotificaciones() {
@@ -57,6 +73,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Elementos de la interfaz
     |--------------------------------------------------------------------------
+    |
+    | Obtiene las referencias utilizadas para actualizar visualmente contador, resumen, listado, estado vacío, acciones y campana.
+    |
     */
 
     const contador =
@@ -99,6 +118,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Cantidad inicial
     |--------------------------------------------------------------------------
+    |
+    | Lee desde el dataset la cantidad de notificaciones no leídas entregada inicialmente por Laravel.
+    |
     */
 
     let cantidadNoLeidas =
@@ -121,6 +143,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Título original
     |--------------------------------------------------------------------------
+    |
+    | Conserva el título base de la pestaña para poder añadir o retirar el contador de notificaciones sin duplicarlo.
+    |
     */
 
     const tituloOriginal =
@@ -159,6 +184,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Canal privado
     |--------------------------------------------------------------------------
+    |
+    | Construye y abre el canal privado correspondiente al usuario autenticado para recibir notificaciones en tiempo real.
+    |
     */
 
     const nombreCanal =
@@ -202,6 +230,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Canal autorizado
     |--------------------------------------------------------------------------
+    |
+    | Confirma que la suscripción al canal privado fue aceptada correctamente por el backend.
+    |
     */
 
     canal.subscribed(() => {
@@ -218,6 +249,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Error de autorización
     |--------------------------------------------------------------------------
+    |
+    | Registra errores producidos durante la autenticación o suscripción al canal privado del usuario.
+    |
     */
 
     canal.error(error => {
@@ -234,6 +268,9 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Recibir notificación
     |--------------------------------------------------------------------------
+    |
+    | Procesa cada notificación entrante, incrementa el contador, la agrega al dropdown y actualiza los indicadores visuales.
+    |
     */
 
     canal.notification(
@@ -287,6 +324,19 @@ function iniciarNotificaciones() {
     |--------------------------------------------------------------------------
     | Actualizar interfaz
     |--------------------------------------------------------------------------
+    |
+    | Sincroniza contador, resumen, acción de marcar todas, título de pestaña y favicon con la cantidad actual de pendientes.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sincronizar interfaz
+    |--------------------------------------------------------------------------
+    |
+    | Actualiza todos los indicadores visibles a partir de la cantidad actual
+    | de notificaciones pendientes.
+    |
     */
 
     function actualizarInterfaz() {
@@ -344,6 +394,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Normalizar la notificación recibida
     |--------------------------------------------------------------------------
+    |
+    | Combina propiedades directas y datos internos para producir una estructura consistente de notificación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar notificación
+    |--------------------------------------------------------------------------
+    |
+    | Combina diferentes estructuras posibles y aplica valores por defecto para
+    | garantizar una forma uniforme antes de renderizarla.
+    |
     */
 
     function normalizarNotificacion(
@@ -394,6 +457,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Agregar notificación al dropdown
     |--------------------------------------------------------------------------
+    |
+    | Construye dinámicamente el elemento visual de una nueva notificación y lo inserta al inicio del listado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Insertar notificación
+    |--------------------------------------------------------------------------
+    |
+    | Construye dinámicamente el elemento del dropdown, lo inserta al inicio y
+    | aplica animación, límite visual e inicialización de iconos.
+    |
     */
 
     function agregarNotificacion(
@@ -453,6 +529,9 @@ actualizarFavicon(
         |--------------------------------------------------------------------------
         | Contenedor del icono
         |--------------------------------------------------------------------------
+        |
+        | Crea el bloque visual destinado al icono representativo de la notificación.
+        |
         */
 
         const contenedorIcono =
@@ -507,6 +586,9 @@ actualizarFavicon(
         |--------------------------------------------------------------------------
         | Contenido
         |--------------------------------------------------------------------------
+        |
+        | Construye título, mensaje, indicador de estado y fecha mostrados dentro de cada elemento del dropdown.
+        |
         */
 
         const contenido =
@@ -623,6 +705,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Obtener URL para abrir y marcar como leída
     |--------------------------------------------------------------------------
+    |
+    | Genera la URL de apertura utilizando la plantilla del backend cuando existe un identificador de notificación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver URL de notificación
+    |--------------------------------------------------------------------------
+    |
+    | Utiliza la plantilla de apertura configurada por Laravel cuando existe un
+    | identificador válido y recurre a la URL original como alternativa.
+    |
     */
 
     function obtenerUrl(
@@ -656,6 +751,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Mantener solamente las últimas cinco
     |--------------------------------------------------------------------------
+    |
+    | Limita el dropdown a las cinco notificaciones más recientes para conservar una interfaz compacta.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Limitar listado visible
+    |--------------------------------------------------------------------------
+    |
+    | Conserva únicamente las cinco notificaciones más recientes dentro del
+    | dropdown.
+    |
     */
 
     function limitarNotificaciones() {
@@ -690,6 +798,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Recrear iconos Lucide
     |--------------------------------------------------------------------------
+    |
+    | Vuelve a procesar los iconos creados dinámicamente después de insertar una nueva notificación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Renderizar iconos dinámicos
+    |--------------------------------------------------------------------------
+    |
+    | Solicita a Lucide reprocesar el contenido después de insertar un icono
+    | nuevo en el DOM.
+    |
     */
 
     function recrearIconos(
@@ -717,6 +838,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Animación del contador
     |--------------------------------------------------------------------------
+    |
+    | Aplica una animación breve al badge cuando aumenta la cantidad de notificaciones no leídas.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Animar contador
+    |--------------------------------------------------------------------------
+    |
+    | Reinicia y ejecuta la animación del badge para resaltar un incremento en
+    | las notificaciones no leídas.
+    |
     */
 
     function animarContador() {
@@ -782,6 +916,16 @@ actualizarFavicon(
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Animar campana
+    |--------------------------------------------------------------------------
+    |
+    | Aplica un movimiento de balanceo para destacar visualmente la llegada de
+    | una nueva notificación.
+    |
+    */
+
     function animarCampana() {
 
         if (!botonCampana) {
@@ -822,6 +966,19 @@ actualizarFavicon(
     |--------------------------------------------------------------------------
     | Animación de una nueva notificación
     |--------------------------------------------------------------------------
+    |
+    | Anima la entrada del elemento recién agregado al listado desplegable.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Animar elemento nuevo
+    |--------------------------------------------------------------------------
+    |
+    | Aplica una transición de entrada al elemento recién insertado dentro del
+    | dropdown.
+    |
     */
 
     function animarNuevaNotificacion(
@@ -861,6 +1018,19 @@ actualizarFavicon(
 |--------------------------------------------------------------------------
 | Favicon con indicador de notificación
 |--------------------------------------------------------------------------
+|
+| Genera dinámicamente un favicon con badge numérico cuando existen notificaciones pendientes.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar favicon
+|--------------------------------------------------------------------------
+|
+| Recrea el favicon con un badge numérico cuando existen notificaciones y
+| restaura el original cuando el contador vuelve a cero.
+|
 */
 
 function actualizarFavicon(
@@ -894,6 +1064,9 @@ function actualizarFavicon(
     |--------------------------------------------------------------------------
     | Restaurar favicon original
     |--------------------------------------------------------------------------
+    |
+    | Recupera el favicon original cuando ya no existen notificaciones sin leer.
+    |
     */
 
     if (cantidad <= 0) {
@@ -983,6 +1156,9 @@ contexto.drawImage(
 |--------------------------------------------------------------------------
 | Burbuja parcialmente fuera del logo
 |--------------------------------------------------------------------------
+|
+| Calcula y dibuja la burbuja roja que sobresale del borde superior derecho del favicon.
+|
 */
 
 const radio =
@@ -1018,6 +1194,9 @@ const centroY =
         |--------------------------------------------------------------------------
         | Borde blanco
         |--------------------------------------------------------------------------
+        |
+        | Añade un contorno blanco alrededor del indicador para mejorar su contraste.
+        |
         */
 
         contexto.lineWidth =
@@ -1035,6 +1214,9 @@ const centroY =
         |--------------------------------------------------------------------------
         | Número
         |--------------------------------------------------------------------------
+        |
+        | Dibuja dentro del badge la cantidad de notificaciones o el límite visual 9+.
+        |
         */
 
         contexto.fillStyle =
@@ -1095,6 +1277,19 @@ const centroY =
     |--------------------------------------------------------------------------
     | Estado de conexión
     |--------------------------------------------------------------------------
+    |
+    | Consulta el estado actual de la conexión utilizada por Echo y Pusher para fines de diagnóstico.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener estado de conexión
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve el estado actual de la conexión administrada por Echo/Pusher para
+    | fines de diagnóstico.
+    |
     */
 
     function obtenerEstadoConexion() {
@@ -1114,6 +1309,9 @@ const centroY =
 |--------------------------------------------------------------------------
 | Ejecutar cuando el documento esté preparado
 |--------------------------------------------------------------------------
+|
+| Inicializa el módulo inmediatamente si el DOM ya está listo o espera a DOMContentLoaded cuando todavía está cargando.
+|
 */
 
 if (

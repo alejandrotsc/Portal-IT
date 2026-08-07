@@ -4,14 +4,20 @@ namespace App\Services\Chatbot\Knowledge;
 
 class PortalKnowledge
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener conocimiento según intención
+    |--------------------------------------------------------------------------
+    |
+    | Selecciona el bloque de conocimiento correspondiente a la intención
+    | detectada para proporcionar al chatbot únicamente la información
+    | relacionada con la gestión solicitada.
+    |
+    */
 
-    /**
-     * Obtener conocimiento según intención
-     */
     public function forIntent(string $intent): string
     {
         return match ($intent) {
-
             'incidencia' =>
                 $this->incidencia(),
 
@@ -30,13 +36,19 @@ class PortalKnowledge
 
             default =>
                 $this->general()
-
         };
     }
 
-    /**
-     * Conocimiento general
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Conocimiento general
+    |--------------------------------------------------------------------------
+    |
+    | Proporciona una descripción general de los módulos disponibles
+    | cuando no existe una intención específica reconocida.
+    |
+    */
+
     public function general(): string
     {
         return <<<TXT
@@ -57,9 +69,16 @@ No inventes funcionalidades.
 TXT;
     }
 
-    /**
-     * Reporte de incidencia
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Reporte de incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Proporciona el conocimiento utilizado para orientar al usuario
+    | cuando la intención detectada corresponde a una falla técnica.
+    |
+    */
+
     private function incidencia(): string
     {
         return <<<TXT
@@ -86,9 +105,16 @@ No expliques el formulario.
 TXT;
     }
 
-    /**
-     * Solicitud
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Solicitud de servicio
+    |--------------------------------------------------------------------------
+    |
+    | Proporciona el conocimiento utilizado para orientar al usuario
+    | cuando necesita solicitar un recurso, acceso o servicio de TI.
+    |
+    */
+
     private function solicitud(): string
     {
         return <<<TXT
@@ -115,9 +141,16 @@ No describas el formulario.
 TXT;
     }
 
-    /**
-     * Pase menor
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Pase menor a 24 horas
+    |--------------------------------------------------------------------------
+    |
+    | Proporciona el conocimiento utilizado para orientar al usuario
+    | cuando el acceso solicitado tendrá una duración menor a 24 horas.
+    |
+    */
+
     private function paseMenor(): string
     {
         return <<<TXT
@@ -134,9 +167,16 @@ No expliques el proceso.
 TXT;
     }
 
-    /**
-     * Pase mayor
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Pase mayor a 24 horas
+    |--------------------------------------------------------------------------
+    |
+    | Proporciona el conocimiento utilizado para orientar al usuario
+    | cuando el acceso solicitado tendrá una duración mayor a 24 horas.
+    |
+    */
+
     private function paseMayor(): string
     {
         return <<<TXT
@@ -153,9 +193,16 @@ No expliques el proceso.
 TXT;
     }
 
-    /**
-     * Estado
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Consultar estado
+    |--------------------------------------------------------------------------
+    |
+    | Proporciona el conocimiento utilizado cuando el usuario desea
+    | consultar el estado de alguna de sus gestiones registradas.
+    |
+    */
+
     private function estado(): string
     {
         return <<<TXT
@@ -173,5 +220,4 @@ Si existen gestiones recientes utiliza esa información.
 No inventes estados.
 TXT;
     }
-
 }

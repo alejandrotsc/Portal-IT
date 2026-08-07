@@ -15,8 +15,29 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de usuarios
+|--------------------------------------------------------------------------
+|
+| Gestiona la administración de cuentas del Portal TI: listado, creación,
+| edición, roles, estados, verificación de correo, extensión telefónica e
+| invalidación de tokens de autenticación.
+|
+*/
+
 class UsuarioController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Dependencias
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el servicio utilizado para generar códigos y administrar tokens
+    | asociados con los procesos de autenticación y verificación.
+    |
+    */
+
     public function __construct(
         private readonly TokenAutenticacionService $tokens
     ) {}
@@ -26,6 +47,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Listado
     |--------------------------------------------------------------------------
+    |
+    | Construye el listado administrativo de usuarios aplicando búsqueda, filtros por rol y estado, paginación y resumen general.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar listado de usuarios
+    |--------------------------------------------------------------------------
+    |
+    | Aplica búsqueda y filtros, calcula indicadores generales y prepara el
+    | listado paginado para el panel administrativo.
+    |
     */
 
     public function index(
@@ -168,6 +202,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Crear
     |--------------------------------------------------------------------------
+    |
+    | Presenta el formulario de creación con los roles disponibles para asignación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de creación
+    |--------------------------------------------------------------------------
+    |
+    | Renderiza la vista para registrar un usuario y proporciona los roles
+    | disponibles.
+    |
     */
 
     public function create(): View
@@ -181,6 +228,16 @@ class UsuarioController extends Controller
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registrar usuario
+    |--------------------------------------------------------------------------
+    |
+    | Normaliza y valida la información, crea la cuenta y envía el código de
+    | verificación correspondiente.
+    |
+    */
 
     public function store(
         Request $request
@@ -260,6 +317,18 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Editar
     |--------------------------------------------------------------------------
+    |
+    | Presenta el formulario de edición junto con los roles permitidos.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de edición
+    |--------------------------------------------------------------------------
+    |
+    | Prepara la cuenta seleccionada y los roles permitidos para su edición.
+    |
     */
 
     public function edit(
@@ -277,6 +346,16 @@ class UsuarioController extends Controller
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar usuario
+    |--------------------------------------------------------------------------
+    |
+    | Valida cambios, protege el rol administrativo propio, resuelve la
+    | extensión telefónica y reinicia la verificación cuando cambia el correo.
+    |
+    */
 
     public function update(
         Request $request,
@@ -411,6 +490,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Activar o desactivar
     |--------------------------------------------------------------------------
+    |
+    | Alterna el estado de la cuenta e invalida tokens pendientes cuando el usuario queda desactivado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cambiar estado de usuario
+    |--------------------------------------------------------------------------
+    |
+    | Evita modificar la propia cuenta, alterna el estado activo e invalida
+    | tokens pendientes cuando se desactiva al usuario.
+    |
     */
 
     public function changeStatus(
@@ -450,6 +542,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Reenviar verificación
     |--------------------------------------------------------------------------
+    |
+    | Genera y envía un nuevo código únicamente para cuentas activas que aún no han verificado su correo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reenviar código de verificación
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba que la cuenta esté activa y pendiente antes de generar y enviar
+    | un nuevo código.
+    |
     */
 
     public function resendVerification(
@@ -505,6 +610,18 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Roles disponibles
     |--------------------------------------------------------------------------
+    |
+    | Obtiene únicamente los roles permitidos para administración de usuarios dentro del Portal TI.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener roles permitidos
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve los roles que pueden administrarse desde este módulo.
+    |
     */
 
     private function rolesDisponibles()
@@ -527,6 +644,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Normalizar datos
     |--------------------------------------------------------------------------
+    |
+    | Limpia nombre, correo y extensión telefónica antes de ejecutar la validación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar información del usuario
+    |--------------------------------------------------------------------------
+    |
+    | Limpia espacios, normaliza el correo a minúsculas y prepara la extensión
+    | telefónica antes de validar.
+    |
     */
 
     private function normalizarDatos(
@@ -570,6 +700,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Validar usuario
     |--------------------------------------------------------------------------
+    |
+    | Aplica reglas de nombre, correo, rol y extensión telefónica según el tipo de usuario seleccionado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validar datos del usuario
+    |--------------------------------------------------------------------------
+    |
+    | Centraliza las reglas utilizadas en creación y edición, incluyendo la
+    | obligatoriedad de extensión para UsuarioTI.
+    |
     */
 
     private function validarUsuario(
@@ -697,7 +840,17 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     |
     | Únicamente los usuarios con rol UsuarioTI conservan una extensión.
-    | Para cualquier otro rol se guarda NULL.
+    | Para cualquier otro rol se devuelve NULL antes de persistir los datos.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver extensión según rol
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve la extensión únicamente cuando el rol seleccionado corresponde
+    | a UsuarioTI.
     |
     */
 
@@ -733,6 +886,18 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Invalidar tokens
     |--------------------------------------------------------------------------
+    |
+    | Marca como utilizados todos los tokens de autenticación pendientes pertenecientes al usuario.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Revocar tokens pendientes
+    |--------------------------------------------------------------------------
+    |
+    | Marca como utilizados los tokens aún vigentes para impedir su reutilización.
+    |
     */
 
     private function invalidarTokens(
@@ -754,6 +919,19 @@ class UsuarioController extends Controller
     |--------------------------------------------------------------------------
     | Enviar código
     |--------------------------------------------------------------------------
+    |
+    | Genera un código de verificación y lo envía al correo asociado con la cuenta.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generar y enviar código
+    |--------------------------------------------------------------------------
+    |
+    | Solicita un nuevo código al servicio de autenticación y lo envía mediante
+    | el mailable de verificación.
+    |
     */
 
     private function enviarCodigo(

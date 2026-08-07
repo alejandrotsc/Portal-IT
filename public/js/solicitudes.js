@@ -1,3 +1,14 @@
+/*
+|--------------------------------------------------------------------------
+| Inicializar módulo de solicitudes
+|--------------------------------------------------------------------------
+|
+| Inicializa una sola vez los componentes interactivos del formulario,
+| incluyendo categorías, prellenado, archivos, validaciones, correo,
+| modales y comportamiento visual.
+|
+*/
+
 function initializeSolicitudes(){
 
 const raizSolicitudes=
@@ -11,6 +22,16 @@ return;
 }
 
 raizSolicitudes.dataset.solicitudesInitialized='true';
+
+/*
+|--------------------------------------------------------------------------
+| Placeholders por categoría
+|--------------------------------------------------------------------------
+|
+| Define ejemplos contextuales para el asunto y la descripción según
+| la categoría seleccionada por el usuario.
+|
+*/
 
 const PLACEHOLDERS={
 computadora:{
@@ -46,6 +67,16 @@ asunto:'Ej: Solicitud de soporte TI',
 descripcion:'Describe detalladamente la necesidad o problema que presentas...'
 }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Campos dinámicos por categoría
+|--------------------------------------------------------------------------
+|
+| Define los campos adicionales que deben renderizarse dinámicamente
+| para cada tipo de solicitud.
+|
+*/
 
 const FIELDS={
 
@@ -98,6 +129,16 @@ let attachedFiles=[];
 let enviandoSolicitud=false;
 
 const cards=document.querySelectorAll('.categoria-card');
+
+/*
+|--------------------------------------------------------------------------
+| Efectos visuales de las categorías
+|--------------------------------------------------------------------------
+|
+| Aplica estilos de interacción al pasar el cursor sin alterar el estado
+| de la categoría actualmente seleccionada.
+|
+*/
 
 cards.forEach(card=>{
 
@@ -185,6 +226,16 @@ const fileInput =
     document.getElementById('fileInput');
 
 
+/*
+|--------------------------------------------------------------------------
+| Accesibilidad y selección de categorías
+|--------------------------------------------------------------------------
+|
+| Permite seleccionar categorías mediante clic o teclado y mantiene los
+| atributos necesarios para representar su estado.
+|
+*/
+
 cards.forEach(card=>{
 
 card.setAttribute('role','button');
@@ -206,6 +257,16 @@ seleccionarCategoria(card,true);
 
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| Seleccionar categoría
+|--------------------------------------------------------------------------
+|
+| Actualiza la categoría activa, renderiza sus campos, aplica placeholders
+| y muestra las secciones necesarias del formulario.
+|
+*/
 
 function seleccionarCategoria(card,debeDesplazar=false){
 
@@ -313,6 +374,16 @@ function aplicarPrellenadoChatbot() {
 aplicarPrellenadoChatbot();
 
 
+/*
+|--------------------------------------------------------------------------
+| Actualizar placeholders
+|--------------------------------------------------------------------------
+|
+| Ajusta los textos de ayuda del asunto y descripción según la categoría
+| seleccionada.
+|
+*/
+
 function actualizarPlaceholders(category){
 
 if(!PLACEHOLDERS[category])return;
@@ -324,6 +395,16 @@ if(descripcion)
 descripcion.placeholder=PLACEHOLDERS[category].descripcion;
 
 }
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar estado visual de categorías
+|--------------------------------------------------------------------------
+|
+| Sincroniza estilos, accesibilidad e iconos de las tarjetas considerando
+| la categoría activa y el tema claro u oscuro.
+|
+*/
 
 function actualizarTarjetas(){
 
@@ -391,6 +472,16 @@ check.classList.toggle('flex',seleccionado);
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Mostrar categoría seleccionada
+|--------------------------------------------------------------------------
+|
+| Actualiza la insignia visual que identifica la categoría actualmente
+| activa dentro del formulario.
+|
+*/
+
 function mostrarBadge(card){
 
 if(!categoriaSeleccionada)return;
@@ -413,6 +504,16 @@ categoriaSeleccionada.classList.remove('hidden');
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Sincronizar cambios de tema
+|--------------------------------------------------------------------------
+|
+| Observa cambios en la clase del documento para actualizar tarjetas e
+| indicadores cuando se alterna entre modo claro y oscuro.
+|
+*/
+
 const observadorTema=new MutationObserver(()=>{
     actualizarTarjetas();
 
@@ -434,6 +535,16 @@ observadorTema.observe(
 );
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Renderizar campos dinámicos
+|--------------------------------------------------------------------------
+|
+| Construye los controles adicionales correspondientes a la categoría,
+| aplica estilos, accesibilidad e inicializa nuevamente los iconos Lucide.
+|
+*/
 
 function mostrarFormulario(category){
 
@@ -631,6 +742,16 @@ cambiarCategoria.addEventListener('click',resetFormulario);
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Agregar archivos
+|--------------------------------------------------------------------------
+|
+| Incorpora archivos a la colección temporal utilizada por la interfaz
+| y actualiza la representación visual de los adjuntos.
+|
+*/
+
 function agregarArchivos(files){
 
 Array.from(files).forEach(file=>{
@@ -648,6 +769,16 @@ pintarArchivos();
 }
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Renderizar archivos adjuntos
+|--------------------------------------------------------------------------
+|
+| Construye la lista visual de archivos seleccionados y registra los
+| controles necesarios para eliminarlos de la colección.
+|
+*/
 
 function pintarArchivos(){
 
@@ -714,6 +845,15 @@ pintarArchivos();
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Resolver icono de archivo
+|--------------------------------------------------------------------------
+|
+| Selecciona una representación visual según la extensión del archivo.
+|
+*/
+
 function iconoArchivo(name){
 
 const ext=name.split('.').pop().toLowerCase();
@@ -750,6 +890,15 @@ return `
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Formatear tamaño de archivo
+|--------------------------------------------------------------------------
+|
+| Convierte el tamaño en bytes a una representación legible en KB o MB.
+|
+*/
+
 function formatearPeso(bytes){
 
 if(bytes<1024*1024)
@@ -760,6 +909,16 @@ return(bytes/1024/1024).toFixed(1)+' MB';
 }
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Validar formulario
+|--------------------------------------------------------------------------
+|
+| Comprueba que exista una categoría seleccionada y que los campos
+| dinámicos obligatorios contengan información antes del envío.
+|
+*/
 
 function validarFormulario(){
 
@@ -806,6 +965,16 @@ return true;
 }
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Envío asíncrono de solicitud
+|--------------------------------------------------------------------------
+|
+| Intercepta el submit tradicional, envía el formulario mediante fetch,
+| controla tiempos de espera y procesa la respuesta JSON del servidor.
+|
+*/
 
 if (solicitudForm) {
     solicitudForm.addEventListener('submit', async (event) => {
@@ -894,6 +1063,16 @@ if (solicitudForm) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Bloquear botón de envío
+|--------------------------------------------------------------------------
+|
+| Evita envíos duplicados y muestra un indicador visual mientras la
+| solicitud se encuentra en proceso de registro.
+|
+*/
+
 function bloquearBotonEnvio() {
     if (!btnEnviar) return;
 
@@ -913,6 +1092,16 @@ function bloquearBotonEnvio() {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Restaurar botón de envío
+|--------------------------------------------------------------------------
+|
+| Restablece el estado visual e interactivo del botón una vez finalizado
+| el intento de registro.
+|
+*/
+
 function restaurarBotonEnvio() {
     if (!btnEnviar) return;
 
@@ -927,6 +1116,16 @@ function restaurarBotonEnvio() {
     if (window.lucide) window.lucide.createIcons();
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Procesar resultado de la solicitud
+|--------------------------------------------------------------------------
+|
+| Actualiza el modal de resultado y determina el estado inicial de la
+| notificación por correo devuelto por el backend.
+|
+*/
 
 function configurarResultadoSolicitud(data) {
     const email = data.email ?? {};
@@ -954,6 +1153,16 @@ function configurarResultadoSolicitud(data) {
     }
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar correo en cola
+|--------------------------------------------------------------------------
+|
+| Representa visualmente que la notificación fue registrada y continúa
+| pendiente o en proceso dentro de la cola de correos.
+|
+*/
 
 function configurarCorreoEnCola(estado = 'pendiente', attempts = 0) {
     ocultarBotonesOutlook();
@@ -1003,6 +1212,16 @@ function configurarCorreoEnCola(estado = 'pendiente', attempts = 0) {
     if (window.lucide) window.lucide.createIcons();
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar correo enviado
+|--------------------------------------------------------------------------
+|
+| Actualiza la interfaz cuando el servidor confirma que la notificación
+| por correo fue enviada correctamente.
+|
+*/
 
 function configurarCorreoExitoso() {
     ocultarBotonesOutlook();
@@ -1054,6 +1273,16 @@ function configurarCorreoExitoso() {
     if (window.lucide) window.lucide.createIcons();
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar fallo de correo
+|--------------------------------------------------------------------------
+|
+| Informa que la solicitud fue registrada pero el correo automático falló
+| y habilita la alternativa de seguimiento mediante Outlook 365.
+|
+*/
 
 function configurarCorreoFallido(data) {
     const outlookUrl = construirUrlOutlook(data);
@@ -1107,6 +1336,16 @@ function configurarCorreoFallido(data) {
     if (window.lucide) window.lucide.createIcons();
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Vigilar estado del correo
+|--------------------------------------------------------------------------
+|
+| Consulta periódicamente el estado de la entrega registrada hasta detectar
+| envío exitoso, fallo definitivo o alcanzar el máximo de comprobaciones.
+|
+*/
 
 async function vigilarEstadoCorreo(deliveryId, datosRegistro) {
     if (!deliveryId || !window.emailDeliveryStatusUrl) return;
@@ -1171,6 +1410,16 @@ async function vigilarEstadoCorreo(deliveryId, datosRegistro) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Construir enlace de Outlook
+|--------------------------------------------------------------------------
+|
+| Prepara un deeplink de Outlook 365 con destinatario, asunto y cuerpo
+| contextual para reportar manualmente una falla del correo automático.
+|
+*/
+
 function construirUrlOutlook(data) {
     const boton =
         btnReportarSmtpSolicitudPersistente ?? btnReportarSmtpSolicitud;
@@ -1228,6 +1477,16 @@ function construirUrlOutlook(data) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Mostrar alternativa de Outlook
+|--------------------------------------------------------------------------
+|
+| Habilita los botones de seguimiento manual y almacena la URL preparada
+| para abrir el mensaje en Outlook 365.
+|
+*/
+
 function mostrarBotonesOutlook(outlookUrl) {
     [btnReportarSmtpSolicitud, btnReportarSmtpSolicitudPersistente]
         .forEach((boton) => {
@@ -1240,6 +1499,16 @@ function mostrarBotonesOutlook(outlookUrl) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Ocultar alternativa de Outlook
+|--------------------------------------------------------------------------
+|
+| Oculta los controles de seguimiento manual cuando el correo se encuentra
+| pendiente o fue enviado correctamente.
+|
+*/
+
 function ocultarBotonesOutlook() {
     [btnReportarSmtpSolicitud, btnReportarSmtpSolicitudPersistente]
         .forEach((boton) => {
@@ -1251,6 +1520,16 @@ function ocultarBotonesOutlook() {
         });
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Actualizar estado persistente del correo
+|--------------------------------------------------------------------------
+|
+| Sincroniza el indicador permanente de SMTP con el último estado conocido
+| de la notificación asociada a la solicitud.
+|
+*/
 
 function actualizarEstadoPersistente(estado) {
     if (!estadoPersistenteSolicitud || !smtpEstadoSolicitud) return;
@@ -1289,6 +1568,16 @@ function actualizarEstadoPersistente(estado) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Abrir modal de resultado
+|--------------------------------------------------------------------------
+|
+| Muestra el modal y bloquea el desplazamiento del documento mientras se
+| presenta el resultado del registro.
+|
+*/
+
 function abrirModalSolicitud() {
     if (!modalSolicitud) return;
 
@@ -1298,6 +1587,15 @@ function abrirModalSolicitud() {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Cerrar modal de resultado
+|--------------------------------------------------------------------------
+|
+| Oculta el modal y restaura el desplazamiento normal de la página.
+|
+*/
+
 function cerrarModalRespuesta() {
     if (!modalSolicitud) return;
 
@@ -1306,6 +1604,16 @@ function cerrarModalRespuesta() {
     document.body.classList.remove('overflow-hidden');
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Mostrar error de registro
+|--------------------------------------------------------------------------
+|
+| Presenta un estado de error cuando la solicitud no pudo registrarse y
+| cancela cualquier seguimiento de correo previamente iniciado.
+|
+*/
 
 function mostrarErrorSolicitud(error) {
     seguimientoCorreoActual++;
@@ -1360,6 +1668,16 @@ function mostrarErrorSolicitud(error) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Abrir reporte en Outlook
+|--------------------------------------------------------------------------
+|
+| Abre el deeplink preparado en una nueva pestaña y utiliza navegación
+| directa como respaldo cuando el navegador bloquea la ventana.
+|
+*/
+
 function abrirReporteOutlook(boton, event) {
     event?.preventDefault();
 
@@ -1384,6 +1702,16 @@ function abrirReporteOutlook(boton, event) {
     });
 
 
+/*
+|--------------------------------------------------------------------------
+| Esperar intervalo
+|--------------------------------------------------------------------------
+|
+| Devuelve una promesa utilizada para espaciar las consultas periódicas
+| realizadas durante el seguimiento del correo.
+|
+*/
+
 function esperar(milisegundos) {
     return new Promise((resolve) => {
         window.setTimeout(resolve, milisegundos);
@@ -1399,6 +1727,16 @@ btnCancelar.addEventListener('click',resetFormulario);
 }
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Restablecer formulario
+|--------------------------------------------------------------------------
+|
+| Limpia categoría, adjuntos, campos y secciones visibles para devolver
+| el módulo a su estado inicial.
+|
+*/
 
 function resetFormulario(){
 
@@ -1461,6 +1799,16 @@ fileInput.value='';
 
 }
 
+/*
+|--------------------------------------------------------------------------
+| Eventos de cierre del modal
+|--------------------------------------------------------------------------
+|
+| Permite cerrar el modal mediante el botón dedicado, clic sobre el fondo
+| o la tecla Escape.
+|
+*/
+
 cerrarModalSolicitud?.addEventListener(
     'click',
     cerrarModalRespuesta
@@ -1486,6 +1834,16 @@ if(window.lucide){
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Escapar contenido HTML
+|--------------------------------------------------------------------------
+|
+| Convierte valores dinámicos a texto seguro antes de insertarlos dentro
+| del contenido HTML generado para la lista de archivos.
+|
+*/
+
 function escaparHtml(valor){
 
     const elemento=
@@ -1501,6 +1859,16 @@ function escaparHtml(valor){
 
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Inicialización independiente
+|--------------------------------------------------------------------------
+|
+| Inicializa el módulo inmediatamente cuando el formulario ya existe o,
+| en caso contrario, espera únicamente a DOMContentLoaded.
+|
+*/
 
 if(
 document.getElementById('solicitudForm')

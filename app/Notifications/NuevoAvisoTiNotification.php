@@ -11,12 +11,20 @@ class NuevoAvisoTiNotification extends Notification
 {
     use Queueable;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el aviso publicado por el equipo de TI y lo conserva para
+    | construir la información que será enviada mediante la notificación.
+    |
+    */
 
     public function __construct(
         private readonly Aviso $aviso
     ) {
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -40,11 +48,14 @@ class NuevoAvisoTiNotification extends Notification
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Datos almacenados en la base de datos
     |--------------------------------------------------------------------------
+    |
+    | Define la información que será persistida dentro del historial de
+    | notificaciones del usuario.
+    |
     */
 
     public function toDatabase(
@@ -53,11 +64,14 @@ class NuevoAvisoTiNotification extends Notification
         return $this->datosNotificacion();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Datos transmitidos mediante Reverb
     |--------------------------------------------------------------------------
+    |
+    | Construye el mensaje que será transmitido en tiempo real para que
+    | el usuario reciba inmediatamente el nuevo aviso publicado.
+    |
     */
 
     public function toBroadcast(
@@ -68,11 +82,14 @@ class NuevoAvisoTiNotification extends Notification
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Tipo de notificación transmitida
     |--------------------------------------------------------------------------
+    |
+    | Define el identificador utilizado por el cliente para reconocer
+    | las notificaciones correspondientes a nuevos avisos de TI.
+    |
     */
 
     public function broadcastType(): string
@@ -80,11 +97,14 @@ class NuevoAvisoTiNotification extends Notification
         return 'nuevo-aviso-ti';
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Compatibilidad
     |--------------------------------------------------------------------------
+    |
+    | Proporciona la representación general de la notificación utilizando
+    | los mismos datos empleados por los demás canales disponibles.
+    |
     */
 
     public function toArray(
@@ -92,7 +112,6 @@ class NuevoAvisoTiNotification extends Notification
     ): array {
         return $this->datosNotificacion();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -142,11 +161,14 @@ class NuevoAvisoTiNotification extends Notification
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Mensaje
     |--------------------------------------------------------------------------
+    |
+    | Construye el texto mostrado al usuario utilizando el título del
+    | aviso cuando este se encuentra disponible.
+    |
     */
 
     private function construirMensaje(): string

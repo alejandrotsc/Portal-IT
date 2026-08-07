@@ -15,6 +15,16 @@ use Throwable;
 
 class OllamaAIService implements AIServiceInterface
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el constructor de prompts utilizado para preparar las
+    | instrucciones y el contexto enviados al modelo de Ollama.
+    |
+    */
+
     public function __construct(
         private readonly PromptBuilder $promptBuilder
     ) {
@@ -24,6 +34,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Respuesta completa
     |--------------------------------------------------------------------------
+    |
+    | Procesa una consulta normal utilizando el mismo flujo de streaming,
+    | pero acumula internamente los fragmentos hasta devolver una respuesta
+    | completa mediante un objeto AIResponse.
+    |
     */
 
     public function ask(
@@ -46,6 +61,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Respuesta progresiva
     |--------------------------------------------------------------------------
+    |
+    | Procesa la consulta hacia Ollama mediante streaming, controla la
+    | deduplicación y el acceso exclusivo al modelo, y entrega cada
+    | fragmento recibido mediante el callback proporcionado.
+    |
     */
 
     public function stream(
@@ -159,6 +179,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Ejecutar solicitud real hacia Ollama
     |--------------------------------------------------------------------------
+    |
+    | Construye y envía la petición HTTP al modelo configurado, procesa
+    | la respuesta NDJSON por streaming y genera una respuesta normalizada
+    | con metadatos del proceso de inferencia.
+    |
     */
 
     private function performRequest(
@@ -416,6 +441,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Construir mensajes
     |--------------------------------------------------------------------------
+    |
+    | Prepara la secuencia de mensajes enviada a Ollama combinando el
+    | prompt del sistema, el historial validado y el mensaje actual
+    | proporcionado por el usuario.
+    |
     */
 
     private function buildMessages(
@@ -451,6 +481,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Procesar fragmento NDJSON
     |--------------------------------------------------------------------------
+    |
+    | Decodifica cada fragmento recibido desde Ollama, acumula el contenido
+    | generado, lo entrega a la capa superior y registra los metadatos
+    | finales cuando la generación termina.
+    |
     */
 
     private function processStreamLine(
@@ -562,6 +597,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Recortar final incompleto
     |--------------------------------------------------------------------------
+    |
+    | Intenta eliminar únicamente la parte final incompleta de una respuesta
+    | truncada conservando hasta la última oración que pueda identificarse
+    | como terminada de forma segura.
+    |
     */
 
     private function trimIncompleteTail(
@@ -625,6 +665,10 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Resolver límite de generación
     |--------------------------------------------------------------------------
+    |
+    | Determina la cantidad máxima de tokens que puede generar Ollama según
+    | el propósito de la consulta, diferenciando entre chat y prellenado.
+    |
     */
 
     private function resolveNumPredict(
@@ -659,6 +703,10 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Preparar historial
     |--------------------------------------------------------------------------
+    |
+    | Valida, limpia y limita los mensajes anteriores de la conversación
+    | antes de incorporarlos al contexto enviado al modelo.
+    |
     */
 
     private function prepareHistory(
@@ -740,6 +788,10 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Precargar Ollama
     |--------------------------------------------------------------------------
+    |
+    | Solicita la carga anticipada del modelo cuando esta función se
+    | encuentra habilitada, evitando ejecutar una inferencia completa.
+    |
     */
 
     public function warmUp(): bool
@@ -760,6 +812,16 @@ class OllamaAIService implements AIServiceInterface
 
         return $result === true;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ejecutar precarga del modelo
+    |--------------------------------------------------------------------------
+    |
+    | Envía una solicitud mínima a Ollama para mantener el modelo cargado
+    | en memoria según el tiempo configurado de keep-alive.
+    |
+    */
 
     private function performWarmUp(): bool
     {
@@ -842,6 +904,11 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Control de solicitud única
     |--------------------------------------------------------------------------
+    |
+    | Utiliza un bloqueo compartido para impedir que varias solicitudes
+    | utilicen Ollama simultáneamente y evita competir con las operaciones
+    | de prellenado que usan la misma clave de exclusión.
+    |
     */
 
     private function runExclusive(
@@ -959,6 +1026,21 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Caché y deduplicación
     |--------------------------------------------------------------------------
+    |
+    | Gestiona la recuperación, validación y almacenamiento temporal de
+    | respuestas recientes para evitar repetir consultas idénticas dentro
+    | de una misma conversación y contexto.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recuperar respuesta en caché
+    |--------------------------------------------------------------------------
+    |
+    | Reconstruye un objeto AIResponse a partir de una respuesta previamente
+    | almacenada y marca sus metadatos como contenido reutilizado.
+    |
     */
 
     private function getCachedResponse(
@@ -1014,6 +1096,16 @@ class OllamaAIService implements AIServiceInterface
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Determinar si la respuesta puede almacenarse
+    |--------------------------------------------------------------------------
+    |
+    | Permite almacenar únicamente respuestas válidas generadas por Ollama
+    | que no estén truncadas, ocupadas ni correspondan a un fallback.
+    |
+    */
+
     private function shouldCacheResponse(
         AIResponse $response
     ): bool {
@@ -1023,6 +1115,16 @@ class OllamaAIService implements AIServiceInterface
             && ! $response->isBusy()
             && ! $response->isFallback();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generar clave de deduplicación
+    |--------------------------------------------------------------------------
+    |
+    | Construye una clave basada en la conversación, propósito, mensaje y
+    | contexto relevante para diferenciar correctamente cada consulta.
+    |
+    */
 
     private function dedupKey(
         string $message,
@@ -1078,6 +1180,16 @@ class OllamaAIService implements AIServiceInterface
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver ámbito de conversación
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene un identificador estable para limitar la deduplicación a la
+    | sesión, conversación o usuario correspondiente.
+    |
+    */
+
     private function resolveConversationScope(
         array $context
     ): string {
@@ -1103,6 +1215,10 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Sanitizar contexto
     |--------------------------------------------------------------------------
+    |
+    | Conserva únicamente las claves permitidas antes de utilizar el
+    | contexto para construir prompts, historial o claves de deduplicación.
+    |
     */
 
     private function sanitizeContext(
@@ -1134,6 +1250,20 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Configuración de Ollama
     |--------------------------------------------------------------------------
+    |
+    | Centraliza la obtención y normalización de la URL, modelo y valores
+    | numéricos utilizados para configurar las solicitudes hacia Ollama.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener URL de Ollama
+    |--------------------------------------------------------------------------
+    |
+    | Recupera y normaliza la dirección configurada para el endpoint
+    | utilizado por el servicio de chat de Ollama.
+    |
     */
 
     private function ollamaUrl(): string
@@ -1150,6 +1280,16 @@ class OllamaAIService implements AIServiceInterface
             : 'http://127.0.0.1:11434/api/chat';
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener modelo de Ollama
+    |--------------------------------------------------------------------------
+    |
+    | Recupera el nombre del modelo configurado y utiliza el modelo
+    | predeterminado cuando la configuración se encuentra vacía.
+    |
+    */
+
     private function ollamaModel(): string
     {
         $model = trim(
@@ -1163,6 +1303,16 @@ class OllamaAIService implements AIServiceInterface
             ? $model
             : 'llama3.2:3b';
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalizar configuración decimal
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene un valor numérico de configuración y garantiza que permanezca
+    | dentro del rango mínimo y máximo permitido.
+    |
+    */
 
     private function normalizedFloatConfig(
         string $key,
@@ -1185,6 +1335,16 @@ class OllamaAIService implements AIServiceInterface
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Convertir valor entero opcional
+    |--------------------------------------------------------------------------
+    |
+    | Convierte valores numéricos a entero y devuelve null cuando el valor
+    | recibido no puede interpretarse como número.
+    |
+    */
+
     private function nullableInteger(
         mixed $value
     ): ?int {
@@ -1197,6 +1357,10 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Respuesta de espera
     |--------------------------------------------------------------------------
+    |
+    | Construye la respuesta utilizada cuando existe otra consulta activa
+    | hacia Ollama y no fue posible adquirir el bloqueo correspondiente.
+    |
     */
 
     private function busyResponse(): AIResponse
@@ -1225,6 +1389,10 @@ class OllamaAIService implements AIServiceInterface
     |--------------------------------------------------------------------------
     | Respuesta de respaldo
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta alternativa cuando Ollama no está disponible
+    | o se produce un error que impide completar correctamente la consulta.
+    |
     */
 
     private function fallbackResponse(

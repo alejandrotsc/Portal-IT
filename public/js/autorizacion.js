@@ -2,9 +2,21 @@
 |--------------------------------------------------------------------------
 | MODAL AYUDA SERIE — funciones globales
 |--------------------------------------------------------------------------
-| Se declaran en el scope global (fuera de DOMContentLoaded) porque el
-| botón en la tabla las llama con onclick="abrirAyudaSerie()" inline,
-| y el HTML no tiene acceso a funciones declaradas dentro de un closure.
+|
+| Define funciones globales para abrir y cerrar el modal de ayuda de la
+| serie. Se mantienen fuera de DOMContentLoaded porque el Blade las invoca
+| directamente mediante onclick y necesita acceso desde el scope global.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Abrir ayuda de serie
+|--------------------------------------------------------------------------
+|
+| Muestra el modal informativo y bloquea temporalmente el desplazamiento
+| del documento mientras permanece visible.
+|
 */
 
 function abrirAyudaSerie() {
@@ -19,6 +31,16 @@ function abrirAyudaSerie() {
 
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Cerrar ayuda de serie
+|--------------------------------------------------------------------------
+|
+| Oculta el modal informativo y restaura el desplazamiento normal de la
+| página.
+|
+*/
 
 function cerrarAyudaSerie() {
 
@@ -40,6 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | TABLA DE EQUIPOS — Agregar / Eliminar filas
     |--------------------------------------------------------------------------
+    |
+    | Administra la creación y eliminación dinámica de filas de equipos, conserva la indexación requerida por el formulario y actualiza los iconos cuando se inserta contenido.
+    |
     */
 
     const tabla        = document.getElementById('equipoFilas');
@@ -103,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | MODAL AYUDA SERIE — cierre por click-fuera y tecla Escape
     |--------------------------------------------------------------------------
+    |
+    | Permite cerrar el modal de ayuda mediante clic sobre el fondo o utilizando la tecla Escape.
+    |
     */
 
     document.addEventListener('click', (e) => {
@@ -129,6 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ELEMENTOS DE MODALES
     |--------------------------------------------------------------------------
+    |
+    | Obtiene las referencias utilizadas por el formulario, preview, descarga, estados de correo, botones de Outlook y modal de error.
+    |
     */
 
     const form                    = document.getElementById('documentForm');
@@ -203,6 +234,16 @@ document.addEventListener('DOMContentLoaded', () => {
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Abrir reporte en Outlook
+    |--------------------------------------------------------------------------
+    |
+    | Recupera la URL preparada y abre Outlook 365 en una nueva pestaña,
+    | utilizando navegación directa como respaldo cuando sea necesario.
+    |
+    */
+
     function abrirReporteOutlook(button, event) {
 
         event?.preventDefault();
@@ -245,6 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | VER PREVIEW — Abre el modal con el documento renderizado
     |--------------------------------------------------------------------------
+    |
+    | Carga mediante fetch la vista previa de la autorización, la inserta en el modal y sincroniza sus datos con el formulario actual.
+    |
     */
 
     btnPreview?.addEventListener('click', async () => {
@@ -310,6 +354,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | RELLENAR PREVIEW con los datos del formulario
     |--------------------------------------------------------------------------
+    |
+    | Copia los valores actuales del formulario hacia los campos y la tabla de equipos presentes en la vista previa renderizada.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sincronizar datos del preview
+    |--------------------------------------------------------------------------
+    |
+    | Copia los campos generales, información de autorización y equipos
+    | registrados hacia el documento cargado dentro del modal.
+    |
     */
 
     function rellenarPreview() {
@@ -393,6 +450,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | CERRAR MODAL PREVIEW
     |--------------------------------------------------------------------------
+    |
+    | Registra los eventos utilizados para cerrar la vista previa mediante sus botones o al hacer clic sobre el fondo.
+    |
     */
 
     btnCerrarPreview?.addEventListener('click',  () => cerrarModal(modalPreview));
@@ -407,6 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | GENERAR DESDE PREVIEW → dispara el submit del form principal
     |--------------------------------------------------------------------------
+    |
+    | Permite iniciar la generación definitiva del documento directamente desde la vista previa.
+    |
     */
 
     btnGenerarDesdePreview?.addEventListener('click', () => {
@@ -419,6 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | SUBMIT PRINCIPAL → Generar PDF
     |--------------------------------------------------------------------------
+    |
+    | Intercepta el submit del formulario y delega la generación del documento al flujo asíncrono principal.
+    |
     */
 
     if (btnGenerar) {
@@ -428,6 +494,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generar documento
+    |--------------------------------------------------------------------------
+    |
+    | Valida el formulario, envía sus datos mediante fetch, procesa la ruta
+    | de descarga y coordina el estado inicial del correo asociado.
+    |
+    */
 
     async function generarDocumento() {
 
@@ -555,6 +631,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | SEGUIMIENTO DEL ESTADO DEL CORREO
     |--------------------------------------------------------------------------
+    |
+    | Consulta periódicamente EmailDelivery para actualizar la interfaz cuando el worker confirma envío, fallo o continuidad en cola.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Vigilar estado del correo
+    |--------------------------------------------------------------------------
+    |
+    | Realiza consultas periódicas al endpoint de EmailDelivery y cancela el
+    | seguimiento anterior cuando comienza un nuevo proceso.
+    |
     */
 
     async function vigilarEstadoCorreo(
@@ -716,6 +805,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Esperar intervalo
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve una promesa utilizada para espaciar las consultas periódicas
+    | del seguimiento SMTP.
+    |
+    */
+
     function esperar(
         milisegundos
     ) {
@@ -733,6 +832,19 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | MOSTRAR RESULTADO DEL SMTP
     |--------------------------------------------------------------------------
+    |
+    | Interpreta el estado inicial del correo devuelto por el backend y presenta el resultado correspondiente dentro del modal de descarga.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configurar resultado inicial del correo
+    |--------------------------------------------------------------------------
+    |
+    | Determina si la notificación fue enviada, quedó en cola, falló o no
+    | pudo comprobarse y actualiza la interfaz en consecuencia.
+    |
     */
 
     function configurarResultadoCorreo(data) {
@@ -796,6 +908,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ocultar botones de reporte
+    |--------------------------------------------------------------------------
+    |
+    | Oculta las alternativas de Outlook cuando ya no son necesarias y
+    | elimina las URL temporales asociadas.
+    |
+    */
+
     function ocultarBotonesReporte() {
         [
             btnReportarSmtp,
@@ -817,6 +939,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar correo en cola
+    |--------------------------------------------------------------------------
+    |
+    | Representa que el documento fue generado mientras la notificación
+    | continúa pendiente o siendo procesada por el worker.
+    |
+    */
 
     function configurarEstadoCorreoEnCola(
         estado = 'pendiente',
@@ -891,6 +1023,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar correo enviado
+    |--------------------------------------------------------------------------
+    |
+    | Actualiza modal e indicador persistente cuando el servidor confirma
+    | que la notificación fue enviada correctamente.
+    |
+    */
+
     function configurarEstadoCorreoExitoso() {
 
         ocultarBotonesReporte();
@@ -946,6 +1088,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar fallo de correo
+    |--------------------------------------------------------------------------
+    |
+    | Informa que el documento fue generado pero la notificación automática
+    | falló y prepara una alternativa de seguimiento mediante Outlook 365.
+    |
+    */
 
     function configurarEstadoCorreoFallido(data) {
 
@@ -1131,6 +1283,16 @@ const body = [
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar estado sin comprobación
+    |--------------------------------------------------------------------------
+    |
+    | Presenta el documento como generado cuando el backend no devuelve
+    | información suficiente para determinar el estado del correo.
+    |
+    */
+
     function configurarEstadoSinComprobacion() {
 
         if (modalResultadoTitulo) {
@@ -1143,6 +1305,16 @@ const body = [
         }
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar indicador SMTP
+    |--------------------------------------------------------------------------
+    |
+    | Sincroniza el indicador persistente con los estados de éxito, cola o
+    | advertencia conocidos para la última notificación.
+    |
+    */
 
     function actualizarIndicadorSmtp(
         estado
@@ -1197,6 +1369,16 @@ const body = [
             `<span class="h-2.5 w-2.5 shrink-0 rounded-full ${configuracion.punto}"></span> ${configuracion.texto}`;
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar error total
+    |--------------------------------------------------------------------------
+    |
+    | Representa un fallo en la generación del documento y prepara un reporte
+    | de respaldo para solicitar asistencia mediante Outlook.
+    |
+    */
 
     function configurarEstadoErrorTotal(error) {
 
@@ -1334,6 +1516,9 @@ const body = [
     |--------------------------------------------------------------------------
     | CERRAR MODAL DESCARGA
     |--------------------------------------------------------------------------
+    |
+    | Permite cerrar el modal de descarga mediante el botón dedicado o haciendo clic sobre el fondo.
+    |
     */
 
     btnCerrarDescarga?.addEventListener('click', () => cerrarModal(modalDescarga));
@@ -1347,6 +1532,9 @@ const body = [
     |--------------------------------------------------------------------------
     | CERRAR MODAL ERROR
     |--------------------------------------------------------------------------
+    |
+    | Permite cerrar el modal de error mediante el botón dedicado o haciendo clic sobre el fondo.
+    |
     */
 
     btnCerrarError?.addEventListener('click', () => cerrarModal(modalError));
@@ -1360,6 +1548,18 @@ const body = [
     |--------------------------------------------------------------------------
     | Helpers
     |--------------------------------------------------------------------------
+    |
+    | Agrupa utilidades reutilizables para abrir y cerrar modales y escapar contenido antes de insertarlo dinámicamente.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Abrir modal
+    |--------------------------------------------------------------------------
+    |
+    | Muestra el modal recibido y bloquea el desplazamiento del documento.
+    |
     */
 
     function abrirModal(modal) {
@@ -1369,12 +1569,32 @@ const body = [
         document.body.classList.add('overflow-hidden');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cerrar modal
+    |--------------------------------------------------------------------------
+    |
+    | Oculta el modal recibido y restaura el desplazamiento normal de la
+    | página.
+    |
+    */
+
     function cerrarModal(modal) {
         if (!modal) return;
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         document.body.classList.remove('overflow-hidden');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Escapar contenido HTML
+    |--------------------------------------------------------------------------
+    |
+    | Convierte valores dinámicos a texto seguro antes de insertarlos en la
+    | vista previa mediante HTML generado.
+    |
+    */
 
     function escaparHtml(valor) {
         const elemento = document.createElement('div');

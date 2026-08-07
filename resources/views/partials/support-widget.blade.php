@@ -396,16 +396,19 @@
 
                         <span
                             @class([
-                                'inline-flex shrink-0 items-center gap-1
-                                 rounded-full border px-2 py-1
-                                 text-[9px] font-semibold leading-none',
+                                'inline-flex shrink-0 items-center gap-1.5
+                                 rounded-full border px-2.5 py-1
+                                 text-[9px] font-bold leading-none
+                                 shadow-sm backdrop-blur-sm',
 
-                                'border-emerald-300/30 bg-emerald-300/15
-                                 text-emerald-200' =>
+                                'border-emerald-200/45 bg-emerald-300/25
+                                 text-emerald-100
+                                 shadow-emerald-950/10' =>
                                     $estaDisponible,
 
-                                'border-amber-300/30 bg-amber-300/15
-                                 text-amber-200' =>
+                                'border-amber-200/45 bg-amber-300/25
+                                 text-amber-100
+                                 shadow-amber-950/10' =>
                                     ! $estaDisponible,
                             ])
                         >
@@ -454,16 +457,18 @@
                     )
 
                         <div
-                            class="mt-1 flex flex-wrap items-center
+                            class="mt-1.5 flex flex-wrap items-center
                                    gap-x-1.5 gap-y-1
-                                   text-[11px] text-white/50"
+                                   text-[11px] text-white/75"
                         >
 
                             @if(filled($horarioPrincipal))
 
                                 <span
-                                    class="inline-flex
-                                           items-center gap-1"
+                                    class="inline-flex items-center gap-1.5
+                                           rounded-md border border-white/15
+                                           bg-white/10 px-2 py-1
+                                           font-semibold text-white/90"
                                 >
                                     <i
                                         data-lucide="clock"
@@ -597,15 +602,18 @@
                         @if(filled($horarioPrincipal))
 
                             <span
-                                class="inline-flex items-center
-                                       gap-1 text-xs
-                                       text-slate-500
-                                       dark:text-slate-400"
+                                class="inline-flex items-center gap-1.5
+                                       rounded-lg border border-blue-200/80
+                                       bg-blue-50 px-2.5 py-1.5
+                                       text-xs font-semibold text-blue-700
+                                       dark:border-blue-800/70
+                                       dark:bg-blue-950/45
+                                       dark:text-blue-300"
                             >
                                 <i
                                     data-lucide="clock"
-                                    stroke-width="1.8"
-                                    class="h-3 w-3 shrink-0"
+                                    stroke-width="1.9"
+                                    class="h-3.5 w-3.5 shrink-0"
                                 ></i>
 
                                 {{ $horarioPrincipal }}
@@ -617,15 +625,18 @@
                         @if(filled($ubicacionPrincipal))
 
                             <span
-                                class="inline-flex items-center
-                                       gap-1 text-xs
-                                       text-slate-500
-                                       dark:text-slate-400"
+                                class="inline-flex items-center gap-1.5
+                                       rounded-lg border border-slate-200
+                                       bg-slate-50 px-2.5 py-1.5
+                                       text-xs font-medium text-slate-600
+                                       dark:border-slate-700
+                                       dark:bg-slate-800/70
+                                       dark:text-slate-300"
                             >
                                 <i
                                     data-lucide="map-pin"
                                     stroke-width="1.8"
-                                    class="h-3 w-3 shrink-0"
+                                    class="h-3.5 w-3.5 shrink-0"
                                 ></i>
 
                                 {{ $ubicacionPrincipal }}
@@ -945,18 +956,19 @@
                                                 )
 
                                                     <span
-                                                        class="inline-flex
-                                                               items-center
-                                                               gap-1
-                                                               text-[11px]
-                                                               text-slate-500
-                                                               dark:text-slate-400"
+                                                        class="inline-flex items-center gap-1.5
+                                                               rounded-md border border-blue-200/80
+                                                               bg-blue-50 px-2 py-1
+                                                               text-[11px] font-semibold
+                                                               text-blue-700
+                                                               dark:border-blue-800/70
+                                                               dark:bg-blue-950/45
+                                                               dark:text-blue-300"
                                                     >
                                                         <i
                                                             data-lucide="clock"
-                                                            stroke-width="1.8"
-                                                            class="h-3 w-3
-                                                                   shrink-0"
+                                                            stroke-width="1.9"
+                                                            class="h-3 w-3 shrink-0"
                                                         ></i>
 
                                                         {{
@@ -976,18 +988,19 @@
                                                 )
 
                                                     <span
-                                                        class="inline-flex
-                                                               items-center
-                                                               gap-1
-                                                               text-[11px]
-                                                               text-slate-500
-                                                               dark:text-slate-400"
+                                                        class="inline-flex items-center gap-1.5
+                                                               rounded-md border border-slate-200
+                                                               bg-slate-50 px-2 py-1
+                                                               text-[11px] font-medium
+                                                               text-slate-600
+                                                               dark:border-slate-700
+                                                               dark:bg-slate-800/70
+                                                               dark:text-slate-300"
                                                     >
                                                         <i
                                                             data-lucide="map-pin"
                                                             stroke-width="1.8"
-                                                            class="h-3 w-3
-                                                                   shrink-0"
+                                                            class="h-3 w-3 shrink-0"
                                                         ></i>
 
                                                         {{
@@ -1007,10 +1020,13 @@
                                 @else
 
                                     <div
-                                        class="mt-1.5 flex items-center
-                                               gap-1.5
-                                               text-amber-600
-                                               dark:text-amber-400"
+                                        class="mt-1.5 inline-flex items-center gap-1.5
+                                               rounded-lg border border-amber-200
+                                               bg-amber-50 px-2 py-1.5
+                                               text-amber-700
+                                               dark:border-amber-800/70
+                                               dark:bg-amber-950/35
+                                               dark:text-amber-300"
                                     >
                                         <i
                                             data-lucide="user-round-x"
@@ -1177,28 +1193,36 @@
                     Soporte TI
                 </p>
 
-                <p
-                    class="mt-0.5 flex items-center
-                           gap-1 text-[10px]
-                           font-medium text-blue-200"
+                <div
+                    @class([
+                        'mt-1 inline-flex items-center gap-1.5
+                         rounded-full border px-2 py-1
+                         text-[9px] font-bold leading-none',
+
+                        'border-emerald-200/35 bg-emerald-300/20
+                         text-emerald-100' =>
+                            $estaDisponible,
+
+                        'border-amber-200/35 bg-amber-300/20
+                         text-amber-100' =>
+                            ! $estaDisponible,
+                    ])
                 >
 
                     <span
                         @class([
-                            'inline-block h-1.5 w-1.5
-                             rounded-full',
+                            'inline-block h-1.5 w-1.5 rounded-full',
 
-                            'bg-emerald-400
-                             motion-safe:animate-pulse' =>
+                            'bg-emerald-300 motion-safe:animate-pulse' =>
                                 $estaDisponible,
 
-                            'bg-amber-300' =>
+                            'bg-amber-200' =>
                                 ! $estaDisponible,
                         ])
                     ></span>
 
                     {{ $textoEstado }}
-                </p>
+                </div>
 
             </div>
 

@@ -19,12 +19,36 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de incidencias
+|--------------------------------------------------------------------------
+|
+| Gestiona el ciclo completo de incidencias del Portal TI: registro, archivos
+| y OCR, correo con seguimiento, historial del usuario, administración,
+| cambios de estado, prioridad y notificaciones.
+|
+*/
+
 class IncidenciaController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
     | Listado general
     |--------------------------------------------------------------------------
+    |
+    | Obtiene todas las incidencias con sus relaciones principales y las ordena desde la más reciente para el listado general.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar listado general
+    |--------------------------------------------------------------------------
+    |
+    | Recupera incidencias con usuario y evidencias para renderizar la vista
+    | general del módulo.
+    |
     */
 
     public function index(): View
@@ -47,6 +71,18 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Formulario de incidencia
     |--------------------------------------------------------------------------
+    |
+    | Presenta la vista utilizada por el usuario para registrar una nueva incidencia.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar formulario de registro
+    |--------------------------------------------------------------------------
+    |
+    | Renderiza la pantalla utilizada para reportar una nueva incidencia.
+    |
     */
 
     public function create(): View
@@ -60,6 +96,19 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Guardar incidencia
     |--------------------------------------------------------------------------
+    |
+    | Valida la solicitud, genera el código, registra la incidencia, procesa evidencias con OCR, envía el correo y notifica al equipo administrativo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registrar incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Ejecuta el flujo completo de creación, evidencias, OCR, correo y
+    | notificaciones internas.
+    |
     */
 
     public function store(
@@ -340,6 +389,19 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Incidencias del usuario
     |--------------------------------------------------------------------------
+    |
+    | Construye el historial mensual del usuario autenticado junto con indicadores, años disponibles y paginación.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar historial del usuario
+    |--------------------------------------------------------------------------
+    |
+    | Valida el período seleccionado y prepara incidencias, métricas y años
+    | disponibles correspondientes al usuario autenticado.
+    |
     */
 
     public function misIncidencias(
@@ -466,6 +528,18 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Detalle para el usuario
     |--------------------------------------------------------------------------
+    |
+    | Permite consultar una incidencia únicamente cuando pertenece al usuario autenticado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar detalle propio
+    |--------------------------------------------------------------------------
+    |
+    | Verifica propiedad del registro antes de cargar y mostrar la incidencia.
+    |
     */
 
     public function show(
@@ -493,6 +567,19 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Listado administrativo
     |--------------------------------------------------------------------------
+    |
+    | Prepara el panel de gestión con filtros por período, búsqueda, estado, prioridad y métricas del mes seleccionado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar administración de incidencias
+    |--------------------------------------------------------------------------
+    |
+    | Valida filtros y construye el listado administrativo junto con el resumen
+    | de estados del período seleccionado.
+    |
     */
 
     public function administracion(
@@ -710,6 +797,19 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Detalle administrativo
     |--------------------------------------------------------------------------
+    |
+    | Carga la incidencia con usuario y evidencias para mostrar su información completa en el panel administrativo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mostrar detalle administrativo
+    |--------------------------------------------------------------------------
+    |
+    | Carga las relaciones principales de la incidencia para su revisión en el
+    | panel administrativo.
+    |
     */
 
     public function showAdministracion(
@@ -730,6 +830,19 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Iniciar atención
     |--------------------------------------------------------------------------
+    |
+    | Cambia una incidencia abierta a estado en proceso y notifica al usuario sobre la actualización.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Iniciar atención de incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Cambia el estado a en proceso cuando corresponde y evita transiciones
+    | innecesarias o inválidas.
+    |
     */
 
     public function iniciar(
@@ -768,6 +881,19 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Resolver incidencia
     |--------------------------------------------------------------------------
+    |
+    | Marca la incidencia como resuelta y notifica el nuevo estado al propietario.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Marcar incidencia como resuelta
+    |--------------------------------------------------------------------------
+    |
+    | Actualiza el estado y notifica al usuario, evitando repetir la operación
+    | cuando ya se encuentra resuelta.
+    |
     */
 
     public function resolver(
@@ -799,6 +925,18 @@ class IncidenciaController extends Controller
     |--------------------------------------------------------------------------
     | Reabrir incidencia
     |--------------------------------------------------------------------------
+    |
+    | Permite devolver una incidencia resuelta al estado abierto y registra la actualización correspondiente.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reabrir incidencia resuelta
+    |--------------------------------------------------------------------------
+    |
+    | Devuelve una incidencia resuelta al estado abierto y notifica al usuario.
+    |
     */
 
     public function reabrir(
@@ -831,8 +969,18 @@ class IncidenciaController extends Controller
 | Notificar nueva incidencia al equipo administrativo
 |--------------------------------------------------------------------------
 |
-| La notificación se envía a todos los administradores y usuarios TI
-| activos, ya que ambos roles pueden gestionar incidencias.
+| Envía la notificación a todos los administradores y usuarios TI activos,
+| ya que ambos roles pueden gestionar incidencias dentro del Portal TI.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Enviar notificación administrativa
+|--------------------------------------------------------------------------
+|
+| Selecciona administradores y usuarios TI activos y distribuye la notificación
+| correspondiente a la nueva incidencia.
 |
 */
 
@@ -909,6 +1057,19 @@ private function notificarNuevaIncidencia(
     |--------------------------------------------------------------------------
     | Notificar actualización de estado
     |--------------------------------------------------------------------------
+    |
+    | Notifica al propietario cuando cambia el estado operativo de su incidencia.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificar cambio de estado
+    |--------------------------------------------------------------------------
+    |
+    | Envía al propietario una notificación con el estado actualizado de la
+    | incidencia y registra cualquier fallo en el log.
+    |
     */
 
     private function notificarEstadoIncidencia(
@@ -949,6 +1110,19 @@ private function notificarNuevaIncidencia(
     |--------------------------------------------------------------------------
     | Actualizar prioridad
     |--------------------------------------------------------------------------
+    |
+    | Valida y modifica la prioridad asignada a una incidencia desde el panel administrativo.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modificar prioridad
+    |--------------------------------------------------------------------------
+    |
+    | Valida que la prioridad pertenezca al catálogo permitido y actualiza el
+    | registro seleccionado.
+    |
     */
 
     public function actualizarPrioridad(
@@ -985,6 +1159,19 @@ private function notificarNuevaIncidencia(
     |--------------------------------------------------------------------------
     | Compatibilidad con la ruta anterior
     |--------------------------------------------------------------------------
+    |
+    | Mantiene la ruta histórica de cierre delegando su comportamiento al método que resuelve la incidencia.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cerrar incidencia
+    |--------------------------------------------------------------------------
+    |
+    | Conserva compatibilidad con la ruta anterior reutilizando el flujo de
+    | resolución actual.
+    |
     */
 
     public function cerrar(

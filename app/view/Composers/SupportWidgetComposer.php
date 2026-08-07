@@ -8,6 +8,17 @@ use Illuminate\View\View;
 
 class SupportWidgetComposer
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Componer widget de soporte
+    |--------------------------------------------------------------------------
+    |
+    | Prepara toda la información necesaria para mostrar el estado actual
+    | del soporte TI, la guardia activa del día y las próximas guardias
+    | programadas dentro del widget compartido por las vistas.
+    |
+    */
+
     public function compose(
         View $view
     ): void {
@@ -15,6 +26,10 @@ class SupportWidgetComposer
         |--------------------------------------------------------------------------
         | Fecha y hora actual
         |--------------------------------------------------------------------------
+        |
+        | Obtiene la fecha y hora utilizando la zona horaria configurada
+        | para la aplicación y prepara una referencia del día actual.
+        |
         */
 
         $zonaHoraria = config(
@@ -33,21 +48,27 @@ class SupportWidgetComposer
         $fechaHoy = $hoy
             ->toDateString();
 
-
         /*
         |--------------------------------------------------------------------------
         | Comprobar si es fin de semana
         |--------------------------------------------------------------------------
+        |
+        | Determina si la fecha actual corresponde a sábado o domingo,
+        | periodo en el cual puede existir una guardia individual asignada.
+        |
         */
 
         $esFinDeSemana = $hoy
             ->isWeekend();
 
-
         /*
         |--------------------------------------------------------------------------
         | Guardia activa asignada para hoy
         |--------------------------------------------------------------------------
+        |
+        | Durante fines de semana consulta la guardia activa correspondiente
+        | a la fecha actual junto con la información del agente asignado.
+        |
         */
 
         $guardiaHoy = null;
@@ -65,11 +86,14 @@ class SupportWidgetComposer
                 ->first();
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Disponibilidad actual
         |--------------------------------------------------------------------------
+        |
+        | Comprueba si existe una guardia asignada y determina si la hora
+        | actual se encuentra dentro del horario configurado para el agente.
+        |
         */
 
         $guardiaDisponibleAhora = false;
@@ -104,11 +128,13 @@ class SupportWidgetComposer
                 );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Próximas fechas de guardia
         |--------------------------------------------------------------------------
+        |
+        | Calcula las dos próximas fechas relevantes de guardia tomando
+        | como referencia el día actual.
         |
         | Si hoy es sábado:
         |
@@ -149,11 +175,15 @@ class SupportWidgetComposer
             $segundaFechaGuardia,
         ]);
 
-
         /*
         |--------------------------------------------------------------------------
         | Guardias próximas activas
         |--------------------------------------------------------------------------
+        |
+        | Recupera las guardias activas correspondientes a las próximas
+        | fechas calculadas y las organiza por fecha para facilitar su
+        | acceso desde la vista del widget.
+        |
         */
 
         $fechasConsulta = $proximasFechasGuardia
@@ -183,11 +213,15 @@ class SupportWidgetComposer
                         ->toDateString()
             );
 
-
         /*
         |--------------------------------------------------------------------------
         | Compartir información con el widget
         |--------------------------------------------------------------------------
+        |
+        | Expone en la vista la fecha actual, disponibilidad, guardia del
+        | día y próximas asignaciones necesarias para representar el estado
+        | dinámico del soporte TI.
+        |
         */
 
         $view->with([

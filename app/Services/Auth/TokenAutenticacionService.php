@@ -16,6 +16,11 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Configuración
     |--------------------------------------------------------------------------
+    |
+    | Define los valores utilizados para controlar la expiración, cantidad
+    | máxima de intentos y generación segura de códigos y tokens temporales
+    | empleados durante los procesos de autenticación.
+    |
     */
 
     private const MINUTOS_EXPIRACION = 5;
@@ -39,6 +44,11 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Generar código de verificación
     |--------------------------------------------------------------------------
+    |
+    | Genera un código temporal de seis dígitos para verificar el correo
+    | del usuario, invalida códigos anteriores y almacena únicamente
+    | una representación segura del código generado.
+    |
     */
 
     public function generarCodigoRegistro(
@@ -114,6 +124,11 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Verificar código de registro
     |--------------------------------------------------------------------------
+    |
+    | Valida el código proporcionado por el usuario, controla su vigencia
+    | y cantidad de intentos, consume el token cuando corresponde y crea
+    | la sesión una vez completada correctamente la verificación.
+    |
     */
 
     public function verificarCodigoRegistro(
@@ -347,6 +362,11 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Generar token para enlace mágico
     |--------------------------------------------------------------------------
+    |
+    | Genera un token criptográficamente seguro para permitir el inicio
+    | de sesión mediante enlace mágico, invalida enlaces anteriores y
+    | almacena únicamente el hash SHA-256 del token original.
+    |
     */
 
     public function generarTokenLogin(
@@ -453,6 +473,11 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Iniciar sesión con enlace mágico
     |--------------------------------------------------------------------------
+    |
+    | Valida el token recibido desde el enlace mágico, comprueba que siga
+    | vigente y no haya sido utilizado, lo consume de forma segura y crea
+    | la sesión autenticada correspondiente al usuario.
+    |
     */
 
     public function iniciarSesionConToken(
@@ -637,6 +662,10 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Generar código de seis dígitos
     |--------------------------------------------------------------------------
+    |
+    | Genera un número aleatorio dentro del rango permitido y lo completa
+    | con ceros a la izquierda para garantizar una longitud de seis dígitos.
+    |
     */
 
     private function generarCodigoSeisDigitos(): string
@@ -667,6 +696,10 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Consumir token o código
     |--------------------------------------------------------------------------
+    |
+    | Marca la credencial temporal como utilizada para impedir que pueda
+    | volver a emplearse en un proceso posterior de autenticación.
+    |
     */
 
     private function consumirToken(
@@ -682,6 +715,10 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Crear sesión de Laravel
     |--------------------------------------------------------------------------
+    |
+    | Autentica al usuario mediante el sistema de sesiones de Laravel y
+    | regenera el identificador de sesión para evitar ataques de fijación.
+    |
     */
 
     private function crearSesion(
@@ -709,6 +746,11 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Invalidar credenciales anteriores
     |--------------------------------------------------------------------------
+    |
+    | Marca como utilizadas las credenciales activas anteriores del mismo
+    | correo y tipo para garantizar que solamente permanezca vigente la
+    | credencial temporal generada más recientemente.
+    |
     */
 
     private function invalidarTokensAnteriores(
@@ -729,6 +771,10 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Validar usuario
     |--------------------------------------------------------------------------
+    |
+    | Comprueba que el usuario exista y que su cuenta se encuentre activa
+    | antes de permitir la generación o utilización de credenciales.
+    |
     */
 
     private function validarUsuario(
@@ -753,6 +799,10 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Normalizar correo
     |--------------------------------------------------------------------------
+    |
+    | Elimina espacios externos y convierte el correo a minúsculas para
+    | mantener un formato consistente durante búsquedas y validaciones.
+    |
     */
 
     private function normalizarCorreo(
@@ -768,9 +818,10 @@ class TokenAutenticacionService
     | Normalizar código
     |--------------------------------------------------------------------------
     |
-    | Solo se eliminan espacios al inicio y al final.
-    | No se eliminan letras o símbolos del interior.
-    |--------------------------------------------------------------------------
+    | Elimina únicamente los espacios ubicados al inicio y al final del
+    | código. No modifica letras, símbolos ni otros caracteres internos
+    | para que la validación posterior pueda detectar entradas inválidas.
+    |
     */
 
     private function normalizarCodigo(
@@ -785,6 +836,10 @@ class TokenAutenticacionService
     |--------------------------------------------------------------------------
     | Normalizar token del enlace
     |--------------------------------------------------------------------------
+    |
+    | Elimina espacios externos y convierte el token hexadecimal a
+    | minúsculas antes de realizar su validación y búsqueda.
+    |
     */
 
     private function normalizarTokenLogin(

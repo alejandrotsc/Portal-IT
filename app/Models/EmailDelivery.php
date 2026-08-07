@@ -12,17 +12,24 @@ class EmailDelivery extends Model
 {
     /*
     |--------------------------------------------------------------------------
-    | Tabla
+    | Tabla asociada
     |--------------------------------------------------------------------------
+    |
+    | Define la tabla utilizada para almacenar el seguimiento de los
+    | correos generados y enviados por las distintas gestiones.
+    |
     */
 
     protected $table = 'email_deliveries';
 
-
     /*
     |--------------------------------------------------------------------------
-    | Estados
+    | Estados disponibles
     |--------------------------------------------------------------------------
+    |
+    | Define los diferentes estados que puede tener un correo durante
+    | su procesamiento, envío y gestión de posibles errores.
+    |
     */
 
     public const ESTADO_PENDIENTE = 'pendiente';
@@ -30,11 +37,14 @@ class EmailDelivery extends Model
     public const ESTADO_ENVIADO = 'enviado';
     public const ESTADO_FALLIDO = 'fallido';
 
-
     /*
     |--------------------------------------------------------------------------
     | Campos asignables
     |--------------------------------------------------------------------------
+    |
+    | Define los atributos que pueden ser asignados de forma masiva
+    | durante la creación o actualización de una entrega de correo.
+    |
     */
 
     protected $fillable = [
@@ -58,7 +68,6 @@ class EmailDelivery extends Model
         'metadata',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
     | Campos ocultos al serializar
@@ -66,6 +75,7 @@ class EmailDelivery extends Model
     |
     | Evita que información interna o sensible aparezca accidentalmente
     | en respuestas JSON generadas directamente desde el modelo.
+    |
     */
 
     protected $hidden = [
@@ -78,11 +88,14 @@ class EmailDelivery extends Model
         'recipient_name',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
-    | Conversión de valores
+    | Conversión de tipos
     |--------------------------------------------------------------------------
+    |
+    | Convierte automáticamente identificadores, intentos, metadatos y
+    | fechas a los tipos correspondientes al interactuar con el modelo.
+    |
     */
 
     protected $casts = [
@@ -96,11 +109,14 @@ class EmailDelivery extends Model
         'next_retry_at' => 'datetime',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
     | Valores predeterminados
     |--------------------------------------------------------------------------
+    |
+    | Establece el estado inicial, la cantidad inicial de intentos y
+    | los metadatos utilizados al crear una nueva entrega de correo.
+    |
     */
 
     protected $attributes = [
@@ -109,11 +125,14 @@ class EmailDelivery extends Model
         'metadata' => '{}',
     ];
 
-
     /*
     |--------------------------------------------------------------------------
     | Gestión relacionada
     |--------------------------------------------------------------------------
+    |
+    | Define la relación polimórfica con la incidencia, solicitud,
+    | memorando u otra gestión que originó el envío del correo.
+    |
     */
 
     public function emailable(): MorphTo
@@ -121,11 +140,14 @@ class EmailDelivery extends Model
         return $this->morphTo();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Consultas por estado
     |--------------------------------------------------------------------------
+    |
+    | Permite filtrar las entregas de correo según el estado actual
+    | en el que se encuentra cada proceso de envío.
+    |
     */
 
     public function scopePendientes(Builder $query): Builder
@@ -148,11 +170,14 @@ class EmailDelivery extends Model
         return $query->where('status', self::ESTADO_FALLIDO);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Consultar estado actual
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para determinar rápidamente el
+    | estado actual de una entrega de correo.
+    |
     */
 
     public function estaPendiente(): bool
@@ -175,20 +200,29 @@ class EmailDelivery extends Model
         return $this->status === self::ESTADO_FALLIDO;
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Marcar como enviando
     |--------------------------------------------------------------------------
+    |
+    | Incrementa la cantidad de intentos y actualiza el registro para
+    | indicar que el correo se encuentra actualmente en procesamiento.
+    |
     */
 
     public function marcarEnviando(): void
     {
         /*
-         * Incrementa el intento y actualiza el estado en una sola operación SQL.
-         * Esto reduce inconsistencias si dos procesos intentan actualizar el mismo
-         * registro casi al mismo tiempo.
-         */
+        |--------------------------------------------------------------------------
+        | Actualizar intento de envío
+        |--------------------------------------------------------------------------
+        |
+        | Incrementa el intento y actualiza el estado en una sola operación
+        | SQL para reducir inconsistencias si varios procesos intentan
+        | modificar el mismo registro casi simultáneamente.
+        |
+        */
+
         $this->increment(
             'attempts',
             1,
@@ -205,11 +239,14 @@ class EmailDelivery extends Model
         $this->refresh();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Marcar como enviado
     |--------------------------------------------------------------------------
+    |
+    | Registra que el correo fue enviado correctamente, almacena la fecha
+    | correspondiente y elimina cualquier información de error previa.
+    |
     */
 
     public function marcarEnviado(
@@ -228,11 +265,14 @@ class EmailDelivery extends Model
         ]);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Marcar como fallido
     |--------------------------------------------------------------------------
+    |
+    | Registra un fallo durante el envío, almacena información segura del
+    | error y permite definir cuándo deberá realizarse el siguiente intento.
+    |
     */
 
     public function marcarFallido(
@@ -253,11 +293,14 @@ class EmailDelivery extends Model
         ]);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Volver a poner en cola
     |--------------------------------------------------------------------------
+    |
+    | Restablece una entrega al estado pendiente para permitir un nuevo
+    | intento de envío y opcionalmente establece la fecha del reintento.
+    |
     */
 
     public function marcarPendiente(
@@ -270,11 +313,14 @@ class EmailDelivery extends Model
         ]);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Sanitizar errores antes de almacenarlos
     |--------------------------------------------------------------------------
+    |
+    | Genera una versión segura del error eliminando información que
+    | podría revelar datos sensibles antes de guardarla en la base.
+    |
     */
 
     private function normalizarErrorSeguro(
@@ -282,10 +328,16 @@ class EmailDelivery extends Model
     ): string {
         if ($error instanceof Throwable) {
             /*
-             * Se conserva la clase para diagnóstico, pero no el mensaje completo
-             * de la excepción, ya que podría contener rutas, tokens, correos o
-             * detalles del servidor SMTP.
-             */
+            |--------------------------------------------------------------------------
+            | Normalizar excepciones
+            |--------------------------------------------------------------------------
+            |
+            | Se conserva únicamente la clase de la excepción para facilitar
+            | el diagnóstico sin almacenar rutas, tokens, correos u otros
+            | detalles sensibles que podrían aparecer en el mensaje original.
+            |
+            */
+
             return Str::limit(
                 'Error de tipo '.$error::class,
                 500,
@@ -300,8 +352,15 @@ class EmailDelivery extends Model
         }
 
         /*
-         * Elimina patrones sensibles comunes antes de almacenar el texto.
-         */
+        |--------------------------------------------------------------------------
+        | Eliminar información sensible
+        |--------------------------------------------------------------------------
+        |
+        | Sustituye patrones comunes como URLs, cadenas extensas, códigos
+        | numéricos y direcciones de correo antes de almacenar el error.
+        |
+        */
+
         $mensaje = preg_replace(
             [
                 '/https?:\/\/\S+/iu',

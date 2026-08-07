@@ -6,6 +6,17 @@ namespace App\Services\Chatbot\AI;
 
 class AIResponse
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Inicializa la respuesta generada por el servicio de inteligencia
+    | artificial junto con su categoría, nivel de confianza, acciones
+    | rápidas y metadatos asociados.
+    |
+    */
+
     public function __construct(
         public readonly string $message,
         public readonly string $category = 'general',
@@ -15,9 +26,16 @@ class AIResponse
     ) {
     }
 
-    /**
-     * Indica si la IA devolvió un mensaje utilizable.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Verificar respuesta disponible
+    |--------------------------------------------------------------------------
+    |
+    | Determina si la respuesta contiene un mensaje utilizable después
+    | de eliminar posibles espacios en blanco externos.
+    |
+    */
+
     public function hasResponse(): bool
     {
         return trim($this->message) !== '';
@@ -27,83 +45,110 @@ class AIResponse
     |--------------------------------------------------------------------------
     | Estado de la respuesta
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para identificar el origen y las
+    | condiciones especiales asociadas a la respuesta generada.
+    |
     */
 
-    /**
-     * Indica si la respuesta fue generada por Ollama.
-     */
     public function isFromOllama(): bool
     {
         return $this->provider() === 'ollama';
     }
 
-    /**
-     * Indica si se utilizó una respuesta alternativa.
-     */
     public function isFallback(): bool
     {
         return $this->provider() === 'fallback';
     }
 
-    /**
-     * Indica si el proveedor estaba ocupado.
-     */
     public function isBusy(): bool
     {
         return $this->provider() === 'busy';
     }
 
-    /**
-     * Indica si se reutilizó una respuesta anterior.
-     */
     public function isReused(): bool
     {
-        return (bool) $this->metadataValue('reused', false);
+        return (bool) $this->metadataValue(
+            'reused',
+            false
+        );
     }
 
-    /**
-     * Indica si Ollama terminó la generación porque alcanzó
-     * el límite configurado de tokens.
-     */
     public function isTruncated(): bool
     {
-        return (bool) $this->metadataValue('truncated', false);
+        return (bool) $this->metadataValue(
+            'truncated',
+            false
+        );
     }
 
-    /**
-     * Obtiene el proveedor que generó la respuesta.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Proveedor de la respuesta
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene el identificador del proveedor que generó la respuesta,
+    | siempre que exista un valor válido dentro de los metadatos.
+    |
+    */
+
     public function provider(): ?string
     {
-        $provider = $this->metadataValue('provider');
+        $provider = $this->metadataValue(
+            'provider'
+        );
 
-        return is_string($provider) && $provider !== ''
-            ? $provider
-            : null;
+        return is_string($provider)
+            && $provider !== ''
+                ? $provider
+                : null;
     }
 
-    /**
-     * Obtiene un valor de los metadatos.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Consultar metadatos
+    |--------------------------------------------------------------------------
+    |
+    | Obtiene un valor específico almacenado dentro de los metadatos
+    | de la respuesta o devuelve el valor predeterminado indicado.
+    |
+    */
+
     public function metadataValue(
         string $key,
         mixed $default = null
     ): mixed {
-        return $this->metadata[$key] ?? $default;
+        return $this->metadata[$key]
+            ?? $default;
     }
 
-    /**
-     * Convierte la respuesta a un arreglo compatible
-     * con respuestas JSON.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Convertir respuesta a arreglo
+    |--------------------------------------------------------------------------
+    |
+    | Convierte la respuesta de inteligencia artificial a una estructura
+    | de arreglo compatible con respuestas JSON y otros procesos internos.
+    |
+    */
+
     public function toArray(): array
     {
         return [
-            'message' => $this->message,
-            'category' => $this->category,
-            'confidence' => $this->confidence,
-            'quick_actions' => $this->quickActions,
-            'metadata' => $this->metadata,
+            'message' =>
+                $this->message,
+
+            'category' =>
+                $this->category,
+
+            'confidence' =>
+                $this->confidence,
+
+            'quick_actions' =>
+                $this->quickActions,
+
+            'metadata' =>
+                $this->metadata,
         ];
     }
 }

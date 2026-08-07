@@ -2,9 +2,30 @@ function portalApp() {
     return {
         profileOpen: false,
 
+        /*
+        |--------------------------------------------------------------------------
+        | Inicializar aplicación del portal
+        |--------------------------------------------------------------------------
+        |
+        | Ejecuta las tareas necesarias al iniciar el componente principal,
+        | incluyendo la renderización de los iconos disponibles en la interfaz.
+        |
+        */
+
         init() {
             this.renderIcons();
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | Renderizar iconos de Lucide
+        |--------------------------------------------------------------------------
+        |
+        | Inicializa los iconos únicamente cuando la librería se encuentra
+        | disponible y evita que un fallo externo interrumpa el funcionamiento
+        | general del portal.
+        |
+        */
 
         renderIcons() {
             /*

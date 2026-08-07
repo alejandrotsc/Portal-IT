@@ -3,8 +3,9 @@
 | MODAL DE AYUDA PARA LA SERIE
 |--------------------------------------------------------------------------
 |
-| Estas funciones deben ser globales porque los botones del Blade pueden
-| utilizarlas mediante onclick.
+| Define funciones globales para abrir y cerrar la ayuda relacionada con
+| la serie. Se mantienen en el ámbito global porque los botones del Blade
+| pueden invocarlas directamente mediante onclick.
 |
 */
 
@@ -61,6 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     |--------------------------------------------------------------------------
     | ELEMENTOS PRINCIPALES
     |--------------------------------------------------------------------------
+    |
+    | Obtiene las referencias principales del formulario y detiene la inicialización cuando la vista correspondiente no se encuentra disponible.
+    |
     */
 
     const form =
@@ -76,6 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
 |--------------------------------------------------------------------------
 | TABLA DINÁMICA DE EQUIPOS
 |--------------------------------------------------------------------------
+|
+| Administra la creación y eliminación dinámica de filas de equipo dentro del formulario, conservando al menos una fila disponible.
+|
 */
 
 const tablaEquipos =
@@ -111,6 +118,9 @@ if (
     |--------------------------------------------------------------------------
     | Agregar equipo
     |--------------------------------------------------------------------------
+    |
+    | Duplica la plantilla de equipo, reemplaza su índice interno, inserta la nueva fila y actualiza los iconos de la interfaz.
+    |
     */
 
     btnAgregarEquipo.addEventListener(
@@ -148,6 +158,9 @@ if (
     |--------------------------------------------------------------------------
     | Eliminar equipo
     |--------------------------------------------------------------------------
+    |
+    | Elimina una fila seleccionada o limpia sus campos cuando se trata de la última fila disponible.
+    |
     */
 
     document.addEventListener(
@@ -210,6 +223,9 @@ if (
 |--------------------------------------------------------------------------
 | CERRAR AYUDA DE SERIE
 |--------------------------------------------------------------------------
+|
+| Permite cerrar el modal de ayuda cuando el usuario hace clic directamente sobre el fondo del componente.
+|
 */
 
 document.addEventListener(
@@ -284,6 +300,9 @@ if (
     |--------------------------------------------------------------------------
     | ESTADO DEL CORREO
     |--------------------------------------------------------------------------
+    |
+    | Obtiene los elementos utilizados para representar visualmente el estado de la notificación asociada al pase temporal.
+    |
     */
 
     const estadoCorreo =
@@ -316,6 +335,9 @@ if (
     |--------------------------------------------------------------------------
     | BOTONES DE OUTLOOK
     |--------------------------------------------------------------------------
+    |
+    | Obtiene los controles utilizados como alternativa manual cuando la notificación automática por correo no puede completarse.
+    |
     */
 
     const btnReportarModal =
@@ -335,6 +357,9 @@ if (
     |--------------------------------------------------------------------------
     | Control del seguimiento del correo
     |--------------------------------------------------------------------------
+    |
+    | Mantiene un identificador incremental para cancelar consultas anteriores cuando comienza un nuevo seguimiento de entrega.
+    |
     */
 
     let seguimientoCorreoActual = 0;
@@ -344,6 +369,9 @@ if (
     |--------------------------------------------------------------------------
     | ABRIR OUTLOOK 365
     |--------------------------------------------------------------------------
+    |
+    | Abre el deeplink preparado para Outlook 365 y utiliza la pestaña actual como respaldo cuando el navegador bloquea ventanas nuevas.
+    |
     */
 
     function abrirOutlook(
@@ -408,6 +436,9 @@ if (
     |--------------------------------------------------------------------------
     | ENVÍO DEL PASE TEMPORAL
     |--------------------------------------------------------------------------
+    |
+    | Intercepta el envío tradicional, valida el formulario, registra la gestión mediante fetch y procesa el estado inicial del correo devuelto por el backend.
+    |
     */
 
     form.addEventListener(
@@ -779,6 +810,9 @@ if (
     |--------------------------------------------------------------------------
     | Actualizar detalle mientras el worker procesa
     |--------------------------------------------------------------------------
+    |
+    | Actualiza textos e indicadores visibles durante los estados pendiente y enviando.
+    |
     */
 
     function actualizarEstadoCorreoEnProceso(
@@ -819,6 +853,9 @@ if (
     |--------------------------------------------------------------------------
     | Espera asíncrona
     |--------------------------------------------------------------------------
+    |
+    | Proporciona una pausa basada en Promise para espaciar las consultas periódicas del seguimiento.
+    |
     */
 
     function esperar(
@@ -838,6 +875,9 @@ if (
     |--------------------------------------------------------------------------
     | DATOS DEL FORMULARIO
     |--------------------------------------------------------------------------
+    |
+    | Captura los datos principales antes de resetear el formulario para utilizarlos en mensajes de respaldo y reportes de Outlook.
+    |
     */
 
     function obtenerDatosFormulario() {
@@ -885,6 +925,9 @@ if (
     |--------------------------------------------------------------------------
     | ESTADO VERDE
     |--------------------------------------------------------------------------
+    |
+    | Representa visualmente que la gestión fue registrada y la notificación SMTP fue enviada correctamente.
+    |
     */
 
     function mostrarExito(data) {
@@ -1444,6 +1487,9 @@ return (
     |--------------------------------------------------------------------------
     | CONFIGURAR BOTONES DE REPORTE
     |--------------------------------------------------------------------------
+    |
+    | Asigna la URL de Outlook y adapta el estilo de los botones según se trate de una advertencia SMTP o un error total.
+    |
     */
 
     function configurarBotonesReporte(
@@ -1530,6 +1576,16 @@ return (
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ocultar botones de reporte
+    |--------------------------------------------------------------------------
+    |
+    | Oculta las alternativas de Outlook y elimina la URL temporal asociada
+    | cuando ya no es necesario reportar manualmente el envío.
+    |
+    */
+
     function ocultarBotonesReporte() {
         [
             btnReportarModal,
@@ -1556,6 +1612,9 @@ return (
     |--------------------------------------------------------------------------
     | INDICADOR PERSISTENTE
     |--------------------------------------------------------------------------
+    |
+    | Actualiza el indicador permanente del estado de correo utilizando estilos distintos para éxito, cola, advertencia y error.
+    |
     */
 
     function actualizarIndicadorPrincipal(
@@ -1647,6 +1706,9 @@ return (
     |--------------------------------------------------------------------------
     | BOTÓN DE CARGA
     |--------------------------------------------------------------------------
+    |
+    | Bloquea temporalmente el botón de envío y muestra un indicador de procesamiento para evitar envíos duplicados.
+    |
     */
 
     function activarCarga() {
@@ -1672,6 +1734,16 @@ return (
         refrescarIconos();
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restaurar botón de envío
+    |--------------------------------------------------------------------------
+    |
+    | Reactiva el botón después de completar el procesamiento y reconstruye
+    | su contenido original junto con el icono correspondiente.
+    |
+    */
 
     function restaurarBoton() {
         if (!btnEnviar) {
@@ -1702,6 +1774,19 @@ return (
     |--------------------------------------------------------------------------
     | MODAL
     |--------------------------------------------------------------------------
+    |
+    | Controla la apertura y cierre del modal de resultado y mantiene sincronizado el bloqueo de desplazamiento del documento.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Abrir modal de resultado
+    |--------------------------------------------------------------------------
+    |
+    | Muestra el modal principal y bloquea temporalmente el desplazamiento
+    | de la página mientras el usuario revisa el resultado.
+    |
     */
 
     function abrirModal() {
@@ -1722,6 +1807,16 @@ return (
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ocultar modal de resultado
+    |--------------------------------------------------------------------------
+    |
+    | Cierra el modal principal y restaura el desplazamiento normal del
+    | documento.
+    |
+    */
 
     function ocultarModal() {
         if (!modal) {
@@ -1775,6 +1870,9 @@ return (
     |--------------------------------------------------------------------------
     | ICONOS
     |--------------------------------------------------------------------------
+    |
+    | Reinicializa Lucide cuando la interfaz genera o reemplaza contenido dinámico.
+    |
     */
 
     function refrescarIconos() {

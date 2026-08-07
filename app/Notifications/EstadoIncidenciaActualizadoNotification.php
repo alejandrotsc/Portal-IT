@@ -11,17 +11,29 @@ class EstadoIncidenciaActualizadoNotification extends Notification
 {
     use Queueable;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe la incidencia cuyo estado fue actualizado y la conserva
+    | para construir los datos que serán enviados en la notificación.
+    |
+    */
 
     public function __construct(
         private readonly Incidencia $incidencia
     ) {
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Canales
     |--------------------------------------------------------------------------
+    |
+    | Define los canales utilizados para almacenar la notificación en
+    | la base de datos y transmitirla en tiempo real al usuario.
+    |
     */
 
     public function via(
@@ -33,11 +45,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Datos almacenados
     |--------------------------------------------------------------------------
+    |
+    | Define la información que será persistida en la base de datos
+    | como parte del registro de la notificación.
+    |
     */
 
     public function toDatabase(
@@ -46,11 +61,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         return $this->datosNotificacion();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Datos enviados en tiempo real
     |--------------------------------------------------------------------------
+    |
+    | Construye el mensaje que será transmitido mediante broadcast para
+    | actualizar las notificaciones del usuario en tiempo real.
+    |
     */
 
     public function toBroadcast(
@@ -61,11 +79,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Tipo del evento broadcast
     |--------------------------------------------------------------------------
+    |
+    | Define el identificador utilizado por el cliente para reconocer
+    | las notificaciones correspondientes a cambios de incidencia.
+    |
     */
 
     public function broadcastType(): string
@@ -73,11 +94,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         return 'estado-incidencia-actualizado';
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Compatibilidad
     |--------------------------------------------------------------------------
+    |
+    | Proporciona la representación general de la notificación utilizando
+    | los mismos datos empleados por los demás canales.
+    |
     */
 
     public function toArray(
@@ -86,11 +110,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         return $this->datosNotificacion();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Datos comunes
     |--------------------------------------------------------------------------
+    |
+    | Centraliza la información utilizada por los distintos canales de
+    | notificación para mantener una estructura consistente.
+    |
     */
 
     private function datosNotificacion(): array
@@ -131,11 +158,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         ];
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Título
     |--------------------------------------------------------------------------
+    |
+    | Determina el título que será mostrado en la notificación según
+    | el estado actual de la incidencia.
+    |
     */
 
     private function obtenerTitulo(): string
@@ -157,11 +187,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         };
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Mensaje
     |--------------------------------------------------------------------------
+    |
+    | Construye el mensaje mostrado al usuario utilizando el código y
+    | el estado actual de la incidencia.
+    |
     */
 
     private function obtenerMensaje(): string
@@ -187,11 +220,14 @@ class EstadoIncidenciaActualizadoNotification extends Notification
         };
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Icono Lucide
     |--------------------------------------------------------------------------
+    |
+    | Determina el icono que será utilizado visualmente para representar
+    | el estado actual de la incidencia dentro de la notificación.
+    |
     */
 
     private function obtenerIcono(): string

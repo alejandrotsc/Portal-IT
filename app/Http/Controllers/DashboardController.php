@@ -11,12 +11,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de dashboards
+|--------------------------------------------------------------------------
+|
+| Selecciona el panel correspondiente según el rol autenticado y prepara la
+| información necesaria para el dashboard del usuario y el dashboard
+| administrativo del Portal TI.
+|
+*/
+
 class DashboardController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
     | Mostrar dashboard según el rol
     |--------------------------------------------------------------------------
+    |
+    | Determina qué dashboard debe visualizar el usuario autenticado según el nombre de su rol y bloquea cualquier rol no autorizado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolver dashboard del usuario
+    |--------------------------------------------------------------------------
+    |
+    | Evalúa el rol autenticado y delega la construcción de la vista al método
+    | correspondiente.
+    |
     */
 
     public function index(
@@ -44,6 +68,19 @@ class DashboardController extends Controller
     |--------------------------------------------------------------------------
     | Dashboard del usuario
     |--------------------------------------------------------------------------
+    |
+    | Prepara la información de soporte de turno, disponibilidad actual y próximas guardias que se mostrará al usuario final.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir dashboard del usuario
+    |--------------------------------------------------------------------------
+    |
+    | Calcula la información de guardias, disponibilidad y próximas fechas de
+    | soporte antes de renderizar la vista del usuario.
+    |
     */
 
     private function dashboardUsuario(): View {
@@ -260,8 +297,19 @@ class DashboardController extends Controller
     | Dashboard administrativo
     |--------------------------------------------------------------------------
     |
-    | Es compartido por UsuarioTI y Administrador.
-    | Las acciones disponibles se restringen según el rol.
+    | Prepara los indicadores principales utilizados por el panel compartido
+    | entre UsuarioTI y Administrador. Las acciones disponibles continúan
+    | restringiéndose según el rol autenticado.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Construir dashboard administrativo
+    |--------------------------------------------------------------------------
+    |
+    | Calcula usuarios conectados y métricas operativas principales antes de
+    | renderizar el panel administrativo.
     |
     */
 

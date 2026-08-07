@@ -20,8 +20,29 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
 
+/*
+|--------------------------------------------------------------------------
+| Controlador de autenticación
+|--------------------------------------------------------------------------
+|
+| Gestiona el acceso al Portal TI mediante enlaces mágicos, el registro de
+| usuarios, la verificación de correo, el reenvío de códigos, el seguimiento
+| de entregas de correo y el cierre seguro de sesión.
+|
+*/
+
 class AuthController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Dependencias
+    |--------------------------------------------------------------------------
+    |
+    | Recibe los servicios responsables de generar y validar tokens de acceso
+    | y de registrar y procesar envíos de correo de forma asíncrona.
+    |
+    */
+
     public function __construct(
         private readonly TokenAutenticacionService $tokens,
         private readonly TrackedMailService $trackedMail
@@ -31,6 +52,10 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Mostrar login
     |--------------------------------------------------------------------------
+    |
+    | Presenta la vista principal utilizada para solicitar acceso mediante
+    | correo corporativo.
+    |
     */
 
     public function login(): View
@@ -42,6 +67,12 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Enviar enlace mágico
     |--------------------------------------------------------------------------
+    |
+    | Busca la cuenta asociada al correo recibido y, cuando corresponde,
+    | genera un enlace mágico o reenvía un código de verificación pendiente.
+    | La respuesta pública se mantiene uniforme para evitar enumeración de
+    | cuentas existentes.
+    |
     */
 
     public function authenticate(
@@ -80,12 +111,32 @@ class AuthController extends Controller
         }
 
         try {
+            /*
+            |--------------------------------------------------------------------------
+            | Cuenta pendiente de verificación
+            |--------------------------------------------------------------------------
+            |
+            | Cuando el correo todavía no está verificado, se genera un nuevo
+            | código y se conserva el correo en sesión para continuar el proceso.
+            |
+            */
+
             if (! $usuario->correoEstaVerificado()) {
                 $this->procesarCodigoPendiente(
                     $usuario,
                     $request
                 );
             } else {
+                /*
+                |--------------------------------------------------------------------------
+                | Cuenta verificada
+                |--------------------------------------------------------------------------
+                |
+                | Genera un token de acceso de un solo uso y coloca en la cola el
+                | correo que contiene el enlace mágico.
+                |
+                */
+
                 $token = $this->tokens
                     ->generarTokenLogin($usuario);
 
@@ -122,8 +173,13 @@ class AuthController extends Controller
             );
 
             /*
+            |--------------------------------------------------------------------------
+            | Ocultar detalles internos
+            |--------------------------------------------------------------------------
+            |
             | No se devuelve el detalle al cliente para impedir que la respuesta
             | permita distinguir cuentas existentes de cuentas inexistentes.
+            |
             */
         }
 
@@ -137,6 +193,10 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Consumir enlace mágico
     |--------------------------------------------------------------------------
+    |
+    | Valida y consume el token recibido, inicia la sesión del usuario y lo
+    | redirige a la página originalmente solicitada o al dashboard.
+    |
     */
 
     public function magicLogin(
@@ -144,8 +204,13 @@ class AuthController extends Controller
         Request $request
     ): RedirectResponse {
         /*
-        | El servicio valida y consume el token,
-        | autentica al usuario y regenera la sesión.
+        |--------------------------------------------------------------------------
+        | Iniciar sesión mediante token
+        |--------------------------------------------------------------------------
+        |
+        | El servicio valida y consume el token, autentica al usuario y regenera
+        | la sesión para evitar reutilización del identificador anterior.
+        |
         */
 
         $this->tokens
@@ -155,11 +220,13 @@ class AuthController extends Controller
             );
 
         /*
-        | Si el middleware auth guardó una página pendiente,
-        | el usuario será enviado a ella.
+        |--------------------------------------------------------------------------
+        | Redirección posterior al acceso
+        |--------------------------------------------------------------------------
         |
-        | Si no existe una página pendiente, se utilizará
-        | el dashboard como destino predeterminado.
+        | Si el middleware auth guardó una página pendiente, el usuario será
+        | enviado a ella. En caso contrario, se utiliza el dashboard.
+        |
         */
 
         return redirect()
@@ -176,6 +243,9 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Mostrar registro
     |--------------------------------------------------------------------------
+    |
+    | Presenta la vista utilizada para crear una nueva cuenta del Portal TI.
+    |
     */
 
     public function register(): View
@@ -189,11 +259,25 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Registrar usuario
     |--------------------------------------------------------------------------
+    |
+    | Crea una cuenta con el rol Usuario, genera el código de verificación y
+    | coloca el correo correspondiente en la cola de entrega.
+    |
     */
 
     public function store(
         RegistroRequest $request
     ): JsonResponse|RedirectResponse {
+        /*
+        |--------------------------------------------------------------------------
+        | Resolver rol predeterminado
+        |--------------------------------------------------------------------------
+        |
+        | Todo registro nuevo se asocia al rol Usuario. Si el rol no existe,
+        | se interrumpe el proceso para evitar crear una cuenta inconsistente.
+        |
+        */
+
         $rolUsuario = Rol::query()
             ->where(
                 'nombre',
@@ -220,6 +304,12 @@ class AuthController extends Controller
                 ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Crear cuenta pendiente de verificación
+        |--------------------------------------------------------------------------
+        */
+
         $usuario = Usuario::create([
             'nombre' =>
                 $request->validated(
@@ -241,12 +331,28 @@ class AuthController extends Controller
                 null,
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Conservar correo en sesión
+        |--------------------------------------------------------------------------
+        |
+        | Permite identificar la cuenta pendiente durante la pantalla de
+        | verificación y los posibles reenvíos de código.
+        |
+        */
+
         $request->session()->put(
             'correo_verificacion',
             $usuario->correo
         );
 
         try {
+            /*
+            |--------------------------------------------------------------------------
+            | Generar y enviar código
+            |--------------------------------------------------------------------------
+            */
+
             $codigo = $this->tokens
                 ->generarCodigoRegistro(
                     $usuario
@@ -293,6 +399,16 @@ class AuthController extends Controller
             );
 
         } catch (Throwable $exception) {
+            /*
+            |--------------------------------------------------------------------------
+            | Cuenta creada, correo no procesado
+            |--------------------------------------------------------------------------
+            |
+            | La creación de la cuenta no se revierte. Se informa al usuario que
+            | debe solicitar un nuevo código desde la pantalla de verificación.
+            |
+            */
+
             Log::error(
                 'No se pudo colocar el código de registro en la cola.',
                 [
@@ -349,6 +465,12 @@ class AuthController extends Controller
                 ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Respuesta según estado de entrega
+        |--------------------------------------------------------------------------
+        */
+
         $mensaje =
             $delivery->estaPendiente()
                 ? 'Tu cuenta fue creada. El código de verificación se está procesando.'
@@ -388,6 +510,10 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Mostrar pantalla de verificación
     |--------------------------------------------------------------------------
+    |
+    | Presenta la pantalla para introducir el código únicamente cuando existe
+    | un correo pendiente de verificación almacenado en la sesión.
+    |
     */
 
     public function verification(): View|RedirectResponse
@@ -415,6 +541,10 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Verificar código de registro
     |--------------------------------------------------------------------------
+    |
+    | Valida el código asociado al correo, completa la verificación de la cuenta
+    | y elimina de sesión el dato temporal utilizado durante el proceso.
+    |
     */
 
     public function verify(
@@ -432,8 +562,12 @@ class AuthController extends Controller
             );
 
         /*
-        | El correo ya fue verificado y no es necesario
-        | conservarlo en la sesión.
+        |--------------------------------------------------------------------------
+        | Limpiar correo pendiente
+        |--------------------------------------------------------------------------
+        |
+        | El correo ya fue verificado y no es necesario conservarlo en sesión.
+        |
         */
 
         $request
@@ -443,8 +577,9 @@ class AuthController extends Controller
             );
 
         /*
-        | El registro continúa enviando directamente
-        | al dashboard, como estaba anteriormente.
+        |--------------------------------------------------------------------------
+        | Continuar al dashboard
+        |--------------------------------------------------------------------------
         */
 
         return redirect()
@@ -459,11 +594,25 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Reenviar código
     |--------------------------------------------------------------------------
+    |
+    | Genera un nuevo código para cuentas activas pendientes de verificación,
+    | conserva una respuesta uniforme y registra el nuevo envío de correo.
+    |
     */
 
     public function resendCode(
         Request $request
     ): JsonResponse|RedirectResponse {
+        /*
+        |--------------------------------------------------------------------------
+        | Resolver correo pendiente
+        |--------------------------------------------------------------------------
+        |
+        | Se utiliza primero el valor enviado por la solicitud y, como respaldo,
+        | el correo almacenado durante el registro.
+        |
+        */
+
         $correo = mb_strtolower(
             trim(
                 (string) (
@@ -506,6 +655,16 @@ class AuthController extends Controller
         $mensajeGenerico =
             'Si la cuenta está pendiente, recibirá un nuevo código.';
 
+        /*
+        |--------------------------------------------------------------------------
+        | Respuesta uniforme para cuentas no elegibles
+        |--------------------------------------------------------------------------
+        |
+        | No se revela si la cuenta no existe, está inactiva o ya se encuentra
+        | verificada.
+        |
+        */
+
         if (
             ! $usuario
             || ! $usuario->activo
@@ -545,6 +704,12 @@ class AuthController extends Controller
         }
 
         try {
+            /*
+            |--------------------------------------------------------------------------
+            | Generar nuevo código
+            |--------------------------------------------------------------------------
+            */
+
             $codigo = $this->tokens
                 ->generarCodigoRegistro(
                     $usuario
@@ -623,6 +788,12 @@ class AuthController extends Controller
             ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Responder estado del nuevo envío
+        |--------------------------------------------------------------------------
+        */
+
         $mensaje =
             $delivery->estaPendiente()
                 ? 'El nuevo código de verificación se está procesando.'
@@ -653,6 +824,10 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Cerrar sesión
     |--------------------------------------------------------------------------
+    |
+    | Finaliza la autenticación actual, invalida completamente la sesión y
+    | genera un nuevo token CSRF antes de regresar a la pantalla de acceso.
+    |
     */
 
     public function logout(
@@ -661,7 +836,9 @@ class AuthController extends Controller
         Auth::logout();
 
         /*
-        | Invalidar completamente la sesión autenticada.
+        |--------------------------------------------------------------------------
+        | Invalidar sesión
+        |--------------------------------------------------------------------------
         */
 
         $request
@@ -669,7 +846,9 @@ class AuthController extends Controller
             ->invalidate();
 
         /*
-        | Crear un token CSRF nuevo para futuras solicitudes.
+        |--------------------------------------------------------------------------
+        | Regenerar token CSRF
+        |--------------------------------------------------------------------------
         */
 
         $request
@@ -684,6 +863,10 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     | Enviar código a una cuenta pendiente
     |--------------------------------------------------------------------------
+    |
+    | Genera un código de registro para una cuenta no verificada y coloca el
+    | correo correspondiente en la cola de entrega.
+    |
     */
 
     private function procesarCodigoPendiente(
@@ -716,11 +899,14 @@ class AuthController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Respuesta pública uniforme del login
     |--------------------------------------------------------------------------
+    |
+    | Devuelve siempre el mismo mensaje para solicitudes de autenticación y
+    | desactiva almacenamiento en caché de la respuesta.
+    |
     */
 
     private function respuestaAutenticacionGenerica(
@@ -746,17 +932,26 @@ class AuthController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Consultar estado de correo de autenticación
     |--------------------------------------------------------------------------
+    |
+    | Permite consultar únicamente el EmailDelivery autorizado en la sesión
+    | actual y devuelve su estado de envío en una estructura JSON uniforme.
+    |
     */
 
     public function emailStatus(
         Request $request,
         EmailDelivery $emailDelivery
     ): JsonResponse {
+        /*
+        |--------------------------------------------------------------------------
+        | Validar delivery autorizado
+        |--------------------------------------------------------------------------
+        */
+
         $deliverySesion =
             (int) $request->session()->get(
                 'auth_email_delivery_id',
@@ -770,6 +965,12 @@ class AuthController extends Controller
             403,
             'No tienes permiso para consultar este envío.'
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Responder estado actual
+        |--------------------------------------------------------------------------
+        */
 
         return response()->json([
             'success' =>
@@ -811,11 +1012,14 @@ class AuthController extends Controller
         ]);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Guardar delivery autorizado en sesión
     |--------------------------------------------------------------------------
+    |
+    | Conserva el identificador del último envío de autenticación para limitar
+    | las consultas de estado al proceso perteneciente a la sesión actual.
+    |
     */
 
     private function guardarDeliveryEnSesion(
@@ -828,11 +1032,14 @@ class AuthController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Estructura común de respuesta del correo
     |--------------------------------------------------------------------------
+    |
+    | Convierte un EmailDelivery en la estructura estándar utilizada por las
+    | respuestas AJAX del flujo de registro y reenvío.
+    |
     */
 
     private function respuestaEmail(
@@ -867,5 +1074,4 @@ class AuthController extends Controller
                 $delivery->attempts,
         ];
     }
-
 }

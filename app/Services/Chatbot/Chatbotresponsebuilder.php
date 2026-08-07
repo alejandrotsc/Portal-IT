@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\Route;
 
 class ChatbotResponseBuilder
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    |
+    | Recibe el motor de diagnósticos utilizado para generar respuestas
+    | locales antes de recurrir a otros mecanismos de atención.
+    |
+    */
+
     public function __construct(
         private readonly DiagnosticEngine $diagnosticEngine
     ) {
@@ -19,6 +29,11 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Construir respuesta principal
     |--------------------------------------------------------------------------
+    |
+    | Genera la respuesta final del chatbot a partir de la intención
+    | detectada, el mensaje del usuario y, cuando corresponde, una
+    | respuesta producida por el servicio de inteligencia artificial.
+    |
     */
 
     public function build(
@@ -147,6 +162,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Respuesta base
     |--------------------------------------------------------------------------
+    |
+    | Construye la estructura común utilizada por todas las respuestas
+    | del chatbot y normaliza las acciones rápidas antes de devolverlas.
+    |
     */
 
     private function baseResponse(
@@ -181,6 +200,11 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Respuesta de diagnóstico
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta guiada a partir del diagnóstico basado en
+    | reglas, limita los pasos mostrados y ofrece acciones para continuar
+    | con la atención o registrar una incidencia.
+    |
     */
 
     private function buildDiagnosticResponse(
@@ -284,6 +308,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Preparar pasos de diagnóstico
     |--------------------------------------------------------------------------
+    |
+    | Limpia y limita los pasos sugeridos por el diagnóstico para mostrar
+    | únicamente instrucciones breves y utilizables dentro de la respuesta.
+    |
     */
 
     private function prepareDiagnosticSteps(
@@ -329,6 +357,11 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Respuesta generada por IA
     |--------------------------------------------------------------------------
+    |
+    | Convierte una AIResponse en la estructura utilizada por el frontend,
+    | aplica acciones rápidas seguras y conserva los metadatos relevantes
+    | del proveedor de inteligencia artificial.
+    |
     */
 
     private function buildAIResponse(
@@ -435,6 +468,11 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Acciones predeterminadas para IA
     |--------------------------------------------------------------------------
+    |
+    | Determina las acciones sugeridas según la categoría y estado de la
+    | respuesta de IA, incluyendo reintentos, incidencias, solicitudes
+    | y pases cuando corresponde.
+    |
     */
 
     private function aiQuickActions(
@@ -578,6 +616,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Respuesta para módulo
     |--------------------------------------------------------------------------
+    |
+    | Construye una respuesta orientada a un módulo específico e incluye
+    | accesos para crear la gestión, consultar su historial y volver al menú.
+    |
     */
 
     private function forModule(
@@ -631,6 +673,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Acción de redirección
     |--------------------------------------------------------------------------
+    |
+    | Construye una acción segura de navegación utilizando únicamente
+    | rutas configuradas para los módulos reconocidos por el chatbot.
+    |
     */
 
     private function redirectAction(
@@ -666,6 +712,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Obtener redirección configurada
     |--------------------------------------------------------------------------
+    |
+    | Valida el módulo y destino solicitados, comprueba la existencia de
+    | la ruta en Laravel y construye los datos necesarios para navegar.
+    |
     */
 
     private function getRedirect(
@@ -736,6 +786,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Etiquetas para creación
     |--------------------------------------------------------------------------
+    |
+    | Devuelve la etiqueta utilizada para representar la acción de crear
+    | una nueva gestión según el módulo seleccionado.
+    |
     */
 
     private function getCreateLabel(
@@ -763,6 +817,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Etiquetas para historiales
     |--------------------------------------------------------------------------
+    |
+    | Devuelve la etiqueta utilizada para consultar el historial del
+    | módulo correspondiente dentro del Portal TI.
+    |
     */
 
     private function getHistoryLabel(
@@ -788,6 +846,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Redirección sugerida según categoría IA
     |--------------------------------------------------------------------------
+    |
+    | Determina si la categoría devuelta por la IA corresponde a una
+    | gestión concreta y, de ser así, prepara la redirección apropiada.
+    |
     */
 
     private function getRedirectForAICategory(
@@ -856,6 +918,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Normalizar acciones recibidas
     |--------------------------------------------------------------------------
+    |
+    | Valida las acciones proporcionadas por AIResponse y reconstruye
+    | únicamente aquellas compatibles con los tipos admitidos por el portal.
+    |
     */
 
     private function normalizeQuickActions(
@@ -1011,6 +1077,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Eliminar acción antigua "Mostrar menú"
     |--------------------------------------------------------------------------
+    |
+    | Filtra acciones heredadas que ya no deben mostrarse para evitar
+    | duplicar o mezclar comportamientos antiguos con el flujo actual.
+    |
     */
 
     private function removeLegacyMenuActions(
@@ -1063,6 +1133,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Inferir módulo desde etiqueta
     |--------------------------------------------------------------------------
+    |
+    | Intenta identificar el módulo asociado a una acción utilizando
+    | palabras presentes en su etiqueta cuando no se proporcionó una clave.
+    |
     */
 
     private function inferModuleFromLabel(
@@ -1134,6 +1208,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Preparar clave de módulo
     |--------------------------------------------------------------------------
+    |
+    | Normaliza aliases y valida que la clave recibida corresponda a uno
+    | de los módulos reconocidos por el chatbot.
+    |
     */
 
     private function prepareModuleKey(
@@ -1180,6 +1258,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Normalizar destino
     |--------------------------------------------------------------------------
+    |
+    | Limita el destino solicitado a las vistas de creación o historial
+    | admitidas por la configuración de módulos.
+    |
     */
 
     private function normalizeDestination(
@@ -1200,6 +1282,20 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Categorías de IA
     |--------------------------------------------------------------------------
+    |
+    | Proporciona métodos auxiliares para clasificar la categoría devuelta
+    | por la IA como solicitud, pase temporal o autorización.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar categoría de solicitud
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si la categoría proporcionada corresponde a una solicitud
+    | o a alguno de los servicios que se gestionan mediante dicho módulo.
+    |
     */
 
     private function isRequestCategory(
@@ -1226,6 +1322,16 @@ class ChatbotResponseBuilder
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar categoría de pase temporal
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si la categoría corresponde a un pase con duración menor
+    | a 24 horas.
+    |
+    */
+
     private function isTemporaryPassCategory(
         string $category
     ): bool {
@@ -1240,6 +1346,16 @@ class ChatbotResponseBuilder
             true
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detectar categoría de autorización
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba si la categoría corresponde a una autorización o pase con
+    | duración mayor a 24 horas.
+    |
+    */
 
     private function isAuthorizationCategory(
         string $category
@@ -1262,6 +1378,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Agregar información de intención
     |--------------------------------------------------------------------------
+    |
+    | Adjunta los datos de la intención detectada y garantiza que la
+    | respuesta final conserve una estructura consistente para el frontend.
+    |
     */
 
     private function appendIntent(
@@ -1350,6 +1470,11 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Acciones rápidas principales
     |--------------------------------------------------------------------------
+    |
+    | Define las acciones básicas que se muestran cuando el usuario debe
+    | elegir entre reportar una incidencia, crear una solicitud o consultar
+    | el estado de sus gestiones.
+    |
     */
 
     private function defaultQuickActions(): array
@@ -1381,6 +1506,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Menú principal con vínculos directos
     |--------------------------------------------------------------------------
+    |
+    | Construye el menú principal utilizando accesos directos seguros a
+    | los módulos configurados y a la consulta de gestiones.
+    |
     */
 
     private function mainMenuActions(): array
@@ -1424,6 +1553,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Eliminar acciones duplicadas
     |--------------------------------------------------------------------------
+    |
+    | Elimina acciones rápidas repetidas comparando su tipo, valor, URL y
+    | etiqueta para mantener una respuesta limpia y consistente.
+    |
     */
 
     private function uniqueQuickActions(
@@ -1485,6 +1618,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Preparar identificador de acción
     |--------------------------------------------------------------------------
+    |
+    | Valida y limita los identificadores internos utilizados por las
+    | acciones de flujo, estado y activación de IA.
+    |
     */
 
     private function prepareActionIdentifier(
@@ -1518,6 +1655,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Preparar texto
     |--------------------------------------------------------------------------
+    |
+    | Limpia etiquetas HTML, caracteres de control y espacios repetidos,
+    | además de limitar la longitud de textos cortos utilizados en respuestas.
+    |
     */
 
     private function prepareText(
@@ -1562,6 +1703,16 @@ class ChatbotResponseBuilder
             : $fallback;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar texto extenso
+    |--------------------------------------------------------------------------
+    |
+    | Limpia caracteres de control y normaliza saltos de línea conservando
+    | la estructura básica de textos largos antes de limitar su longitud.
+    |
+    */
+
     private function prepareLongText(
         mixed $value,
         int $limit
@@ -1605,6 +1756,16 @@ class ChatbotResponseBuilder
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Preparar texto opcional
+    |--------------------------------------------------------------------------
+    |
+    | Normaliza un valor de texto y devuelve null cuando el resultado no
+    | contiene información utilizable.
+    |
+    */
+
     private function nullableText(
         mixed $value,
         int $limit
@@ -1623,6 +1784,10 @@ class ChatbotResponseBuilder
     |--------------------------------------------------------------------------
     | Normalizar texto
     |--------------------------------------------------------------------------
+    |
+    | Convierte el texto a minúsculas, elimina variaciones de caracteres
+    | acentuados y normaliza espacios para facilitar comparaciones internas.
+    |
     */
 
     private function normalizeText(

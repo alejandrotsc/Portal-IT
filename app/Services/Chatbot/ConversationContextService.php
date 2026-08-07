@@ -7,12 +7,27 @@ use App\Models\ChatbotConversation;
 class ConversationContextService
 {
     /*
-     * Techo de seguridad absoluto para el número de conversaciones a
-     * traer de la base de datos, independientemente de lo que pida el
-     * llamador o de config(). Es una cota de protección, no un valor
-     * de ajuste de comportamiento.
-     */
+    |--------------------------------------------------------------------------
+    | Límite máximo de conversaciones
+    |--------------------------------------------------------------------------
+    |
+    | Define un límite absoluto de seguridad para la cantidad de
+    | conversaciones que pueden recuperarse desde la base de datos,
+    | independientemente de la configuración solicitada.
+    |
+    */
+
     private const MAX_CONVERSATIONS = 6;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Obtener historial reciente
+    |--------------------------------------------------------------------------
+    |
+    | Recupera las conversaciones recientes del usuario y las transforma
+    | al formato de mensajes utilizado como contexto por el servicio de IA.
+    |
+    */
 
     public function getRecent(
         ?int $userId,
@@ -23,21 +38,30 @@ class ConversationContextService
         }
 
         /*
-         * Por defecto se usa el mismo límite de historial configurado
-         * para Ollama (chatbot.ai.history_limit), en vez de un valor
-         * fijo propio. Así hay una sola fuente de verdad para cuánto
-         * historial realmente se necesita, y no se recupera ni se
-         * arma en PHP más contexto del que luego se enviará al modelo.
-         */
+        |--------------------------------------------------------------------------
+        | Resolver límite de conversaciones
+        |--------------------------------------------------------------------------
+        |
+        | Utiliza por defecto el mismo límite configurado para el historial
+        | enviado a Ollama, manteniendo una única fuente de configuración.
+        |
+        */
+
         $limit ??= (int) config(
             'chatbot.ai.history_limit',
             2
         );
 
         /*
-         * El límite representa conversaciones completas,
-         * no mensajes individuales.
-         */
+        |--------------------------------------------------------------------------
+        | Aplicar límite de seguridad
+        |--------------------------------------------------------------------------
+        |
+        | El valor representa conversaciones completas y se restringe al
+        | máximo permitido por el servicio.
+        |
+        */
+
         $limit = max(
             0,
             min($limit, self::MAX_CONVERSATIONS)
@@ -48,9 +72,15 @@ class ConversationContextService
         }
 
         /*
-         * Mismo límite de longitud por mensaje que usa Ollama para el
-         * historial, evitando truncar dos veces con valores distintos.
-         */
+        |--------------------------------------------------------------------------
+        | Resolver longitud máxima por mensaje
+        |--------------------------------------------------------------------------
+        |
+        | Utiliza la misma longitud configurada para el historial de Ollama
+        | para evitar aplicar límites diferentes durante el procesamiento.
+        |
+        */
+
         $messageLength = max(
             50,
             (int) config(
@@ -58,6 +88,16 @@ class ConversationContextService
                 300
             )
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recuperar conversaciones
+        |--------------------------------------------------------------------------
+        |
+        | Obtiene únicamente conversaciones que contienen respuesta y excluye
+        | las acciones internas generadas por los flujos interactivos.
+        |
+        */
 
         return ChatbotConversation::query()
             ->select([
@@ -71,9 +111,6 @@ class ConversationContextService
             ->whereNotNull(
                 'respuesta'
             )
-            /*
-             * No enviar al modelo acciones internas de los flows.
-             */
             ->where(
                 'mensaje',
                 'not like',
@@ -89,13 +126,31 @@ class ConversationContextService
                 ) use ($messageLength): array {
                     $messages = [];
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Preparar mensaje del usuario
+                    |--------------------------------------------------------------------------
+                    */
+
                     $userMessage = trim(
                         (string) $conversation->mensaje
                     );
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Preparar respuesta del asistente
+                    |--------------------------------------------------------------------------
+                    */
+
                     $assistantMessage = trim(
                         (string) $conversation->respuesta
                     );
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Agregar mensaje del usuario
+                    |--------------------------------------------------------------------------
+                    */
 
                     if ($userMessage !== '') {
                         $messages[] = [
@@ -107,6 +162,12 @@ class ConversationContextService
                             ),
                         ];
                     }
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Agregar respuesta del asistente
+                    |--------------------------------------------------------------------------
+                    */
 
                     if ($assistantMessage !== '') {
                         $messages[] = [

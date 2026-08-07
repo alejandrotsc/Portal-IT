@@ -3,9 +3,13 @@
 | Chatbot interactivo del Portal TI
 |--------------------------------------------------------------------------
 |
+| Define el componente principal del asistente y coordina navegación por
+| flujo, consultas libres con IA, streaming, historial temporal y acciones
+| de interfaz.
+|
 | Modos:
-| - flow: navegación mediante botones
-| - ai: texto libre enviado a Ollama
+| - flow: navegación mediante botones.
+| - ai: texto libre enviado al proveedor de IA.
 |
 */
 
@@ -16,6 +20,9 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Estado
         |--------------------------------------------------------------------------
+        |
+        | Centraliza las propiedades reactivas utilizadas por el widget, incluyendo mensajes, modo IA, contexto, control de solicitudes, historial y renderizado.
+        |
         */
 
         draft: '',
@@ -61,6 +68,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Inicialización
         |--------------------------------------------------------------------------
+        |
+        | Restaura el historial temporal, actualiza iconos y posiciona la conversación en el último mensaje disponible.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Inicializar widget
+        |--------------------------------------------------------------------------
+        |
+        | Restaura el historial disponible y actualiza la interfaz una vez que
+        | Alpine termina de montar el componente.
+        |
         */
 
         init() {
@@ -81,6 +101,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Precargar Ollama
         |--------------------------------------------------------------------------
+        |
+        | Solicita la activación anticipada del modelo cuando corresponde, evita precargas duplicadas y utiliza almacenamiento local para coordinar múltiples pestañas.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Precargar modelo de IA
+        |--------------------------------------------------------------------------
+        |
+        | Solicita una precarga controlada del modelo, evita ejecuciones
+        | simultáneas y coordina el estado entre pestañas mediante localStorage.
+        |
         */
 
         async warmUpModel() {
@@ -267,6 +300,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Enviar texto escrito
         |--------------------------------------------------------------------------
+        |
+        | Normaliza el texto introducido por el usuario y lo envía al backend junto con el contexto actual del flujo.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enviar consulta escrita
+        |--------------------------------------------------------------------------
+        |
+        | Normaliza y limita el mensaje visible antes de enviarlo junto con el
+        | estado actual del modo IA y el contexto acumulado.
+        |
         */
 
         async send(text = null) {
@@ -307,6 +353,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Enviar acción de botón
         |--------------------------------------------------------------------------
+        |
+        | Procesa acciones seleccionadas desde botones interactivos, actualiza el contexto y decide cuándo activar la precarga del modelo.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enviar acción interactiva
+        |--------------------------------------------------------------------------
+        |
+        | Procesa botones del flow, actualiza el contexto y delega la acción al
+        | mismo flujo de solicitudes utilizado por los mensajes escritos.
+        |
         */
 
         async sendAction(
@@ -388,6 +447,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Mostrar menú principal
         |--------------------------------------------------------------------------
+        |
+        | Restablece el estado conversacional del flow y reconstruye el menú principal con sus acciones iniciales.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Restaurar menú principal
+        |--------------------------------------------------------------------------
+        |
+        | Cancela solicitudes activas, limpia contexto y modo IA y reconstruye
+        | las opciones iniciales sin consultar nuevamente al backend.
+        |
         */
 
         showMainMenu(label = 'Mostrar menú') {
@@ -485,6 +557,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Iniciar una conversación nueva
         |--------------------------------------------------------------------------
+        |
+        | Cancela solicitudes activas, limpia mensajes, contexto e historial temporal para comenzar una conversación desde cero.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reiniciar conversación
+        |--------------------------------------------------------------------------
+        |
+        | Limpia estado, mensajes, historial y contexto para comenzar una sesión
+        | conversacional nueva dentro de la misma pestaña.
+        |
         */
 
         startNewConversation() {
@@ -516,6 +601,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Realizar solicitud
         |--------------------------------------------------------------------------
+        |
+        | Envía la petición al endpoint de streaming, crea la burbuja de respuesta, controla cancelación, timeout y manejo de errores.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ejecutar solicitud al chatbot
+        |--------------------------------------------------------------------------
+        |
+        | Crea la burbuja del usuario y del bot, abre la conexión de streaming y
+        | controla errores, cancelación, timeout y finalización.
+        |
         */
 
         async performRequest(
@@ -686,6 +784,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Consumir NDJSON
         |--------------------------------------------------------------------------
+        |
+        | Lee progresivamente el cuerpo de respuesta, separa eventos por línea y los entrega al procesador de eventos del stream.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consumir stream NDJSON
+        |--------------------------------------------------------------------------
+        |
+        | Lee fragmentos del cuerpo de respuesta, reconstruye líneas completas y
+        | procesa cada evento enviado progresivamente por el backend.
+        |
         */
 
         async consumeStream(
@@ -802,6 +913,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Interpretar línea NDJSON
         |--------------------------------------------------------------------------
+        |
+        | Convierte una línea del stream en un evento válido y descarta contenido malformado sin detener la conversación.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Parsear evento NDJSON
+        |--------------------------------------------------------------------------
+        |
+        | Convierte una línea JSON en un evento válido y descarta datos
+        | malformados sin interrumpir el resto del stream.
+        |
         */
 
         parseStreamEvent(line) {
@@ -833,6 +957,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Procesar evento
         |--------------------------------------------------------------------------
+        |
+        | Interpreta eventos start, chunk, complete y error recibidos desde el backend durante el streaming.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Manejar evento del stream
+        |--------------------------------------------------------------------------
+        |
+        | Interpreta eventos de inicio, mantenimiento de conexión, respuesta
+        | completa y error recibidos desde el backend.
+        |
         */
 
         handleStreamEvent(
@@ -878,6 +1015,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Aplicar respuesta final
         |--------------------------------------------------------------------------
+        |
+        | Actualiza la burbuja del bot, acciones rápidas, redirecciones, metadatos, contexto del flow y modo IA con la respuesta completa.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Aplicar respuesta completa
+        |--------------------------------------------------------------------------
+        |
+        | Transfiere la respuesta final al mensaje reactivo y sincroniza acciones,
+        | redirección, contexto, metadatos y estado del modo IA.
+        |
         */
 
         applyCompleteResponse(
@@ -961,6 +1111,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Agregar mensaje
         |--------------------------------------------------------------------------
+        |
+        | Normaliza la estructura de un mensaje antes de incorporarlo al arreglo reactivo de la conversación.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Registrar mensaje
+        |--------------------------------------------------------------------------
+        |
+        | Construye una estructura consistente antes de agregar el mensaje al
+        | historial reactivo de la conversación.
+        |
         */
 
         addMessage(message) {
@@ -1041,6 +1204,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Ejecutar botón
         |--------------------------------------------------------------------------
+        |
+        | Despacha acciones interactivas hacia flow, reintentos, mensajes, Helpdesk, redirecciones internas o enlaces externos.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ejecutar acción del mensaje
+        |--------------------------------------------------------------------------
+        |
+        | Resuelve acciones de flow, reintento, envío, Helpdesk, redirecciones
+        | internas, menús y enlaces externos.
+        |
         */
 
         executeAction(
@@ -1222,6 +1398,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Endpoint
         |--------------------------------------------------------------------------
+        |
+        | Obtiene desde el documento la URL configurada para el endpoint de streaming del chatbot.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener endpoint de streaming
+        |--------------------------------------------------------------------------
+        |
+        | Recupera la URL configurada en el meta tag y utiliza la ruta estándar
+        | del chatbot como respaldo.
+        |
         */
 
         getStreamEndpoint() {
@@ -1239,6 +1428,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | CSRF
         |--------------------------------------------------------------------------
+        |
+        | Recupera el token CSRF utilizado para autenticar las solicitudes AJAX hacia Laravel.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener token CSRF
+        |--------------------------------------------------------------------------
+        |
+        | Recupera el token de seguridad requerido por Laravel para solicitudes
+        | POST realizadas desde el widget.
+        |
         */
 
         getCsrfToken() {
@@ -1255,6 +1457,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Interpretar error HTTP
         |--------------------------------------------------------------------------
+        |
+        | Extrae mensajes de validación o errores JSON y proporciona un mensaje genérico cuando la respuesta no es válida.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Interpretar respuesta de error
+        |--------------------------------------------------------------------------
+        |
+        | Extrae mensajes de validación o de servidor cuando la respuesta HTTP
+        | no fue satisfactoria.
+        |
         */
 
         async parseErrorResponse(
@@ -1304,6 +1519,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Normalizar redirección
         |--------------------------------------------------------------------------
+        |
+        | Convierte distintos formatos de redirección a una estructura uniforme utilizada por el frontend.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Normalizar redirección
+        |--------------------------------------------------------------------------
+        |
+        | Convierte una URL simple o un objeto de redirección a una estructura
+        | uniforme consumida por la interfaz.
+        |
         */
 
         normalizeRedirect(redirect) {
@@ -1345,6 +1573,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Mensajes de error
         |--------------------------------------------------------------------------
+        |
+        | Transforma errores de cancelación, conectividad o servidor en mensajes comprensibles para el usuario.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener mensaje de error
+        |--------------------------------------------------------------------------
+        |
+        | Convierte errores técnicos de cancelación, red o servidor en mensajes
+        | comprensibles para el usuario final.
+        |
         */
 
         getErrorMessage(error) {
@@ -1380,6 +1621,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Timeout
         |--------------------------------------------------------------------------
+        |
+        | Administra el límite máximo de espera de las solicitudes y reinicia el contador mientras el stream continúa activo.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reiniciar timeout de solicitud
+        |--------------------------------------------------------------------------
+        |
+        | Restablece el límite de espera cada vez que el backend continúa
+        | enviando actividad por el stream.
+        |
         */
 
         resetRequestTimeout() {
@@ -1394,6 +1648,15 @@ window.chatbotWidget = function (options = {}) {
                     150000
                 );
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | Limpiar timeout
+        |--------------------------------------------------------------------------
+        |
+        | Cancela el temporizador activo asociado a la solicitud actual.
+        |
+        */
 
         clearRequestTimeout() {
             if (
@@ -1412,6 +1675,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Cancelar solicitud
         |--------------------------------------------------------------------------
+        |
+        | Interrumpe la petición actualmente activa y limpia su timeout asociado.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cancelar solicitud actual
+        |--------------------------------------------------------------------------
+        |
+        | Aborta la petición activa y elimina cualquier timeout pendiente antes
+        | de iniciar una nueva operación.
+        |
         */
 
         cancelCurrentRequest() {
@@ -1433,6 +1709,16 @@ window.chatbotWidget = function (options = {}) {
         | sessionStorage conserva la conversación al navegar por el Portal TI,
         | pero el navegador la elimina al cerrar la pestaña. La clave incluye
         | al usuario autenticado desde el Blade para no mezclar conversaciones.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Guardar historial temporal
+        |--------------------------------------------------------------------------
+        |
+        | Persiste mensajes válidos, modo IA y contexto en sessionStorage,
+        | limitando la cantidad máxima de elementos conservados.
         |
         */
 
@@ -1473,6 +1759,16 @@ window.chatbotWidget = function (options = {}) {
             }
         },
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Restaurar historial temporal
+        |--------------------------------------------------------------------------
+        |
+        | Recupera y valida la conversación almacenada en la pestaña antes de
+        | reconstruir mensajes, contexto y modo IA.
+        |
+        */
 
         restoreChatHistory() {
             try {
@@ -1551,6 +1847,15 @@ window.chatbotWidget = function (options = {}) {
         },
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Limpiar historial temporal
+        |--------------------------------------------------------------------------
+        |
+        | Elimina de sessionStorage la conversación asociada al widget actual.
+        |
+        */
+
         clearChatHistory() {
             try {
                 window.sessionStorage.removeItem(
@@ -1569,6 +1874,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Preparar contexto del flujo
         |--------------------------------------------------------------------------
+        |
+        | Filtra, normaliza y limita las claves permitidas del contexto antes de reutilizarlas en nuevas acciones o solicitudes.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Preparar contexto del flow
+        |--------------------------------------------------------------------------
+        |
+        | Filtra claves permitidas, normaliza valores y aplica límites de
+        | longitud antes de reutilizar el contexto en nuevas solicitudes.
+        |
         */
 
         prepareFlowContext(context) {
@@ -1647,6 +1965,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Combinar contexto
         |--------------------------------------------------------------------------
+        |
+        | Fusiona de forma segura el contexto existente con los nuevos datos recibidos desde una acción.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Combinar contexto del flow
+        |--------------------------------------------------------------------------
+        |
+        | Fusiona de forma segura el contexto anterior con la nueva información
+        | recibida desde una acción interactiva.
+        |
         */
 
         mergeFlowContext(
@@ -1669,6 +2000,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Identificador
         |--------------------------------------------------------------------------
+        |
+        | Genera identificadores únicos para los mensajes utilizando tiempo actual y contador interno.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generar identificador de mensaje
+        |--------------------------------------------------------------------------
+        |
+        | Construye un identificador único utilizando timestamp y contador
+        | interno del widget.
+        |
         */
 
         generateMessageId() {
@@ -1686,6 +2030,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Después de agregar mensaje
         |--------------------------------------------------------------------------
+        |
+        | Persiste el historial y actualiza iconos y desplazamiento después de incorporar un mensaje.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Procesar mensaje agregado
+        |--------------------------------------------------------------------------
+        |
+        | Guarda el historial y actualiza iconos y scroll después de insertar un
+        | nuevo mensaje.
+        |
         */
 
         afterMessageAdded() {
@@ -1702,6 +2059,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Después de respuesta
         |--------------------------------------------------------------------------
+        |
+        | Persiste el estado final de la conversación y actualiza la interfaz después de completar un stream.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Procesar stream completado
+        |--------------------------------------------------------------------------
+        |
+        | Persiste el resultado final y sincroniza iconos y desplazamiento al
+        | terminar una respuesta.
+        |
         */
 
         afterStreamComplete() {
@@ -1718,6 +2088,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Lucide
         |--------------------------------------------------------------------------
+        |
+        | Renderiza iconos de forma segura y realiza un reintento breve cuando la librería todavía no está disponible.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Renderizar iconos
+        |--------------------------------------------------------------------------
+        |
+        | Inicializa Lucide de forma segura y realiza un único reintento breve
+        | cuando la librería todavía no está disponible.
+        |
         */
 
         renderIcons(
@@ -1773,6 +2156,19 @@ window.chatbotWidget = function (options = {}) {
         |--------------------------------------------------------------------------
         | Scroll
         |--------------------------------------------------------------------------
+        |
+        | Desplaza el contenedor de mensajes al final utilizando requestAnimationFrame para evitar actualizaciones redundantes.
+        |
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Desplazar conversación al final
+        |--------------------------------------------------------------------------
+        |
+        | Utiliza requestAnimationFrame para evitar múltiples actualizaciones de
+        | scroll dentro del mismo ciclo de renderizado.
+        |
         */
 
         scrollBottom() {
